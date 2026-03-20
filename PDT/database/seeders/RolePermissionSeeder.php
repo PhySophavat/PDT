@@ -21,6 +21,8 @@ class RolePermissionSeeder extends Seeder
         $basicPermissions = [
             ['name' => 'manage-teacher', 'display_name' => 'គ្រប់គ្រងគ្រូបង្រៀន'],
             ['name' => 'add-student', 'display_name' => 'បន្ថែមសិស្ស'],
+            ['name' => 'add-scores', 'display_name' => 'បញ្ចូលពិន្ទុ'],
+            ['name' => 'view-scores', 'display_name' => 'មើលពិន្ទុ'],
             ['name' => 'view', 'display_name' => 'មើលទិន្នន័យ'],
             ['name' => 'edit', 'display_name' => 'កែប្រែទិន្នន័យ'],
             ['name' => 'delete', 'display_name' => 'លុបទិន្នន័យ'],

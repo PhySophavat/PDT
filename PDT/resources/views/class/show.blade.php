@@ -40,7 +40,7 @@
                             <td class="py-3 px-4 text-gray-700">{{ $student->grade }}</td>
                             <td class="py-3 px-4 text-center">
                                 <div class="flex flex-wrap justify-center gap-2">
-                                    @if(Auth::user()->hasRole('teacher'))
+                                    @if(Auth::user()->hasPermission('add-scores') || Auth::user()->hasRole('teacher') || Auth::user()->hasRole('admin'))
                                         <a href="{{ route('subject.create', $student->id) }}" 
                                            class="text-blue-600 font-medium hover:underline mr2">
                                             បញ្ជូលពិន្ទុ

@@ -52,7 +52,7 @@
                                     </a>
                                 @endif
 
-                                @if(Auth::user()->hasPermission('add-scores') || Auth::user()->hasRole('teacher'))
+                                @if(Auth::user()->hasPermission('add-scores') || Auth::user()->hasRole('teacher') || Auth::user()->hasRole('admin'))
                                     <a href="{{ route('subject.create', $student->id) }}" 
                                        class="text-blue-600 font-medium hover:underline mr2">
                                         បញ្ចូលពិន្ទុ

@@ -55,7 +55,7 @@
 
                 <tr class="border-b">
                     <td class="px-4 py-2 font-medium">ទូរស័ព្ទ:</td>
-                    <td class="px-4 py-2">{{ Auth::user()->student->phone }}</td>
+                    <td class="px-4 py-2">{{ Auth::user()->student->phone }}</td>                    composer update                    php artisan serve                    php artisan serve
                 </tr>
                 <tr class="border-b">
                     <td class="px-4 py-2 font-medium">វិទ្យាល័យ:</td>
