@@ -1,88 +1,88 @@
 @extends('layouts.app')
 
+@section('title', 'Profile')
+@section('page_title', 'ប្រវត្តិរូប')
+@section('page_subtitle', 'ពិនិត្យព័ត៌មានគណនី និងព័ត៌មានសិស្សដែលភ្ជាប់ជាមួយអ្នកប្រើប្រាស់នេះ។')
+
 @section('content')
-<div class="container mx-auto p-6 bg-white rounded-lg shadow-md">
-    <h1 class="text-2xl font-bold mb-6 text-center">ព័ត៌មានអំពីសិស្ស</h1>
+<div class="space-y-6">
+    <div class="info-grid">
+        <section class="info-panel">
+            <h2 class="info-panel__title">ព័ត៌មានអ្នកប្រើប្រាស់</h2>
+            <div class="data-list">
+                <div class="data-row">
+                    <span class="data-row__label">ឈ្មោះ</span>
+                    <span class="data-row__value">{{ Auth::user()->name }}</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-row__label">អ៊ីមែល</span>
+                    <span class="data-row__value">{{ Auth::user()->email }}</span>
+                </div>
+            </div>
+        </section>
 
-    <!-- User Info -->
-    <div class="mb-6">
-        <h2 class="text-xl font-semibold mb-2 border-b pb-1">ព័ត៌មានអ្នកប្រើប្រាស់</h2>
-        <table class="w-full text-left border border-gray-200">
-            <tbody>
-                <tr class="border-b">
-                    <td class="px-4 py-2 font-medium">ឈ្មោះ:</td>
-                    <td class="px-4 py-2">{{ Auth::user()->name }}</td>
-                </tr>
-                <tr class="border-b">
-                    <td class="px-4 py-2 font-medium">អ៊ីម៉ែល:</td>
-                    <td class="px-4 py-2">{{ Auth::user()->email }}</td>
-                </tr>
-            </tbody>
-        </table>
+        @if (Auth::user()->student)
+            <section class="info-panel">
+                <h2 class="info-panel__title">ព័ត៌មានសិស្ស</h2>
+                <div class="data-list">
+                    <div class="data-row">
+                        <span class="data-row__label">ថ្នាក់</span>
+                        <span class="data-row__value">{{ Auth::user()->student->grade }}</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-row__label">ថ្ងៃខែឆ្នាំកំណើត</span>
+                        <span class="data-row__value">{{ Auth::user()->student->date_of_birth ?? '-' }}</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-row__label">ភេទ</span>
+                        <span class="data-row__value">{{ Auth::user()->student->gender ?? '-' }}</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-row__label">ទីកន្លែងស្នាក់នៅ</span>
+                        <span class="data-row__value">
+                            {{ implode(', ', array_filter([
+                                Auth::user()->student->village,
+                                Auth::user()->student->commune,
+                                Auth::user()->student->district,
+                                Auth::user()->student->province,
+                            ])) ?: '-' }}
+                        </span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-row__label">ទូរស័ព្ទ</span>
+                        <span class="data-row__value">{{ Auth::user()->student->phone ?? '-' }}</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-row__label">វិទ្យាល័យ</span>
+                        <span class="data-row__value">{{ Auth::user()->student->high_school ?? '-' }}</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-row__label">ម្តាយ</span>
+                        <span class="data-row__value">
+                            {{ Auth::user()->student->mother_name ?? '-' }}
+                            @if (Auth::user()->student->mother_phone)
+                                <br>{{ Auth::user()->student->mother_phone }}
+                            @endif
+                        </span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-row__label">ឪពុក</span>
+                        <span class="data-row__value">
+                            {{ Auth::user()->student->father_name ?? '-' }}
+                            @if (Auth::user()->student->father_phone)
+                                <br>{{ Auth::user()->student->father_phone }}
+                            @endif
+                        </span>
+                    </div>
+                </div>
+            </section>
+        @endif
     </div>
 
-    @if(Auth::user()->student)
-    <!-- Student Info -->
-    <div class="mb-6">
-        <h2 class="text-xl font-semibold mb-2 border-b pb-1">ព័ត៌មានសិស្ស</h2>
-        <table class="w-full text-left border border-gray-200">
-            <tbody>
-                <tr class="border-b">
-                    <td class="px-4 py-2 font-medium">ថ្នាក់:</td>
-                    <td class="px-4 py-2">{{ Auth::user()->student->grade }}</td>
-                </tr>
-                <tr class="border-b">
-                    <td class="px-4 py-2 font-medium">ថ្ងៃខែឆ្នាំកំណើត:</td>
-                    <td class="px-4 py-2">{{ Auth::user()->student->date_of_birth }}</td>
-                </tr>
-                <tr class="border-b">
-                    <td class="px-4 py-2 font-medium">ភេទ:</td>
-                    <td class="px-4 py-2">{{ Auth::user()->student->gender }}</td>
-                </tr>
-
-                <tr class="border-b">
-                    <td class="px-4 py-2 font-medium">ភូមិ:</td>
-                    <td class="px-4 py-2">{{ Auth::user()->student->village }}</td>
-                </tr>
-                <tr class="border-b">
-                    <td class="px-4 py-2 font-medium">ឃុំ/សង្កាត់:</td>
-                    <td class="px-4 py-2">{{ Auth::user()->student->commune }}</td>
-                </tr>
-                <tr class="border-b">
-                    <td class="px-4 py-2 font-medium">ស្រុក/ខេត្ត:</td>
-                    <td class="px-4 py-2">{{ Auth::user()->student->district }}, {{ Auth::user()->student->province }}</td>
-                </tr>
-
-                <tr class="border-b">
-                    <td class="px-4 py-2 font-medium">ទូរស័ព្ទ:</td>
-                    <td class="px-4 py-2">{{ Auth::user()->student->phone }}</td>                    composer update                    php artisan serve                    php artisan serve
-                </tr>
-                <tr class="border-b">
-                    <td class="px-4 py-2 font-medium">វិទ្យាល័យ:</td>
-                    <td class="px-4 py-2">{{ Auth::user()->student->high_school }}</td>
-                </tr>
-
-                <tr class="border-b">
-                    <td class="px-4 py-2 font-medium">ឈ្មោះម្ដាយ:</td>
-                    <td class="px-4 py-2">{{ Auth::user()->student->mother_name }}</td>
-                </tr>
-                <tr class="border-b">
-                    <td class="px-4 py-2 font-medium">ទូរស័ព្ទម្ដាយ:</td>
-                    <td class="px-4 py-2">{{ Auth::user()->student->mother_phone }}</td>
-                </tr>
-                <tr class="border-b">
-                    <td class="px-4 py-2 font-medium">ឈ្មោះឪពុក:</td>
-                    <td class="px-4 py-2">{{ Auth::user()->student->father_name }}</td>
-                </tr>
-                <tr>
-                    <td class="px-4 py-2 font-medium">ទូរស័ព្ទឪពុក:</td>
-                    <td class="px-4 py-2">{{ Auth::user()->student->father_phone }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    @else
-        <p class="text-red-500 font-semibold">មិនមានព័ត៌មានសិស្សទេ។</p>
+    @if (!Auth::user()->student)
+        <div class="app-empty">
+            មិនមានព័ត៌មានសិស្សដែលភ្ជាប់ជាមួយគណនីនេះទេ។
+        </div>
     @endif
 </div>
 @endsection

@@ -1,32 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+@extends('layouts.guest')
 
-    <title>Document</title>
-</head>
-<body>
-<div class="flex items-center justify-center h-screen">
-        <div class="bg-white p-8 rounded shadow-md w-full max-w-md">
-            <h2 class="text-2xl mb-4">Login</h2>
-           <form action="{{ url('/login') }}" method="POST">
-    @csrf
-    <div class="mb-4">
-        <input type="email" name="email" placeholder="Email" class="border p-2 w-full" required>
-    </div>
-    <div class="mb-4">
-        <input type="password" name="password" placeholder="Password" class="border p-2 w-full" required>
-    </div>
-    <button type="submit" class="bg-blue-500 text-white p-2 rounded w-full">Login</button>
-</form>
+@section('title', 'Login')
 
+@section('content')
+    <div>
+        <p class="guest-kicker">PDT Portal</p>
+        <h1 class="guest-title">ចូលប្រើប្រព័ន្ធ</h1>
+        <p class="guest-subtitle">
+            ប្រើអ៊ីមែល និងពាក្យសម្ងាត់របស់អ្នក ដើម្បីចូលទៅកាន់ផ្ទាំងគ្រប់គ្រង។
+        </p>
+    </div>
+
+    @if (session('success'))
+        <div class="guest-alert guest-alert--success">
+            <i class="fa-solid fa-circle-check mt-1"></i>
+            <span>{{ session('success') }}</span>
         </div>
-    </div>
-   
-</body>
+    @endif
 
-</html>
+    @if (session('error'))
+        <div class="guest-alert guest-alert--error">
+            <i class="fa-solid fa-circle-exclamation mt-1"></i>
+            <span>{{ session('error') }}</span>
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="guest-alert guest-alert--error">
+            <i class="fa-solid fa-circle-exclamation mt-1"></i>
+            <span>{{ $errors->first() }}</span>
+        </div>
+    @endif
+
+    <form action="{{ url('/login') }}" method="POST" class="guest-form">
+        @csrf
+
+        <div class="guest-field">
+            <label for="email">អ៊ីមែល</label>
+            <input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="example@email.com" required>
+        </div>
+
+        <div class="guest-field">
+            <label for="password">ពាក្យសម្ងាត់</label>
+            <input id="password" type="password" name="password" placeholder="បញ្ចូលពាក្យសម្ងាត់" required>
+        </div>
+
+        <button type="submit" class="app-button app-button--primary w-full">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            <span>ចូលប្រើ</span>
+        </button>
+    </form>
+@endsection

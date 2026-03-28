@@ -1,39 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+@extends('layouts.guest')
 
-    <title>Document</title>
-</head>
-<body>
-   <form class="container p-10 mt-10">
-      <div class="mb-3">
-    <label for="exampleInputEmail1" class="form-label">Name</label>
-    <input type="text" class="form-control"  name="name">
-    
-  <div class="mb-3">
-    <label for="exampleInputEmail1" class="form-label">Email address</label>
-    <input type="email" class="form-control" name="email">
-    
-  </div>
-  <div class="mb-3">
-    <label for="exampleInputPassword1" class="form-label">Password</label>
-    <input type="password" class="form-control" name="password">
-  </div>
-  <div class="mb-3">
-    <label for="exampleInputPassword1" class="form-label">Confrim Password</label>
-    <input type="password" class="form-control" name="cofrim-password">
-  </div>
-  
-  
-  <button type="submit" class="btn btn-primary">Register</button>
-    <a href="{{ route('auth.login') }}">Login here</a>
+@section('title', 'Register')
 
-</form>
-   
-</body>
-</html>
+@section('content')
+    <div>
+        <p class="guest-kicker">PDT Portal</p>
+        <h1 class="guest-title">បង្កើតគណនីថ្មី</h1>
+        <p class="guest-subtitle">
+            ទំព័រនេះត្រូវបានរៀបចំរួចសម្រាប់ dark mode ប៉ុន្តែមុខងារចុះឈ្មោះមិនទាន់ត្រូវបានកំណត់ route នៅក្នុងប្រព័ន្ធនេះនៅឡើយទេ។
+        </p>
+    </div>
+
+    <form class="guest-form" action="{{ Route::has('register') ? route('register') : '#' }}" method="POST">
+        @csrf
+
+        <div class="guest-field">
+            <label for="register_name">Name</label>
+            <input id="register_name" type="text" name="name" placeholder="Enter your name">
+        </div>
+
+        <div class="guest-field">
+            <label for="register_email">Email address</label>
+            <input id="register_email" type="email" name="email" placeholder="example@email.com">
+        </div>
+
+        <div class="guest-field">
+            <label for="register_password">Password</label>
+            <input id="register_password" type="password" name="password" placeholder="Create a password">
+        </div>
+
+        <div class="guest-field">
+            <label for="register_password_confirmation">Confirm Password</label>
+            <input id="register_password_confirmation" type="password" name="password_confirmation" placeholder="Confirm your password">
+        </div>
+
+        <button type="submit" class="app-button app-button--primary w-full" {{ Route::has('register') ? '' : 'disabled' }}>
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Register</span>
+        </button>
+    </form>
+
+    <p class="guest-footer">
+        មានគណនីរួចហើយ? <a href="{{ route('login') }}">Login here</a>
+    </p>
+@endsection
