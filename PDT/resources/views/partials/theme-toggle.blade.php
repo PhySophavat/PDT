@@ -1,4 +1,6 @@
-@php($toggleClass = $toggleClass ?? '')
+@php
+    $toggleClass = $toggleClass ?? '';
+@endphp
 
 <button type="button" class="theme-toggle {{ $toggleClass }}" data-theme-toggle aria-label="Switch theme">
     <span class="theme-toggle__icon">

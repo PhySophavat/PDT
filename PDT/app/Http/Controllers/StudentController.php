@@ -10,11 +10,23 @@ use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
 {
+    private function ensureCanViewStudents(): void
+    {
+        abort_unless(auth()->user()?->canViewStudents(), 403, 'Unauthorized action.');
+    }
+
+    private function ensureCanManageStudents(): void
+    {
+        abort_unless(auth()->user()?->canManageStudents(), 403, 'Unauthorized action.');
+    }
+
     /**
      * Display a listing of students.
      */
     public function index()
     {
+        $this->ensureCanViewStudents();
+
         $students = Student::with('user')->get();
         return view('student.index', compact('students'));
     }
@@ -24,6 +36,8 @@ class StudentController extends Controller
      */
     public function create()
     {
+        $this->ensureCanManageStudents();
+
         return view('student.create');
     }
 
@@ -32,6 +46,8 @@ class StudentController extends Controller
      */
     public function store(Request $request)
     {
+        $this->ensureCanManageStudents();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -90,6 +106,8 @@ class StudentController extends Controller
      */
     public function edit(Student $student)
     {
+        $this->ensureCanManageStudents();
+
         return view('student.edit', compact('student'));
     }
 
@@ -98,6 +116,8 @@ class StudentController extends Controller
      */
     public function update(Request $request, Student $student)
     {
+        $this->ensureCanManageStudents();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $student->user_id,
@@ -152,6 +172,8 @@ class StudentController extends Controller
      */
     public function destroy(Student $student)
     {
+        $this->ensureCanManageStudents();
+
         $student->user->delete();
         $student->delete();
         return redirect()->route('students.index')->with('success', 'Student deleted successfully!');

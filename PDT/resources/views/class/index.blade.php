@@ -2,6 +2,9 @@
 
 @section('content')
 @include('partials.class-access-tile-styles')
+@php
+    $currentUser = Auth::user();
+@endphp
 
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold px-4 py-2 border-b font-medium mb-10 text-gray-900">បញ្ជីថ្នាក់</h1>
@@ -15,19 +18,7 @@
                     @foreach ($sections as $section)
                         @php
                             $className = $grade . $section;
-                            $permissionName = 'class-' . $className;
-
-                            $isAssignedTeacher = false;
-                            if (Auth::user()->teacher && Auth::user()->teacher->class_assigned) {
-                                $assignedClasses = array_map('trim', explode(',', Auth::user()->teacher->class_assigned));
-                                $isAssignedTeacher = in_array($className, $assignedClasses);
-                            }
-
-                            $hasPermission = Auth::user()->hasPermission($permissionName)
-                                || Auth::user()->hasPermission('view-results')
-                                || Auth::user()->hasPermission('view-scores')
-                                || Auth::user()->hasRole('admin')
-                                || $isAssignedTeacher;
+                            $hasPermission = $currentUser->canAccessClass($className);
                         @endphp
 
                         @if ($hasPermission)

@@ -11,11 +11,18 @@ use Illuminate\Support\Facades\Hash;
 
 class TeacherController extends Controller
 {
+    private function ensureCanManageTeachers(): void
+    {
+        abort_unless(auth()->user()?->canManageTeachers(), 403, 'Unauthorized action.');
+    }
+
     /**
      * Display a listing of teachers.
      */
     public function index()
     {
+        $this->ensureCanManageTeachers();
+
         $teachers = Teacher::with('user')->get();
         return view('teacher.index', compact('teachers'));
     }
@@ -25,6 +32,8 @@ class TeacherController extends Controller
      */
     public function create()
     {
+        $this->ensureCanManageTeachers();
+
         return view('teacher.create');
     }
 
@@ -33,6 +42,8 @@ class TeacherController extends Controller
      */
     public function store(Request $request)
     {
+        $this->ensureCanManageTeachers();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -72,6 +83,8 @@ class TeacherController extends Controller
      */
     public function edit(Teacher $teacher)
     {
+        $this->ensureCanManageTeachers();
+
         return view('teacher.edit', compact('teacher'));
     }
 
@@ -80,6 +93,8 @@ class TeacherController extends Controller
      */
     public function update(Request $request, Teacher $teacher)
     {
+        $this->ensureCanManageTeachers();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $teacher->user->id,
@@ -116,6 +131,8 @@ class TeacherController extends Controller
      */
     public function destroy(Teacher $teacher)
     {
+        $this->ensureCanManageTeachers();
+
         $teacher->user->delete(); // delete user also
         $teacher->delete();
 
@@ -127,6 +144,8 @@ class TeacherController extends Controller
      */
     public function editPermissions($userId)
     {
+        $this->ensureCanManageTeachers();
+
         $user = User::with('permissions')->findOrFail($userId);
         
         // Get all available permissions
@@ -143,6 +162,8 @@ class TeacherController extends Controller
      */
     public function updatePermissions(Request $request, $userId)
     {
+        $this->ensureCanManageTeachers();
+
         $user = User::findOrFail($userId);
         
         // Sync permissions (this will add new and remove unchecked ones)

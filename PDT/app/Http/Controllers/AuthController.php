@@ -67,6 +67,22 @@ class AuthController extends Controller
             return route('result.index');
         }
 
+        if ($user->canManageTeachers()) {
+            return route('teacher.index');
+        }
+
+        if ($user->canViewStudents()) {
+            return route('students.index');
+        }
+
+        if ($user->canAccessClassesOverview()) {
+            return route('class.index');
+        }
+
+        if ($user->canAccessResultsOverview()) {
+            return route('result.index');
+        }
+
         return route('auth.profile');
     }
 }

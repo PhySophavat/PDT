@@ -4,6 +4,7 @@
 
 @section('content')
 @php
+    $currentUser = Auth::user();
     $scoreFields = [
         ['field' => 'math', 'label' => 'Math'],
         ['field' => 'khmer', 'label' => 'Khmer'],
@@ -66,12 +67,14 @@
                 </div>
 
                 <div class="flex flex-col gap-3 sm:flex-row">
-                    <a href="{{ route('subject.create', $student->id) }}" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-700">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                        <span>Open Score Form</span>
-                    </a>
+                    @if($currentUser->canManageScores() && $currentUser->canAccessClass((string) $student->grade))
+                        <a href="{{ route('subject.create', $student->id) }}" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-700">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                            <span>Open Score Form</span>
+                        </a>
+                    @endif
 
-                    @if(Auth::user()->hasRole('admin'))
+                    @if($currentUser->hasRole('admin'))
                         <form action="{{ route('subject.destroy', $subject->id) }}" method="POST" onsubmit="return confirm('Delete this score record?')">
                             @csrf
                             @method('DELETE')

@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $currentUser = Auth::user();
+@endphp
 <div class="container mx-auto p-6 bg-white rounded-lg shadow-md">
     <div class="bg-white ">
         
@@ -10,7 +13,7 @@
                 <i class="bi bi-people-fill text-blue-600"></i>
                 បញ្ជីសិស្សថ្នាក់ {{ $className }}
             </h2>
-            @if(Auth::user()->hasRole('admin'))
+            @if($currentUser->canManageStudents())
             <a href="{{ route('students.create') }}" 
                class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 transition font-semibold">
                 <i class="bi bi-plus-circle"></i>
@@ -40,14 +43,14 @@
                             <td class="py-3 px-4 text-gray-700">{{ $student->grade }}</td>
                             <td class="py-3 px-4 text-center">
                                 <div class="flex flex-wrap justify-center gap-2">
-                                    @if(Auth::user()->hasPermission('add-scores') || Auth::user()->hasRole('teacher') || Auth::user()->hasRole('admin'))
+                                    @if($currentUser->canManageScores())
                                         <a href="{{ route('subject.create', $student->id) }}" 
                                            class="text-blue-600 font-medium hover:underline mr2">
                                             បញ្ជូលពិន្ទុ
                                         </a>
                                     @endif
 
-                                    @if(Auth::user()->hasRole('admin'))
+                                    @if($currentUser->canManageStudents())
                                         <a href="{{ route('students.edit', $student) }}" 
                                            class="text-green-600 font-medium hover:underline mr2">
                                            កែប្រែ

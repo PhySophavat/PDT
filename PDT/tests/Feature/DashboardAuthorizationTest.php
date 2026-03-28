@@ -83,4 +83,32 @@ class DashboardAuthorizationTest extends TestCase
         $this->assertTrue($controller->exposedShouldForgetIntendedUrl($teacher, route('dashboard')));
         $this->assertSame(route('class.index'), $controller->exposedDefaultRedirectPath($teacher));
     }
+
+    public function test_direct_permission_redirect_falls_back_to_capability_routes(): void
+    {
+        $manager = new class([
+            'name' => 'Manager User',
+            'email' => 'manager@example.com',
+            'password' => 'secret',
+        ]) extends User {
+            public function hasRole($role)
+            {
+                return false;
+            }
+
+            public function canManageTeachers(): bool
+            {
+                return true;
+            }
+        };
+
+        $controller = new class extends AuthController {
+            public function exposedDefaultRedirectPath(User $user): string
+            {
+                return $this->defaultRedirectPath($user);
+            }
+        };
+
+        $this->assertSame(route('teacher.index'), $controller->exposedDefaultRedirectPath($manager));
+    }
 }

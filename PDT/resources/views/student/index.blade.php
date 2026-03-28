@@ -1,13 +1,16 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $currentUser = Auth::user();
+@endphp
 <div class="container mx-auto p-6 bg-white rounded-lg shadow-md">
     <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800 ">
             គ្រប់គ្រងសិស្ស
         </h1>
 
-        @if(Auth::user()->hasRole('admin'))
+        @if($currentUser->canManageStudents())
             <a href="{{ route('student.create') }}" 
                class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 transition font-semibold">
                 + បន្ថែមសិស្ស
@@ -45,21 +48,21 @@
                         <td class="px-4 py-2 border-b">{{ $student->phone ?? '-' }}</td>
                         <td class="px-4 py-2 border-b">
                             <div class="flex flex-wrap justify-center gap-2">
-                                @if(Auth::user()->hasRole('admin'))
+                                @if($currentUser->hasRole('admin'))
                                     <a href="{{ route('user.permissions.edit', $student->user->id) }}" 
                                        class=" text-sky-600 font-medium hover:underline mr2">
                                         ផ្តល់សិទ្ធិ
                                     </a>
                                 @endif
 
-                                @if(Auth::user()->hasPermission('add-scores') || Auth::user()->hasRole('teacher') || Auth::user()->hasRole('admin'))
+                                @if($currentUser->canManageScores() && $currentUser->canAccessClass((string) $student->grade))
                                     <a href="{{ route('subject.create', $student->id) }}" 
                                        class="text-blue-600 font-medium hover:underline mr2">
                                         បញ្ចូលពិន្ទុ
                                     </a>
                                 @endif
 
-                                @if(Auth::user()->hasRole('admin'))
+                                @if($currentUser->canManageStudents())
                                     <a href="{{ route('student.edit', $student) }}" 
                                        class=" text-green-600 font-medium hover:underline mr2">
                                         កែប្រែ

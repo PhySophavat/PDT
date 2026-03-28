@@ -9,19 +9,31 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-   public function up(): void
-{
-    Schema::table('teachers', function (Blueprint $table) {
-        $table->dropForeign(['user_id']); // drop FK constraint first
-        $table->dropColumn('user_id');    // then drop the column
-    });
-}
+    public function up(): void
+    {
+        if (!Schema::hasColumn('teachers', 'user_id')) {
+            return;
+        }
 
-public function down(): void
-{
-    Schema::table('teachers', function (Blueprint $table) {
-        $table->foreignId('user_id')->constrained()->onDelete('cascade');
-    });
-}
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
+        Schema::table('teachers', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+            $table->dropColumn('user_id');
+        });
+    }
+
+    public function down(): void
+    {
+        if (Schema::hasColumn('teachers', 'user_id')) {
+            return;
+        }
+
+        Schema::table('teachers', function (Blueprint $table) {
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+        });
+    }
 
 };

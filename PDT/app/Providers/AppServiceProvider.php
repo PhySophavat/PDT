@@ -41,10 +41,15 @@ class AppServiceProvider extends ServiceProvider
         $menuItems = require database_path('seeders/sidebar_menu.php');
 
         return array_values(array_filter($menuItems, function (array $item) use ($user): bool {
+            $ability = $item['ability'] ?? null;
             $roles = $item['roles'] ?? [];
             $permissions = $item['permissions'] ?? [];
 
-            if ($roles === [] && $permissions === []) {
+            if ($roles === [] && $permissions === [] && !$ability) {
+                return true;
+            }
+
+            if (is_string($ability) && method_exists($user, $ability) && (bool) $user->{$ability}()) {
                 return true;
             }
 

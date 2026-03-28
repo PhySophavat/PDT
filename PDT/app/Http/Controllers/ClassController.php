@@ -2,11 +2,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ClassController extends Controller
 {
     public function index()
     {
+        abort_unless(Auth::user()?->canAccessClassesOverview(), 403, 'Unauthorized action.');
+
        
         $grades = [
             7 => ['A','B','C','D','E','F','G','H'],
@@ -22,6 +25,8 @@ class ClassController extends Controller
 
    public function show($className)
 {
+    abort_unless(Auth::user()?->canAccessClass($className), 403, 'Unauthorized action.');
+
   
     $students = \App\Models\Student::with('user')
         ->where('grade', $className)
