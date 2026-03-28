@@ -173,38 +173,41 @@
         display: flex;
         min-height: 100vh;
         flex-direction: column;
-        gap: 1.25rem;
-        padding: 1rem;
+        gap: 0;
+        padding: 0;
     }
 
     @media (min-width: 1024px) {
         .app-shell {
             flex-direction: row;
             align-items: stretch;
-            padding: 1.5rem;
+            padding: 0;
+            column-gap: 14px;
         }
     }
 
     .app-sidebar {
         width: 100%;
         border: 1px solid var(--border);
-        border-radius: 28px;
+        border-radius: 0;
         background: color-mix(in srgb, var(--surface-strong) 84%, transparent);
-        box-shadow: var(--shadow-lg);
+        box-shadow: none;
         backdrop-filter: blur(18px);
         padding: 1.25rem;
         display: flex;
         flex-direction: column;
         gap: 1rem;
+        margin: 0;
+        min-height: 100vh;
     }
 
     @media (min-width: 1024px) {
         .app-sidebar {
             position: sticky;
-            top: 1.5rem;
+            top: 0;
             width: 19rem;
-            min-height: calc(100vh - 3rem);
-            max-height: calc(100vh - 3rem);
+            min-height: 100vh;
+            max-height: 100vh;
         }
     }
 
@@ -513,6 +516,7 @@
         display: flex;
         flex-direction: column;
         gap: 1rem;
+        background: color-mix(in srgb, var(--surface-strong) 84%, transparent);
     }
 
     .app-main__header {
@@ -564,19 +568,25 @@
 
     .app-content {
         flex: 1;
-        border: 1px solid var(--border);
-        border-radius: 28px;
-        padding: 1.2rem;
-        background: color-mix(in srgb, var(--surface-strong) 70%, transparent);
-        box-shadow: var(--shadow-lg);
-        backdrop-filter: blur(18px);
+        border: none;
+        border-radius: 0;
+        padding: 20px;
+        background: transparent;
+        box-shadow: none;
+        backdrop-filter: none;
         overflow: hidden;
     }
 
     @media (min-width: 1024px) {
         .app-content {
-            padding: 1.5rem;
+            padding: 20px;
         }
+    }
+
+    .app-content .container {
+        width: 100%;
+        max-width: none !important;
+        margin: 0 !important;
     }
 
     .app-content .container,

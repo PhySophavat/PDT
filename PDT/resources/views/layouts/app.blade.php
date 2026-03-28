@@ -13,12 +13,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-  <title>@yield('title', 'Dashboard')</title>
+  <title>@yield('title', 'PDT')</title>
   @include('partials.theme-head')
 </head>
 @php
-    $pageTitle = trim($__env->yieldContent('page_title', $__env->yieldContent('title', 'Dashboard')));
+    $pageTitle = trim($__env->yieldContent('page_title'));
     $pageSubtitle = trim($__env->yieldContent('page_subtitle'));
+    $hasPageHeader = $pageTitle !== '' || $pageSubtitle !== '' || $__env->hasSection('page_actions');
 @endphp
 <body>
   <div class="app-shell">
@@ -30,8 +31,7 @@
               <i class="fa-solid fa-layer-group"></i>
             </div>
             <div class="workspace-dropdown__body">
-              <p class="workspace-dropdown__label">PDT Workspace</p>
-              <h2 class="workspace-dropdown__title">PDT Workspace</h2>
+              <h2 class="workspace-dropdown__title">ទំព័រដើម</h2>
               <p class="workspace-dropdown__meta">School Management</p>
             </div>
           </div>
@@ -50,7 +50,7 @@
 
           <a href="{{ route('dashboard') }}" class="workspace-dropdown__link">
             <i class="fa-solid fa-house"></i>
-            <span>PDT Workspace</span>
+            <span>ទំព័រដើម</span>
           </a>
 
           <a href="{{ route('auth.profile') }}" class="workspace-dropdown__link">
@@ -93,21 +93,24 @@
     </aside>
 
     <div class="app-main">
-      <header class="app-main__header">
-        <div>
-          <p class="app-main__eyebrow">PDT Workspace</p>
-          <h1 class="app-main__title">{{ $pageTitle !== '' ? $pageTitle : 'Dashboard' }}</h1>
-          @if ($pageSubtitle !== '')
-            <p class="app-main__subtitle">{{ $pageSubtitle }}</p>
-          @endif
-        </div>
-
-        @hasSection('page_actions')
-          <div class="app-main__actions">
-            @yield('page_actions')
+      @if ($hasPageHeader)
+        <header class="app-main__header">
+          <div>
+            @if ($pageTitle !== '')
+              <h1 class="app-main__title">{{ $pageTitle }}</h1>
+            @endif
+            @if ($pageSubtitle !== '')
+              <p class="app-main__subtitle">{{ $pageSubtitle }}</p>
+            @endif
           </div>
-        @endif
-      </header>
+
+          @hasSection('page_actions')
+            <div class="app-main__actions">
+              @yield('page_actions')
+            </div>
+          @endif
+        </header>
+      @endif
 
       <main class="app-content">
         @yield('content')

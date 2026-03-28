@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard')
-@section('page_title', 'ផ្ទាំងគ្រប់គ្រងប្រព័ន្ធ')
+@section('title', 'ទំព័រដើម')
+@section('page_title', 'ទំព័រដើម')
 @section('page_subtitle', 'មើលស្ថានភាពទូទៅនៃអ្នកប្រើប្រាស់ សិស្ស និងគ្រូបង្រៀនក្នុងប្រព័ន្ធ។')
 @section('page_actions')
     <a
