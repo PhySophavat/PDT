@@ -82,50 +82,51 @@ Route::put('/users/{user}/permissions', [TeacherController::class, 'updatePermis
 
 // use App\Http\Controllers\UserPermissionController;
 
-Route::prefix('users')->group(function () {
+Route::prefix('users')->middleware('protect.route')->group(function () {
     Route::get('{user}/permissions', [UserPermissionController::class, 'edit'])->name('user.permissions.edit');
     Route::put('{user}/permissions', [UserPermissionController::class, 'update'])->name('user.permissions.update');
 });
 
 // Include your class routesuse App\Http\Controllers\ClassController;
 
-Route::get('/class/{name}', [ClassController::class, 'show'])->name('class.show');
+Route::get('/class/{name}', [ClassController::class, 'show'])->middleware('protect.route')->name('class.show');
 
 require __DIR__.'/class.php';
 ///permission teacher
 Route::get('users/{user}/permissions', [UserPermissionController::class, 'edit'])
+     ->middleware('protect.route')
      ->name('user.permissions.edit');
 
 Route::put('users/{user}/permissions', [UserPermissionController::class, 'update'])
+     ->middleware('protect.route')
      ->name('user.permissions.update');
 
 /////rank
 use App\Http\Controllers\RankController;
-Route::get('/rank/{className}', [RankController::class, 'show'])->name('rank.index');
+Route::get('/rank/{className}', [RankController::class, 'show'])->middleware('protect.route')->name('rank.index');
 
 
-Route::get('/rank/{className}', [RankController::class, 'index'])->name('rank.index');
+Route::get('/rank/{className}', [RankController::class, 'index'])->middleware('protect.route')->name('rank.index');
 
 // use App\Http\Controllers\ResultController;
 
-Route::get('/result', [ResultController::class, 'index'])->name('result.index');
-Route::get('/result/{className}', [ResultController::class, 'show'])->name('result.show');
+Route::get('/result', [ResultController::class, 'index'])->middleware('protect.route')->name('result.index');
+Route::get('/result/{className}', [ResultController::class, 'show'])->middleware('protect.route')->name('result.show');
 
 
 
-Route::get('/classes', [ClassController::class, 'index'])->name('classes.index');
-Route::get('/classes/{class}', [ClassController::class, 'show'])->name('classes.show');
+Route::get('/classes', [ClassController::class, 'index'])->middleware('protect.route')->name('classes.index');
+Route::get('/classes/{class}', [ClassController::class, 'show'])->middleware('protect.route')->name('classes.show');
 
 
 
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('login'); 
 Route::post('/login', [AuthController::class, 'login']);                       
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');      
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('protect.route')->name('logout');      
 
 Route::middleware(['auth'])->group(function () {
 
 Route::get('/profile',[DashboardController::class, 'profile'])->name('auth.profile');
-Route::get('/dashboard',[DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
 ////teacher
 
 Route::get('/teacher', [TeacherController::class, 'index'])->name('teacher.index');
@@ -177,7 +178,7 @@ Route::get('/export-users', [UserController::class, 'exportAllUsers']);
 
 Route::get('/export-all', [ExportController::class, 'exportAll']);
 
-Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'dashboard'])->middleware('role:admin')->name('dashboard');
 
 // use Illuminate\Support\Facades\Http;
 // use Illuminate\Support\Facades\Route;

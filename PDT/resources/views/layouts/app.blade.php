@@ -20,6 +20,7 @@
     $pageTitle = trim($__env->yieldContent('page_title'));
     $pageSubtitle = trim($__env->yieldContent('page_subtitle'));
     $hasPageHeader = $pageTitle !== '' || $pageSubtitle !== '' || $__env->hasSection('page_actions');
+    $hidePageHeader = request()->routeIs('dashboard');
 @endphp
 <body>
   <div class="app-shell">
@@ -48,11 +49,13 @@
             </div>
           </div>
 
+          @if (Auth::user()->hasRole('admin'))
           <a href="{{ route('dashboard') }}" class="workspace-dropdown__link">
             <i class="fa-solid fa-house"></i>
             <span>ទំព័រដើម</span>
           </a>
 
+          @endif
           <a href="{{ route('auth.profile') }}" class="workspace-dropdown__link">
             <i class="fa-solid fa-id-badge"></i>
             <span>មើលប្រវត្តិរូប</span>
@@ -93,7 +96,7 @@
     </aside>
 
     <div class="app-main">
-      @if ($hasPageHeader)
+      @if ($hasPageHeader && ! $hidePageHeader)
         <header class="app-main__header">
           <div>
             @if ($pageTitle !== '')

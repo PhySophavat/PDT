@@ -371,6 +371,10 @@
         padding: 0 1rem 1rem;
     }
 
+    .workspace-dropdown__summary + .workspace-dropdown__menu {
+        display: none;
+    }
+
     .workspace-dropdown__account {
         display: flex;
         align-items: center;
@@ -665,12 +669,12 @@
         background: color-mix(in srgb, var(--surface-muted) 82%, var(--accent) 18%) !important;
     }
 
-    .app-content input,
+    .app-content input:not([type='checkbox']):not([type='radio']),
     .app-content select,
     .app-content textarea,
     .app-content .form-control,
     .app-content .form-select,
-    .guest-card input,
+    .guest-card input:not([type='checkbox']):not([type='radio']),
     .guest-card select,
     .guest-card textarea {
         width: 100%;
@@ -679,6 +683,16 @@
         background: color-mix(in srgb, var(--surface-muted) 94%, transparent) !important;
         color: var(--text) !important;
         box-shadow: none !important;
+    }
+
+    .app-content input[type='checkbox'],
+    .app-content input[type='radio'],
+    .guest-card input[type='checkbox'],
+    .guest-card input[type='radio'] {
+        width: auto !important;
+        background: initial !important;
+        border-radius: 0.5rem !important;
+        accent-color: var(--accent-strong);
     }
 
     .app-content input::placeholder,

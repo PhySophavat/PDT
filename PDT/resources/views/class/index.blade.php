@@ -1,5 +1,7 @@
 @extends('layouts.app')
+
 @section('content')
+@include('partials.class-access-tile-styles')
 
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold px-4 py-2 border-b font-medium mb-10 text-gray-900">បញ្ជីថ្នាក់</h1>
@@ -8,7 +10,7 @@
         @foreach ($grades as $grade => $sections)
             <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-all">
                 <h2 class="text-lg font-semibold text-center mb-3 text-blue-600">ថ្នាក់ {{ $grade }}</h2>
-                
+
                 <div class="flex flex-col gap-2">
                     @foreach ($sections as $section)
                         @php
@@ -21,21 +23,30 @@
                                 $isAssignedTeacher = in_array($className, $assignedClasses);
                             }
 
-                            $hasPermission = Auth::user()->hasPermission($permissionName) 
-                                          || Auth::user()->hasPermission('view-results')
-                                          || Auth::user()->hasPermission('view-scores')
-                                          || Auth::user()->hasRole('admin')
-                                          || $isAssignedTeacher;
+                            $hasPermission = Auth::user()->hasPermission($permissionName)
+                                || Auth::user()->hasPermission('view-results')
+                                || Auth::user()->hasPermission('view-scores')
+                                || Auth::user()->hasRole('admin')
+                                || $isAssignedTeacher;
                         @endphp
 
-                        @if($hasPermission)
-                            <a href="{{ route('class.show', $className) }}" 
-                               class="block rounded-lg border border-blue-200 text-blue-600 bg-blue-50 hover:bg-blue-100 hover:border-blue-300 text-center font-medium py-2 transition-all">
-                                {{ $className }}
+                        @if ($hasPermission)
+                            <a
+                                href="{{ route('class.show', $className) }}"
+                                class="class-access-tile class-access-tile--available rounded-lg border border-blue-200 text-blue-600 bg-blue-50 hover:bg-blue-100 hover:border-blue-300"
+                            >
+                                <span class="class-access-tile__label">{{ $className }}</span>
                             </a>
                         @else
-                            <div class="block rounded-lg border border-gray-200 bg-gray-50 text-gray-400 text-center font-medium py-2">
-                                {{ $className }}
+                            <div
+                                class="class-access-tile class-access-tile--locked rounded-lg border border-gray-200 bg-gray-50 text-gray-400"
+                                title="You do not have permission to access this class."
+                            >
+                                <span class="class-access-tile__label">{{ $className }}</span>
+                                <span class="class-access-tile__overlay text-amber-600">
+                                    <i class="bi bi-lock-fill"></i>
+                                    <span>គ្មានសិទ្ធិ</span>
+                                </span>
                             </div>
                         @endif
                     @endforeach
@@ -44,5 +55,4 @@
         @endforeach
     </div>
 </div>
-
 @endsection

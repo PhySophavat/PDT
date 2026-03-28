@@ -14,6 +14,19 @@ class User extends Authenticatable
     use Notifiable;
     //   use HasRoles;
 
+    private const SUBJECT_PERMISSION_MAP = [
+        'math' => 'subject-math',
+        'khmer' => 'subject-khmer',
+        'english' => 'subject-english',
+        'history' => 'subject-history',
+        'geography' => 'subject-geography',
+        'chemistry' => 'subject-chemistry',
+        'physics' => 'subject-physics',
+        'biology' => 'subject-biology',
+        'ethics' => 'subject-morality',
+        'sports' => 'subject-sport',
+    ];
+
     protected $fillable = [
         'name',
         'email',
@@ -138,6 +151,20 @@ class User extends Authenticatable
     }
 
     /**
+     * Check whether the user has any permission whose name starts with the given prefix.
+     */
+    public function hasPermissionPrefix(string $prefix): bool
+    {
+        if ($this->permissions()->where('name', 'like', $prefix.'%')->exists()) {
+            return true;
+        }
+
+        return $this->roles()->whereHas('permissions', function ($query) use ($prefix) {
+            $query->where('name', 'like', $prefix.'%');
+        })->exists();
+    }
+
+    /**
      * Check if user has any of the given permissions
      * 
      * @param array $permissions
@@ -188,6 +215,145 @@ class User extends Authenticatable
 
         // Remove duplicates
         return $permissions->unique('id');
+    }
+
+    /**
+     * Check whether the teacher profile is assigned to the given class.
+     */
+    public function hasAssignedClass(string $className): bool
+    {
+        if (!$this->teacher || !$this->teacher->class_assigned) {
+            return false;
+        }
+
+        $assignedClasses = array_map('trim', explode(',', $this->teacher->class_assigned));
+
+        return in_array($className, $assignedClasses, true);
+    }
+
+    /**
+     * Check whether the student profile belongs to the given class.
+     */
+    public function hasStudentGrade(string $className): bool
+    {
+        return (string) optional($this->student)->grade === $className;
+    }
+
+    /**
+     * Can the user manage teacher records?
+     */
+    public function canManageTeachers(): bool
+    {
+        return $this->hasRole('admin') || $this->hasPermission('manage-teacher');
+    }
+
+    /**
+     * Can the user access the student list?
+     */
+    public function canViewStudents(): bool
+    {
+        return $this->hasRole('admin')
+            || $this->hasPermission('view-student')
+            || $this->hasPermission('add-student');
+    }
+
+    /**
+     * Can the user create student records?
+     */
+    public function canManageStudents(): bool
+    {
+        return $this->hasRole('admin') || $this->hasPermission('add-student');
+    }
+
+    /**
+     * Can the user open score entry and edit score data?
+     */
+    public function canManageScores(): bool
+    {
+        return $this->hasRole('admin')
+            || $this->hasRole('teacher')
+            || $this->hasPermission('add-scores')
+            || $this->hasPermissionPrefix('subject-');
+    }
+
+    /**
+     * Can the user access class listing pages?
+     */
+    public function canAccessClassesOverview(): bool
+    {
+        return $this->hasRole('admin')
+            || $this->hasRole('teacher')
+            || $this->hasPermission('view-scores')
+            || $this->hasPermissionPrefix('class-');
+    }
+
+    /**
+     * Can the user access result listing pages?
+     */
+    public function canAccessResultsOverview(): bool
+    {
+        return $this->hasRole('admin')
+            || $this->hasRole('teacher')
+            || $this->hasRole('student')
+            || $this->hasPermission('view-scores')
+            || $this->hasPermissionPrefix('class-');
+    }
+
+    /**
+     * Can the user access a specific class page?
+     */
+    public function canAccessClass(string $className): bool
+    {
+        return $this->hasRole('admin')
+            || $this->hasPermission('view-scores')
+            || $this->hasPermission('class-'.$className)
+            || $this->hasAssignedClass($className);
+    }
+
+    /**
+     * Can the user access a specific class result page?
+     */
+    public function canAccessResultClass(string $className): bool
+    {
+        return $this->canAccessClass($className)
+            || $this->hasStudentGrade($className);
+    }
+
+    /**
+     * Can the user access the global score records area?
+     */
+    public function canViewAllScoreRecords(): bool
+    {
+        return $this->hasRole('admin')
+            || $this->hasRole('teacher')
+            || $this->hasPermission('view-scores');
+    }
+
+    /**
+     * Can the user edit a specific subject field on the score form?
+     */
+    public function canEditSubjectField(string $field): bool
+    {
+        if ($this->hasRole('admin')) {
+            return true;
+        }
+
+        $permission = self::SUBJECT_PERMISSION_MAP[$field] ?? null;
+
+        return $permission !== null && $this->hasPermission($permission);
+    }
+
+    /**
+     * Return the score fields the user is allowed to edit.
+     *
+     * @return array<int, string>
+     */
+    public function editableSubjectFields(): array
+    {
+        return array_values(array_filter(
+            array_keys(self::SUBJECT_PERMISSION_MAP),
+            fn (string $field): bool => $this->canEditSubjectField($field)
+        ));
     }
 
     /**

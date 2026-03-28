@@ -3,29 +3,8 @@
 @section('title', 'ទំព័រដើម')
 @section('page_title', 'ទំព័រដើម')
 @section('page_subtitle', 'មើលស្ថានភាពទូទៅនៃអ្នកប្រើប្រាស់ សិស្ស និងគ្រូបង្រៀនក្នុងប្រព័ន្ធ។')
-@section('page_actions')
-    <a
-        href="{{ route('auth.profile') }}"
-        class="hero-panel__icon-link"
-        title="{{ Auth::user()->name }} | {{ Auth::user()->email }}"
-        aria-label="{{ Auth::user()->name }} | {{ Auth::user()->email }}"
-    >
-        <i class="fa-solid fa-user"></i>
-    </a>
-
-    <button
-        type="button"
-        class="hero-panel__icon-button"
-        data-theme-toggle
-        aria-label="Switch theme"
-        title="Toggle dark mode"
-    >
-        <span class="theme-toggle__icon">
-            <i data-theme-icon class="fa-solid fa-moon"></i>
-        </span>
-        <span class="sr-only" data-theme-label>Dark mode</span>
-    </button>
-@endsection
+@section('page_title', '')
+@section('page_subtitle', '')
 
 @section('content')
 @php
@@ -42,6 +21,30 @@
                 <p class="hero-panel__copy">
                     ផ្ទាំងនេះបង្ហាញទិន្នន័យសំខាន់ៗដែលជួយឲ្យអ្នកតាមដានស្ថានភាពប្រព័ន្ធ និងចូលទៅកាន់មុខងារសំខាន់បានលឿន។
                 </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <a
+                    href="{{ route('auth.profile') }}"
+                    class="hero-panel__icon-link"
+                    title="{{ Auth::user()->name }} | {{ Auth::user()->email }}"
+                    aria-label="{{ Auth::user()->name }} | {{ Auth::user()->email }}"
+                >
+                    <i class="fa-solid fa-user"></i>
+                </a>
+
+                <button
+                    type="button"
+                    class="hero-panel__icon-button"
+                    data-theme-toggle
+                    aria-label="Switch theme"
+                    title="Toggle dark mode"
+                >
+                    <span class="theme-toggle__icon">
+                        <i data-theme-icon class="fa-solid fa-moon"></i>
+                    </span>
+                    <span class="sr-only" data-theme-label>Dark mode</span>
+                </button>
             </div>
         </div>
 

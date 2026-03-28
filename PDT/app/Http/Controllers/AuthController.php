@@ -22,7 +22,13 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
-            return redirect()->intended('/dashboard');
+            $request->session()->regenerate();
+
+            if ($this->shouldForgetIntendedUrl($request->user(), $request->session()->get('url.intended'))) {
+                $request->session()->forget('url.intended');
+            }
+
+            return redirect()->intended($this->defaultRedirectPath($request->user()));
         }
 
         return back()->with('error', 'Invalid credentials.');
@@ -34,5 +40,33 @@ class AuthController extends Controller
     {
         Auth::logout();
         return redirect()->route('login')->with('success', 'Logged out successfully.');
+    }
+
+    protected function shouldForgetIntendedUrl(User $user, ?string $intendedUrl): bool
+    {
+        if ($user->hasRole('admin')) {
+            return false;
+        }
+
+        $intendedPath = trim((string) parse_url((string) $intendedUrl, PHP_URL_PATH), '/');
+
+        return $intendedPath === 'dashboard';
+    }
+
+    protected function defaultRedirectPath(User $user): string
+    {
+        if ($user->hasRole('admin')) {
+            return route('dashboard');
+        }
+
+        if ($user->hasRole('teacher')) {
+            return route('class.index');
+        }
+
+        if ($user->hasRole('student')) {
+            return route('result.index');
+        }
+
+        return route('auth.profile');
     }
 }
