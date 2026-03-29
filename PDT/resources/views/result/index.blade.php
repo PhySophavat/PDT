@@ -6,7 +6,7 @@
     $currentUser = Auth::user();
 @endphp
 
-<div class="container mx-auto px-4 py-8">
+<div class="container app-content-shell--plain mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold px-4 py-2 border-b font-medium mb-10 text-gray-900">បញ្ជីលទ្ធផល</h1>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">

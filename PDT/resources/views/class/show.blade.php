@@ -3,9 +3,10 @@
 @section('content')
 @php
     $currentUser = Auth::user();
+    $canOpenScoreForm = $currentUser->canEditAnySubjectField();
 @endphp
-<div class="container mx-auto p-6 bg-white rounded-lg shadow-md">
-    <div class="bg-white ">
+<div class="container mx-auto p-6">
+    <div>
         
         {{-- Header --}}
         <div class="flex justify-between items-center mb-6">
@@ -43,7 +44,7 @@
                             <td class="py-3 px-4 text-gray-700">{{ $student->grade }}</td>
                             <td class="py-3 px-4 text-center">
                                 <div class="flex flex-wrap justify-center gap-2">
-                                    @if($currentUser->canManageScores())
+                                    @if($canOpenScoreForm)
                                         <a href="{{ route('subject.create', $student->id) }}" 
                                            class="text-blue-600 font-medium hover:underline mr2">
                                             បញ្ជូលពិន្ទុ

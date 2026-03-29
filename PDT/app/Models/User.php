@@ -151,6 +151,21 @@ class User extends Authenticatable
     }
 
     /**
+     * Check only direct user permissions, ignoring role permissions.
+     *
+     * @param string|array $permission
+     * @return bool
+     */
+    public function hasDirectPermission($permission)
+    {
+        if (is_array($permission)) {
+            return $this->permissions()->whereIn('name', $permission)->exists();
+        }
+
+        return $this->permissions()->where('name', $permission)->exists();
+    }
+
+    /**
      * Check whether the user has any permission whose name starts with the given prefix.
      */
     public function hasPermissionPrefix(string $prefix): bool
@@ -340,7 +355,19 @@ class User extends Authenticatable
 
         $permission = self::SUBJECT_PERMISSION_MAP[$field] ?? null;
 
-        return $permission !== null && $this->hasPermission($permission);
+        return $permission !== null && $this->hasDirectPermission($permission);
+    }
+
+    /**
+     * Determine whether the user can edit at least one subject score field.
+     */
+    public function canEditAnySubjectField(): bool
+    {
+        if ($this->hasRole('admin')) {
+            return true;
+        }
+
+        return $this->editableSubjectFields() !== [];
     }
 
     /**

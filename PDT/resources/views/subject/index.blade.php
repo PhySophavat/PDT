@@ -5,6 +5,7 @@
 @section('content')
 @php
     $currentUser = Auth::user();
+    $canOpenScoreForm = $currentUser->canEditAnySubjectField();
     $scoreFields = [
         ['field' => 'math', 'label' => 'Math'],
         ['field' => 'khmer', 'label' => 'Khmer'],
@@ -48,8 +49,12 @@
             $filledScores = collect($scoreFields)->filter(function ($item) use ($subject) {
                 return filled($subject->{$item['field']});
             });
+            $total = $filledScores->sum(fn ($item) => (float) $subject->{$item['field']});
+            $coefficient = $subject->coefficient && $subject->coefficient > 0
+                ? (float) $subject->coefficient
+                : max($filledScores->count(), 1);
             $average = $filledScores->count() > 0
-                ? round($filledScores->sum(fn ($item) => (float) $subject->{$item['field']}) / $filledScores->count(), 1)
+                ? round($total / $coefficient, 1)
                 : null;
         @endphp
 
@@ -62,12 +67,13 @@
                         <span class="rounded-full bg-slate-100 px-4 py-2">Grade: {{ $student->grade ?? 'N/A' }}</span>
                         <span class="rounded-full bg-slate-100 px-4 py-2">{{ $student->user->email ?? 'No email' }}</span>
                         <span class="rounded-full bg-slate-100 px-4 py-2">Filled: {{ $filledScores->count() }}/{{ count($scoreFields) }}</span>
+                        <span class="rounded-full bg-slate-100 px-4 py-2">Coefficient: {{ $coefficient }}</span>
                         <span class="rounded-full bg-slate-100 px-4 py-2">Average: {{ $average !== null ? $average : '--' }}</span>
                     </div>
                 </div>
 
                 <div class="flex flex-col gap-3 sm:flex-row">
-                    @if($currentUser->canManageScores() && $currentUser->canAccessClass((string) $student->grade))
+                    @if($canOpenScoreForm && $currentUser->canAccessClass((string) $student->grade))
                         <a href="{{ route('subject.create', $student->id) }}" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-700">
                             <i class="fa-solid fa-pen-to-square"></i>
                             <span>Open Score Form</span>

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Student;
+use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,15 +26,16 @@ class ResultController extends Controller
         return view('result.index', compact('grades'));
     }
 
-   public function show($className)
-{
-    abort_unless(Auth::user()?->canAccessResultClass($className), 403, 'Unauthorized action.');
+    public function show($className)
+    {
+        abort_unless(Auth::user()?->canAccessResultClass($className), 403, 'Unauthorized action.');
 
-    // Example: "7A", "9B", etc.
-    $students = \App\Models\Student::with('user')
-        ->where('grade', $className)
-        ->get();
+        $students = Student::with(['user', 'latestSubject'])
+            ->where('grade', $className)
+            ->get();
 
-    return view('result.show', compact('students', 'className'));
-}
+        $subjectLabels = Subject::scoreLabels();
+
+        return view('result.show', compact('students', 'className', 'subjectLabels'));
+    }
 }

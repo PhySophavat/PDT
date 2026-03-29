@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto p-6 bg-white rounded-lg shadow-md">
+<div class="container app-content-shell--plain mx-auto p-6">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-gray-800">គ្រប់គ្រងគ្រូបង្រៀន</h1>
         <a href="{{ route('teacher.create') }}" class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 transition font-semibold">

@@ -3,8 +3,9 @@
 @section('content')
 @php
     $currentUser = Auth::user();
+    $canOpenScoreForm = $currentUser->canEditAnySubjectField();
 @endphp
-<div class="container mx-auto p-6 bg-white rounded-lg shadow-md">
+<div class="container app-content-shell--plain mx-auto p-6">
     <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800 ">
             គ្រប់គ្រងសិស្ស
@@ -55,7 +56,7 @@
                                     </a>
                                 @endif
 
-                                @if($currentUser->canManageScores() && $currentUser->canAccessClass((string) $student->grade))
+                                @if($canOpenScoreForm && $currentUser->canAccessClass((string) $student->grade))
                                     <a href="{{ route('subject.create', $student->id) }}" 
                                        class="text-blue-600 font-medium hover:underline mr2">
                                         បញ្ចូលពិន្ទុ

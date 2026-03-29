@@ -26,9 +26,14 @@
   <div class="app-shell">
     <aside class="app-sidebar sidebar overflow-y-auto">
       <div class="workspace-dropdown">
-        <div class="workspace-dropdown__summary">
+        <button
+          type="button"
+          class="workspace-dropdown__summary workspace-dropdown__summary--theme"
+          data-theme-toggle
+          aria-label="Switch theme"
+        >
           <div class="workspace-dropdown__head">
-            <div class="sidebar-user__avatar">
+            <div class="workspace-dropdown__brand-mark">
               <i class="fa-solid fa-layer-group"></i>
             </div>
             <div class="workspace-dropdown__body">
@@ -36,7 +41,8 @@
               <p class="workspace-dropdown__meta">School Management</p>
             </div>
           </div>
-        </div>
+          <span class="sr-only" data-theme-label>Dark mode</span>
+        </button>
 
         <div class="workspace-dropdown__menu">
           <div class="workspace-dropdown__account">
@@ -60,13 +66,6 @@
             <i class="fa-solid fa-id-badge"></i>
             <span>មើលប្រវត្តិរូប</span>
           </a>
-
-          <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme">
-            <span class="theme-toggle__icon">
-              <i data-theme-icon class="fa-solid fa-moon"></i>
-            </span>
-            <span data-theme-label>Dark mode</span>
-          </button>
         </div>
       </div>
 

@@ -30,8 +30,12 @@ class SubjectController extends Controller
         $user = Auth::user();
         $student = Student::with('user', 'latestSubject')->findOrFail($studentId);
 
-        if (!$user || !$user->canManageScores() || !$user->canAccessClass((string) $student->grade)) {
-            abort(403, 'Unauthorized action.');
+        if (
+            !$user
+            || !$user->canAccessClass((string) $student->grade)
+            || !$user->canEditAnySubjectField()
+        ) {
+            abort(403, 'មិនមានសិទ្ធិចូលប្រើប្រាស់ទំព័រនេះទេ។');
         }
 
         return view('subject.create', compact('student'));
@@ -45,45 +49,76 @@ class SubjectController extends Controller
         $user = Auth::user();
         $student = Student::findOrFail($studentId);
 
-        if (!$user || !$user->canManageScores() || !$user->canAccessClass((string) $student->grade)) {
-            abort(403, 'Unauthorized action.');
+        if (
+            !$user
+            || !$user->canAccessClass((string) $student->grade)
+            || !$user->canEditAnySubjectField()
+        ) {
+            abort(403, 'មិនមានសិទ្ធិចូលប្រើប្រាស់ទំព័រនេះទេ។');
         }
 
-        $validated = $request->validate([
-            'math' => 'nullable|numeric|min:0|max:100',
-            'khmer' => 'nullable|numeric|min:0|max:100',
-            'english' => 'nullable|numeric|min:0|max:100',
-            'history' => 'nullable|numeric|min:0|max:100',
-            'geography' => 'nullable|numeric|min:0|max:100',
-            'chemistry' => 'nullable|numeric|min:0|max:100',
-            'physics' => 'nullable|numeric|min:0|max:100',
-            'biology' => 'nullable|numeric|min:0|max:100',
-            'ethics' => 'nullable|numeric|min:0|max:100',
-            'sports' => 'nullable|numeric|min:0|max:100',
-        ]);
+        $validated = $request->validate(
+            [
+                'math' => 'nullable|numeric|min:0|max:100',
+                'khmer' => 'nullable|numeric|min:0|max:100',
+                'english' => 'nullable|numeric|min:0|max:100',
+                'history' => 'nullable|numeric|min:0|max:100',
+                'geography' => 'nullable|numeric|min:0|max:100',
+                'chemistry' => 'nullable|numeric|min:0|max:100',
+                'physics' => 'nullable|numeric|min:0|max:100',
+                'biology' => 'nullable|numeric|min:0|max:100',
+                'ethics' => 'nullable|numeric|min:0|max:100',
+                'sports' => 'nullable|numeric|min:0|max:100',
+                'coefficient' => 'nullable|numeric|min:0.01|max:9999',
+                'coefficient_changed' => 'nullable|boolean',
+            ],
+            [
+                'coefficient.numeric' => 'មេគុណត្រូវតែជាលេខ។',
+                'coefficient.min' => 'មេគុណត្រូវតែធំជាង 0។',
+                'coefficient.max' => 'មេគុណធំពេកហើយ។',
+            ]
+        );
 
         $editableFields = $user->editableSubjectFields();
 
         if ($editableFields === []) {
-            return redirect()->back()->with('error', 'No subject permissions assigned to this user.');
+            return redirect()->back()->with('error', 'មិនទាន់មានសិទ្ធិមុខវិជ្ជាដែលអាចកែបានទេ។');
         }
 
+        $subject = Subject::firstOrNew(['student_id' => $studentId]);
         $dataToSave = [];
+
         foreach (self::SCORE_FIELDS as $field) {
             if (in_array($field, $editableFields, true)) {
                 $dataToSave[$field] = $validated[$field] ?? null;
             }
         }
 
-        $subject = Subject::firstOrNew(['student_id' => $studentId]);
+        $coefficientWasChanged = $request->boolean('coefficient_changed');
+        $existingCoefficient = ($subject->coefficient && $subject->coefficient > 0)
+            ? (float) $subject->coefficient
+            : 1.0;
+
+        if (!$subject->exists && !$coefficientWasChanged) {
+            $dataToSave['coefficient'] = $request->filled('coefficient')
+                ? (float) $validated['coefficient']
+                : 1.0;
+        } elseif ($coefficientWasChanged) {
+            $dataToSave['coefficient'] = $request->filled('coefficient')
+                ? (float) $validated['coefficient']
+                : 1.0;
+        } else {
+            $dataToSave['coefficient'] = $existingCoefficient;
+        }
+
         $wasRecentlyCreated = !$subject->exists;
         $subject->fill($dataToSave);
         $subject->student_id = $studentId;
         $subject->save();
 
         $message = $wasRecentlyCreated
-            ? 'áž–áž·áž“áŸ’áž‘áž»ážáŸ’ážšáž¼ážœáž”áž¶áž“ážšáž€áŸ’ážŸáž¶áž‘áž»áž€ážŠáŸ„áž™áž‡áŸ„áž‚áž‡áŸáž™!'
-            : 'áž–áž·áž“áŸ’áž‘áž»ážáŸ’ážšáž¼ážœáž”áž¶áž“áž€áŸ‚áž”áŸ’ážšáŸ‚ážŠáŸ„áž™áž‡áŸ„áž‚áž‡áŸáž™!';
+            ? 'បានរក្សាទុកពិន្ទុដោយជោគជ័យ។'
+            : 'បានកែប្រែពិន្ទុដោយជោគជ័យ។';
 
         return redirect()->route('subject.create', $studentId)
             ->with('success', $message);
@@ -97,7 +132,7 @@ class SubjectController extends Controller
         $user = Auth::user();
 
         if (!$user || !$user->canViewAllScoreRecords()) {
-            abort(403, 'Unauthorized action.');
+            abort(403, 'មិនមានសិទ្ធិចូលប្រើប្រាស់ទំព័រនេះទេ។');
         }
 
         $subjects = Subject::with('student.user')->get();
@@ -114,7 +149,7 @@ class SubjectController extends Controller
         $user = Auth::user();
 
         if (!$user || (!$user->canViewAllScoreRecords() && !$user->canAccessResultClass((string) $student->grade))) {
-            abort(403, 'Unauthorized action.');
+            abort(403, 'មិនមានសិទ្ធិចូលប្រើប្រាស់ទំព័រនេះទេ។');
         }
 
         return view('subject.show', compact('student'));
@@ -126,13 +161,14 @@ class SubjectController extends Controller
     public function destroy($subjectId)
     {
         $user = Auth::user();
+
         if (!$user || !$user->hasRole('admin')) {
-            abort(403, 'Unauthorized action.');
+            abort(403, 'មិនមានសិទ្ធិចូលប្រើប្រាស់ទំព័រនេះទេ।');
         }
 
         $subject = Subject::findOrFail($subjectId);
         $subject->delete();
 
-        return redirect()->back()->with('success', 'áž–áž·áž“áŸ’áž‘áž»աժáŸ’ážšáž¼ážœáž”áž¶áž“áž›áž»áž”ážŠáŸ„áž™áž‡áŸ„áž‚áž‡áŸáž™!');
+        return redirect()->back()->with('success', 'បានលុបកំណត់ត្រាពិន្ទុដោយជោគជ័យ។');
     }
 }

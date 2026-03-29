@@ -69,6 +69,10 @@
         --border: rgba(148, 163, 184, 0.28);
         --accent: #0891b2;
         --accent-strong: #0f766e;
+        --brand-mark-bg: linear-gradient(145deg, rgba(8, 145, 178, 0.22), rgba(15, 118, 110, 0.14));
+        --brand-mark-border: rgba(8, 145, 178, 0.14);
+        --brand-mark-color: #0f766e;
+        --brand-mark-shadow: 0 18px 32px rgba(8, 145, 178, 0.16);
         --success: #059669;
         --danger: #e11d48;
         --warning: #d97706;
@@ -90,6 +94,10 @@
         --border: rgba(148, 163, 184, 0.2);
         --accent: #22d3ee;
         --accent-strong: #14b8a6;
+        --brand-mark-bg: linear-gradient(145deg, rgba(34, 211, 238, 0.18), rgba(20, 184, 166, 0.24));
+        --brand-mark-border: rgba(34, 211, 238, 0.24);
+        --brand-mark-color: #67e8f9;
+        --brand-mark-shadow: 0 20px 36px rgba(8, 145, 178, 0.28);
         --success: #34d399;
         --danger: #fb7185;
         --warning: #fbbf24;
@@ -326,15 +334,51 @@
     .workspace-dropdown__summary {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 1rem;
         padding: 1rem;
+        width: 100%;
+        border: 0;
+        background: transparent;
+        text-align: left;
+    }
+
+    .workspace-dropdown__summary--theme {
+        cursor: pointer;
+    }
+
+    .workspace-dropdown__summary--theme:hover {
+        background: color-mix(in srgb, var(--surface-muted) 68%, transparent);
+    }
+
+    .workspace-dropdown__summary--theme:active {
+        transform: scale(0.995);
     }
 
     .workspace-dropdown__head {
         display: flex;
         align-items: center;
         gap: 1rem;
+        flex: 1 1 auto;
         min-width: 0;
+    }
+
+    .workspace-dropdown__brand-mark {
+        width: 4.3rem;
+        height: 4.3rem;
+        flex-shrink: 0;
+        display: inline-grid;
+        place-items: center;
+        border-radius: 1.35rem;
+        border: 1px solid var(--brand-mark-border);
+        background: var(--brand-mark-bg);
+        color: var(--brand-mark-color);
+        font-size: 1.55rem;
+        box-shadow: var(--brand-mark-shadow);
+    }
+
+    .workspace-dropdown__brand-mark i {
+        filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--brand-mark-color) 18%, transparent));
     }
 
     .workspace-dropdown__body {
@@ -514,6 +558,19 @@
         color: var(--accent-strong);
     }
 
+    .theme-toggle--icon-only {
+        width: 3rem;
+        height: 3rem;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .theme-toggle--icon-only .theme-toggle__icon {
+        width: 100%;
+        height: 100%;
+        background: transparent;
+    }
+
     .app-main {
         min-width: 0;
         flex: 1;
@@ -607,6 +664,12 @@
         border: 1px solid var(--border) !important;
         background: color-mix(in srgb, var(--surface) 95%, transparent) !important;
         box-shadow: var(--shadow-md) !important;
+    }
+
+    .app-content .app-content-shell--plain {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
     }
 
     .app-content .text-gray-900,

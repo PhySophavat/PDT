@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $currentUser = Auth::user();
+@endphp
 {{-- <div class="p-10">
     <h1 class="text-2xl font-bold mb-4">Scores for {{ $student->user->name ?? 'Unknown' }}</h1>
 
@@ -28,7 +31,9 @@
         </tbody>
     </table>
 
-    <a href="{{ route('subject.create', $student->id) }}" class="text-blue-600 hover:underline">Add/Edit Scores</a>
+    @if($currentUser && $currentUser->canEditAnySubjectField() && $currentUser->canAccessClass((string) $student->grade))
+        <a href="{{ route('subject.create', $student->id) }}" class="text-blue-600 hover:underline">Add/Edit Scores</a>
+    @endif
 </div> --}}
 <table class="min-w-full mt-4 border border-gray-300 bg-white rounded-lg">
     <thead class="bg-gray-100">
