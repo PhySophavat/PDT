@@ -23,6 +23,44 @@
             @endif
         </div>
 
+        <div class="mb-4">
+            <form method="GET" action="{{ route('class.show', $className) }}" class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <label for="class-search" class="text-sm font-medium text-gray-700">ស្វែងរកសិស្ស</label>
+                    <input
+                        id="class-search"
+                        type="search"
+                        name="search"
+                        value="{{ $search }}"
+                        placeholder="ស្វែងរកតាមឈ្មោះសិស្ស"
+                        class="w-full rounded border border-gray-300 px-3 py-2 text-sm sm:w-72"
+                    >
+                </div>
+                <div class="flex gap-2">
+                    <button
+                        type="submit"
+                        class="rounded bg-slate-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    >
+                        ស្វែងរក
+                    </button>
+                    @if($search !== '')
+                        <a
+                            href="{{ route('class.show', $className) }}"
+                            class="rounded border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                        >
+                            សម្អាត
+                        </a>
+                    @endif
+                </div>
+            </form>
+
+            @if($search !== '')
+                <p class="mt-3 text-sm text-gray-600">
+                    បង្ហាញសិស្ស <strong>{{ $students->count() }}</strong> នាក់ សម្រាប់ "<strong>{{ $search }}</strong>"។
+                </p>
+            @endif
+        </div>
+
         {{-- Table --}}
         <div class="overflow-x-auto border border-gray-200 " >
             <table class="min-w-full divide-y divide-gray-200">

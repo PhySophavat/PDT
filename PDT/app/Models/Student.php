@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Student extends Model
@@ -45,6 +46,19 @@ class Student extends Model
     public function latestSubject()
     {
         return $this->hasOne(Subject::class)->latestOfMany();
+    }
+
+    public function scopeSearchByUserName(Builder $query, ?string $search): Builder
+    {
+        $search = trim((string) $search);
+
+        if ($search === '') {
+            return $query;
+        }
+
+        return $query->whereHas('user', function (Builder $userQuery) use ($search) {
+            $userQuery->where('name', 'like', '%' . $search . '%');
+        });
     }
 
     /**

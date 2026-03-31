@@ -251,6 +251,198 @@ class DirectPermissionAccessTest extends TestCase
         $response->assertDontSee('February Student');
     }
 
+    public function test_result_page_can_search_students_by_name(): void
+    {
+        $user = User::create([
+            'name' => 'Search Viewer',
+            'email' => 'search-viewer@example.com',
+            'password' => 'password',
+        ]);
+
+        $classPermission = Permission::create([
+            'name' => 'class-7A',
+            'display_name' => 'Class 7A',
+        ]);
+        $user->permissions()->attach($classPermission);
+
+        $matchingUser = User::create([
+            'name' => 'Sok Dara',
+            'email' => 'sok-dara@example.com',
+            'password' => 'password',
+        ]);
+        $matchingStudent = Student::create([
+            'user_id' => $matchingUser->id,
+            'gender' => 'female',
+            'grade' => '7A',
+        ]);
+        Subject::create([
+            'student_id' => $matchingStudent->id,
+            'math' => 10,
+            'coefficient' => 1,
+        ]);
+
+        $hiddenUser = User::create([
+            'name' => 'Bopha Chan',
+            'email' => 'bopha-chan@example.com',
+            'password' => 'password',
+        ]);
+        $hiddenStudent = Student::create([
+            'user_id' => $hiddenUser->id,
+            'gender' => 'male',
+            'grade' => '7A',
+        ]);
+        Subject::create([
+            'student_id' => $hiddenStudent->id,
+            'math' => 20,
+            'coefficient' => 1,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('result.show', ['className' => '7A', 'search' => 'dara']));
+
+        $response->assertOk();
+        $response->assertSee('Sok Dara');
+        $response->assertDontSee('Bopha Chan');
+    }
+
+    public function test_rank_page_can_search_students_by_name(): void
+    {
+        $user = User::create([
+            'name' => 'Rank Search Viewer',
+            'email' => 'rank-search-viewer@example.com',
+            'password' => 'password',
+        ]);
+
+        $classPermission = Permission::create([
+            'name' => 'class-7A',
+            'display_name' => 'Class 7A',
+        ]);
+        $user->permissions()->attach($classPermission);
+
+        $matchingUser = User::create([
+            'name' => 'Nita Search',
+            'email' => 'nita-search@example.com',
+            'password' => 'password',
+        ]);
+        $matchingStudent = Student::create([
+            'user_id' => $matchingUser->id,
+            'gender' => 'female',
+            'grade' => '7A',
+        ]);
+        Subject::create([
+            'student_id' => $matchingStudent->id,
+            'math' => 90,
+            'coefficient' => 1,
+        ]);
+
+        $hiddenUser = User::create([
+            'name' => 'Vanna Hidden',
+            'email' => 'vanna-hidden@example.com',
+            'password' => 'password',
+        ]);
+        $hiddenStudent = Student::create([
+            'user_id' => $hiddenUser->id,
+            'gender' => 'male',
+            'grade' => '7A',
+        ]);
+        Subject::create([
+            'student_id' => $hiddenStudent->id,
+            'math' => 50,
+            'coefficient' => 1,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('rank.index', ['className' => '7A', 'search' => 'nita']));
+
+        $response->assertOk();
+        $response->assertSee('Nita Search');
+        $response->assertDontSee('Vanna Hidden');
+    }
+
+    public function test_class_page_can_search_students_by_name(): void
+    {
+        $user = User::create([
+            'name' => 'Class Search Viewer',
+            'email' => 'class-search-viewer@example.com',
+            'password' => 'password',
+        ]);
+
+        $classPermission = Permission::create([
+            'name' => 'class-7A',
+            'display_name' => 'Class 7A',
+        ]);
+        $user->permissions()->attach($classPermission);
+
+        $matchingUser = User::create([
+            'name' => 'Malis Search',
+            'email' => 'malis-search@example.com',
+            'password' => 'password',
+        ]);
+        Student::create([
+            'user_id' => $matchingUser->id,
+            'gender' => 'female',
+            'grade' => '7A',
+        ]);
+
+        $hiddenUser = User::create([
+            'name' => 'Sreypov Hidden',
+            'email' => 'sreypov-hidden@example.com',
+            'password' => 'password',
+        ]);
+        Student::create([
+            'user_id' => $hiddenUser->id,
+            'gender' => 'female',
+            'grade' => '7A',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('class.show', ['name' => '7A', 'search' => 'malis']));
+
+        $response->assertOk();
+        $response->assertSee('Malis Search');
+        $response->assertDontSee('Sreypov Hidden');
+    }
+
+    public function test_student_index_can_search_students_by_name(): void
+    {
+        $user = User::create([
+            'name' => 'Student Search Viewer',
+            'email' => 'student-search-viewer@example.com',
+            'password' => 'password',
+        ]);
+
+        $permission = Permission::create([
+            'name' => 'view-student',
+            'display_name' => 'View Student',
+        ]);
+        $user->permissions()->attach($permission);
+
+        $matchingUser = User::create([
+            'name' => 'Ravy Search',
+            'email' => 'ravy-search@example.com',
+            'password' => 'password',
+        ]);
+        Student::create([
+            'user_id' => $matchingUser->id,
+            'gender' => 'female',
+            'grade' => '7A',
+        ]);
+
+        $hiddenUser = User::create([
+            'name' => 'Davy Hidden',
+            'email' => 'davy-hidden@example.com',
+            'password' => 'password',
+        ]);
+        Student::create([
+            'user_id' => $hiddenUser->id,
+            'gender' => 'male',
+            'grade' => '8A',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('students.index', ['search' => 'ravy']));
+
+        $response->assertOk();
+        $response->assertSee('Ravy Search');
+        $response->assertDontSee('Davy Hidden');
+    }
+
     public function test_existing_coefficient_is_not_changed_unless_user_explicitly_changes_it(): void
     {
         $user = User::create([

@@ -26,16 +26,19 @@ class ResultController extends Controller
         return view('result.index', compact('grades'));
     }
 
-    public function show($className)
+    public function show(Request $request, $className)
     {
         abort_unless(Auth::user()?->canAccessResultClass($className), 403, 'Unauthorized action.');
 
+        $search = trim((string) $request->input('search', ''));
+
         $students = Student::with(['user', 'latestSubject'])
             ->where('grade', $className)
+            ->searchByUserName($search)
             ->get();
 
         $subjectLabels = Subject::scoreLabels();
 
-        return view('result.show', compact('students', 'className', 'subjectLabels'));
+        return view('result.show', compact('students', 'className', 'subjectLabels', 'search'));
     }
 }

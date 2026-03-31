@@ -17,12 +17,14 @@ class RankController extends Controller
         abort_unless(Auth::user()?->canAccessResultClass($className), 403, 'Unauthorized action.');
 
         $selectedMonth = (int) $request->integer('month', 0);
+        $search = trim((string) $request->input('search', ''));
         $monthOptions = collect(range(1, 12))
             ->mapWithKeys(fn (int $month) => [$month => Carbon::create()->month($month)->locale('km')->translatedFormat('F')])
             ->all();
 
         $students = Student::with(['user', 'latestSubject'])
             ->where('grade', $className)
+            ->searchByUserName($search)
             ->get();
 
         if ($selectedMonth >= 1 && $selectedMonth <= 12) {
@@ -63,6 +65,7 @@ class RankController extends Controller
             'rankedStudents' => $ranked,
             'monthOptions' => $monthOptions,
             'selectedMonth' => $selectedMonth,
+            'search' => $search,
         ]);
     }
 }

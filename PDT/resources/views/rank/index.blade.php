@@ -10,7 +10,19 @@
         </a>
     </div>
 
-    <form method="GET" action="{{ route('rank.index', $className) }}" class="mb-6">
+    <form method="GET" action="{{ route('rank.index', $className) }}" class="mb-6 flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 md:flex-row md:items-end md:justify-between">
+        <div class="flex flex-col gap-2">
+            <label for="rank-search" class="text-sm font-medium text-gray-700">ស្វែងរកសិស្ស</label>
+            <input
+                id="rank-search"
+                type="search"
+                name="search"
+                value="{{ $search }}"
+                placeholder="ស្វែងរកតាមឈ្មោះសិស្ស"
+                class="w-full rounded border border-gray-300 px-3 py-2 text-sm md:w-72"
+            >
+        </div>
+        <div class="flex flex-col gap-2 md:flex-row md:items-end">
         <label for="month" class="font-medium mr-2">ជ្រើសរើសខែ:</label>
         <select id="month" name="month" onchange="this.form.submit()" class="border px-3 py-1 rounded">
             <option value="0" {{ $selectedMonth === 0 ? 'selected' : '' }}>ទាំងអស់</option>
@@ -20,7 +32,24 @@
                 </option>
             @endforeach
         </select>
+            <div class="flex gap-2">
+                <button type="submit" class="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">
+                    ស្វែងរក
+                </button>
+                @if($search !== '' || $selectedMonth !== 0)
+                    <a href="{{ route('rank.index', $className) }}" class="rounded border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                        សម្អាត
+                    </a>
+                @endif
+            </div>
+        </div>
     </form>
+
+    @if($search !== '')
+        <div class="mb-4 text-sm text-gray-600">
+            បង្ហាញលទ្ធផលចំណាត់ថ្នាក់ <strong>{{ count($rankedStudents) }}</strong> សម្រាប់ "<strong>{{ $search }}</strong>"។
+        </div>
+    @endif
 
 
     <!-- Two-column responsive grid with equal height cards -->

@@ -23,16 +23,19 @@ class ClassController extends Controller
         return view('class.index', compact('grades'));
     }
 
-   public function show($className)
+   public function show(Request $request, $className)
 {
     abort_unless(Auth::user()?->canAccessClass($className), 403, 'Unauthorized action.');
+
+    $search = trim((string) $request->input('search', ''));
 
   
     $students = \App\Models\Student::with('user')
         ->where('grade', $className)
+        ->searchByUserName($search)
         ->get();
 
-    return view('class.show', compact('students', 'className'));
+    return view('class.show', compact('students', 'className', 'search'));
 }
 
 }

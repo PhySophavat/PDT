@@ -23,12 +23,17 @@ class StudentController extends Controller
     /**
      * Display a listing of students.
      */
-    public function index()
+    public function index(Request $request)
     {
         $this->ensureCanViewStudents();
 
-        $students = Student::with('user')->get();
-        return view('student.index', compact('students'));
+        $search = trim((string) $request->input('search', ''));
+
+        $students = Student::with('user')
+            ->searchByUserName($search)
+            ->get();
+
+        return view('student.index', compact('students', 'search'));
     }
 
     /**
