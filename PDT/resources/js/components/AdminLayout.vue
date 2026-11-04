@@ -18,7 +18,7 @@
               v-if="schoolLogo" 
               class="w-10 h-10 rounded-xl overflow-hidden border border-slate-100 bg-white flex items-center justify-center p-1 shadow-xs group-hover:scale-105 transition-transform flex-shrink-0"
             >
-              <img :src="schoolLogo" alt="School Logo" class="w-full h-full object-contain" />
+              <img :src="schoolLogo" alt="School Logo" class="w-full h-full object-contain" @error="schoolLogo = ''" />
             </div>
 
             <!-- Default Brand Mark Circle (Blue & Navy) when no logo uploaded -->
@@ -325,18 +325,18 @@ const openDropdowns = ref(['attendance']);
 
 // School Logo and Brand Header State
 const schoolLogo = ref(
-  window.__INITIAL_SETTINGS__?.school_logo_url || 
   localStorage.getItem('pdt_school_logo') || 
+  window.__INITIAL_SETTINGS__?.school_logo_url || 
   ''
 );
 const schoolName = ref(
-  window.__INITIAL_SETTINGS__?.school_name || 
   localStorage.getItem('pdt_school_name') || 
+  window.__INITIAL_SETTINGS__?.school_name || 
   'LMSTICK'
 );
 const schoolNameEn = ref(
-  window.__INITIAL_SETTINGS__?.school_name_en || 
   localStorage.getItem('pdt_school_name_en') || 
+  window.__INITIAL_SETTINGS__?.school_name_en || 
   ''
 );
 
@@ -435,6 +435,19 @@ onMounted(() => {
     if (e.detail?.school_name_en) {
       schoolNameEn.value = e.detail.school_name_en;
       localStorage.setItem('pdt_school_name_en', e.detail.school_name_en);
+    }
+  });
+
+  // Listen for storage events from other tabs/windows
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'pdt_school_logo' && e.newValue) {
+      schoolLogo.value = e.newValue;
+    }
+    if (e.key === 'pdt_school_name' && e.newValue) {
+      schoolName.value = e.newValue;
+    }
+    if (e.key === 'pdt_school_name_en' && e.newValue) {
+      schoolNameEn.value = e.newValue;
     }
   });
 });

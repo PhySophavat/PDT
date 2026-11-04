@@ -1217,8 +1217,11 @@ const editForm = ref({
 });
 
 const fetchStudents = async () => {
+  const currentMode = localStorage.getItem('pdt_demo_mode') || '1';
   try {
-    const res = await axios.get('/api/students');
+    const res = await axios.get('/api/students', {
+      params: { demo_mode: currentMode }
+    });
     if (res.data) {
       if (res.data.students) {
         students.value = res.data.students;

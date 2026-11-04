@@ -817,15 +817,51 @@ const handleLogoChange = (e) => {
   const file = e.target.files[0];
   if (file) {
     logoFile.value = file;
-    const previewUrl = URL.createObjectURL(file);
-    logoPreview.value = previewUrl;
+    const reader = new FileReader();
+    reader.onload = (re) => {
+      const base64 = re.target.result;
+      logoPreview.value = base64;
+      form.value.school_logo_url = base64;
+      try {
+        localStorage.setItem('pdt_school_logo', base64);
+      } catch (err) {
+        console.warn('LocalStorage quota:', err);
+      }
 
-    // Instantly reflect logo in sidebar top header
-    window.dispatchEvent(new CustomEvent('pdt-logo-preview', {
-      detail: { logoUrl: previewUrl }
-    }));
+      // Instantly reflect logo in sidebar top header
+      window.dispatchEvent(new CustomEvent('pdt-logo-preview', {
+        detail: { logoUrl: base64 }
+      }));
+    };
+    reader.readAsDataURL(file);
   }
 };
+
+watch(() => form.value.school_name, (val) => {
+  if (val) {
+    localStorage.setItem('pdt_school_name', val);
+    window.dispatchEvent(new CustomEvent('pdt-settings-saved', {
+      detail: {
+        school_name: val,
+        school_name_en: form.value.school_name_en,
+        school_logo_url: logoPreview.value || form.value.school_logo_url
+      }
+    }));
+  }
+});
+
+watch(() => form.value.school_name_en, (val) => {
+  if (val !== undefined) {
+    localStorage.setItem('pdt_school_name_en', val);
+    window.dispatchEvent(new CustomEvent('pdt-settings-saved', {
+      detail: {
+        school_name: form.value.school_name,
+        school_name_en: val,
+        school_logo_url: logoPreview.value || form.value.school_logo_url
+      }
+    }));
+  }
+});
 
 const handleStampChange = (e) => {
   const file = e.target.files[0];
@@ -879,6 +915,17 @@ const handleSave = async () => {
 
     if (res.data && res.data.success) {
       localStorage.setItem('pdt_demo_mode', form.value.demo_mode);
+      if (logoPreview.value) {
+        try {
+          localStorage.setItem('pdt_school_logo', logoPreview.value);
+        } catch (e) {}
+      }
+      if (form.value.school_name) {
+        localStorage.setItem('pdt_school_name', form.value.school_name);
+      }
+      if (form.value.school_name_en) {
+        localStorage.setItem('pdt_school_name_en', form.value.school_name_en);
+      }
       alert(res.data.message || 'បានរក្សាទុកការកំណត់ប្រព័ន្ធដោយជោគជ័យ!');
       await fetchSettings();
 

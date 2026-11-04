@@ -673,8 +673,11 @@ const approveForm = ref({
 const isSubmittingApproval = ref(false);
 
 const fetchTeachers = async () => {
+  const currentMode = localStorage.getItem('pdt_demo_mode') || '1';
   try {
-    const res = await axios.get('/api/teachers');
+    const res = await axios.get('/api/teachers', {
+      params: { demo_mode: currentMode }
+    });
     if (res.data) {
       if (res.data.teachers) {
         teachers.value = res.data.teachers;

@@ -148,6 +148,34 @@ class ApiController extends Controller
             'created_at' => $st->created_at ? $st->created_at->format('Y-m-d H:i') : null,
         ]);
 
+        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '1'));
+
+        if ($students->isEmpty() && $demoMode !== '0') {
+            $demoList = $this->getDemoStudentsList();
+            if ($request->grade) {
+                $demoList = array_values(array_filter($demoList, fn ($s) => $s['grade'] === $request->grade));
+            }
+            if ($request->search) {
+                $s = mb_strtolower($request->search);
+                $demoList = array_values(array_filter($demoList, fn ($st) => 
+                    str_contains(mb_strtolower($st['name_khmer']), $s) || 
+                    str_contains(mb_strtolower($st['name_latin']), $s) ||
+                    str_contains($st['student_id_card'], $s)
+                ));
+            }
+
+            return response()->json([
+                'students' => $demoList,
+                'counts' => [
+                    'total' => count($demoList),
+                    'active' => count(array_filter($demoList, fn ($st) => $st['status'] === 'active')),
+                    'pending' => count(array_filter($demoList, fn ($st) => $st['status'] === 'pending')),
+                    'graduated' => 0,
+                    'transferred' => 0,
+                ]
+            ]);
+        }
+
         $pendingCount = Student::where('status', 'pending')->count();
         $activeCount = Student::whereIn('status', ['active', 'enrolled'])->count();
         $graduatedCount = Student::where('status', 'graduated')->count();
@@ -690,6 +718,31 @@ class ApiController extends Controller
             'status' => $t->status ?? 'active',
             'created_at' => $t->created_at ? $t->created_at->format('Y-m-d H:i') : null,
         ]);
+
+        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '1'));
+
+        if ($teachers->isEmpty() && $demoMode !== '0') {
+            $demoList = $this->getDemoTeachersList();
+            if ($request->search) {
+                $s = mb_strtolower($request->search);
+                $demoList = array_values(array_filter($demoList, fn ($t) => 
+                    str_contains(mb_strtolower($t['name_khmer']), $s) || 
+                    str_contains(mb_strtolower($t['name_latin']), $s) ||
+                    str_contains($t['idCard'], $s) ||
+                    str_contains(mb_strtolower($t['specialization']), $s)
+                ));
+            }
+
+            return response()->json([
+                'teachers' => $demoList,
+                'counts' => [
+                    'total' => count($demoList),
+                    'active' => count($demoList),
+                    'pending' => 0,
+                    'leave' => 0,
+                ]
+            ]);
+        }
 
         $pendingCount = Teacher::where('status', 'pending')->count();
         $activeCount = Teacher::whereIn('status', ['active', 'fulltime', 'parttime'])->count();
@@ -1816,8 +1869,10 @@ class ApiController extends Controller
         ]);
     }
 
-    public function examinations()
+    public function examinations(Request $request)
     {
+        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '1'));
+
         $exams = Examination::with('academicYear')->withCount('scores')->latest()->get()->map(fn ($ex) => [
             'id' => $ex->id,
             'title' => $ex->title,
@@ -1832,9 +1887,59 @@ class ApiController extends Controller
             'is_published' => (bool)$ex->is_published,
         ]);
 
+        if ($exams->isEmpty() && $demoMode !== '0') {
+            $exams = collect([
+                [
+                    'id' => 1,
+                    'title' => 'ការប្រឡងឆមាសលើកទី ១ (Semester 1 Exam)',
+                    'exam_type' => 'ឆមាស',
+                    'term' => 'ឆមាសទី ១',
+                    'semester' => 1,
+                    'start_date' => '2026-01-10',
+                    'end_date' => '2026-01-16',
+                    'academic_year' => '2025-2026',
+                    'scores_count' => 42,
+                    'status' => 'ផ្សាយជាសាធារណៈ',
+                    'is_published' => true,
+                ],
+                [
+                    'id' => 2,
+                    'title' => 'ការប្រឡងប្រចាំខែកុម្ភៈ (Monthly Test Feb)',
+                    'exam_type' => 'ប្រចាំខែ',
+                    'term' => 'ឆមាសទី ១',
+                    'semester' => 1,
+                    'start_date' => '2026-02-20',
+                    'end_date' => '2026-02-25',
+                    'academic_year' => '2025-2026',
+                    'scores_count' => 35,
+                    'status' => 'ផ្សាយជាសាធារណៈ',
+                    'is_published' => true,
+                ],
+            ]);
+        }
+
         $classes = SchoolClass::orderedNames();
+        if (empty($classes) && $demoMode !== '0') {
+            $classes = ['7A', '7B', '8A', '8B', '9A', '9B', '10A', '10B', '11A', '11B', '12A', '12B'];
+        }
         $subjects = CourseSubject::orderBy('name')->get()->map(fn ($s) => ['id' => $s->id, 'name' => $s->name, 'code' => $s->code]);
+        if ($subjects->isEmpty() && $demoMode !== '0') {
+            $subjects = collect([
+                ['id' => 1, 'name' => 'ភាសាខ្មែរ', 'code' => 'KHM'],
+                ['id' => 2, 'name' => 'គណិតវិទ្យា', 'code' => 'MTH'],
+                ['id' => 3, 'name' => 'រូបវិទ្យា', 'code' => 'PHY'],
+                ['id' => 4, 'name' => 'គីមីវិទ្យា', 'code' => 'CHM'],
+                ['id' => 5, 'name' => 'ជីវវិទ្យា', 'code' => 'BIO'],
+                ['id' => 6, 'name' => 'ភាសាអង់គ្លេស', 'code' => 'ENG'],
+                ['id' => 7, 'name' => 'ប្រវត្តិវិទ្យា', 'code' => 'HIS'],
+            ]);
+        }
         $academicYears = AcademicYear::where('status', 'active')->get()->map(fn ($y) => ['id' => $y->id, 'name' => $y->name]);
+        if ($academicYears->isEmpty() && $demoMode !== '0') {
+            $academicYears = collect([
+                ['id' => 1, 'name' => '2025-2026']
+            ]);
+        }
 
         return response()->json([
             'examinations' => $exams,
@@ -1900,39 +2005,69 @@ class ApiController extends Controller
         ]);
     }
 
-    public function getExamScores(Request $request, Examination $examination)
+    public function getExamScores(Request $request, $examination)
     {
+        $exam = $examination instanceof Examination ? $examination : Examination::find($examination);
         $className = $request->input('class', '7A');
         $subjectId = $request->input('subject_id');
+        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '1'));
 
-        $students = Student::with('user')
-            ->where('grade', $className)
-            ->get()
-            ->map(function ($s) use ($examination, $subjectId, $className) {
-                $scoreQuery = ExaminationScore::where('examination_id', $examination->id)
-                    ->where('student_id', $s->id)
-                    ->where('class_name', $className);
+        $students = collect();
+        if ($exam) {
+            $students = Student::with('user')
+                ->where('grade', $className)
+                ->get()
+                ->map(function ($s) use ($exam, $subjectId, $className) {
+                    $scoreQuery = ExaminationScore::where('examination_id', $exam->id)
+                        ->where('student_id', $s->id)
+                        ->where('class_name', $className);
 
-                if ($subjectId) {
-                    $scoreQuery->where('course_subject_id', $subjectId);
-                }
+                    if ($subjectId) {
+                        $scoreQuery->where('course_subject_id', $subjectId);
+                    }
 
-                $score = $scoreQuery->first();
+                    $score = $scoreQuery->first();
 
+                    return [
+                        'student_id' => $s->id,
+                        'name' => $s->display_name,
+                        'student_id_card' => $s->student_id_card,
+                        'gender' => $s->gender,
+                        'score' => $score?->score,
+                        'max_score' => $score?->max_score ?? 100,
+                        'grade_letter' => $score?->grade_letter,
+                    ];
+                });
+        }
+
+        if ($students->isEmpty() && $demoMode !== '0') {
+            $demoStudents = $this->getDemoStudentsList();
+            $filtered = array_values(array_filter($demoStudents, fn($s) => $s['grade'] === $className));
+            if (empty($filtered)) {
+                $filtered = array_slice($demoStudents, 0, 6);
+            }
+            $sampleScores = [88.5, 92.0, 75.5, 68.0, 95.0, 81.5, 79.0, 85.0, 90.5, 74.0];
+            $students = collect($filtered)->map(function ($s, $idx) use ($sampleScores) {
+                $sc = $sampleScores[$idx % count($sampleScores)];
                 return [
-                    'student_id' => $s->id,
-                    'name' => $s->display_name,
-                    'student_id_card' => $s->student_id_card,
-                    'gender' => $s->gender,
-                    'score' => $score?->score,
-                    'max_score' => $score?->max_score ?? 100,
-                    'grade_letter' => $score?->grade_letter,
+                    'student_id' => $s['id'],
+                    'name' => $s['name'],
+                    'student_id_card' => $s['student_id_card'],
+                    'gender' => $s['gender'],
+                    'score' => $sc,
+                    'max_score' => 100,
+                    'grade_letter' => ExaminationScore::calculateGradeLetter($sc, 100),
                 ];
             });
+        }
 
         return response()->json([
             'students' => $students,
-            'examination' => $examination,
+            'examination' => $exam ?: [
+                'id' => is_numeric($examination) ? (int)$examination : 1,
+                'title' => 'ការប្រឡងឆមាសលើកទី ១ (Semester 1 Exam)',
+                'semester' => 1
+            ],
         ]);
     }
 
@@ -1977,9 +2112,12 @@ class ApiController extends Controller
         ]);
     }
 
-    public function getExamMatrixScores(Request $request, Examination $examination)
+    public function getExamMatrixScores(Request $request, $examination)
     {
+        $exam = $examination instanceof Examination ? $examination : Examination::find($examination);
         $className = $request->input('class', '7A');
+        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '1'));
+
         $subjects = CourseSubject::orderBy('id')->get()->map(function ($s) use ($className) {
             return [
                 'id' => $s->id,
@@ -1990,14 +2128,27 @@ class ApiController extends Controller
             ];
         });
 
-        $students = Student::with('user')
-            ->where('grade', $className)
-            ->get();
+        if ($subjects->isEmpty() && $demoMode !== '0') {
+            $subjects = collect([
+                ['id' => 1, 'name' => 'ភាសាខ្មែរ', 'code' => 'KHM', 'max_score' => 100, 'credit' => 2],
+                ['id' => 2, 'name' => 'គណិតវិទ្យា', 'code' => 'MTH', 'max_score' => 100, 'credit' => 2],
+                ['id' => 3, 'name' => 'រូបវិទ្យា', 'code' => 'PHY', 'max_score' => 100, 'credit' => 1.5],
+                ['id' => 4, 'name' => 'គីមីវិទ្យា', 'code' => 'CHM', 'max_score' => 100, 'credit' => 1.5],
+                ['id' => 5, 'name' => 'ជីវវិទ្យា', 'code' => 'BIO', 'max_score' => 100, 'credit' => 1.5],
+                ['id' => 6, 'name' => 'ភាសាអង់គ្លេស', 'code' => 'ENG', 'max_score' => 100, 'credit' => 1],
+                ['id' => 7, 'name' => 'ប្រវត្តិវិទ្យា', 'code' => 'HIS', 'max_score' => 100, 'credit' => 1],
+            ]);
+        }
 
-        $allScores = ExaminationScore::where('examination_id', $examination->id)
-            ->where('class_name', $className)
-            ->get()
-            ->groupBy('student_id');
+        $students = $exam ? Student::with('user')->where('grade', $className)->get() : collect();
+
+        $allScores = collect();
+        if ($exam) {
+            $allScores = ExaminationScore::where('examination_id', $exam->id)
+                ->where('class_name', $className)
+                ->get()
+                ->groupBy('student_id');
+        }
 
         $rows = $students->map(function ($st) use ($subjects, $allScores) {
             $studentScores = $allScores->get($st->id) ? $allScores->get($st->id)->keyBy('course_subject_id') : collect();
@@ -2038,6 +2189,51 @@ class ApiController extends Controller
             ];
         });
 
+        if ($rows->isEmpty() && $demoMode !== '0') {
+            $demoStudents = $this->getDemoStudentsList();
+            $filtered = array_values(array_filter($demoStudents, fn($s) => $s['grade'] === $className));
+            if (empty($filtered)) {
+                $filtered = array_slice($demoStudents, 0, 6);
+            }
+
+            $seedScores = [
+                [85, 90, 78, 88, 92, 80, 85],
+                [92, 95, 88, 90, 94, 85, 91],
+                [75, 70, 68, 72, 74, 65, 70],
+                [80, 82, 85, 78, 80, 79, 83],
+                [68, 65, 70, 64, 72, 60, 66],
+                [95, 98, 92, 96, 94, 90, 93],
+            ];
+
+            $rows = collect($filtered)->map(function ($st, $idx) use ($subjects, $seedScores) {
+                $subScores = $seedScores[$idx % count($seedScores)];
+                $scoresMap = [];
+                $totalScore = 0;
+                $totalCredits = 0;
+                foreach ($subjects as $sIdx => $sub) {
+                    $val = (float) ($subScores[$sIdx % count($subScores)] ?? 80);
+                    $scoresMap[$sub['id']] = $val;
+                    $totalScore += $val;
+                    $totalCredits += (float) ($sub['credit'] ?: 1.0);
+                }
+                $average = round($totalScore / ($totalCredits > 0 ? $totalCredits : count($subjects)), 2);
+                $gradeLetter = ExaminationScore::calculateGradeLetter($average, 100);
+
+                return [
+                    'student_id' => $st['id'],
+                    'student_id_card' => $st['student_id_card'],
+                    'name' => $st['name'],
+                    'gender' => $st['gender'],
+                    'scores' => $scoresMap,
+                    'total_score' => round($totalScore, 2),
+                    'entered_count' => count($subjects),
+                    'average' => $average,
+                    'grade_letter' => $gradeLetter,
+                    'rank' => '-',
+                ];
+            });
+        }
+
         // Calculate Ranking based on Average (or total_score) descending
         $sorted = $rows->sortByDesc('average')->values();
         $rankMap = [];
@@ -2069,7 +2265,11 @@ class ApiController extends Controller
         $passRate = $evaluatedStudents->count() > 0 ? round(($passedCount / $evaluatedStudents->count()) * 100, 1) : 0;
 
         return response()->json([
-            'examination' => $examination,
+            'examination' => $exam ?: [
+                'id' => is_numeric($examination) ? (int)$examination : 1,
+                'title' => 'ការប្រឡងឆមាសលើកទី ១ (Semester 1 Exam)',
+                'semester' => 1
+            ],
             'className' => $className,
             'subjects' => $subjects,
             'students' => $finalRows,
@@ -2785,5 +2985,47 @@ class ApiController extends Controller
         ]);
 
         return response()->json(['roles' => $roles]);
+    }
+
+    public function getDemoStudentsList()
+    {
+        return [
+            ['id' => 1, 'student_id_card' => 'STU-2026-001', 'name' => 'សុខ ពិសិដ្ឋ', 'name_khmer' => 'សុខ ពិសិដ្ឋ', 'name_latin' => 'Sok Piseth', 'gender' => 'ប្រុស', 'grade' => '7A', 'phone' => '012 111 222', 'date_of_birth' => '2012-05-14', 'parent_name' => 'សុខ ជា', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '012 888 777', 'status' => 'active'],
+            ['id' => 2, 'student_id_card' => 'STU-2026-002', 'name' => 'ចាន់ ធីតា', 'name_khmer' => 'ចាន់ ធីតា', 'name_latin' => 'Chan Thida', 'gender' => 'ស្រី', 'grade' => '7A', 'phone' => '098 222 333', 'date_of_birth' => '2012-08-20', 'parent_name' => 'ចាន់ សុផល', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '098 777 666', 'status' => 'active'],
+            ['id' => 3, 'student_id_card' => 'STU-2026-003', 'name' => 'មាស សុវណ្ណ', 'name_khmer' => 'មាស សុវណ្ណ', 'name_latin' => 'Meas Sovann', 'gender' => 'ប្រុស', 'grade' => '7A', 'phone' => '077 333 444', 'date_of_birth' => '2012-01-10', 'parent_name' => 'មាស រ៉ា', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '077 666 555', 'status' => 'active'],
+            ['id' => 4, 'student_id_card' => 'STU-2026-004', 'name' => 'គង់ ចិន្តា', 'name_khmer' => 'គង់ ចិន្តា', 'name_latin' => 'Kong Chenda', 'gender' => 'ស្រី', 'grade' => '7A', 'phone' => '015 444 555', 'date_of_birth' => '2012-11-25', 'parent_name' => 'គង់ សារ៉េត', 'parent_relationship' => 'ម្តាយ', 'parent_phone' => '015 555 444', 'status' => 'active'],
+            ['id' => 5, 'student_id_card' => 'STU-2026-005', 'name' => 'ហេង វិសាល', 'name_khmer' => 'ហេង វិសាល', 'name_latin' => 'Heng Visal', 'gender' => 'ប្រុស', 'grade' => '7A', 'phone' => '089 555 666', 'date_of_birth' => '2012-03-30', 'parent_name' => 'ហេង វុទ្ធី', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '089 444 333', 'status' => 'active'],
+            ['id' => 6, 'student_id_card' => 'STU-2026-006', 'name' => 'កែវ រចនា', 'name_khmer' => 'កែវ រចនា', 'name_latin' => 'Keo Rachana', 'gender' => 'ស្រី', 'grade' => '7A', 'phone' => '070 666 777', 'date_of_birth' => '2012-07-15', 'parent_name' => 'កែវ សម្បត្តិ', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '070 333 222', 'status' => 'active'],
+            ['id' => 7, 'student_id_card' => 'STU-2026-007', 'name' => 'លី ដារ៉ា', 'name_khmer' => 'លី ដារ៉ា', 'name_latin' => 'Ly Dara', 'gender' => 'ប្រុស', 'grade' => '7B', 'phone' => '016 777 888', 'date_of_birth' => '2012-09-05', 'parent_name' => 'លី សេង', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '016 222 111', 'status' => 'active'],
+            ['id' => 8, 'student_id_card' => 'STU-2026-008', 'name' => 'វ៉ាន់ ស្រីមុំ', 'name_khmer' => 'វ៉ាន់ ស្រីមុំ', 'name_latin' => 'Van Sreymom', 'gender' => 'ស្រី', 'grade' => '7B', 'phone' => '092 888 999', 'date_of_birth' => '2012-04-18', 'parent_name' => 'វ៉ាន់ ធឿន', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '092 111 000', 'status' => 'active'],
+            ['id' => 9, 'student_id_card' => 'STU-2026-009', 'name' => 'ឃុន វឌ្ឍនា', 'name_khmer' => 'ឃុន វឌ្ឍនា', 'name_latin' => 'Khun Vathana', 'gender' => 'ប្រុស', 'grade' => '7B', 'phone' => '011 999 000', 'date_of_birth' => '2012-12-01', 'parent_name' => 'ឃុន ផល្លា', 'parent_relationship' => 'ម្តាយ', 'parent_phone' => '011 000 999', 'status' => 'active'],
+            ['id' => 10, 'student_id_card' => 'STU-2026-010', 'name' => 'អ៊ុង គីមសួរ', 'name_khmer' => 'អ៊ុង គីមសួរ', 'name_latin' => 'Ung Kimsour', 'gender' => 'ស្រី', 'grade' => '7B', 'phone' => '093 111 333', 'date_of_birth' => '2012-06-22', 'parent_name' => 'អ៊ុង វីរៈ', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '093 999 888', 'status' => 'active'],
+            ['id' => 11, 'student_id_card' => 'STU-2026-011', 'name' => 'សេង បូរ៉ា', 'name_khmer' => 'សេង បូរ៉ា', 'name_latin' => 'Seng Bora', 'gender' => 'ប្រុស', 'grade' => '8A', 'phone' => '012 444 888', 'date_of_birth' => '2011-02-17', 'parent_name' => 'សេង ប៊ុនណា', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '012 888 444', 'status' => 'active'],
+            ['id' => 12, 'student_id_card' => 'STU-2026-012', 'name' => 'នួន ស្រីណែត', 'name_khmer' => 'នួន ស្រីណែត', 'name_latin' => 'Nuon Sreynet', 'gender' => 'ស្រី', 'grade' => '8A', 'phone' => '098 555 111', 'date_of_birth' => '2011-10-08', 'parent_name' => 'នួន សុខឃីម', 'parent_relationship' => 'ម្តាយ', 'parent_phone' => '098 111 555', 'status' => 'active'],
+            ['id' => 13, 'student_id_card' => 'STU-2026-013', 'name' => 'ជា សុភាព', 'name_khmer' => 'ជា សុភាព', 'name_latin' => 'Chea Sopheap', 'gender' => 'ប្រុស', 'grade' => '8A', 'phone' => '077 666 222', 'date_of_birth' => '2011-07-29', 'parent_name' => 'ជា ចំរើន', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '077 222 666', 'status' => 'active'],
+            ['id' => 14, 'student_id_card' => 'STU-2026-014', 'name' => 'ឌិត មុនី', 'name_khmer' => 'ឌិត មុនី', 'name_latin' => 'Dy Mony', 'gender' => 'ស្រី', 'grade' => '8A', 'phone' => '015 777 333', 'date_of_birth' => '2011-03-12', 'parent_name' => 'ឌិត ថាវី', 'parent_relationship' => 'ម្តាយ', 'parent_phone' => '015 333 777', 'status' => 'active'],
+            ['id' => 15, 'student_id_card' => 'STU-2026-015', 'name' => 'អេង សុភ័ក្ត្រ', 'name_khmer' => 'អេង សុភ័ក្ត្រ', 'name_latin' => 'Eng Sopheak', 'gender' => 'ប្រុស', 'grade' => '9A', 'phone' => '089 888 444', 'date_of_birth' => '2010-09-19', 'parent_name' => 'អេង រតនា', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '089 444 888', 'status' => 'active'],
+            ['id' => 16, 'student_id_card' => 'STU-2026-016', 'name' => 'យឹម ម៉ាលី', 'name_khmer' => 'យឹម ម៉ាលី', 'name_latin' => 'Yim Maly', 'gender' => 'ស្រី', 'grade' => '9A', 'phone' => '070 999 555', 'date_of_birth' => '2010-12-31', 'parent_name' => 'យឹម សុគន្ធ', 'parent_relationship' => 'ម្តាយ', 'parent_phone' => '070 555 999', 'status' => 'active'],
+            ['id' => 17, 'student_id_card' => 'STU-2026-017', 'name' => 'ស៊ូ វិរៈ', 'name_khmer' => 'ស៊ូ វិរៈ', 'name_latin' => 'Sou Vireak', 'gender' => 'ប្រុស', 'grade' => '10A', 'phone' => '016 000 666', 'date_of_birth' => '2009-08-04', 'parent_name' => 'ស៊ូ ហេង', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '016 666 000', 'status' => 'active'],
+            ['id' => 18, 'student_id_card' => 'STU-2026-018', 'name' => 'ផាន់ ធីរ៉ា', 'name_khmer' => 'ផាន់ ធីរ៉ា', 'name_latin' => 'Phan Thira', 'gender' => 'ស្រី', 'grade' => '11A', 'phone' => '092 111 777', 'date_of_birth' => '2008-04-26', 'parent_name' => 'ផាន់ គឹមហួរ', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '092 777 111', 'status' => 'active'],
+            ['id' => 19, 'student_id_card' => 'STU-2026-019', 'name' => 'ព្រំ សុភា', 'name_khmer' => 'ព្រំ សុភា', 'name_latin' => 'Prom Sophea', 'gender' => 'ស្រី', 'grade' => '12A', 'phone' => '011 222 888', 'date_of_birth' => '2007-01-15', 'parent_name' => 'ព្រំ វ៉ាន់នី', 'parent_relationship' => 'ម្តាយ', 'parent_phone' => '011 888 222', 'status' => 'pending'],
+            ['id' => 20, 'student_id_card' => 'STU-2026-020', 'name' => 'ឡុង សម្បត្តិ', 'name_khmer' => 'ឡុង សម្បត្តិ', 'name_latin' => 'Long Sambath', 'gender' => 'ប្រុស', 'grade' => '12A', 'phone' => '093 333 999', 'date_of_birth' => '2007-11-09', 'parent_name' => 'ឡុង វិសិដ្ឋ', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '093 999 333', 'status' => 'pending'],
+        ];
+    }
+
+    public function getDemoTeachersList()
+    {
+        return [
+            ['id' => 1, 'idCard' => 'TCH-2026-001', 'name' => 'លោក ឈុន វណ្ណា', 'name_khmer' => 'លោក ឈុន វណ្ណា', 'name_latin' => 'Chhun Vanna', 'gender' => 'ប្រុស', 'phone' => '012 345 678', 'specialization' => 'គណិតវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រជាន់ខ្ពស់គរុកោសល្យ', 'class_assigned' => '7A, 7B, 12A', 'status' => 'active'],
+            ['id' => 2, 'idCard' => 'TCH-2026-002', 'name' => 'អ្នកគ្រូ កែវ សុផល', 'name_khmer' => 'អ្នកគ្រូ កែវ សុផល', 'name_latin' => 'Keo Sophal', 'gender' => 'ស្រី', 'phone' => '098 765 432', 'specialization' => 'ភាសាខ្មែរ', 'qualification' => 'បរិញ្ញាបត្រអក្សរសាស្ត្រខ្មែរ', 'class_assigned' => '7A, 8A, 9A', 'status' => 'active'],
+            ['id' => 3, 'idCard' => 'TCH-2026-003', 'name' => 'លោក សេង សុខា', 'name_khmer' => 'លោក សេង សុខា', 'name_latin' => 'Seng Sokha', 'gender' => 'ប្រុស', 'phone' => '017 888 999', 'specialization' => 'ភាសាអង់គ្លេស', 'qualification' => 'Bachelor of Education (English)', 'class_assigned' => '7A, 7B, 8B', 'status' => 'active'],
+            ['id' => 4, 'idCard' => 'TCH-2026-004', 'name' => 'លោក អ៊ុំ រតនៈ', 'name_khmer' => 'លោក អ៊ុំ រតនៈ', 'name_latin' => 'Oum Rattanak', 'gender' => 'ប្រុស', 'phone' => '077 222 333', 'specialization' => 'រូបវិទ្យា', 'qualification' => 'បរិញ្ញាបត្ររូបវិទ្យា', 'class_assigned' => '8A, 9A, 10A', 'status' => 'active'],
+            ['id' => 5, 'idCard' => 'TCH-2026-005', 'name' => 'អ្នកគ្រូ មាស ចរិយា', 'name_khmer' => 'អ្នកគ្រូ មាស ចរិយា', 'name_latin' => 'Meas Chariya', 'gender' => 'ស្រី', 'phone' => '089 444 555', 'specialization' => 'គីមីវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រគីមីវិទ្យា', 'class_assigned' => '9A, 10A, 11A', 'status' => 'active'],
+            ['id' => 6, 'idCard' => 'TCH-2026-006', 'name' => 'លោក លឹម ប៊ុនធឿន', 'name_khmer' => 'លោក លឹម ប៊ុនធឿន', 'name_latin' => 'Lim Bunthoeun', 'gender' => 'ប្រុស', 'phone' => '015 666 777', 'specialization' => 'ជីវវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រជីវវិទ្យា', 'class_assigned' => '8A, 9A, 10A', 'status' => 'active'],
+            ['id' => 7, 'idCard' => 'TCH-2026-007', 'name' => 'អ្នកគ្រូ សួន ចិន្តា', 'name_khmer' => 'អ្នកគ្រូ សួន ចិន្តា', 'name_latin' => 'Suon Chenda', 'gender' => 'ស្រី', 'phone' => '092 111 222', 'specialization' => 'ប្រវត្តិវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រប្រវត្តិវិទ្យា', 'class_assigned' => '7A, 8A, 9A', 'status' => 'active'],
+            ['id' => 8, 'idCard' => 'TCH-2026-008', 'name' => 'អ្នកគ្រូ ពេជ្រ ពិសី', 'name_khmer' => 'អ្នកគ្រូ ពេជ្រ ពិសី', 'name_latin' => 'Pech Pisey', 'gender' => 'ស្រី', 'phone' => '070 333 444', 'specialization' => 'ភូមិវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រភូមិវិទ្យា', 'class_assigned' => '7B, 8B, 10A', 'status' => 'active'],
+            ['id' => 9, 'idCard' => 'TCH-2026-009', 'name' => 'លោក តាំង គីមឡេង', 'name_khmer' => 'លោក តាំង គីមឡេង', 'name_latin' => 'Tang Kimleng', 'gender' => 'ប្រុស', 'phone' => '016 555 666', 'specialization' => 'ព័ត៌មានវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រវិទ្យាសាស្ត្រកុំព្យូទ័រ', 'class_assigned' => '7A, 8A, 9A, 10A', 'status' => 'active'],
+            ['id' => 10, 'idCard' => 'TCH-2026-010', 'name' => 'លោក ម៉ៅ សុវណ្ណារ៉ា', 'name_khmer' => 'លោក ម៉ៅ សុវណ្ណារ៉ា', 'name_latin' => 'Mao Sovannara', 'gender' => 'ប្រុស', 'phone' => '088 999 111', 'specialization' => 'អប់រំកាយ និងកីឡា', 'qualification' => 'វិញ្ញាបនបត្រគរុកោសល្យកីឡា', 'class_assigned' => '7A, 7B, 8A, 8B', 'status' => 'active'],
+        ];
     }
 }

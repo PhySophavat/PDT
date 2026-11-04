@@ -69,7 +69,7 @@ if (!getenv('DB_CONNECTION') || getenv('DB_CONNECTION') === 'sqlite') {
     $sqliteSrc = __DIR__ . '/../database/database.sqlite';
 
     if (file_exists($sqliteSrc)) {
-        if (!file_exists($sqliteDest) || filesize($sqliteDest) === 0) {
+        if (!file_exists($sqliteDest) || filesize($sqliteDest) !== filesize($sqliteSrc)) {
             @copy($sqliteSrc, $sqliteDest);
         }
     } elseif (!file_exists($sqliteDest)) {

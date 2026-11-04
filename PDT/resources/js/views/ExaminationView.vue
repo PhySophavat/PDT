@@ -893,7 +893,10 @@ const editForm = ref({
 
 const fetchExams = async () => {
   try {
-    const res = await axios.get('/api/examinations');
+    const demoMode = localStorage.getItem('pdt_demo_mode') || '1';
+    const res = await axios.get('/api/examinations', {
+      params: { demo_mode: demoMode }
+    });
     examsList.value = res.data.examinations || [];
     classesList.value = res.data.classes || [];
     subjectsList.value = res.data.subjects || [];
@@ -998,10 +1001,12 @@ const loadScoreSheet = async () => {
   if (!selectedExamId.value || !selectedClassForScores.value) return;
   isLoadingScores.value = true;
   try {
+    const demoMode = localStorage.getItem('pdt_demo_mode') || '1';
     const res = await axios.get(`/api/examinations/${selectedExamId.value}/scores`, {
       params: {
         class: selectedClassForScores.value,
         subject_id: selectedSubjectForScores.value,
+        demo_mode: demoMode,
       }
     });
     scoreSheetStudents.value = res.data.students || [];
@@ -1043,8 +1048,12 @@ const loadMatrixSheet = async () => {
   if (!selectedMatrixExamId.value || !selectedMatrixClass.value) return;
   isLoadingMatrix.value = true;
   try {
+    const demoMode = localStorage.getItem('pdt_demo_mode') || '1';
     const res = await axios.get(`/api/examinations/${selectedMatrixExamId.value}/matrix-scores`, {
-      params: { class: selectedMatrixClass.value }
+      params: { 
+        class: selectedMatrixClass.value,
+        demo_mode: demoMode,
+      }
     });
     matrixSubjects.value = res.data.subjects || [];
     matrixStudents.value = res.data.students || [];
