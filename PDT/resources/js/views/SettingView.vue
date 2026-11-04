@@ -72,23 +72,29 @@
           </div>
         </div>
 
+        <div v-if="modeMessage" class="px-3.5 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-semibold flex items-center gap-2 animate-pulse">
+          <i class="fa-solid fa-circle-check text-emerald-600"></i>
+          <span>{{ modeMessage }}</span>
+        </div>
+
         <!-- Radio Switch Options -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           <!-- Option 1: Demo / Dev Mode -->
-          <label 
+          <div 
+            @click="handleModeChange('1')"
             :class="[
-              'flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all',
+              'flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all select-none',
               form.demo_mode === '1' 
                 ? 'border-blue-600 bg-white shadow-xs ring-2 ring-blue-500/20' 
-                : 'border-slate-200 bg-white/70 hover:bg-white'
+                : 'border-slate-200 bg-white/70 hover:bg-white hover:border-slate-300'
             ]"
           >
             <input 
               type="radio" 
               name="system_mode" 
               value="1" 
-              v-model="form.demo_mode" 
-              class="mt-1 text-blue-600 focus:ring-blue-500" 
+              :checked="form.demo_mode === '1'" 
+              class="mt-1 text-blue-600 focus:ring-blue-500 pointer-events-none" 
             />
             <div class="flex-1">
               <span class="block text-xs font-bold text-slate-900">
@@ -98,23 +104,24 @@
                 បង្ហាញទិន្នន័យគំរូពេញលេញ (សិស្ស ២០+ នាក់, គ្រូ ១០+ នាក់, វត្តមាន, ពិន្ទុ, ហិរញ្ញវត្ថុ) សម្រាប់ Demo បានគ្រប់កន្លែង ទោះបីលើ Production ក៏ដោយ។
               </span>
             </div>
-          </label>
+          </div>
 
           <!-- Option 2: Live / Production Mode -->
-          <label 
+          <div 
+            @click="handleModeChange('0')"
             :class="[
-              'flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all',
+              'flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all select-none',
               form.demo_mode === '0' 
                 ? 'border-blue-600 bg-white shadow-xs ring-2 ring-blue-500/20' 
-                : 'border-slate-200 bg-white/70 hover:bg-white'
+                : 'border-slate-200 bg-white/70 hover:bg-white hover:border-slate-300'
             ]"
           >
             <input 
               type="radio" 
               name="system_mode" 
               value="0" 
-              v-model="form.demo_mode" 
-              class="mt-1 text-blue-600 focus:ring-blue-500" 
+              :checked="form.demo_mode === '0'" 
+              class="mt-1 text-blue-600 focus:ring-blue-500 pointer-events-none" 
             />
             <div class="flex-1">
               <span class="block text-xs font-bold text-slate-900">
@@ -124,7 +131,7 @@
                 បង្ហាញតែទិន្នន័យពិតប្រាកដដែលបានបញ្ចូល និងរក្សាទុកក្នុង Database ជាក់ស្តែងប៉ុណ្ណោះ។
               </span>
             </div>
-          </label>
+          </div>
         </div>
       </div>
 
@@ -752,12 +759,46 @@ const stampPreview = ref('');
 const khqrFile = ref(null);
 const khqrPreview = ref('');
 
+// Auto save mode state
+const isSwitchingMode = ref(false);
+const modeMessage = ref('');
+
+const handleModeChange = async (newMode) => {
+  form.value.demo_mode = newMode;
+  localStorage.setItem('pdt_demo_mode', newMode);
+  isSwitchingMode.value = true;
+  modeMessage.value = newMode === '1' 
+    ? '🚀 បានប្តូរទៅកាន់ Demo Mode (បានរក្សាទុករួចរាល់)' 
+    : '🔒 បានប្តូរទៅកាន់ Live Production (បានរក្សាទុករួចរាល់)';
+
+  try {
+    const data = new FormData();
+    data.append('demo_mode', newMode);
+    await axios.post('/api/settings', data);
+  } catch (err) {
+    console.warn('Auto save demo_mode warning:', err);
+  } finally {
+    setTimeout(() => {
+      modeMessage.value = '';
+      isSwitchingMode.value = false;
+    }, 2500);
+  }
+};
+
 const fetchSettings = async () => {
   try {
     const res = await axios.get('/api/settings');
     if (res.data) {
       if (res.data.settings) {
-        Object.assign(form.value, res.data.settings);
+        const s = res.data.settings;
+        Object.assign(form.value, s);
+        // Sync demo_mode from DB or localStorage
+        if (s.demo_mode !== undefined && s.demo_mode !== null) {
+          form.value.demo_mode = String(s.demo_mode);
+          localStorage.setItem('pdt_demo_mode', form.value.demo_mode);
+        } else if (localStorage.getItem('pdt_demo_mode')) {
+          form.value.demo_mode = localStorage.getItem('pdt_demo_mode');
+        }
       }
       if (res.data.academicYears) {
         academicYears.value = res.data.academicYears;

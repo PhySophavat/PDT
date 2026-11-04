@@ -2611,6 +2611,7 @@ class ApiController extends Controller
             'bank_account_name' => 'PDT SCHOOL CO., LTD',
             'bank_account_number' => '001 234 567',
             'khqr_image' => null,
+            'demo_mode' => '1',
             'enable_public_registration' => '1',
             'enable_teacher_score_edit' => '1',
             'role_permissions' => json_encode([
