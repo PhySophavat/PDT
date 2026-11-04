@@ -462,7 +462,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useI18n } from 'vue-I18n';
+import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
