@@ -42,7 +42,7 @@
     @endif
 
     <!-- Login Form -->
-    <form action="{{ url('/login') }}" method="POST" class="space-y-4">
+    <form action="/login" method="POST" class="space-y-4">
         @csrf
 
         <!-- Email Field -->

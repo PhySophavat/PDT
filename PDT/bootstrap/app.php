@@ -11,6 +11,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustProxies(at: '*');
         $middleware->alias([
             'protect.route' => \App\Http\Middleware\ProtectRoute::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
