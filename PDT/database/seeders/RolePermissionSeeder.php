@@ -127,7 +127,7 @@ class RolePermissionSeeder extends Seeder
         $studentUser->roles()->sync(Role::where('name', 'student')->pluck('id'));
 
         // === 6. Attach teacher/student models ===
-        Teacher::firstOrCreate(['user_id' => $teacherUser->id], ['subject' => 'គណិតវិទ្យា']);
-        Student::firstOrCreate(['user_id' => $studentUser->id], ['grade' => '7A']);
+        Teacher::firstOrCreate(['user_id' => $teacherUser->id], ['subject' => 'គណិតវិទ្យា', 'gender' => 'male', 'name_khmer' => 'គ្រូ គំរូ']);
+        Student::firstOrCreate(['user_id' => $studentUser->id], ['grade' => '7A', 'gender' => 'male', 'name_khmer' => 'បូរ៉ា', 'student_id_card' => 'STU-0003']);
     }
 }

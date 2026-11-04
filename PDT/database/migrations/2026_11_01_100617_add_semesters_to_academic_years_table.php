@@ -11,10 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('academic_years', function (Blueprint $table) {
-            $table->string('semester_1')->nullable()->default('Oct-Feb')->after('end_date');
-            $table->string('semester_2')->nullable()->default('Mar-Jul')->after('semester_1');
-        });
+        if (Schema::hasTable('academic_years')) {
+            Schema::table('academic_years', function (Blueprint $table) {
+                if (!Schema::hasColumn('academic_years', 'semester_1')) {
+                    $table->string('semester_1')->nullable()->default('Oct-Feb');
+                }
+                if (!Schema::hasColumn('academic_years', 'semester_2')) {
+                    $table->string('semester_2')->nullable()->default('Mar-Jul');
+                }
+            });
+        }
     }
 
     /**

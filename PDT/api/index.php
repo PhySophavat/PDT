@@ -58,9 +58,36 @@ if (!getenv('LOG_CHANNEL') || getenv('LOG_CHANNEL') === 'stack') {
     $_ENV['LOG_CHANNEL'] = 'stderr';
 }
 
+// 3. Database configuration for Vercel
+// If an external MySQL DB is configured in Vercel Environment Variables, use MySQL.
+// Otherwise, copy pre-seeded database/database.sqlite to /tmp/database.sqlite for instant out-of-the-box working!
+if (!getenv('DB_CONNECTION') || getenv('DB_CONNECTION') === 'sqlite') {
+    putenv('DB_CONNECTION=sqlite');
+    $_ENV['DB_CONNECTION'] = 'sqlite';
+
+    $sqliteDest = '/tmp/database.sqlite';
+    $sqliteSrc = __DIR__ . '/../database/database.sqlite';
+
+    if (file_exists($sqliteSrc)) {
+        if (!file_exists($sqliteDest) || filesize($sqliteDest) === 0) {
+            @copy($sqliteSrc, $sqliteDest);
+        }
+    } elseif (!file_exists($sqliteDest)) {
+        @touch($sqliteDest);
+    }
+
+    putenv("DB_SQLITE_PATH={$sqliteDest}");
+    $_ENV['DB_SQLITE_PATH'] = $sqliteDest;
+    $_SERVER['DB_SQLITE_PATH'] = $sqliteDest;
+
+    putenv("DB_DATABASE={$sqliteDest}");
+    $_ENV['DB_DATABASE'] = $sqliteDest;
+    $_SERVER['DB_DATABASE'] = $sqliteDest;
+}
+
 // Show detailed errors on Vercel so we know if database or any specific call fails
 putenv('APP_DEBUG=true');
 $_ENV['APP_DEBUG'] = 'true';
 
-// 3. Forward to public index.php
+// 4. Forward to public index.php
 require __DIR__ . '/../public/index.php';

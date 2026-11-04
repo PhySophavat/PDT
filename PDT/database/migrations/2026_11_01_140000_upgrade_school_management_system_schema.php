@@ -18,6 +18,8 @@ return new class extends Migration
                 $table->string('name')->unique(); // e.g. "2025-2026"
                 $table->date('start_date')->nullable();
                 $table->date('end_date')->nullable();
+                $table->string('semester_1')->nullable()->default('Oct-Feb');
+                $table->string('semester_2')->nullable()->default('Mar-Jul');
                 $table->boolean('is_current')->default(false);
                 $table->string('status')->default('active'); // active, inactive
                 $table->timestamps();
