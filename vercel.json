@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "framework": null,
+  "buildCommand": "cd PDT && npm run build",
+  "outputDirectory": "PDT/public",
+  "functions": {
+    "PDT/api/index.php": {
+      "runtime": "vercel-php@0.7.3"
+    }
+  },
+  "routes": [
+    {
+      "src": "/build/(.*)",
+      "dest": "/PDT/public/build/$1"
+    },
+    {
+      "src": "/(favicon.ico|robots.txt)",
+      "dest": "/PDT/public/$1"
+    },
+    {
+      "src": "/images/(.*)",
+      "dest": "/PDT/public/images/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/PDT/api/index.php"
+    }
+  ]
+}

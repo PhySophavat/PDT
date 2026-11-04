@@ -1,0 +1,4 @@
+PDT/vendor
+PDT/node_modules
+.git
+PDT/.env

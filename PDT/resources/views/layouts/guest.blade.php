@@ -4,38 +4,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>@yield('title', 'LMSTICK - ចូលប្រើប្រព័ន្ធ')</title>
+
+    <!-- Google Fonts: Kantumruy Pro & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-    <title>@yield('title', 'LMSTICK - ចូលប្រើប្រព័ន្ធ')</title>
-    @include('partials.theme-head')
-</head>
-<body>
-    <div class="guest-shell font-khmer">
-        <div class="guest-toolbar">
-            @include('partials.theme-toggle')
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-            <a href="{{ route('login') }}" class="guest-brand">
-                <span class="guest-brand__mark">LMSTICK</span>
-                <span class="app-brand__text">
-                    <span class="app-brand__title">ប្រព័ន្ធគ្រប់គ្រងសាលារៀន</span>
-                    <span class="app-brand__subtitle">School Management</span>
-                </span>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        khmer: ['"Kantumruy Pro"', '"Plus Jakarta Sans"', 'sans-serif'],
+                        sans: ['"Plus Jakarta Sans"', '"Kantumruy Pro"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', sans-serif;
+        }
+        input, button, select, textarea {
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-100 via-blue-50/40 to-indigo-50/50 min-h-screen flex flex-col justify-between font-khmer text-slate-800 antialiased selection:bg-blue-600 selection:text-white relative overflow-x-hidden">
+
+    <!-- Ambient Gradient Blobs in Background -->
+    <div class="fixed -top-32 -left-32 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="fixed -bottom-32 -right-32 w-96 h-96 bg-indigo-400/15 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- Header Bar -->
+    <header class="w-full px-6 py-5 flex items-center justify-between max-w-6xl mx-auto z-10">
+        <a href="{{ url('/') }}" class="flex items-center gap-3 group">
+            <!-- Brand Mark Circle (Blue & Navy) -->
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#1e3a8a] to-[#2563eb] flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform flex-shrink-0">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" opacity="0.3"/>
+                    <path d="M12 4a8 8 0 0 1 8 8h-8V4z" fill="#ffffff"/>
+                </svg>
+            </div>
+            <div>
+                <span class="text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-blue-700 transition">LMSTICK</span>
+                <span class="block text-[11px] font-semibold text-slate-400 leading-tight">School Management</span>
+            </div>
+        </a>
+
+        <!-- Public links / help -->
+        <div class="flex items-center gap-3 text-xs">
+            <a href="{{ url('/leave-request') }}" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/80 hover:bg-white text-indigo-700 border border-slate-200/80 rounded-xl font-semibold shadow-xs transition hover:shadow-sm">
+                <i class="fa-solid fa-file-pen text-[11px]"></i>
+                <span>ទម្រង់សុំច្បាប់</span>
             </a>
         </div>
+    </header>
 
-        <main class="guest-card">
-            @yield('content')
-        </main>
-    </div>
+    <!-- Main Content Shell -->
+    <main class="w-full max-w-md mx-auto px-4 py-8 z-10 my-auto">
+        @yield('content')
+    </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Footer -->
+    <footer class="w-full text-center py-6 text-xs text-slate-400 z-10">
+        <p>© {{ date('Y') }} LMSTICK School Management System. រក្សាសិទ្ធិគ្រប់យ៉ាង។</p>
+    </footer>
+
     @stack('scripts')
 </body>
 </html>

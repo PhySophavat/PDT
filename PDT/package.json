@@ -3,8 +3,13 @@
     "private": true,
     "type": "module",
     "scripts": {
+        "postinstall": "node node_modules/esbuild/install.js || true",
         "build": "vite build",
         "dev": "vite"
+    },
+    "allowScripts": {
+        "esbuild": true,
+        "tesseract.js": true
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
