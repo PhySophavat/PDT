@@ -32,39 +32,75 @@ use Carbon\Carbon;
 
 class ApiController extends Controller
 {
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        $totalStudents = Student::count();
-        $totalTeachers = Teacher::count();
-        $totalClasses = SchoolClass::count() ?: 48;
-        $totalSubjects = CourseSubject::count() ?: 11;
-        $totalRevenue = (float) Payment::sum('amount');
-        $totalExpenses = (float) SchoolExpense::sum('amount');
+        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '1'));
 
-        $recentStudents = Student::with('user')
-            ->latest()
-            ->take(6)
-            ->get()
-            ->map(fn ($st) => [
-                'id' => $st->id,
-                'idCard' => $st->student_id_card,
-                'name' => $st->user?->name ?? 'N/A',
-                'gender' => $st->gender === 'male' ? 'ប្រុស' : 'ស្រី',
-                'grade' => $st->grade,
-                'phone' => $st->phone,
-                'status' => $st->status ?? 'Active'
+        if ($demoMode === '0') {
+            // Live Production Mode: return strictly real database records
+            $totalStudents = Student::count();
+            $totalTeachers = Teacher::count();
+            $totalClasses = SchoolClass::count();
+            $totalSubjects = CourseSubject::count();
+            $totalRevenue = (float) Payment::sum('amount');
+            $totalExpenses = (float) SchoolExpense::sum('amount');
+
+            $today = Carbon::today()->toDateString();
+            $todayTotal = Attendance::whereDate('date', $today)->count();
+            $todayPresent = Attendance::whereDate('date', $today)->whereIn('status', ['present', 'late'])->count();
+            $attendanceRate = $todayTotal > 0 ? round(($todayPresent / $todayTotal) * 100, 1) : 0;
+
+            $realClasses = SchoolClass::with('teacher')->take(10)->get()->map(function ($cls) use ($today) {
+                $stuCount = Student::where('grade', $cls->name)->count();
+                $presentCount = Attendance::where('class_name', $cls->name)->whereDate('date', $today)->whereIn('status', ['present', 'late'])->count();
+                $absentCount = Attendance::where('class_name', $cls->name)->whereDate('date', $today)->where('status', 'absent')->count();
+                $rate = $stuCount > 0 ? round(($presentCount / $stuCount) * 100, 1) : 0;
+
+                return [
+                    'name' => $cls->name,
+                    'teacher' => $cls->teacher?->name_khmer ?: ($cls->teacher?->user?->name ?: 'មិនទាន់ចាត់តាំង'),
+                    'students' => $stuCount,
+                    'present' => $presentCount,
+                    'absent' => $absentCount,
+                    'rate' => $rate,
+                ];
+            });
+
+            return response()->json([
+                'demo_mode' => '0',
+                'stats' => [
+                    'students' => $totalStudents,
+                    'teachers' => $totalTeachers,
+                    'classes' => $totalClasses,
+                    'subjects' => $totalSubjects,
+                    'revenue' => $totalRevenue,
+                    'expenses' => $totalExpenses,
+                    'attendanceRate' => $attendanceRate,
+                ],
+                'recentClasses' => $realClasses,
             ]);
+        }
 
+        // Demo / Dev Mode: return rich full mock numbers and classes
         return response()->json([
+            'demo_mode' => '1',
             'stats' => [
-                'students' => $totalStudents,
-                'teachers' => $totalTeachers,
-                'classes' => $totalClasses,
-                'subjects' => $totalSubjects,
-                'revenue' => $totalRevenue,
-                'expenses' => $totalExpenses,
+                'students' => 120,
+                'teachers' => 15,
+                'classes' => 48,
+                'subjects' => 11,
+                'revenue' => 14250.00,
+                'expenses' => 4800.00,
+                'attendanceRate' => 96.8,
             ],
-            'recentStudents' => $recentStudents,
+            'recentClasses' => [
+                ['name' => '7A', 'teacher' => 'លោកគ្រូ សុខ ចាន់ដារ៉ា', 'students' => 35, 'present' => 34, 'absent' => 1, 'rate' => 97.1],
+                ['name' => '8A', 'teacher' => 'អ្នកគ្រូ កែវ មុនីរ័ត្ន', 'students' => 36, 'present' => 35, 'absent' => 1, 'rate' => 97.2],
+                ['name' => '9A', 'teacher' => 'លោកគ្រូ ជា វណ្ណៈ', 'students' => 34, 'present' => 32, 'absent' => 2, 'rate' => 94.1],
+                ['name' => '10A', 'teacher' => 'លោកគ្រូ ហេង បូរ៉ា', 'students' => 38, 'present' => 37, 'absent' => 1, 'rate' => 97.4],
+                ['name' => '11A', 'teacher' => 'អ្នកគ្រូ អ៊ុក សោភា', 'students' => 32, 'present' => 31, 'absent' => 1, 'rate' => 96.9],
+                ['name' => '12A', 'teacher' => 'លោកគ្រូ សេង វិបុល', 'students' => 35, 'present' => 35, 'absent' => 0, 'rate' => 100.0],
+            ],
         ]);
     }
 

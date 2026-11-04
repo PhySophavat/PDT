@@ -40,8 +40,8 @@
     <FilterBar>
       <template #left>
         <span class="font-medium text-slate-700">{{ t('students.status') }}: <span class="font-bold text-[#1e40af]">{{ t('common.active') }}</span></span>
-        <span class="font-medium text-slate-700 ml-2">{{ t('dashboard.attendanceToday') }}: <span class="font-bold text-emerald-600">96.8%</span></span>
-        <span class="font-medium text-slate-700 ml-2">{{ t('dashboard.totalRevenue') }}: <span class="font-bold text-slate-900">$14,250.00</span></span>
+        <span class="font-medium text-slate-700 ml-2">{{ t('dashboard.attendanceToday') }}: <span class="font-bold text-emerald-600">{{ stats.attendanceRate }}%</span></span>
+        <span class="font-medium text-slate-700 ml-2">{{ t('dashboard.totalRevenue') }}: <span class="font-bold text-slate-900">${{ Number(stats.revenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span></span>
       </template>
 
       <template #right>
@@ -77,6 +77,12 @@
       </template>
 
       <template #body>
+        <tr v-if="recentClasses.length === 0">
+          <td colspan="7" class="py-12 text-center text-slate-400">
+            <i class="fa-solid fa-folder-open text-2xl text-slate-300 block mb-2"></i>
+            <span class="text-xs">មិនទាន់មានទិន្នន័យ (គ្មានថ្នាក់រៀន ឬទិន្នន័យវត្តមានកត់ត្រាក្នុងប្រព័ន្ធ)</span>
+          </td>
+        </tr>
         <tr v-for="cls in recentClasses" :key="cls.name" class="hover:bg-slate-50/70 transition-colors">
           <td class="py-3 px-4 font-bold text-slate-800">
             <router-link :to="`/classes`" class="text-blue-600 hover:underline">
@@ -118,30 +124,42 @@ const { t } = useI18n();
 
 const activeTab = ref('overview');
 
+const isDemo = localStorage.getItem('pdt_demo_mode') !== '0';
+
 const stats = ref({
-  students: 120,
-  teachers: 15,
-  classes: 48,
-  subjects: 11
+  students: isDemo ? 120 : 0,
+  teachers: isDemo ? 15 : 0,
+  classes: isDemo ? 48 : 0,
+  subjects: isDemo ? 11 : 0,
+  revenue: isDemo ? 14250.00 : 0,
+  attendanceRate: isDemo ? 96.8 : 0,
 });
 
-const recentClasses = ref([
+const recentClasses = ref(isDemo ? [
   { name: '7A', teacher: 'លោកគ្រូ សុខ ចាន់ដារ៉ា', students: 35, present: 34, absent: 1, rate: 97.1 },
   { name: '8A', teacher: 'អ្នកគ្រូ កែវ មុនីរ័ត្ន', students: 36, present: 35, absent: 1, rate: 97.2 },
   { name: '9A', teacher: 'លោកគ្រូ ជា វណ្ណៈ', students: 34, present: 32, absent: 2, rate: 94.1 },
   { name: '10A', teacher: 'លោកគ្រូ ហេង បូរ៉ា', students: 38, present: 37, absent: 1, rate: 97.4 },
   { name: '11A', teacher: 'អ្នកគ្រូ អ៊ុក សោភា', students: 32, present: 31, absent: 1, rate: 96.9 },
   { name: '12A', teacher: 'លោកគ្រូ សេង វិបុល', students: 35, present: 35, absent: 0, rate: 100.0 }
-]);
+] : []);
 
 onMounted(async () => {
+  const currentMode = localStorage.getItem('pdt_demo_mode') || '1';
   try {
-    const res = await axios.get('/api/dashboard');
-    if (res.data && res.data.stats) {
-      stats.value = res.data.stats;
+    const res = await axios.get('/api/dashboard', {
+      params: { demo_mode: currentMode }
+    });
+    if (res.data) {
+      if (res.data.stats) {
+        stats.value = res.data.stats;
+      }
+      if (res.data.recentClasses) {
+        recentClasses.value = res.data.recentClasses;
+      }
     }
   } catch (e) {
-    // Keep defaults
+    console.error('Failed to load dashboard:', e);
   }
 });
 
