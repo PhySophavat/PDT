@@ -67,20 +67,53 @@ class ComprehensiveSchoolSeeder extends Seeder
             SystemSetting::set($key, $val);
         }
 
-        // 3. Teachers & Students update
-        $firstTeacher = Teacher::first();
-        if ($firstTeacher) {
-            $firstTeacher->update([
-                'teacher_id_card' => $firstTeacher->teacher_id_card ?: 'TCH-2026-001',
-                'qualification' => 'បរិញ្ញាបត្រជាន់ខ្ពស់គរុកោសល្យ',
-                'specialization' => 'គណិតវិទ្យា',
-                'joining_date' => '2023-10-01',
-                'salary' => 650.00,
-                'status' => 'active',
-                'gender' => $firstTeacher->gender ?: 'ប្រុស',
-                'class_assigned' => '7A,7B',
-            ]);
+        // 3. Teachers (10 Comprehensive Khmer Teachers)
+        $teacherRole = \App\Models\Role::firstOrCreate(['name' => 'teacher'], ['description' => 'គ្រូបង្រៀន']);
+        $teachersData = [
+            ['name' => 'លោក ឈុន វណ្ណា', 'name_latin' => 'Chhun Vanna', 'email' => 'vanna.chhun@example.com', 'subject' => 'គណិតវិទ្យា', 'gender' => 'ប្រុស', 'phone' => '012 345 678', 'salary' => 750, 'classes' => '7A, 7B, 12A', 'specialization' => 'គណិតវិទ្យាកម្រិតខ្ពស់', 'qualification' => 'បរិញ្ញាបត្រជាន់ខ្ពស់គរុកោសល្យ'],
+            ['name' => 'អ្នកគ្រូ កែវ សុផល', 'name_latin' => 'Keo Sophal', 'email' => 'sophal.keo@example.com', 'subject' => 'ភាសាខ្មែរ', 'gender' => 'ស្រី', 'phone' => '098 765 432', 'salary' => 650, 'classes' => '7A, 8A, 9A', 'specialization' => 'អក្សរសិល្ប៍ខ្មែរ', 'qualification' => 'បរិញ្ញាបត្រអក្សរសាស្ត្រខ្មែរ'],
+            ['name' => 'លោក សេង សុខា', 'name_latin' => 'Seng Sokha', 'email' => 'sokha.seng@example.com', 'subject' => 'ភាសាអង់គ្លេស', 'gender' => 'ប្រុស', 'phone' => '017 888 999', 'salary' => 680, 'classes' => '7A, 7B, 8B', 'specialization' => 'TEFL / ESL Teaching', 'qualification' => 'Bachelor of Education (English)'],
+            ['name' => 'លោក អ៊ុំ រតនៈ', 'name_latin' => 'Oum Rattanak', 'email' => 'rattanak.oum@example.com', 'subject' => 'រូបវិទ្យា', 'gender' => 'ប្រុស', 'phone' => '077 222 333', 'salary' => 620, 'classes' => '8A, 9A, 10A', 'specialization' => 'រូបវិទ្យាអនុវត្ត', 'qualification' => 'បរិញ្ញាបត្ររូបវិទ្យា'],
+            ['name' => 'អ្នកគ្រូ មាស ចរិយា', 'name_latin' => 'Meas Chariya', 'email' => 'chariya.meas@example.com', 'subject' => 'គីមីវិទ្យា', 'gender' => 'ស្រី', 'phone' => '089 444 555', 'salary' => 630, 'classes' => '9A, 10A, 11A', 'specialization' => 'គីមីវិទ្យាសរីរាង្គ', 'qualification' => 'បរិញ្ញាបត្រគីមីវិទ្យា'],
+            ['name' => 'លោក លឹម ប៊ុនធឿន', 'name_latin' => 'Lim Bunthoeun', 'email' => 'bunthoeun.lim@example.com', 'subject' => 'ជីវវិទ្យា', 'gender' => 'ប្រុស', 'phone' => '015 666 777', 'salary' => 600, 'classes' => '8A, 9A, 10A', 'specialization' => 'ជីវវិទ្យា និងបរិស្ថាន', 'qualification' => 'បរិញ្ញាបត្រជីវវិទ្យា'],
+            ['name' => 'អ្នកគ្រូ សួន ចិន្តា', 'name_latin' => 'Suon Chenda', 'email' => 'chenda.suon@example.com', 'subject' => 'ប្រវត្តិវិទ្យា', 'gender' => 'ស្រី', 'phone' => '092 111 222', 'salary' => 590, 'classes' => '7A, 8A, 9A', 'specialization' => 'ប្រវត្តិសាស្ត្រអាស៊ីអាគ្នេយ៍', 'qualification' => 'បរិញ្ញាបត្រប្រវត្តិវិទ្យា'],
+            ['name' => 'អ្នកគ្រូ ពេជ្រ ពិសី', 'name_latin' => 'Pech Pisey', 'email' => 'pisey.pech@example.com', 'subject' => 'ភូមិវិទ្យា', 'gender' => 'ស្រី', 'phone' => '070 333 444', 'salary' => 590, 'classes' => '7B, 8B, 10A', 'specialization' => 'ភូមិវិទ្យាសេដ្ឋកិច្ច', 'qualification' => 'បរិញ្ញាបត្រភូមិវិទ្យា'],
+            ['name' => 'លោក តាំង គីមឡេង', 'name_latin' => 'Tang Kimleng', 'email' => 'kimleng.tang@example.com', 'subject' => 'ព័ត៌មានវិទ្យា', 'gender' => 'ប្រុស', 'phone' => '016 555 666', 'salary' => 700, 'classes' => '7A, 8A, 9A, 10A', 'specialization' => 'Web Development & Python', 'qualification' => 'បរិញ្ញាបត្រវិទ្យាសាស្ត្រកុំព្យូទ័រ'],
+            ['name' => 'លោក ម៉ៅ សុវណ្ណារ៉ា', 'name_latin' => 'Mao Sovannara', 'email' => 'sovannara.mao@example.com', 'subject' => 'អប់រំកាយ និងកីឡា', 'gender' => 'ប្រុស', 'phone' => '088 999 111', 'salary' => 580, 'classes' => '7A, 7B, 8A, 8B', 'specialization' => 'កីឡាបាល់ទាត់ និងបាល់ទះ', 'qualification' => 'វិញ្ញាបនបត្រគរុកោសល្យកីឡា'],
+        ];
+
+        $createdTeachers = [];
+        foreach ($teachersData as $tIdx => $tItem) {
+            $u = \App\Models\User::firstOrCreate(
+                ['email' => $tItem['email']],
+                [
+                    'name' => $tItem['name'],
+                    'password' => bcrypt('password'),
+                ]
+            );
+            $u->roles()->syncWithoutDetaching([$teacherRole->id]);
+
+            $tch = Teacher::updateOrCreate(
+                ['teacher_id_card' => sprintf('TCH-2026-%03d', $tIdx + 1)],
+                [
+                    'user_id' => $u->id,
+                    'name_khmer' => $tItem['name'],
+                    'name_latin' => $tItem['name_latin'],
+                    'subject' => $tItem['subject'],
+                    'gender' => $tItem['gender'],
+                    'phone' => $tItem['phone'],
+                    'salary' => $tItem['salary'],
+                    'class_assigned' => $tItem['classes'],
+                    'specialization' => $tItem['specialization'],
+                    'qualification' => $tItem['qualification'],
+                    'joining_date' => '2023-10-01',
+                    'status' => 'active',
+                ]
+            );
+            $createdTeachers[] = $tch;
         }
+
+        $firstTeacher = $createdTeachers[0] ?? null;
 
         // 4. Classes (7A-7H to 12A-12H)
         $grades = [7, 8, 9, 10, 11, 12];
@@ -104,19 +137,62 @@ class ComprehensiveSchoolSeeder extends Seeder
             }
         }
 
-        // Update Students
-        $students = Student::all();
-        $counter = 1;
-        foreach ($students as $stu) {
-            $stu->update([
-                'student_id_card' => $stu->student_id_card ?: sprintf('STU-2026-%03d', $counter++),
-                'status' => $stu->status ?: 'active',
-                'academic_year_id' => $ayCurrent->id,
-                'enrollment_date' => $stu->enrollment_date ?: '2025-10-01',
-                'emergency_contact' => $stu->emergency_contact ?: '012 999 888',
-                'grade' => $stu->grade ?: '7A',
-            ]);
+        // Seed 20 Realistic Khmer Students
+        $studentRole = \App\Models\Role::firstOrCreate(['name' => 'student'], ['description' => 'សិស្សានុសិស្ស']);
+        $studentsData = [
+            ['name' => 'សុខ ពិសិដ្ឋ', 'name_latin' => 'Sok Piseth', 'email' => 'piseth.sok@example.com', 'grade' => '7A', 'gender' => 'ប្រុស', 'phone' => '012 111 222', 'dob' => '2012-05-14', 'parent' => 'សុខ ជា', 'parent_phone' => '012 888 777'],
+            ['name' => 'ចាន់ ធីតា', 'name_latin' => 'Chan Thida', 'email' => 'thida.chan@example.com', 'grade' => '7A', 'gender' => 'ស្រី', 'phone' => '098 222 333', 'dob' => '2012-08-20', 'parent' => 'ចាន់ សុផល', 'parent_phone' => '098 777 666'],
+            ['name' => 'មាស សុវណ្ណ', 'name_latin' => 'Meas Sovann', 'email' => 'sovann.meas@example.com', 'grade' => '7A', 'gender' => 'ប្រុស', 'phone' => '077 333 444', 'dob' => '2012-01-10', 'parent' => 'មាស រ៉ា', 'parent_phone' => '077 666 555'],
+            ['name' => 'គង់ ចិន្តា', 'name_latin' => 'Kong Chenda', 'email' => 'chenda.kong@example.com', 'grade' => '7A', 'gender' => 'ស្រី', 'phone' => '015 444 555', 'dob' => '2012-11-25', 'parent' => 'គង់ សារ៉េត', 'parent_phone' => '015 555 444'],
+            ['name' => 'ហេង វិសាល', 'name_latin' => 'Heng Visal', 'email' => 'visal.heng@example.com', 'grade' => '7A', 'gender' => 'ប្រុស', 'phone' => '089 555 666', 'dob' => '2012-03-30', 'parent' => 'ហេង វុទ្ធី', 'parent_phone' => '089 444 333'],
+            ['name' => 'កែវ រចនា', 'name_latin' => 'Keo Rachana', 'email' => 'rachana.keo@example.com', 'grade' => '7A', 'gender' => 'ស្រី', 'phone' => '070 666 777', 'dob' => '2012-07-15', 'parent' => 'កែវ សម្បត្តិ', 'parent_phone' => '070 333 222'],
+            ['name' => 'លី ដារ៉ា', 'name_latin' => 'Ly Dara', 'email' => 'dara.ly@example.com', 'grade' => '7B', 'gender' => 'ប្រុស', 'phone' => '016 777 888', 'dob' => '2012-09-05', 'parent' => 'លី សេង', 'parent_phone' => '016 222 111'],
+            ['name' => 'វ៉ាន់ ស្រីមុំ', 'name_latin' => 'Van Sreymom', 'email' => 'sreymom.van@example.com', 'grade' => '7B', 'gender' => 'ស្រី', 'phone' => '092 888 999', 'dob' => '2012-04-18', 'parent' => 'វ៉ាន់ ធឿន', 'parent_phone' => '092 111 000'],
+            ['name' => 'ឃុន វឌ្ឍនា', 'name_latin' => 'Khun Vathana', 'email' => 'vathana.khun@example.com', 'grade' => '7B', 'gender' => 'ប្រុស', 'phone' => '011 999 000', 'dob' => '2012-12-01', 'parent' => 'ឃុន ផល្លា', 'parent_phone' => '011 000 999'],
+            ['name' => 'អ៊ុង គីមសួរ', 'name_latin' => 'Ung Kimsour', 'email' => 'kimsour.ung@example.com', 'grade' => '7B', 'gender' => 'ស្រី', 'phone' => '093 111 333', 'dob' => '2012-06-22', 'parent' => 'អ៊ុង វីរៈ', 'parent_phone' => '093 999 888'],
+            ['name' => 'សេង បូរ៉ា', 'name_latin' => 'Seng Bora', 'email' => 'bora.seng@example.com', 'grade' => '8A', 'gender' => 'ប្រុស', 'phone' => '012 444 888', 'dob' => '2011-02-17', 'parent' => 'សេង ប៊ុនណា', 'parent_phone' => '012 888 444'],
+            ['name' => 'នួន ស្រីណែត', 'name_latin' => 'Nuon Sreynet', 'email' => 'sreynet.nuon@example.com', 'grade' => '8A', 'gender' => 'ស្រី', 'phone' => '098 555 111', 'dob' => '2011-10-08', 'parent' => 'នួន សុខឃីម', 'parent_phone' => '098 111 555'],
+            ['name' => 'ជា សុភាព', 'name_latin' => 'Chea Sopheap', 'email' => 'sopheap.chea@example.com', 'grade' => '8A', 'gender' => 'ប្រុស', 'phone' => '077 666 222', 'dob' => '2011-07-29', 'parent' => 'ជា ចំរើន', 'parent_phone' => '077 222 666'],
+            ['name' => 'ឌិត មុនី', 'name_latin' => 'Dy Mony', 'email' => 'mony.dy@example.com', 'grade' => '8A', 'gender' => 'ស្រី', 'phone' => '015 777 333', 'dob' => '2011-03-12', 'parent' => 'ឌិត ថាវី', 'parent_phone' => '015 333 777'],
+            ['name' => 'អេង សុភ័ក្ត្រ', 'name_latin' => 'Eng Sopheak', 'email' => 'sopheak.eng@example.com', 'grade' => '9A', 'gender' => 'ប្រុស', 'phone' => '089 888 444', 'dob' => '2010-09-19', 'parent' => 'អេង រតនា', 'parent_phone' => '089 444 888'],
+            ['name' => 'យឹម ម៉ាលី', 'name_latin' => 'Yim Maly', 'email' => 'maly.yim@example.com', 'grade' => '9A', 'gender' => 'ស្រី', 'phone' => '070 999 555', 'dob' => '2010-12-31', 'parent' => 'យឹម សុគន្ធ', 'parent_phone' => '070 555 999'],
+            ['name' => 'ស៊ូ វិរៈ', 'name_latin' => 'Sou Vireak', 'email' => 'vireak.sou@example.com', 'grade' => '10A', 'gender' => 'ប្រុស', 'phone' => '016 000 666', 'dob' => '2009-08-04', 'parent' => 'ស៊ូ ហេង', 'parent_phone' => '016 666 000'],
+            ['name' => 'ផាន់ ធីរ៉ា', 'name_latin' => 'Phan Thira', 'email' => 'thira.phan@example.com', 'grade' => '11A', 'gender' => 'ស្រី', 'phone' => '092 111 777', 'dob' => '2008-04-26', 'parent' => 'ផាន់ គឹមហួរ', 'parent_phone' => '092 777 111'],
+            ['name' => 'ព្រំ សុភា', 'name_latin' => 'Prom Sophea', 'email' => 'sophea.prom@example.com', 'grade' => '12A', 'gender' => 'ស្រី', 'phone' => '011 222 888', 'dob' => '2007-01-15', 'parent' => 'ព្រំ វ៉ាន់នី', 'parent_phone' => '011 888 222'],
+            ['name' => 'ឡុង សម្បត្តិ', 'name_latin' => 'Long Sambath', 'email' => 'sambath.long@example.com', 'grade' => '12A', 'gender' => 'ប្រុស', 'phone' => '093 333 999', 'dob' => '2007-11-09', 'parent' => 'ឡុង វិសិដ្ឋ', 'parent_phone' => '093 999 333'],
+        ];
+
+        foreach ($studentsData as $sIdx => $sItem) {
+            $u = \App\Models\User::firstOrCreate(
+                ['email' => $sItem['email']],
+                [
+                    'name' => $sItem['name'],
+                    'password' => bcrypt('password'),
+                ]
+            );
+            $u->roles()->syncWithoutDetaching([$studentRole->id]);
+
+            Student::updateOrCreate(
+                ['student_id_card' => sprintf('STU-2026-%03d', $sIdx + 1)],
+                [
+                    'user_id' => $u->id,
+                    'name_khmer' => $sItem['name'],
+                    'name_latin' => $sItem['name_latin'],
+                    'grade' => $sItem['grade'],
+                    'gender' => $sItem['gender'],
+                    'phone' => $sItem['phone'],
+                    'date_of_birth' => $sItem['dob'],
+                    'parent_name' => $sItem['parent'],
+                    'parent_phone' => $sItem['parent_phone'],
+                    'emergency_contact' => $sItem['parent_phone'],
+                    'academic_year_id' => $ayCurrent->id,
+                    'enrollment_date' => '2025-10-01',
+                    'status' => 'active',
+                ]
+            );
         }
+
+        $students = Student::all();
 
         // 5. Course Subjects
         $subjectsData = [
@@ -367,31 +443,45 @@ class ComprehensiveSchoolSeeder extends Seeder
         $yesterday = Carbon::yesterday()->toDateString();
 
         foreach ($students as $idx => $stu) {
-            Attendance::firstOrCreate(
-                [
-                    'student_id' => $stu->id,
-                    'date' => $today,
-                ],
-                [
-                    'class_name' => $stu->grade ?: '7A',
-                    'status' => $idx === 2 ? 'late' : 'present',
-                    'remark' => $idx === 2 ? 'យឺត ១០ នាទី' : 'មកទាន់ម៉ោង',
-                    'academic_year_id' => $ayCurrent->id,
-                ]
-            );
+            Attendance::where('student_id', $stu->id)->whereDate('date', $today)->delete();
+            Attendance::create([
+                'student_id' => $stu->id,
+                'date' => $today,
+                'class_name' => $stu->grade ?: '7A',
+                'status' => $idx === 2 ? 'late' : ($idx === 4 ? 'excused' : ($idx === 9 ? 'absent' : 'present')),
+                'remark' => $idx === 2 ? 'យឺត ១០ នាទី' : ($idx === 4 ? 'ច្បាប់ឈឺ' : ($idx === 9 ? 'គ្មានច្បាប់' : 'មកទាន់ម៉ោង')),
+                'academic_year_id' => $ayCurrent->id,
+            ]);
 
-            Attendance::firstOrCreate(
-                [
-                    'student_id' => $stu->id,
-                    'date' => $yesterday,
-                ],
-                [
-                    'class_name' => $stu->grade ?: '7A',
-                    'status' => 'present',
-                    'remark' => 'មានវត្តមាន',
-                    'academic_year_id' => $ayCurrent->id,
-                ]
-            );
+            Attendance::where('student_id', $stu->id)->whereDate('date', $yesterday)->delete();
+            Attendance::create([
+                'student_id' => $stu->id,
+                'date' => $yesterday,
+                'class_name' => $stu->grade ?: '7A',
+                'status' => $idx === 5 ? 'late' : 'present',
+                'remark' => $idx === 5 ? 'យឺត ៥ នាទី' : 'មានវត្តមាន',
+                'academic_year_id' => $ayCurrent->id,
+            ]);
+        }
+
+        // 13.1 Teacher Attendance records (Today and past day)
+        $allTeachers = Teacher::all();
+        foreach ($allTeachers as $tIdx => $tch) {
+            \App\Models\TeacherAttendance::where('teacher_id', $tch->id)->whereDate('date', $today)->delete();
+            \App\Models\TeacherAttendance::create([
+                'teacher_id' => $tch->id,
+                'date' => $today,
+                'status' => $tIdx === 3 ? 'late' : ($tIdx === 7 ? 'excused' : 'present'),
+                'remark' => $tIdx === 3 ? 'យឺត ១៥ នាទី' : ($tIdx === 7 ? 'ច្បាប់ឈឺ' : 'មានវត្តមាន'),
+            ]);
+
+            \App\Models\TeacherAttendance::where('teacher_id', $tch->id)->whereDate('date', $yesterday)->delete();
+            \App\Models\TeacherAttendance::create([
+                'teacher_id' => $tch->id,
+                'date' => $yesterday,
+                'status' => 'present',
+                'remark' => 'មានវត្តមាន',
+            ]);
         }
 
         // 14. Timetable for 7A

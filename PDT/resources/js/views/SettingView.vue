@@ -48,6 +48,86 @@
         </div>
       </div>
 
+      <!-- Demo / Dev Mode Switch Card (Radio Switch) -->
+      <div class="p-5 bg-gradient-to-r from-indigo-50/90 via-blue-50/70 to-slate-50 border border-blue-200/90 rounded-2xl space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+              <i class="fa-solid fa-flask"></i>
+            </span>
+            <div>
+              <h3 class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                <span>របៀបដំណើរការទិន្នន័យ (System Mode / Dev Mode)</span>
+                <span :class="[
+                  'px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase',
+                  form.demo_mode === '1' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-700'
+                ]">
+                  {{ form.demo_mode === '1' ? '⚡ Demo Mode Active' : '🟢 Live Production' }}
+                </span>
+              </h3>
+              <p class="text-[11px] text-slate-500">
+                ជ្រើសរើសរបៀបសម្រាប់បង្ហាញទិន្នន័យសាកល្បង (Demo) ពេញលេញគ្រប់ទំព័រ ឬប្រើទិន្នន័យផ្ទាល់ពី Database
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Radio Switch Options -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+          <!-- Option 1: Demo / Dev Mode -->
+          <label 
+            :class="[
+              'flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all',
+              form.demo_mode === '1' 
+                ? 'border-blue-600 bg-white shadow-xs ring-2 ring-blue-500/20' 
+                : 'border-slate-200 bg-white/70 hover:bg-white'
+            ]"
+          >
+            <input 
+              type="radio" 
+              name="system_mode" 
+              value="1" 
+              v-model="form.demo_mode" 
+              class="mt-1 text-blue-600 focus:ring-blue-500" 
+            />
+            <div class="flex-1">
+              <span class="block text-xs font-bold text-slate-900">
+                🚀 របៀបសាកល្បង (Demo / Dev Mode)
+              </span>
+              <span class="block text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                បង្ហាញទិន្នន័យគំរូពេញលេញ (សិស្ស ២០+ នាក់, គ្រូ ១០+ នាក់, វត្តមាន, ពិន្ទុ, ហិរញ្ញវត្ថុ) សម្រាប់ Demo បានគ្រប់កន្លែង ទោះបីលើ Production ក៏ដោយ។
+              </span>
+            </div>
+          </label>
+
+          <!-- Option 2: Live / Production Mode -->
+          <label 
+            :class="[
+              'flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all',
+              form.demo_mode === '0' 
+                ? 'border-blue-600 bg-white shadow-xs ring-2 ring-blue-500/20' 
+                : 'border-slate-200 bg-white/70 hover:bg-white'
+            ]"
+          >
+            <input 
+              type="radio" 
+              name="system_mode" 
+              value="0" 
+              v-model="form.demo_mode" 
+              class="mt-1 text-blue-600 focus:ring-blue-500" 
+            />
+            <div class="flex-1">
+              <span class="block text-xs font-bold text-slate-900">
+                🔒 របៀបផ្ទាល់ (Live / Production Mode)
+              </span>
+              <span class="block text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                បង្ហាញតែទិន្នន័យពិតប្រាកដដែលបានបញ្ចូល និងរក្សាទុកក្នុង Database ជាក់ស្តែងប៉ុណ្ណោះ។
+              </span>
+            </div>
+          </label>
+        </div>
+      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <!-- School Name Khmer -->
         <div>
@@ -625,6 +705,9 @@ const isSaving = ref(false);
 const academicYears = ref([]);
 
 const form = ref({
+  // Demo Mode Switch
+  demo_mode: localStorage.getItem('pdt_demo_mode') || '1',
+
   // Tab 1: School Info
   school_name: 'សាលារៀន ជំនាន់ថ្មី PDT',
   school_name_en: 'PDT New Generation School',
@@ -754,6 +837,7 @@ const handleSave = async () => {
     });
 
     if (res.data && res.data.success) {
+      localStorage.setItem('pdt_demo_mode', form.value.demo_mode);
       alert(res.data.message || 'បានរក្សាទុកការកំណត់ប្រព័ន្ធដោយជោគជ័យ!');
       await fetchSettings();
 
