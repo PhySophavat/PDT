@@ -119,6 +119,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/settings', [ApiController::class, 'updateSettings']);
         Route::post('/settings/gemini-key', [ApiController::class, 'saveGeminiApiKey']);
         Route::get('/settings/backup', [ApiController::class, 'backupDatabase'])->name('settings.backup');
+        Route::match(['get', 'post'], '/seed', [ApiController::class, 'seedDemoDatabase']);
         Route::get('/roles', [ApiController::class, 'roles']);
     });
 

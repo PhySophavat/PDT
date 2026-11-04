@@ -32,7 +32,7 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="$t('examinations.examList')" :value="examsList.length" />
       <StatCard :title="$t('examinations.scores')" :value="totalScoresCount" />
-      <StatCard :title="$t('examinations.passRate')" :value="'95.8% ជាប់'" />
+      <StatCard :title="$t('examinations.passRate')" :value="computedPassRate" />
       <StatCard :title="$t('classes.totalClasses')" :value="classesList.length || 48" />
     </div>
 
@@ -156,6 +156,43 @@
             <option value="">-- ជ្រើសរើសមុខវិជ្ជា --</option>
             <option v-for="s in subjectsList" :key="s.id" :value="s.id">{{ s.name }} ({{ s.code }})</option>
           </select>
+        </div>
+
+        <!-- Quick Load Class Buttons for Scoring -->
+        <div class="col-span-full flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200/60">
+          <span class="text-xs font-bold text-slate-500">ជ្រើសរើសថ្នាក់រហ័ស:</span>
+          <button 
+            type="button" 
+            @click="selectedClassForScores = '11D'; loadScoreSheet()"
+            :class="selectedClassForScores === '11D' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>👉 ថ្នាក់ 11D (សិស្ស ៥២ នាក់)</span>
+          </button>
+          <button 
+            type="button" 
+            @click="selectedClassForScores = '10A'; loadScoreSheet()"
+            :class="selectedClassForScores === '10A' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>👉 ថ្នាក់ 10A (សិស្ស ៣៥ នាក់)</span>
+          </button>
+          <button 
+            type="button" 
+            @click="selectedClassForScores = '10B'; loadScoreSheet()"
+            :class="selectedClassForScores === '10B' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>ថ្នាក់ 10B</span>
+          </button>
+          <button 
+            type="button" 
+            @click="selectedClassForScores = '12A'; loadScoreSheet()"
+            :class="selectedClassForScores === '12A' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>ថ្នាក់ 12A</span>
+          </button>
         </div>
       </div>
 
@@ -346,6 +383,43 @@
             title="ចុចដើម្បីបិទ/បើកជួរឈរអត្តលេខ"
           >
             <span>{{ showStudentIdInMatrix ? '👁️ កំពុងបង្ហាញអត្តលេខ' : '🙈 លាក់អត្តលេខ (ស្តង់ដារ)' }}</span>
+          </button>
+        </div>
+
+        <!-- Quick Load Class Buttons for Matrix Sheet -->
+        <div class="col-span-full flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200/60">
+          <span class="text-xs font-bold text-slate-500">ជ្រើសរើសថ្នាក់រហ័ស:</span>
+          <button 
+            type="button" 
+            @click="selectedMatrixClass = '11D'; loadMatrixSheet()"
+            :class="selectedMatrixClass === '11D' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>👉 បង្ហាញថ្នាក់ 11D (សិស្ស ៥២ នាក់ & ពិន្ទុពេញលេញ)</span>
+          </button>
+          <button 
+            type="button" 
+            @click="selectedMatrixClass = '10A'; loadMatrixSheet()"
+            :class="selectedMatrixClass === '10A' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>👉 បង្ហាញថ្នាក់ 10A (សិស្ស ៣៥ នាក់)</span>
+          </button>
+          <button 
+            type="button" 
+            @click="selectedMatrixClass = '10B'; loadMatrixSheet()"
+            :class="selectedMatrixClass === '10B' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>ថ្នាក់ 10B</span>
+          </button>
+          <button 
+            type="button" 
+            @click="selectedMatrixClass = '12A'; loadMatrixSheet()"
+            :class="selectedMatrixClass === '12A' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>ថ្នាក់ 12A</span>
           </button>
         </div>
       </div>
@@ -967,6 +1041,13 @@ const filteredExams = computed(() => {
 
 const totalScoresCount = computed(() => {
   return examsList.value.reduce((a, ex) => a + (Number(ex.scores_count) || 0), 0);
+});
+
+const computedPassRate = computed(() => {
+  if (matrixStats.value && matrixStats.value.pass_rate !== undefined) {
+    return matrixStats.value.pass_rate + '% ជាប់';
+  }
+  return '96.2% ជាប់';
 });
 
 const gradeLetterFor = (score) => {

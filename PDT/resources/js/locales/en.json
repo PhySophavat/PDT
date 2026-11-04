@@ -157,6 +157,7 @@
     "totalTeachers": "Total Teachers"
   },
   "classes": {
+    "class": "Class",
     "title": "Classes & Sections Management",
     "classList": "Classes List",
     "addClass": "Add Class",

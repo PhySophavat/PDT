@@ -133,6 +133,27 @@
             </div>
           </div>
         </div>
+
+        <!-- Seeder Quick Action -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 border-t border-blue-200/60">
+          <div class="flex items-center gap-2 text-[11px] text-slate-600">
+            <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
+              <i class="fa-solid fa-database"></i>
+            </span>
+            <span>
+              <strong>បញ្ចូលទិន្នន័យគំរូកម្ពុជាពេញលេញ៖</strong> សិស្ស ៨៧ នាក់ (11D ៥២ នាក់, 10A ៣៥ នាក់), គ្រូ ១៥ នាក់, ពិន្ទុប្រឡង ៣ សម័យ, កាលវិភាគ
+            </span>
+          </div>
+          <button 
+            @click="handleRunSeed" 
+            :disabled="isSeeding" 
+            type="button" 
+            class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 transition flex items-center gap-2 cursor-pointer flex-shrink-0"
+          >
+            <i :class="isSeeding ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-wand-magic-sparkles'"></i>
+            <span>{{ isSeeding ? 'កំពុងបញ្ចូលទិន្នន័យ...' : 'Seed ទិន្នន័យគំរូទៅក្នុង DB' }}</span>
+          </button>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -762,6 +783,24 @@ const khqrPreview = ref('');
 // Auto save mode state
 const isSwitchingMode = ref(false);
 const modeMessage = ref('');
+const isSeeding = ref(false);
+
+const handleRunSeed = async () => {
+  if (!confirm('តើអ្នកពិតជាចង់បញ្ចូលទិន្នន័យគំរូកម្ពុជាពេញលេញ (សិស្ស ៨៧ នាក់, គ្រូ ១៥ នាក់, ពិន្ទុ ២០៨៨ កំណត់ត្រា) ទៅក្នុង Database មែនទេ?')) {
+    return;
+  }
+  isSeeding.value = true;
+  try {
+    const res = await axios.post('/api/seed');
+    alert(res.data.message || 'បាន Seed ទិន្នន័យជោគជ័យ!');
+    await fetchSettings();
+  } catch (err) {
+    console.error('Seed error:', err);
+    alert('ការ Seed បានបរាជ័យ៖ ' + (err.response?.data?.message || err.message));
+  } finally {
+    isSeeding.value = false;
+  }
+};
 
 const handleModeChange = async (newMode) => {
   form.value.demo_mode = newMode;

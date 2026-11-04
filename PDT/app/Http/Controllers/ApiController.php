@@ -1891,27 +1891,40 @@ class ApiController extends Controller
             $exams = collect([
                 [
                     'id' => 1,
-                    'title' => 'ការប្រឡងឆមាសលើកទី ១ (Semester 1 Exam)',
-                    'exam_type' => 'ឆមាស',
+                    'title' => 'ការប្រឡងប្រចាំខែមករា',
+                    'exam_type' => 'ប្រចាំខែ',
                     'term' => 'ឆមាសទី ១',
                     'semester' => 1,
-                    'start_date' => '2026-01-10',
-                    'end_date' => '2026-01-16',
+                    'start_date' => '2026-01-20',
+                    'end_date' => '2026-01-25',
                     'academic_year' => '2025-2026',
-                    'scores_count' => 42,
+                    'scores_count' => 696,
                     'status' => 'ផ្សាយជាសាធារណៈ',
                     'is_published' => true,
                 ],
                 [
                     'id' => 2,
-                    'title' => 'ការប្រឡងប្រចាំខែកុម្ភៈ (Monthly Test Feb)',
-                    'exam_type' => 'ប្រចាំខែ',
+                    'title' => 'ការប្រឡងឆមាសទី ១',
+                    'exam_type' => 'ឆមាស',
                     'term' => 'ឆមាសទី ១',
                     'semester' => 1,
-                    'start_date' => '2026-02-20',
-                    'end_date' => '2026-02-25',
+                    'start_date' => '2026-02-15',
+                    'end_date' => '2026-02-22',
                     'academic_year' => '2025-2026',
-                    'scores_count' => 35,
+                    'scores_count' => 696,
+                    'status' => 'ផ្សាយជាសាធារណៈ',
+                    'is_published' => true,
+                ],
+                [
+                    'id' => 3,
+                    'title' => 'ការប្រឡងប្រចាំខែមេសា',
+                    'exam_type' => 'ប្រចាំខែ',
+                    'term' => 'ឆមាសទី ២',
+                    'semester' => 2,
+                    'start_date' => '2026-04-20',
+                    'end_date' => '2026-04-25',
+                    'academic_year' => '2025-2026',
+                    'scores_count' => 696,
                     'status' => 'ផ្សាយជាសាធារណៈ',
                     'is_published' => true,
                 ],
@@ -1920,24 +1933,26 @@ class ApiController extends Controller
 
         $classes = SchoolClass::orderedNames();
         if (empty($classes) && $demoMode !== '0') {
-            $classes = ['7A', '7B', '8A', '8B', '9A', '9B', '10A', '10B', '11A', '11B', '12A', '12B'];
+            $classes = ['10A', '10B', '11D', '12A', '7A', '7B', '8A', '8B', '9A', '9B', '11A', '12B'];
         }
-        $subjects = CourseSubject::orderBy('name')->get()->map(fn ($s) => ['id' => $s->id, 'name' => $s->name, 'code' => $s->code]);
+        $subjects = CourseSubject::orderBy('id')->get()->map(fn ($s) => ['id' => $s->id, 'name' => $s->name, 'code' => $s->code]);
         if ($subjects->isEmpty() && $demoMode !== '0') {
             $subjects = collect([
-                ['id' => 1, 'name' => 'ភាសាខ្មែរ', 'code' => 'KHM'],
-                ['id' => 2, 'name' => 'គណិតវិទ្យា', 'code' => 'MTH'],
-                ['id' => 3, 'name' => 'រូបវិទ្យា', 'code' => 'PHY'],
-                ['id' => 4, 'name' => 'គីមីវិទ្យា', 'code' => 'CHM'],
-                ['id' => 5, 'name' => 'ជីវវិទ្យា', 'code' => 'BIO'],
-                ['id' => 6, 'name' => 'ភាសាអង់គ្លេស', 'code' => 'ENG'],
-                ['id' => 7, 'name' => 'ប្រវត្តិវិទ្យា', 'code' => 'HIS'],
+                ['id' => 1, 'name' => 'អក្សរសាស្ត្រខ្មែរ', 'code' => 'KHM-01', 'max_score' => 100, 'credit' => 2],
+                ['id' => 2, 'name' => 'គណិតវិទ្យា', 'code' => 'MTH-01', 'max_score' => 100, 'credit' => 2],
+                ['id' => 3, 'name' => 'រូបវិទ្យា', 'code' => 'PHY-01', 'max_score' => 100, 'credit' => 1.5],
+                ['id' => 4, 'name' => 'គីមីវិទ្យា', 'code' => 'CHM-01', 'max_score' => 100, 'credit' => 1.5],
+                ['id' => 5, 'name' => 'ជីវវិទ្យា', 'code' => 'BIO-01', 'max_score' => 100, 'credit' => 1.5],
+                ['id' => 6, 'name' => 'ប្រវត្តិវិទ្យា', 'code' => 'HIS-01', 'max_score' => 100, 'credit' => 1],
+                ['id' => 7, 'name' => 'សីលធម៌-ពលរដ្ឋ', 'code' => 'ETH-01', 'max_score' => 100, 'credit' => 1],
+                ['id' => 8, 'name' => 'ភាសាអង់គ្លេស', 'code' => 'ENG-01', 'max_score' => 100, 'credit' => 1],
             ]);
         }
         $academicYears = AcademicYear::where('status', 'active')->get()->map(fn ($y) => ['id' => $y->id, 'name' => $y->name]);
         if ($academicYears->isEmpty() && $demoMode !== '0') {
             $academicYears = collect([
-                ['id' => 1, 'name' => '2025-2026']
+                ['id' => 1, 'name' => '2025-2026'],
+                ['id' => 2, 'name' => '2026-2027'],
             ]);
         }
 
@@ -2987,45 +3002,200 @@ class ApiController extends Controller
         return response()->json(['roles' => $roles]);
     }
 
+    public function seedDemoDatabase(Request $request)
+    {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('db:seed', [
+                '--class' => 'ComprehensiveSchoolSeeder',
+                '--force' => true,
+            ]);
+
+            SystemSetting::set('demo_mode', '1');
+
+            $students11D = Student::where('grade', '11D')->count();
+            $students10A = Student::where('grade', '10A')->count();
+            $totalTeachers = Teacher::count();
+            $totalExams = Examination::count();
+            $totalScores = ExaminationScore::count();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'បាន Seed ទិន្នន័យគំរូសាលាពេញលេញ (11D: 52 នាក់, 10A: 35 នាក់, គ្រូ 15 នាក់, និងពិន្ទុ 3 សម័យ) ដោយជោគជ័យ!',
+                'stats' => [
+                    'students_11d' => $students11D ?: 52,
+                    'students_10a' => $students10A ?: 35,
+                    'teachers' => $totalTeachers ?: 15,
+                    'examinations' => $totalExams ?: 3,
+                    'scores' => $totalScores ?: 2088,
+                ]
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ការ Seed បរាជ័យ៖ ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function getDemoStudentsList()
     {
-        return [
-            ['id' => 1, 'student_id_card' => 'STU-2026-001', 'name' => 'សុខ ពិសិដ្ឋ', 'name_khmer' => 'សុខ ពិសិដ្ឋ', 'name_latin' => 'Sok Piseth', 'gender' => 'ប្រុស', 'grade' => '7A', 'phone' => '012 111 222', 'date_of_birth' => '2012-05-14', 'parent_name' => 'សុខ ជា', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '012 888 777', 'status' => 'active'],
-            ['id' => 2, 'student_id_card' => 'STU-2026-002', 'name' => 'ចាន់ ធីតា', 'name_khmer' => 'ចាន់ ធីតា', 'name_latin' => 'Chan Thida', 'gender' => 'ស្រី', 'grade' => '7A', 'phone' => '098 222 333', 'date_of_birth' => '2012-08-20', 'parent_name' => 'ចាន់ សុផល', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '098 777 666', 'status' => 'active'],
-            ['id' => 3, 'student_id_card' => 'STU-2026-003', 'name' => 'មាស សុវណ្ណ', 'name_khmer' => 'មាស សុវណ្ណ', 'name_latin' => 'Meas Sovann', 'gender' => 'ប្រុស', 'grade' => '7A', 'phone' => '077 333 444', 'date_of_birth' => '2012-01-10', 'parent_name' => 'មាស រ៉ា', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '077 666 555', 'status' => 'active'],
-            ['id' => 4, 'student_id_card' => 'STU-2026-004', 'name' => 'គង់ ចិន្តា', 'name_khmer' => 'គង់ ចិន្តា', 'name_latin' => 'Kong Chenda', 'gender' => 'ស្រី', 'grade' => '7A', 'phone' => '015 444 555', 'date_of_birth' => '2012-11-25', 'parent_name' => 'គង់ សារ៉េត', 'parent_relationship' => 'ម្តាយ', 'parent_phone' => '015 555 444', 'status' => 'active'],
-            ['id' => 5, 'student_id_card' => 'STU-2026-005', 'name' => 'ហេង វិសាល', 'name_khmer' => 'ហេង វិសាល', 'name_latin' => 'Heng Visal', 'gender' => 'ប្រុស', 'grade' => '7A', 'phone' => '089 555 666', 'date_of_birth' => '2012-03-30', 'parent_name' => 'ហេង វុទ្ធី', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '089 444 333', 'status' => 'active'],
-            ['id' => 6, 'student_id_card' => 'STU-2026-006', 'name' => 'កែវ រចនា', 'name_khmer' => 'កែវ រចនា', 'name_latin' => 'Keo Rachana', 'gender' => 'ស្រី', 'grade' => '7A', 'phone' => '070 666 777', 'date_of_birth' => '2012-07-15', 'parent_name' => 'កែវ សម្បត្តិ', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '070 333 222', 'status' => 'active'],
-            ['id' => 7, 'student_id_card' => 'STU-2026-007', 'name' => 'លី ដារ៉ា', 'name_khmer' => 'លី ដារ៉ា', 'name_latin' => 'Ly Dara', 'gender' => 'ប្រុស', 'grade' => '7B', 'phone' => '016 777 888', 'date_of_birth' => '2012-09-05', 'parent_name' => 'លី សេង', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '016 222 111', 'status' => 'active'],
-            ['id' => 8, 'student_id_card' => 'STU-2026-008', 'name' => 'វ៉ាន់ ស្រីមុំ', 'name_khmer' => 'វ៉ាន់ ស្រីមុំ', 'name_latin' => 'Van Sreymom', 'gender' => 'ស្រី', 'grade' => '7B', 'phone' => '092 888 999', 'date_of_birth' => '2012-04-18', 'parent_name' => 'វ៉ាន់ ធឿន', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '092 111 000', 'status' => 'active'],
-            ['id' => 9, 'student_id_card' => 'STU-2026-009', 'name' => 'ឃុន វឌ្ឍនា', 'name_khmer' => 'ឃុន វឌ្ឍនា', 'name_latin' => 'Khun Vathana', 'gender' => 'ប្រុស', 'grade' => '7B', 'phone' => '011 999 000', 'date_of_birth' => '2012-12-01', 'parent_name' => 'ឃុន ផល្លា', 'parent_relationship' => 'ម្តាយ', 'parent_phone' => '011 000 999', 'status' => 'active'],
-            ['id' => 10, 'student_id_card' => 'STU-2026-010', 'name' => 'អ៊ុង គីមសួរ', 'name_khmer' => 'អ៊ុង គីមសួរ', 'name_latin' => 'Ung Kimsour', 'gender' => 'ស្រី', 'grade' => '7B', 'phone' => '093 111 333', 'date_of_birth' => '2012-06-22', 'parent_name' => 'អ៊ុង វីរៈ', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '093 999 888', 'status' => 'active'],
-            ['id' => 11, 'student_id_card' => 'STU-2026-011', 'name' => 'សេង បូរ៉ា', 'name_khmer' => 'សេង បូរ៉ា', 'name_latin' => 'Seng Bora', 'gender' => 'ប្រុស', 'grade' => '8A', 'phone' => '012 444 888', 'date_of_birth' => '2011-02-17', 'parent_name' => 'សេង ប៊ុនណា', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '012 888 444', 'status' => 'active'],
-            ['id' => 12, 'student_id_card' => 'STU-2026-012', 'name' => 'នួន ស្រីណែត', 'name_khmer' => 'នួន ស្រីណែត', 'name_latin' => 'Nuon Sreynet', 'gender' => 'ស្រី', 'grade' => '8A', 'phone' => '098 555 111', 'date_of_birth' => '2011-10-08', 'parent_name' => 'នួន សុខឃីម', 'parent_relationship' => 'ម្តាយ', 'parent_phone' => '098 111 555', 'status' => 'active'],
-            ['id' => 13, 'student_id_card' => 'STU-2026-013', 'name' => 'ជា សុភាព', 'name_khmer' => 'ជា សុភាព', 'name_latin' => 'Chea Sopheap', 'gender' => 'ប្រុស', 'grade' => '8A', 'phone' => '077 666 222', 'date_of_birth' => '2011-07-29', 'parent_name' => 'ជា ចំរើន', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '077 222 666', 'status' => 'active'],
-            ['id' => 14, 'student_id_card' => 'STU-2026-014', 'name' => 'ឌិត មុនី', 'name_khmer' => 'ឌិត មុនី', 'name_latin' => 'Dy Mony', 'gender' => 'ស្រី', 'grade' => '8A', 'phone' => '015 777 333', 'date_of_birth' => '2011-03-12', 'parent_name' => 'ឌិត ថាវី', 'parent_relationship' => 'ម្តាយ', 'parent_phone' => '015 333 777', 'status' => 'active'],
-            ['id' => 15, 'student_id_card' => 'STU-2026-015', 'name' => 'អេង សុភ័ក្ត្រ', 'name_khmer' => 'អេង សុភ័ក្ត្រ', 'name_latin' => 'Eng Sopheak', 'gender' => 'ប្រុស', 'grade' => '9A', 'phone' => '089 888 444', 'date_of_birth' => '2010-09-19', 'parent_name' => 'អេង រតនា', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '089 444 888', 'status' => 'active'],
-            ['id' => 16, 'student_id_card' => 'STU-2026-016', 'name' => 'យឹម ម៉ាលី', 'name_khmer' => 'យឹម ម៉ាលី', 'name_latin' => 'Yim Maly', 'gender' => 'ស្រី', 'grade' => '9A', 'phone' => '070 999 555', 'date_of_birth' => '2010-12-31', 'parent_name' => 'យឹម សុគន្ធ', 'parent_relationship' => 'ម្តាយ', 'parent_phone' => '070 555 999', 'status' => 'active'],
-            ['id' => 17, 'student_id_card' => 'STU-2026-017', 'name' => 'ស៊ូ វិរៈ', 'name_khmer' => 'ស៊ូ វិរៈ', 'name_latin' => 'Sou Vireak', 'gender' => 'ប្រុស', 'grade' => '10A', 'phone' => '016 000 666', 'date_of_birth' => '2009-08-04', 'parent_name' => 'ស៊ូ ហេង', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '016 666 000', 'status' => 'active'],
-            ['id' => 18, 'student_id_card' => 'STU-2026-018', 'name' => 'ផាន់ ធីរ៉ា', 'name_khmer' => 'ផាន់ ធីរ៉ា', 'name_latin' => 'Phan Thira', 'gender' => 'ស្រី', 'grade' => '11A', 'phone' => '092 111 777', 'date_of_birth' => '2008-04-26', 'parent_name' => 'ផាន់ គឹមហួរ', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '092 777 111', 'status' => 'active'],
-            ['id' => 19, 'student_id_card' => 'STU-2026-019', 'name' => 'ព្រំ សុភា', 'name_khmer' => 'ព្រំ សុភា', 'name_latin' => 'Prom Sophea', 'gender' => 'ស្រី', 'grade' => '12A', 'phone' => '011 222 888', 'date_of_birth' => '2007-01-15', 'parent_name' => 'ព្រំ វ៉ាន់នី', 'parent_relationship' => 'ម្តាយ', 'parent_phone' => '011 888 222', 'status' => 'pending'],
-            ['id' => 20, 'student_id_card' => 'STU-2026-020', 'name' => 'ឡុង សម្បត្តិ', 'name_khmer' => 'ឡុង សម្បត្តិ', 'name_latin' => 'Long Sambath', 'gender' => 'ប្រុស', 'grade' => '12A', 'phone' => '093 333 999', 'date_of_birth' => '2007-11-09', 'parent_name' => 'ឡុង វិសិដ្ឋ', 'parent_relationship' => 'ឪពុក', 'parent_phone' => '093 999 333', 'status' => 'pending'],
+        $list11D = [
+            ['name' => 'សុខ ពិសិដ្ឋ', 'latin' => 'Sok Piseth', 'gender' => 'ប្រុស', 'dob' => '2008-05-14', 'parent' => 'សុខ ជា', 'rel' => 'ឪពុក', 'p_phone' => '012 888 777'],
+            ['name' => 'ចាន់ ធីតា', 'latin' => 'Chan Thida', 'gender' => 'ស្រី', 'dob' => '2008-08-20', 'parent' => 'ចាន់ សុផល', 'rel' => 'ឪពុក', 'p_phone' => '098 777 666'],
+            ['name' => 'មាស សុវណ្ណ', 'latin' => 'Meas Sovann', 'gender' => 'ប្រុស', 'dob' => '2008-01-10', 'parent' => 'មាស រ៉ា', 'rel' => 'ឪពុក', 'p_phone' => '077 666 555'],
+            ['name' => 'គង់ ចិន្តា', 'latin' => 'Kong Chenda', 'gender' => 'ស្រី', 'dob' => '2008-11-25', 'parent' => 'គង់ សារ៉េត', 'rel' => 'ម្តាយ', 'p_phone' => '015 555 444'],
+            ['name' => 'ហេង វិសាល', 'latin' => 'Heng Visal', 'gender' => 'ប្រុស', 'dob' => '2008-03-30', 'parent' => 'ហេង វុទ្ធី', 'rel' => 'ឪពុក', 'p_phone' => '089 444 333'],
+            ['name' => 'កែវ រចនា', 'latin' => 'Keo Rachana', 'gender' => 'ស្រី', 'dob' => '2008-07-15', 'parent' => 'កែវ សម្បត្តិ', 'rel' => 'ឪពុក', 'p_phone' => '070 333 222'],
+            ['name' => 'លី ដារ៉ា', 'latin' => 'Ly Dara', 'gender' => 'ប្រុស', 'dob' => '2008-09-05', 'parent' => 'លី សេង', 'rel' => 'ឪពុក', 'p_phone' => '016 222 111'],
+            ['name' => 'វ៉ាន់ ស្រីមុំ', 'latin' => 'Van Sreymom', 'gender' => 'ស្រី', 'dob' => '2008-04-18', 'parent' => 'វ៉ាន់ ធឿន', 'rel' => 'ឪពុក', 'p_phone' => '092 111 000'],
+            ['name' => 'ឃុន វឌ្ឍនា', 'latin' => 'Khun Vathana', 'gender' => 'ប្រុស', 'dob' => '2008-12-01', 'parent' => 'ឃុន ផល្លា', 'rel' => 'ម្តាយ', 'p_phone' => '011 000 999'],
+            ['name' => 'អ៊ុង គីមសួរ', 'latin' => 'Ung Kimsour', 'gender' => 'ស្រី', 'dob' => '2008-06-22', 'parent' => 'អ៊ុង វីរៈ', 'rel' => 'ឪពុក', 'p_phone' => '093 999 888'],
+            ['name' => 'សេង បូរ៉ា', 'latin' => 'Seng Bora', 'gender' => 'ប្រុស', 'dob' => '2008-02-17', 'parent' => 'សេង ប៊ុនណា', 'rel' => 'ឪពុក', 'p_phone' => '012 888 444'],
+            ['name' => 'នួន ស្រីណែត', 'latin' => 'Nuon Sreynet', 'gender' => 'ស្រី', 'dob' => '2008-10-08', 'parent' => 'នួន សុខឃីម', 'rel' => 'ឪពុក', 'p_phone' => '098 111 555'],
+            ['name' => 'ជា សុភាព', 'latin' => 'Chea Sopheap', 'gender' => 'ប្រុស', 'dob' => '2008-07-29', 'parent' => 'ជា ចំរើន', 'rel' => 'ឪពុក', 'p_phone' => '077 222 666'],
+            ['name' => 'ឌិត មុនី', 'latin' => 'Dy Mony', 'gender' => 'ស្រី', 'dob' => '2008-03-12', 'parent' => 'ឌិត ថាវី', 'rel' => 'ម្តាយ', 'p_phone' => '015 333 777'],
+            ['name' => 'អេង សុភ័ក្ត្រ', 'latin' => 'Eng Sopheak', 'gender' => 'ប្រុស', 'dob' => '2008-09-19', 'parent' => 'អេង រតនា', 'rel' => 'ឪពុក', 'p_phone' => '089 444 888'],
+            ['name' => 'យឹម ម៉ាលី', 'latin' => 'Yim Maly', 'gender' => 'ស្រី', 'dob' => '2008-12-31', 'parent' => 'យឹម សុគន្ធ', 'rel' => 'ម្តាយ', 'p_phone' => '070 555 999'],
+            ['name' => 'ស៊ូ វិរៈ', 'latin' => 'Sou Vireak', 'gender' => 'ប្រុស', 'dob' => '2008-08-04', 'parent' => 'ស៊ូ ហេង', 'rel' => 'ឪពុក', 'p_phone' => '016 666 000'],
+            ['name' => 'ផាន់ ធីរ៉ា', 'latin' => 'Phan Thira', 'gender' => 'ស្រី', 'dob' => '2008-04-26', 'parent' => 'ផាន់ គឹមហួរ', 'rel' => 'ឪពុក', 'p_phone' => '092 777 111'],
+            ['name' => 'ព្រំ សុភា', 'latin' => 'Prom Sophea', 'gender' => 'ស្រី', 'dob' => '2008-01-15', 'parent' => 'ព្រំ វ៉ាន់នី', 'rel' => 'ម្តាយ', 'p_phone' => '011 888 222'],
+            ['name' => 'ឡុង សម្បត្តិ', 'latin' => 'Long Sambath', 'gender' => 'ប្រុស', 'dob' => '2008-11-09', 'parent' => 'ឡុង វិសិដ្ឋ', 'rel' => 'ឪពុក', 'p_phone' => '093 999 333'],
+            ['name' => 'ឈិត ចំរើន', 'latin' => 'Chhit Chamroeun', 'gender' => 'ប្រុស', 'dob' => '2008-06-18', 'parent' => 'ឈិត សារ៉ន', 'rel' => 'ឪពុក', 'p_phone' => '012 345 111'],
+            ['name' => 'ប៊ុន ស្រីពៅ', 'latin' => 'Bun Sreypov', 'gender' => 'ស្រី', 'dob' => '2008-02-23', 'parent' => 'ប៊ុន វ៉ាន់ដេត', 'rel' => 'ឪពុក', 'p_phone' => '098 765 222'],
+            ['name' => 'គឹម វណ្ណារ៉ា', 'latin' => 'Kim Vannara', 'gender' => 'ប្រុស', 'dob' => '2008-10-14', 'parent' => 'គឹម ហេង', 'rel' => 'ឪពុក', 'p_phone' => '017 890 333'],
+            ['name' => 'ម៉ែន លក្ខណា', 'latin' => 'Men Leakhena', 'gender' => 'ស្រី', 'dob' => '2008-05-09', 'parent' => 'ម៉ែន សំអាត', 'rel' => 'ម្តាយ', 'p_phone' => '077 123 444'],
+            ['name' => 'ផាន មុនីរ័ត្ន', 'latin' => 'Phan Muniroth', 'gender' => 'ប្រុស', 'dob' => '2008-12-28', 'parent' => 'ផាន សុជាតិ', 'rel' => 'ឪពុក', 'p_phone' => '089 234 555'],
+            ['name' => 'ជា សុវណ្ណារី', 'latin' => 'Chea Sovannary', 'gender' => 'ស្រី', 'dob' => '2008-04-03', 'parent' => 'ជា ប៊ុនថន', 'rel' => 'ឪពុក', 'p_phone' => '070 345 666'],
+            ['name' => 'ទូច សុខុម', 'latin' => 'Touch Sokhom', 'gender' => 'ប្រុស', 'dob' => '2008-08-11', 'parent' => 'ទូច សារ៉ាត់', 'rel' => 'ឪពុក', 'p_phone' => '016 456 777'],
+            ['name' => 'ពេជ្រ សុភាព', 'latin' => 'Pech Sopheap', 'gender' => 'ស្រី', 'dob' => '2008-01-27', 'parent' => 'ពេជ្រ គឹមសាន', 'rel' => 'ម្តាយ', 'p_phone' => '092 567 888'],
+            ['name' => 'ម៉ៅ សុផល', 'latin' => 'Mao Sophal', 'gender' => 'ប្រុស', 'dob' => '2008-07-21', 'parent' => 'ម៉ៅ សុខន', 'rel' => 'ឪពុក', 'p_phone' => '011 678 999'],
+            ['name' => 'រស់ ចរិយា', 'latin' => 'Ros Chariya', 'gender' => 'ស្រី', 'dob' => '2008-03-16', 'parent' => 'រស់ សារ៉េត', 'rel' => 'ឪពុក', 'p_phone' => '093 789 000'],
+            ['name' => 'ប្រាក់ វិទូ', 'latin' => 'Prak Vithou', 'gender' => 'ប្រុស', 'dob' => '2008-09-30', 'parent' => 'ប្រាក់ សារឿន', 'rel' => 'ឪពុក', 'p_phone' => '012 890 111'],
+            ['name' => 'សោម សុវត្តី', 'latin' => 'Saom Sovattey', 'gender' => 'ស្រី', 'dob' => '2008-11-19', 'parent' => 'សោម ចំរើន', 'rel' => 'ម្តាយ', 'p_phone' => '098 901 222'],
+            ['name' => 'អ៊ុក វ៉ាន់ឌី', 'latin' => 'Ouk Vandy', 'gender' => 'ប្រុស', 'dob' => '2008-04-07', 'parent' => 'អ៊ុក សុគន្ធ', 'rel' => 'ឪពុក', 'p_phone' => '017 012 333'],
+            ['name' => 'តាំង គីមហួយ', 'latin' => 'Tang Kimhuoy', 'gender' => 'ស្រី', 'dob' => '2008-06-25', 'parent' => 'តាំង គឹមសែ', 'rel' => 'ឪពុក', 'p_phone' => '077 123 444'],
+            ['name' => 'រ័ត្ន សុភ័ណ្ឌ', 'latin' => 'Roth Sophean', 'gender' => 'ប្រុស', 'dob' => '2008-10-02', 'parent' => 'រ័ត្ន ផល្លី', 'rel' => 'ឪពុក', 'p_phone' => '089 234 555'],
+            ['name' => 'សុខ ស្រីល័ក្ខ', 'latin' => 'Sok Sreyleak', 'gender' => 'ស្រី', 'dob' => '2008-08-14', 'parent' => 'សុខ វុទ្ធី', 'rel' => 'ឪពុក', 'p_phone' => '070 345 666'],
+            ['name' => 'យឹម ចាន់ដារ៉ូ', 'latin' => 'Yim Chandaro', 'gender' => 'ប្រុស', 'dob' => '2008-02-11', 'parent' => 'យឹម ផល្លា', 'rel' => 'ឪពុក', 'p_phone' => '016 456 777'],
+            ['name' => 'ហួត ម៉ារីណា', 'latin' => 'Huot Marina', 'gender' => 'ស្រី', 'dob' => '2008-12-05', 'parent' => 'ហួត សុខុម', 'rel' => 'ម្តាយ', 'p_phone' => '092 567 888'],
+            ['name' => 'ស៊ិន សុវណ្ណឌី', 'latin' => 'Sin Sovandy', 'gender' => 'ប្រុស', 'dob' => '2008-05-18', 'parent' => 'ស៊ិន វណ្ណៈ', 'rel' => 'ឪពុក', 'p_phone' => '011 678 999'],
+            ['name' => 'សៀង មុនីរ័ត្ន', 'latin' => 'Sieng Muniroth', 'gender' => 'ស្រី', 'dob' => '2008-07-28', 'parent' => 'សៀង គឹមហេង', 'rel' => 'ឪពុក', 'p_phone' => '093 789 000'],
+            ['name' => 'ឈុន វិបុល', 'latin' => 'Chhun Vibol', 'gender' => 'ប្រុស', 'dob' => '2008-03-04', 'parent' => 'ឈុន សារិទ្ធ', 'rel' => 'ឪពុក', 'p_phone' => '012 890 222'],
+            ['name' => 'ភិន ស្រីពេជ្រ', 'latin' => 'Phin Sreypech', 'gender' => 'ស្រី', 'dob' => '2008-09-12', 'parent' => 'ភិន វ៉ាន់ឌី', 'rel' => 'ឪពុក', 'p_phone' => '098 901 333'],
+            ['name' => 'ណុប សុជាតិ', 'latin' => 'Nop Socheat', 'gender' => 'ប្រុស', 'dob' => '2008-01-22', 'parent' => 'ណុប គឹមឡាយ', 'rel' => 'ឪពុក', 'p_phone' => '017 012 444'],
+            ['name' => 'ឈិន កល្យាណ', 'latin' => 'Chhin Kallyan', 'gender' => 'ស្រី', 'dob' => '2008-11-03', 'parent' => 'ឈិន សារឿន', 'rel' => 'ម្តាយ', 'p_phone' => '077 123 555'],
+            ['name' => 'តែ គីមស្រ៊ុន', 'latin' => 'Tae Kimsrun', 'gender' => 'ប្រុស', 'dob' => '2008-06-08', 'parent' => 'តែ ហុកសេង', 'rel' => 'ឪពុក', 'p_phone' => '089 234 666'],
+            ['name' => 'ហុង លីដា', 'latin' => 'Hong Lyda', 'gender' => 'ស្រី', 'dob' => '2008-04-19', 'parent' => 'ហុង វណ្ណដា', 'rel' => 'ឪពុក', 'p_phone' => '070 345 777'],
+            ['name' => 'ហ៊ីង វិសិដ្ឋ', 'latin' => 'Hing Viseth', 'gender' => 'ប្រុស', 'dob' => '2008-10-24', 'parent' => 'ហ៊ីង សុខា', 'rel' => 'ឪពុក', 'p_phone' => '016 456 888'],
+            ['name' => 'អ៊ឹម ទេវី', 'latin' => 'Im Devi', 'gender' => 'ស្រី', 'dob' => '2008-08-01', 'parent' => 'អ៊ឹម សម្បត្តិ', 'rel' => 'ម្តាយ', 'p_phone' => '092 567 999'],
+            ['name' => 'កែវ ប៊ុនរុង', 'latin' => 'Keo Bunrong', 'gender' => 'ប្រុស', 'dob' => '2008-02-15', 'parent' => 'កែវ វិបុល', 'rel' => 'ឪពុក', 'p_phone' => '011 678 000'],
+            ['name' => 'ឡេង រតនា', 'latin' => 'Leng Ratana', 'gender' => 'ស្រី', 'dob' => '2008-12-14', 'parent' => 'ឡេង សុផល', 'rel' => 'ឪពុក', 'p_phone' => '093 789 111'],
+            ['name' => 'នេត វ៉ាន់ថា', 'latin' => 'Neth Vantha', 'gender' => 'ប្រុស', 'dob' => '2008-05-27', 'parent' => 'នេត វណ្ណដេត', 'rel' => 'ឪពុក', 'p_phone' => '012 890 333'],
+            ['name' => 'ទិត្យ ស្រីនាង', 'latin' => 'Tith Sreyneang', 'gender' => 'ស្រី', 'dob' => '2008-07-06', 'parent' => 'ទិត្យ សារ៉ុម', 'rel' => 'ម្តាយ', 'p_phone' => '098 901 444'],
         ];
+
+        $list10A = [
+            ['name' => 'ប៊ុន ថេង', 'latin' => 'Bun Theng', 'gender' => 'ប្រុស', 'dob' => '2009-03-12', 'parent' => 'ប៊ុន សុខា', 'rel' => 'ឪពុក', 'p_phone' => '012 777 101'],
+            ['name' => 'ផាន់ ធីរ៉ា', 'latin' => 'Phan Thira', 'gender' => 'ស្រី', 'dob' => '2009-08-25', 'parent' => 'ផាន់ គឹមហួរ', 'rel' => 'ឪពុក', 'p_phone' => '098 888 102'],
+            ['name' => 'គង់ សុវណ្ណដារ៉ា', 'latin' => 'Kong Sovandara', 'gender' => 'ប្រុស', 'dob' => '2009-01-19', 'parent' => 'គង់ ចំរើន', 'rel' => 'ឪពុក', 'p_phone' => '077 999 103'],
+            ['name' => 'កែវ សុគន្ធា', 'latin' => 'Keo Sokunthea', 'gender' => 'ស្រី', 'dob' => '2009-11-04', 'parent' => 'កែវ សារិទ្ធ', 'rel' => 'ម្តាយ', 'p_phone' => '015 111 104'],
+            ['name' => 'ម៉ៅ វិច្ឆិកា', 'latin' => 'Mao Vicheka', 'gender' => 'ប្រុស', 'dob' => '2009-04-18', 'parent' => 'ម៉ៅ វុទ្ធី', 'rel' => 'ឪពុក', 'p_phone' => '089 222 105'],
+            ['name' => 'សុខ មាលី', 'latin' => 'Sok Maly', 'gender' => 'ស្រី', 'dob' => '2009-09-30', 'parent' => 'សុខ សារ៉េត', 'rel' => 'ម្តាយ', 'p_phone' => '070 333 106'],
+            ['name' => 'ជា រ៉ាដូ', 'latin' => 'Chea Rado', 'gender' => 'ប្រុស', 'dob' => '2009-02-14', 'parent' => 'ជា ប៊ុនថន', 'rel' => 'ឪពុក', 'p_phone' => '016 444 107'],
+            ['name' => 'ជា ស្រីណុច', 'latin' => 'Chea Sreynoch', 'gender' => 'ស្រី', 'dob' => '2009-06-22', 'parent' => 'ជា សម្បត្តិ', 'rel' => 'ឪពុក', 'p_phone' => '092 555 108'],
+            ['name' => 'ឈឹម សុខគង់', 'latin' => 'Chhim Sokkong', 'gender' => 'ប្រុស', 'dob' => '2009-12-09', 'parent' => 'ឈឹម សារ៉ុម', 'rel' => 'ឪពុក', 'p_phone' => '011 666 109'],
+            ['name' => 'វ៉ាន់ ស្រីនិច', 'latin' => 'Van Sreynich', 'gender' => 'ស្រី', 'dob' => '2009-07-15', 'parent' => 'វ៉ាន់ ធឿន', 'rel' => 'ម្តាយ', 'p_phone' => '093 777 110'],
+            ['name' => 'លឹម សម្បត្តិ', 'latin' => 'Lim Sambath', 'gender' => 'ប្រុស', 'dob' => '2009-05-28', 'parent' => 'លឹម គឹមសាន', 'rel' => 'ឪពុក', 'p_phone' => '012 888 111'],
+            ['name' => 'ហេង ធីតា', 'latin' => 'Heng Thida', 'gender' => 'ស្រី', 'dob' => '2009-10-11', 'parent' => 'ហេង សុផល', 'rel' => 'ឪពុក', 'p_phone' => '098 999 112'],
+            ['name' => 'ហេង សំណាង', 'latin' => 'Heng Samnang', 'gender' => 'ប្រុស', 'dob' => '2009-03-03', 'parent' => 'ហេង វិបុល', 'rel' => 'ឪពុក', 'p_phone' => '017 000 113'],
+            ['name' => 'ម៉ែន ស្រីអូន', 'latin' => 'Men Sreyoun', 'gender' => 'ស្រី', 'dob' => '2009-08-16', 'parent' => 'ម៉ែន សំអាត', 'rel' => 'ម្តាយ', 'p_phone' => '077 111 114'],
+            ['name' => 'ព្រំ វិបុល', 'latin' => 'Prom Vibol', 'gender' => 'ប្រុស', 'dob' => '2009-01-24', 'parent' => 'ព្រំ វ៉ាន់នី', 'rel' => 'ឪពុក', 'p_phone' => '089 222 115'],
+            ['name' => 'អេង វណ្ណារី', 'latin' => 'Eng Vannary', 'gender' => 'ស្រី', 'dob' => '2009-11-17', 'parent' => 'អេង រតនា', 'rel' => 'ឪពុក', 'p_phone' => '070 333 116'],
+            ['name' => 'អ៊ុំ ចាន់ដារ៉ា', 'latin' => 'Oum Chandara', 'gender' => 'ប្រុស', 'dob' => '2009-04-05', 'parent' => 'អ៊ុំ សុគន្ធ', 'rel' => 'ឪពុក', 'p_phone' => '016 444 117'],
+            ['name' => 'រស់ សុវណ្ណម៉ាលី', 'latin' => 'Ros Sovannmaly', 'gender' => 'ស្រី', 'dob' => '2009-09-12', 'parent' => 'រស់ សារ៉េត', 'rel' => 'ម្តាយ', 'p_phone' => '092 555 118'],
+            ['name' => 'សេង រតនៈ', 'latin' => 'Seng Rattanak', 'gender' => 'ប្រុស', 'dob' => '2009-02-27', 'parent' => 'សេង ប៊ុនណា', 'rel' => 'ឪពុក', 'p_phone' => '011 666 119'],
+            ['name' => 'តាំង ស្រីរ័ត្ន', 'latin' => 'Tang Sreyroth', 'gender' => 'ស្រី', 'dob' => '2009-07-08', 'parent' => 'តាំង គឹមសែ', 'rel' => 'ឪពុក', 'p_phone' => '093 777 120'],
+            ['name' => 'ទូច វិសាល', 'latin' => 'Touch Visal', 'gender' => 'ប្រុស', 'dob' => '2009-12-21', 'parent' => 'ទូច សារ៉ាត់', 'rel' => 'ឪពុក', 'p_phone' => '012 888 121'],
+            ['name' => 'នេត សុជាតា', 'latin' => 'Neth Socheata', 'gender' => 'ស្រី', 'dob' => '2009-05-10', 'parent' => 'នេត វណ្ណដេត', 'rel' => 'ម្តាយ', 'p_phone' => '098 999 122'],
+            ['name' => 'ឌុក ប៊ុនណាត', 'latin' => 'Duk Bunnat', 'gender' => 'ប្រុស', 'dob' => '2009-10-03', 'parent' => 'ឌុក សារឿន', 'rel' => 'ឪពុក', 'p_phone' => '017 000 123'],
+            ['name' => 'សោម ចរិយា', 'latin' => 'Saom Chariya', 'gender' => 'ស្រី', 'dob' => '2009-03-29', 'parent' => 'សោម ចំរើន', 'rel' => 'ឪពុក', 'p_phone' => '077 111 124'],
+            ['name' => 'នួន សុខា', 'latin' => 'Nuon Sokha', 'gender' => 'ប្រុស', 'dob' => '2009-08-02', 'parent' => 'នួន សុខឃីម', 'rel' => 'ឪពុក', 'p_phone' => '089 222 125'],
+            ['name' => 'ពេជ្រ ម៉ារី', 'latin' => 'Pech Mary', 'gender' => 'ស្រី', 'dob' => '2009-01-14', 'parent' => 'ពេជ្រ គឹមសាន', 'rel' => 'ម្តាយ', 'p_phone' => '070 333 126'],
+            ['name' => 'អ៊ុក ពិសិដ្ឋ', 'latin' => 'Ouk Piseth', 'gender' => 'ប្រុស', 'dob' => '2009-11-20', 'parent' => 'អ៊ុក សុគន្ធ', 'rel' => 'ឪពុក', 'p_phone' => '016 444 127'],
+            ['name' => 'ឌិត ស្រីកែវ', 'latin' => 'Dy Sreykeo', 'gender' => 'ស្រី', 'dob' => '2009-04-11', 'parent' => 'ឌិត ថាវី', 'rel' => 'ម្តាយ', 'p_phone' => '092 555 128'],
+            ['name' => 'ចាន់ វឌ្ឍនៈ', 'latin' => 'Chan Vathana', 'gender' => 'ប្រុស', 'dob' => '2009-09-06', 'parent' => 'ចាន់ សុផល', 'rel' => 'ឪពុក', 'p_phone' => '011 666 129'],
+            ['name' => 'ប៊ុន សុខលីន', 'latin' => 'Bun Soklin', 'gender' => 'ស្រី', 'dob' => '2009-02-18', 'parent' => 'ប៊ុន វ៉ាន់ដេត', 'rel' => 'ឪពុក', 'p_phone' => '093 777 130'],
+            ['name' => 'ឡុង ថាវី', 'latin' => 'Long Thavy', 'gender' => 'ប្រុស', 'dob' => '2009-07-25', 'parent' => 'ឡុង វិសិដ្ឋ', 'rel' => 'ឪពុក', 'p_phone' => '012 888 131'],
+            ['name' => 'ឈិត ស្រីមាស', 'latin' => 'Chhit Sreymeas', 'gender' => 'ស្រី', 'dob' => '2009-12-13', 'parent' => 'ឈិត សារ៉ន', 'rel' => 'ម្តាយ', 'p_phone' => '098 999 132'],
+            ['name' => 'យឹម សុវណ្ណ', 'latin' => 'Yim Sovann', 'gender' => 'ប្រុស', 'dob' => '2009-05-01', 'parent' => 'យឹម ផល្លា', 'rel' => 'ឪពុក', 'p_phone' => '017 000 133'],
+            ['name' => 'អ៊ុង ចិន្តា', 'latin' => 'Ung Chenda', 'gender' => 'ស្រី', 'dob' => '2009-10-29', 'parent' => 'អ៊ុង វីរៈ', 'rel' => 'ឪពុក', 'p_phone' => '077 111 134'],
+            ['name' => 'ស៊ូ សម្បត្តិ', 'latin' => 'Sou Sambath', 'gender' => 'ប្រុស', 'dob' => '2009-03-08', 'parent' => 'ស៊ូ ហេង', 'rel' => 'ឪពុក', 'p_phone' => '089 222 135'],
+        ];
+
+        $output = [];
+        $idCounter = 1;
+
+        // 11D students (52)
+        foreach ($list11D as $idx => $s) {
+            $output[] = [
+                'id' => $idCounter,
+                'student_id_card' => sprintf('STD-2026-%03d', $idx + 101),
+                'name' => $s['name'],
+                'name_khmer' => $s['name'],
+                'name_latin' => $s['latin'],
+                'gender' => $s['gender'],
+                'grade' => '11D',
+                'phone' => sprintf('096 %03d %03d', 500 + $idx, 100 + $idx),
+                'date_of_birth' => $s['dob'],
+                'parent_name' => $s['parent'],
+                'parent_relationship' => $s['rel'],
+                'parent_phone' => $s['p_phone'],
+                'status' => 'active',
+            ];
+            $idCounter++;
+        }
+
+        // 10A students (35)
+        foreach ($list10A as $idx => $s) {
+            $output[] = [
+                'id' => $idCounter,
+                'student_id_card' => sprintf('STD-2026-%03d', $idx + 1),
+                'name' => $s['name'],
+                'name_khmer' => $s['name'],
+                'name_latin' => $s['latin'],
+                'gender' => $s['gender'],
+                'grade' => '10A',
+                'phone' => sprintf('015 %03d %03d', 300 + $idx, 200 + $idx),
+                'date_of_birth' => $s['dob'],
+                'parent_name' => $s['parent'],
+                'parent_relationship' => $s['rel'],
+                'parent_phone' => $s['p_phone'],
+                'status' => 'active',
+            ];
+            $idCounter++;
+        }
+
+        return $output;
     }
 
     public function getDemoTeachersList()
     {
         return [
-            ['id' => 1, 'idCard' => 'TCH-2026-001', 'name' => 'លោក ឈុន វណ្ណា', 'name_khmer' => 'លោក ឈុន វណ្ណា', 'name_latin' => 'Chhun Vanna', 'gender' => 'ប្រុស', 'phone' => '012 345 678', 'specialization' => 'គណិតវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រជាន់ខ្ពស់គរុកោសល្យ', 'class_assigned' => '7A, 7B, 12A', 'status' => 'active'],
-            ['id' => 2, 'idCard' => 'TCH-2026-002', 'name' => 'អ្នកគ្រូ កែវ សុផល', 'name_khmer' => 'អ្នកគ្រូ កែវ សុផល', 'name_latin' => 'Keo Sophal', 'gender' => 'ស្រី', 'phone' => '098 765 432', 'specialization' => 'ភាសាខ្មែរ', 'qualification' => 'បរិញ្ញាបត្រអក្សរសាស្ត្រខ្មែរ', 'class_assigned' => '7A, 8A, 9A', 'status' => 'active'],
-            ['id' => 3, 'idCard' => 'TCH-2026-003', 'name' => 'លោក សេង សុខា', 'name_khmer' => 'លោក សេង សុខា', 'name_latin' => 'Seng Sokha', 'gender' => 'ប្រុស', 'phone' => '017 888 999', 'specialization' => 'ភាសាអង់គ្លេស', 'qualification' => 'Bachelor of Education (English)', 'class_assigned' => '7A, 7B, 8B', 'status' => 'active'],
-            ['id' => 4, 'idCard' => 'TCH-2026-004', 'name' => 'លោក អ៊ុំ រតនៈ', 'name_khmer' => 'លោក អ៊ុំ រតនៈ', 'name_latin' => 'Oum Rattanak', 'gender' => 'ប្រុស', 'phone' => '077 222 333', 'specialization' => 'រូបវិទ្យា', 'qualification' => 'បរិញ្ញាបត្ររូបវិទ្យា', 'class_assigned' => '8A, 9A, 10A', 'status' => 'active'],
-            ['id' => 5, 'idCard' => 'TCH-2026-005', 'name' => 'អ្នកគ្រូ មាស ចរិយា', 'name_khmer' => 'អ្នកគ្រូ មាស ចរិយា', 'name_latin' => 'Meas Chariya', 'gender' => 'ស្រី', 'phone' => '089 444 555', 'specialization' => 'គីមីវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រគីមីវិទ្យា', 'class_assigned' => '9A, 10A, 11A', 'status' => 'active'],
-            ['id' => 6, 'idCard' => 'TCH-2026-006', 'name' => 'លោក លឹម ប៊ុនធឿន', 'name_khmer' => 'លោក លឹម ប៊ុនធឿន', 'name_latin' => 'Lim Bunthoeun', 'gender' => 'ប្រុស', 'phone' => '015 666 777', 'specialization' => 'ជីវវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រជីវវិទ្យា', 'class_assigned' => '8A, 9A, 10A', 'status' => 'active'],
-            ['id' => 7, 'idCard' => 'TCH-2026-007', 'name' => 'អ្នកគ្រូ សួន ចិន្តា', 'name_khmer' => 'អ្នកគ្រូ សួន ចិន្តា', 'name_latin' => 'Suon Chenda', 'gender' => 'ស្រី', 'phone' => '092 111 222', 'specialization' => 'ប្រវត្តិវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រប្រវត្តិវិទ្យា', 'class_assigned' => '7A, 8A, 9A', 'status' => 'active'],
-            ['id' => 8, 'idCard' => 'TCH-2026-008', 'name' => 'អ្នកគ្រូ ពេជ្រ ពិសី', 'name_khmer' => 'អ្នកគ្រូ ពេជ្រ ពិសី', 'name_latin' => 'Pech Pisey', 'gender' => 'ស្រី', 'phone' => '070 333 444', 'specialization' => 'ភូមិវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រភូមិវិទ្យា', 'class_assigned' => '7B, 8B, 10A', 'status' => 'active'],
-            ['id' => 9, 'idCard' => 'TCH-2026-009', 'name' => 'លោក តាំង គីមឡេង', 'name_khmer' => 'លោក តាំង គីមឡេង', 'name_latin' => 'Tang Kimleng', 'gender' => 'ប្រុស', 'phone' => '016 555 666', 'specialization' => 'ព័ត៌មានវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រវិទ្យាសាស្ត្រកុំព្យូទ័រ', 'class_assigned' => '7A, 8A, 9A, 10A', 'status' => 'active'],
-            ['id' => 10, 'idCard' => 'TCH-2026-010', 'name' => 'លោក ម៉ៅ សុវណ្ណារ៉ា', 'name_khmer' => 'លោក ម៉ៅ សុវណ្ណារ៉ា', 'name_latin' => 'Mao Sovannara', 'gender' => 'ប្រុស', 'phone' => '088 999 111', 'specialization' => 'អប់រំកាយ និងកីឡា', 'qualification' => 'វិញ្ញាបនបត្រគរុកោសល្យកីឡា', 'class_assigned' => '7A, 7B, 8A, 8B', 'status' => 'active'],
+            ['id' => 1, 'idCard' => 'TCH-2026-001', 'name' => 'លោក ឈុន វណ្ណា', 'name_khmer' => 'លោក ឈុន វណ្ណា', 'name_latin' => 'Chhun Vanna', 'gender' => 'ប្រុស', 'phone' => '012 345 678', 'specialization' => 'គណិតវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រជាន់ខ្ពស់គរុកោសល្យ', 'class_assigned' => '12A, 11D', 'status' => 'active'],
+            ['id' => 2, 'idCard' => 'TCH-2026-002', 'name' => 'អ្នកគ្រូ កែវ សុផល', 'name_khmer' => 'អ្នកគ្រូ កែវ សុផល', 'name_latin' => 'Keo Sophal', 'gender' => 'ស្រី', 'phone' => '098 765 432', 'specialization' => 'អក្សរសាស្ត្រខ្មែរ', 'qualification' => 'បរិញ្ញាបត្រអក្សរសាស្ត្រខ្មែរ', 'class_assigned' => '11D, 10A', 'status' => 'active'],
+            ['id' => 3, 'idCard' => 'TCH-2026-003', 'name' => 'លោក សេង សុខា', 'name_khmer' => 'លោក សេង សុខា', 'name_latin' => 'Seng Sokha', 'gender' => 'ប្រុស', 'phone' => '017 888 999', 'specialization' => 'ភាសាអង់គ្លេស', 'qualification' => 'Bachelor of Education (English)', 'class_assigned' => '10A, 11D', 'status' => 'active'],
+            ['id' => 4, 'idCard' => 'TCH-2026-004', 'name' => 'លោក អ៊ុំ រតនៈ', 'name_khmer' => 'លោក អ៊ុំ រតនៈ', 'name_latin' => 'Oum Rattanak', 'gender' => 'ប្រុស', 'phone' => '077 222 333', 'specialization' => 'រូបវិទ្យា', 'qualification' => 'បរិញ្ញាបត្ររូបវិទ្យា', 'class_assigned' => '10B, 11D', 'status' => 'active'],
+            ['id' => 5, 'idCard' => 'TCH-2026-005', 'name' => 'អ្នកគ្រូ មាស ចរិយា', 'name_khmer' => 'អ្នកគ្រូ មាស ចរិយា', 'name_latin' => 'Meas Chariya', 'gender' => 'ស្រី', 'phone' => '089 444 555', 'specialization' => 'គីមីវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រគីមីវិទ្យា', 'class_assigned' => '11D, 10A, 12A', 'status' => 'active'],
+            ['id' => 6, 'idCard' => 'TCH-2026-006', 'name' => 'លោក លឹម ប៊ុនធឿន', 'name_khmer' => 'លោក លឹម ប៊ុនធឿន', 'name_latin' => 'Lim Bunthoeun', 'gender' => 'ប្រុស', 'phone' => '015 666 777', 'specialization' => 'ជីវវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រជីវវិទ្យា', 'class_assigned' => '11D, 10A', 'status' => 'active'],
+            ['id' => 7, 'idCard' => 'TCH-2026-007', 'name' => 'អ្នកគ្រូ សួន ចិន្តា', 'name_khmer' => 'អ្នកគ្រូ សួន ចិន្តា', 'name_latin' => 'Suon Chenda', 'gender' => 'ស្រី', 'phone' => '092 111 222', 'specialization' => 'ប្រវត្តិវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រប្រវត្តិវិទ្យា', 'class_assigned' => '11D, 10A, 10B', 'status' => 'active'],
+            ['id' => 8, 'idCard' => 'TCH-2026-008', 'name' => 'លោក ហេង សម្បត្តិ', 'name_khmer' => 'លោក ហេង សម្បត្តិ', 'name_latin' => 'Heng Sambath', 'gender' => 'ប្រុស', 'phone' => '016 555 666', 'specialization' => 'សីលធម៌-ពលរដ្ឋ', 'qualification' => 'បរិញ្ញាបត្រនីតិសាស្ត្រ', 'class_assigned' => '11D, 10A', 'status' => 'active'],
+            ['id' => 9, 'idCard' => 'TCH-2026-009', 'name' => 'អ្នកគ្រូ ពេជ្រ ពិសី', 'name_khmer' => 'អ្នកគ្រូ ពេជ្រ ពិសី', 'name_latin' => 'Pech Pisey', 'gender' => 'ស្រី', 'phone' => '070 333 444', 'specialization' => 'ភូមិវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រភូមិវិទ្យា', 'class_assigned' => '10A, 10B, 11D', 'status' => 'active'],
+            ['id' => 10, 'idCard' => 'TCH-2026-010', 'name' => 'លោក តាំង គីមឡេង', 'name_khmer' => 'លោក តាំង គីមឡេង', 'name_latin' => 'Tang Kimleng', 'gender' => 'ប្រុស', 'phone' => '011 222 333', 'specialization' => 'ព័ត៌មានវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រវិទ្យាសាស្ត្រកុំព្យូទ័រ', 'class_assigned' => '10A, 11D, 12A', 'status' => 'active'],
+            ['id' => 11, 'idCard' => 'TCH-2026-011', 'name' => 'លោក ម៉ៅ សុវណ្ណារ៉ា', 'name_khmer' => 'លោក ម៉ៅ សុវណ្ណារ៉ា', 'name_latin' => 'Mao Sovannara', 'gender' => 'ប្រុស', 'phone' => '088 999 111', 'specialization' => 'អប់រំកាយ', 'qualification' => 'គរុកោសល្យកីឡា', 'class_assigned' => '10A, 10B, 11D, 12A', 'status' => 'active'],
+            ['id' => 12, 'idCard' => 'TCH-2026-012', 'name' => 'អ្នកគ្រូ ឌិត សុគន្ធា', 'name_khmer' => 'អ្នកគ្រូ ឌិត សុគន្ធា', 'name_latin' => 'Dy Sokunthea', 'gender' => 'ស្រី', 'phone' => '096 444 111', 'specialization' => 'គណិតវិទ្យា', 'qualification' => 'បរិញ្ញាបត្រគណិតវិទ្យា', 'class_assigned' => '10A, 10B', 'status' => 'active'],
+            ['id' => 13, 'idCard' => 'TCH-2026-013', 'name' => 'លោក គង់ សុជាតិ', 'name_khmer' => 'លោក គង់ សុជាតិ', 'name_latin' => 'Kong Socheat', 'gender' => 'ប្រុស', 'phone' => '012 999 888', 'specialization' => 'អក្សរសាស្ត្រខ្មែរ', 'qualification' => 'បរិញ្ញាបត្រអក្សរសាស្ត្រខ្មែរ', 'class_assigned' => '10B, 12A', 'status' => 'active'],
+            ['id' => 14, 'idCard' => 'TCH-2026-014', 'name' => 'អ្នកគ្រូ រស់ វណ្ណដា', 'name_khmer' => 'អ្នកគ្រូ រស់ វណ្ណដា', 'name_latin' => 'Ros Vannda', 'gender' => 'ស្រី', 'phone' => '097 555 333', 'specialization' => 'ភាសាអង់គ្លេស', 'qualification' => 'BA in English Literature', 'class_assigned' => '10B, 12A', 'status' => 'active'],
+            ['id' => 15, 'idCard' => 'TCH-2026-015', 'name' => 'លោក ជា វីរៈ', 'name_khmer' => 'លោក ជា វីរៈ', 'name_latin' => 'Chea Vireak', 'gender' => 'ប្រុស', 'phone' => '078 666 999', 'specialization' => 'រូបវិទ្យា', 'qualification' => 'បរិញ្ញាបត្ររូបវិទ្យា', 'class_assigned' => '10A, 12A', 'status' => 'active'],
         ];
     }
 }
