@@ -12,15 +12,34 @@
       >
         <!-- Logo Header -->
         <div class="h-20 px-4 md:px-5 flex items-center justify-between border-b border-slate-50">
-          <router-link to="/attendance" class="flex items-center gap-3 group">
-            <!-- Brand Mark Circle (Blue & Navy) -->
-            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-[#1e3a8a] to-[#2563eb] flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform flex-shrink-0">
+          <router-link to="/attendance" class="flex items-center gap-3 group min-w-0">
+            <!-- Custom School Logo (if uploaded) -->
+            <div 
+              v-if="schoolLogo" 
+              class="w-10 h-10 rounded-xl overflow-hidden border border-slate-100 bg-white flex items-center justify-center p-1 shadow-xs group-hover:scale-105 transition-transform flex-shrink-0"
+            >
+              <img :src="schoolLogo" alt="School Logo" class="w-full h-full object-contain" />
+            </div>
+
+            <!-- Default Brand Mark Circle (Blue & Navy) when no logo uploaded -->
+            <div 
+              v-else 
+              class="w-10 h-10 rounded-full bg-gradient-to-tr from-[#1e3a8a] to-[#2563eb] flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform flex-shrink-0"
+            >
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" opacity="0.3"/>
                 <path d="M12 4a8 8 0 0 1 8 8h-8V4z" fill="#ffffff"/>
               </svg>
             </div>
-            <span v-if="sidebarOpen" class="text-xl font-extrabold tracking-tight text-[#1e293b]">LMSTICK</span>
+
+            <div v-if="sidebarOpen" class="flex flex-col truncate">
+              <span class="text-base font-extrabold tracking-tight text-[#1e293b] leading-tight truncate">
+                {{ schoolName || 'LMSTICK' }}
+              </span>
+              <span v-if="schoolNameEn" class="text-[10px] text-slate-400 font-medium truncate leading-none mt-0.5">
+                {{ schoolNameEn }}
+              </span>
+            </div>
           </router-link>
           
           <button @click="sidebarOpen = !sidebarOpen" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition" title="Toggle Menu">
@@ -277,6 +296,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import axios from 'axios';
 import { setLocale } from '../i18n';
 import { 
   LayoutDashboard, 
@@ -302,6 +322,34 @@ const route = useRoute();
 const sidebarOpen = ref(true);
 const isFullscreen = ref(false);
 const openDropdowns = ref(['attendance']);
+
+// School Logo and Brand Header State
+const schoolLogo = ref(localStorage.getItem('pdt_school_logo') || '');
+const schoolName = ref(localStorage.getItem('pdt_school_name') || 'LMSTICK');
+const schoolNameEn = ref(localStorage.getItem('pdt_school_name_en') || '');
+
+const loadSchoolSettings = async () => {
+  try {
+    const res = await axios.get('/api/settings');
+    if (res.data && res.data.settings) {
+      const s = res.data.settings;
+      if (s.school_logo_url) {
+        schoolLogo.value = s.school_logo_url;
+        localStorage.setItem('pdt_school_logo', s.school_logo_url);
+      }
+      if (s.school_name) {
+        schoolName.value = s.school_name;
+        localStorage.setItem('pdt_school_name', s.school_name);
+      }
+      if (s.school_name_en) {
+        schoolNameEn.value = s.school_name_en;
+        localStorage.setItem('pdt_school_name_en', s.school_name_en);
+      }
+    }
+  } catch (err) {
+    console.debug('School settings not loaded for sidebar header:', err);
+  }
+};
 
 const toggleDropdown = (id) => {
   if (!sidebarOpen.value) {
@@ -351,6 +399,31 @@ const toggleFullscreen = () => {
 onMounted(() => {
   document.addEventListener('fullscreenchange', () => {
     isFullscreen.value = !!document.fullscreenElement;
+  });
+
+  loadSchoolSettings();
+
+  // Listen for instant logo file selection from SettingView
+  window.addEventListener('pdt-logo-preview', (e) => {
+    if (e.detail?.logoUrl) {
+      schoolLogo.value = e.detail.logoUrl;
+    }
+  });
+
+  // Listen for saved school settings broadcast
+  window.addEventListener('pdt-settings-saved', (e) => {
+    if (e.detail?.school_logo_url) {
+      schoolLogo.value = e.detail.school_logo_url;
+      localStorage.setItem('pdt_school_logo', e.detail.school_logo_url);
+    }
+    if (e.detail?.school_name) {
+      schoolName.value = e.detail.school_name;
+      localStorage.setItem('pdt_school_name', e.detail.school_name);
+    }
+    if (e.detail?.school_name_en) {
+      schoolNameEn.value = e.detail.school_name_en;
+      localStorage.setItem('pdt_school_name_en', e.detail.school_name_en);
+    }
   });
 });
 

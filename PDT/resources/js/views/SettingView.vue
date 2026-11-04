@@ -693,7 +693,13 @@ const handleLogoChange = (e) => {
   const file = e.target.files[0];
   if (file) {
     logoFile.value = file;
-    logoPreview.value = URL.createObjectURL(file);
+    const previewUrl = URL.createObjectURL(file);
+    logoPreview.value = previewUrl;
+
+    // Instantly reflect logo in sidebar top header
+    window.dispatchEvent(new CustomEvent('pdt-logo-preview', {
+      detail: { logoUrl: previewUrl }
+    }));
   }
 };
 
@@ -750,6 +756,15 @@ const handleSave = async () => {
     if (res.data && res.data.success) {
       alert(res.data.message || 'បានរក្សាទុកការកំណត់ប្រព័ន្ធដោយជោគជ័យ!');
       await fetchSettings();
+
+      // Broadcast saved school logo and name to sidebar
+      window.dispatchEvent(new CustomEvent('pdt-settings-saved', {
+        detail: {
+          school_logo_url: res.data.school_logo_url || form.value.school_logo_url,
+          school_name: res.data.school_name || form.value.school_name,
+          school_name_en: res.data.school_name_en || form.value.school_name_en
+        }
+      }));
     }
   } catch (err) {
     console.error('Failed to save settings:', err);

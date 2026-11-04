@@ -2623,14 +2623,26 @@ class ApiController extends Controller
 
         $merged = array_merge($defaults, $raw);
 
-        if (!empty($merged['school_logo']) && !str_starts_with($merged['school_logo'], 'http')) {
-            $merged['school_logo_url'] = asset('storage/' . $merged['school_logo']);
+        if (!empty($merged['school_logo'])) {
+            $merged['school_logo_url'] = (str_starts_with($merged['school_logo'], 'http') || str_starts_with($merged['school_logo'], 'data:'))
+                ? $merged['school_logo']
+                : asset('storage/' . ltrim($merged['school_logo'], '/'));
+        } else {
+            $merged['school_logo_url'] = '';
         }
-        if (!empty($merged['school_stamp']) && !str_starts_with($merged['school_stamp'], 'http')) {
-            $merged['school_stamp_url'] = asset('storage/' . $merged['school_stamp']);
+        if (!empty($merged['school_stamp'])) {
+            $merged['school_stamp_url'] = (str_starts_with($merged['school_stamp'], 'http') || str_starts_with($merged['school_stamp'], 'data:'))
+                ? $merged['school_stamp']
+                : asset('storage/' . ltrim($merged['school_stamp'], '/'));
+        } else {
+            $merged['school_stamp_url'] = '';
         }
-        if (!empty($merged['khqr_image']) && !str_starts_with($merged['khqr_image'], 'http')) {
-            $merged['khqr_image_url'] = asset('storage/' . $merged['khqr_image']);
+        if (!empty($merged['khqr_image'])) {
+            $merged['khqr_image_url'] = (str_starts_with($merged['khqr_image'], 'http') || str_starts_with($merged['khqr_image'], 'data:'))
+                ? $merged['khqr_image']
+                : asset('storage/' . ltrim($merged['khqr_image'], '/'));
+        } else {
+            $merged['khqr_image_url'] = '';
         }
 
         $academicYears = AcademicYear::orderBy('name', 'desc')->get();
@@ -2665,9 +2677,20 @@ class ApiController extends Controller
             SystemSetting::set('khqr_image', $path);
         }
 
+        $logoPath = SystemSetting::get('school_logo');
+        $logoUrl = '';
+        if ($logoPath) {
+            $logoUrl = (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:'))
+                ? $logoPath
+                : asset('storage/' . ltrim($logoPath, '/'));
+        }
+
         return response()->json([
             'success' => true,
-            'message' => 'បានរក្សាទុកការកំណត់ប្រព័ន្ធដោយជោគជ័យ!'
+            'message' => 'បានរក្សាទុកការកំណត់ប្រព័ន្ធដោយជោគជ័យ!',
+            'school_logo_url' => $logoUrl,
+            'school_name' => SystemSetting::get('school_name', 'សាលារៀន ជំនាន់ថ្មី PDT'),
+            'school_name_en' => SystemSetting::get('school_name_en', 'PDT New Generation School'),
         ]);
     }
 
