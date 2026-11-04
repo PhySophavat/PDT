@@ -1,0 +1,116 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Student;
+use App\Models\SchoolClass;
+use App\Models\AcademicYear;
+use Illuminate\Http\Request;
+use Carbon\Carbon;
+
+class PublicRegistrationController extends Controller
+{
+    /**
+     * Show the public mobile-friendly student registration form.
+     */
+    public function show()
+    {
+        $classes = SchoolClass::orderBy('name')->pluck('name');
+        if ($classes->isEmpty()) {
+            $classes = collect([
+                '7A','7B','7C','7D',
+                '8A','8B','8C','8D',
+                '9A','9B','9C','9D',
+                '10A','10B','10C','10D',
+                '11A','11B','11C','11D',
+                '12A','12B','12C','12D'
+            ]);
+        }
+
+        return view('public.register_student', compact('classes'));
+    }
+
+    /**
+     * Handle public registration form submission.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name_khmer' => 'required|string|max:255',
+            'name_latin' => 'required|string|max:255',
+            'gender' => 'required|in:male,female',
+            'date_of_birth' => 'required|date',
+            'phone' => 'required|string|max:50',
+            'grade' => 'required|string|max:50',
+            'address' => 'required|string|max:500',
+            'photo' => 'nullable|image|max:3072',
+            'parent_name' => 'required|string|max:255',
+            'parent_relationship' => 'required|string|max:100',
+            'parent_occupation' => 'nullable|string|max:255',
+            'parent_phone' => 'required|string|max:50',
+        ], [
+            'name_khmer.required' => 'សូមបញ្ចូលឈ្មោះពេញជាភាសាខ្មែរ',
+            'name_latin.required' => 'សូមបញ្ចូលឈ្មោះជាអក្សរឡាតាំង',
+            'gender.required' => 'សូមជ្រើសរើសភេទ',
+            'date_of_birth.required' => 'សូមជ្រើសរើសថ្ងៃខែឆ្នាំកំណើត',
+            'phone.required' => 'សូមបញ្ចូលលេខទូរស័ព្ទសិស្ស',
+            'grade.required' => 'សូមជ្រើសរើសកម្រិតថ្នាក់ដែលចង់ស្នើសុំចូលរៀន',
+            'address.required' => 'សូមបញ្ចូលអាសយដ្ឋានបច្ចុប្បន្ន',
+            'photo.image' => 'ឯកសាររូបថតត្រូវតែជាប្រភេទរូបភាព (JPG, PNG, WebP)',
+            'photo.max' => 'រូបថតមិនត្រូវលើសពី 3MB ឡើយ',
+            'parent_name.required' => 'សូមបញ្ចូលឈ្មោះឪពុក/ម្តាយ/អាណាព្យាបាល',
+            'parent_relationship.required' => 'សូមបញ្ជាក់ត្រូវជាអ្វីនឹងសិស្ស',
+            'parent_phone.required' => 'សូមបញ្ចូលលេខទូរស័ព្ទអាណាព្យាបាល',
+        ]);
+
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('students/photos', 'public');
+        }
+
+        $activeYear = AcademicYear::where('status', 'active')->first();
+
+        $studentData = [
+            'name_khmer' => $validated['name_khmer'],
+            'name_latin' => $validated['name_latin'],
+            'gender' => $validated['gender'],
+            'date_of_birth' => $validated['date_of_birth'],
+            'phone' => $validated['phone'],
+            'grade' => $validated['grade'],
+            'address' => $validated['address'],
+            'province' => $validated['address'],
+            'photo' => $photoPath,
+            'parent_name' => $validated['parent_name'],
+            'parent_relationship' => $validated['parent_relationship'],
+            'parent_occupation' => $validated['parent_occupation'] ?? null,
+            'parent_phone' => $validated['parent_phone'],
+            'status' => 'pending',
+            'academic_year_id' => $activeYear?->id,
+            'enrollment_date' => Carbon::today(),
+            'emergency_contact' => $validated['parent_phone'],
+        ];
+
+        if ($validated['parent_relationship'] === 'ឪពុក') {
+            $studentData['father_name'] = $validated['parent_name'];
+            $studentData['father_phone'] = $validated['parent_phone'];
+        } elseif ($validated['parent_relationship'] === 'ម្តាយ') {
+            $studentData['mother_name'] = $validated['parent_name'];
+            $studentData['mother_phone'] = $validated['parent_phone'];
+        } else {
+            $studentData['father_name'] = $validated['parent_name'];
+            $studentData['father_phone'] = $validated['parent_phone'];
+        }
+
+        $student = Student::create($studentData);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'ការចុះឈ្មោះរបស់អ្នកត្រូវបានបញ្ជូនដោយជោគជ័យ! សូមរង់ចាំការត្រួតពិនិត្យពីសាលា។',
+                'student_id' => $student->id
+            ]);
+        }
+
+        return redirect()->route('public.register-student')->with('registration_success', true);
+    }
+}

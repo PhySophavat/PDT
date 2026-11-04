@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="km">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,21 +11,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-    <title>@yield('title', 'PDT')</title>
+    <title>@yield('title', 'LMSTICK - ចូលប្រើប្រព័ន្ធ')</title>
     @include('partials.theme-head')
 </head>
 <body>
-    <div class="guest-shell">
+    <div class="guest-shell font-khmer">
         <div class="guest-toolbar">
             @include('partials.theme-toggle')
 
             <a href="{{ route('login') }}" class="guest-brand">
-                <span class="guest-brand__mark">PDT</span>
+                <span class="guest-brand__mark">LMSTICK</span>
                 <span class="app-brand__text">
-                    <span class="app-brand__title">School Management</span>
-                    <span class="app-brand__subtitle">Portal</span>
+                    <span class="app-brand__title">ប្រព័ន្ធគ្រប់គ្រងសាលារៀន</span>
+                    <span class="app-brand__subtitle">School Management</span>
                 </span>
             </a>
         </div>

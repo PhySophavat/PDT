@@ -78,6 +78,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Relationship with parent profile
+     */
+    public function parent()
+    {
+        return $this->hasOne(SchoolParent::class);
+    }
+
+    /**
      * Check if user has a specific role
      * 
      * @param string|array $role

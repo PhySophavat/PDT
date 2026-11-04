@@ -9,7 +9,13 @@ class Student extends Model
 {
     protected $fillable = [
         'user_id',
+        'student_id_card',
         'grade',
+        'status',
+        'photo',
+        'academic_year_id',
+        'enrollment_date',
+        'emergency_contact',
         'date_of_birth',
         'gender',
         'village',
@@ -22,7 +28,24 @@ class Student extends Model
         'mother_phone',
         'father_name',
         'father_phone',
+        'name_khmer',
+        'name_latin',
+        'address',
+        'parent_name',
+        'parent_relationship',
+        'parent_occupation',
+        'parent_phone',
     ];
+
+    protected $casts = [
+        'date_of_birth' => 'date',
+        'enrollment_date' => 'date',
+    ];
+
+    public function getDisplayNameAttribute()
+    {
+        return $this->name_khmer ?: ($this->user?->name ?: ($this->name_latin ?: 'N/A'));
+    }
 
     /**
      * Relationship with user
@@ -67,5 +90,37 @@ class Student extends Model
     public function subject()
     {
         return $this->hasOne(Subject::class);
+    }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
+    public function examinationScores()
+    {
+        return $this->hasMany(ExaminationScore::class);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function parents()
+    {
+        return $this->belongsToMany(SchoolParent::class, 'parent_student', 'student_id', 'parent_id')
+                    ->withPivot('relationship')
+                    ->withTimestamps();
+    }
+
+    public function bookBorrows()
+    {
+        return $this->hasMany(BookBorrow::class);
     }
 }

@@ -40,21 +40,34 @@ class AppServiceProvider extends ServiceProvider
 
         $menuItems = require database_path('seeders/sidebar_menu.php');
 
-        return array_values(array_filter($menuItems, function (array $item) use ($user): bool {
+        $filterItem = function (array $item) use ($user, &$filterItem): ?array {
             $ability = $item['ability'] ?? null;
             $roles = $item['roles'] ?? [];
             $permissions = $item['permissions'] ?? [];
 
+            $isAllowed = false;
             if ($roles === [] && $permissions === [] && !$ability) {
-                return true;
+                $isAllowed = true;
+            } elseif (is_string($ability) && method_exists($user, $ability) && (bool) $user->{$ability}()) {
+                $isAllowed = true;
+            } elseif (($roles !== [] && $user->hasAnyRole($roles)) || ($permissions !== [] && $user->hasAnyPermission($permissions))) {
+                $isAllowed = true;
             }
 
-            if (is_string($ability) && method_exists($user, $ability) && (bool) $user->{$ability}()) {
-                return true;
+            if (!$isAllowed) {
+                return null;
             }
 
-            return ($roles !== [] && $user->hasAnyRole($roles))
-                || ($permissions !== [] && $user->hasAnyPermission($permissions));
-        }));
+            if (!empty($item['children'])) {
+                $item['children'] = array_values(array_filter(array_map($filterItem, $item['children'])));
+                if (empty($item['children']) && empty($item['route'])) {
+                    return null;
+                }
+            }
+
+            return $item;
+        };
+
+        return array_values(array_filter(array_map($filterItem, $menuItems)));
     }
 }
