@@ -21,6 +21,15 @@
       email: "{{ Auth::user()?->email ?? 'admin@example.com' }}",
       avatar: "{{ Auth::user()?->avatar ?? '' }}"
     };
+    @php
+      $logoPath = \App\Models\SystemSetting::get('school_logo');
+      $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : asset('storage/' . ltrim($logoPath, '/'))) : '';
+    @endphp
+    window.__INITIAL_SETTINGS__ = {
+      school_logo_url: "{{ $logoUrl }}",
+      school_name: "{{ \App\Models\SystemSetting::get('school_name', 'សាលារៀន ជំនាន់ថ្មី PDT') }}",
+      school_name_en: "{{ \App\Models\SystemSetting::get('school_name_en', 'PDT New Generation School') }}"
+    };
   </script>
 </head>
 <body class="bg-[#dce4f7] min-h-screen p-2 sm:p-4 lg:p-6 flex items-center justify-center antialiased text-slate-800">

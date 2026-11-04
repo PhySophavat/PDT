@@ -324,9 +324,21 @@ const isFullscreen = ref(false);
 const openDropdowns = ref(['attendance']);
 
 // School Logo and Brand Header State
-const schoolLogo = ref(localStorage.getItem('pdt_school_logo') || '');
-const schoolName = ref(localStorage.getItem('pdt_school_name') || 'LMSTICK');
-const schoolNameEn = ref(localStorage.getItem('pdt_school_name_en') || '');
+const schoolLogo = ref(
+  window.__INITIAL_SETTINGS__?.school_logo_url || 
+  localStorage.getItem('pdt_school_logo') || 
+  ''
+);
+const schoolName = ref(
+  window.__INITIAL_SETTINGS__?.school_name || 
+  localStorage.getItem('pdt_school_name') || 
+  'LMSTICK'
+);
+const schoolNameEn = ref(
+  window.__INITIAL_SETTINGS__?.school_name_en || 
+  localStorage.getItem('pdt_school_name_en') || 
+  ''
+);
 
 const loadSchoolSettings = async () => {
   try {
