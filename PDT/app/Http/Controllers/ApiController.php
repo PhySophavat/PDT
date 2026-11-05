@@ -3001,45 +3001,214 @@ class ApiController extends Controller
 
     public function backupDatabase()
     {
-        $tables = \Illuminate\Support\Facades\DB::select('SHOW TABLES');
-        $dbName = \Illuminate\Support\Facades\DB::getDatabaseName();
-        $tableKey = "Tables_in_{$dbName}";
-
+        $isSqlite = \DB::connection()->getDriverName() === 'sqlite';
         $dump = "-- LMSTICK School Management System Database Backup\n";
         $dump .= "-- Generated on: " . date('Y-m-d H:i:s') . "\n";
-        $dump .= "-- Database: {$dbName}\n\n";
-        $dump .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
+        $dump .= "-- Driver: " . ($isSqlite ? 'SQLite' : 'MySQL') . "\n\n";
 
-        foreach ($tables as $tableObj) {
-            $table = $tableObj->$tableKey ?? reset($tableObj);
-            
-            $create = \Illuminate\Support\Facades\DB::select("SHOW CREATE TABLE `{$table}`");
-            $createKey = 'Create Table';
-            $dump .= "DROP TABLE IF EXISTS `{$table}`;\n";
-            $dump .= $create[0]->$createKey . ";\n\n";
-
-            $rows = \Illuminate\Support\Facades\DB::table($table)->get();
-            if ($rows->count() > 0) {
-                foreach ($rows as $row) {
-                    $values = array_map(function ($val) {
-                        if (is_null($val)) return "NULL";
-                        return "'" . addslashes((string)$val) . "'";
-                    }, (array)$row);
-
-                    $columns = array_map(fn($col) => "`{$col}`", array_keys((array)$row));
-                    $dump .= "INSERT INTO `{$table}` (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $values) . ");\n";
+        if ($isSqlite) {
+            $dump .= "PRAGMA foreign_keys = OFF;\n\n";
+            $tables = \DB::select("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'migrations'");
+            foreach ($tables as $t) {
+                $tableName = $t->name;
+                $create = \DB::select("SELECT sql FROM sqlite_master WHERE type='table' AND name = ?", [$tableName]);
+                if (!empty($create) && !empty($create[0]->sql)) {
+                    $dump .= "DROP TABLE IF EXISTS `{$tableName}`;\n";
+                    $dump .= $create[0]->sql . ";\n\n";
                 }
-                $dump .= "\n";
+                $rows = \DB::table($tableName)->get();
+                if ($rows->count() > 0) {
+                    foreach ($rows as $row) {
+                        $values = array_map(function ($val) {
+                            if (is_null($val)) return "NULL";
+                            return "'" . addslashes((string)$val) . "'";
+                        }, (array)$row);
+                        $columns = array_map(fn($col) => "`{$col}`", array_keys((array)$row));
+                        $dump .= "INSERT INTO `{$tableName}` (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $values) . ");\n";
+                    }
+                    $dump .= "\n";
+                }
             }
+            $dump .= "PRAGMA foreign_keys = ON;\n";
+        } else {
+            $tables = \Illuminate\Support\Facades\DB::select('SHOW TABLES');
+            $dbName = \Illuminate\Support\Facades\DB::getDatabaseName();
+            $tableKey = "Tables_in_{$dbName}";
+            $dump .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
+            foreach ($tables as $tableObj) {
+                $table = $tableObj->$tableKey ?? reset($tableObj);
+                $create = \Illuminate\Support\Facades\DB::select("SHOW CREATE TABLE `{$table}`");
+                $createKey = 'Create Table';
+                $dump .= "DROP TABLE IF EXISTS `{$table}`;\n";
+                $dump .= $create[0]->$createKey . ";\n\n";
+                $rows = \Illuminate\Support\Facades\DB::table($table)->get();
+                if ($rows->count() > 0) {
+                    foreach ($rows as $row) {
+                        $values = array_map(function ($val) {
+                            if (is_null($val)) return "NULL";
+                            return "'" . addslashes((string)$val) . "'";
+                        }, (array)$row);
+                        $columns = array_map(fn($col) => "`{$col}`", array_keys((array)$row));
+                        $dump .= "INSERT INTO `{$table}` (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $values) . ");\n";
+                    }
+                    $dump .= "\n";
+                }
+            }
+            $dump .= "SET FOREIGN_KEY_CHECKS=1;\n";
         }
-
-        $dump .= "SET FOREIGN_KEY_CHECKS=1;\n";
 
         $filename = 'lmstick_backup_' . date('Y_m_d_His') . '.sql';
 
         return response($dump, 200, [
             'Content-Type' => 'application/sql',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
+    public function backupExcelData()
+    {
+        $students = Student::orderBy('id')->get()->map(function ($s) {
+            return [
+                'អត្តលេខសិស្ស' => $s->student_id_card ?: ('STD-' . str_pad($s->id, 4, '0', STR_PAD_LEFT)),
+                'ឈ្មោះសិស្ស (ខ្មែរ)' => $s->name_khmer ?: ($s->first_name . ' ' . $s->last_name),
+                'ឈ្មោះសិស្ស (ឡាតាំង)' => $s->name_latin ?: ($s->user?->name ?: ''),
+                'ភេទ' => $s->gender,
+                'ថ្ងៃខែឆ្នាំកំណើត' => $s->date_of_birth ? $s->date_of_birth->toDateString() : '',
+                'ថ្នាក់រៀន' => $s->grade ?: ($s->schoolClass?->name ?: ''),
+                'អាសយដ្ឋាន' => $s->address ?: '',
+                'ឈ្មោះអាណាព្យាបាល' => $s->parent_name ?: '',
+                'ទូរស័ព្ទអាណាព្យាបាល' => $s->parent_phone ?: ($s->phone ?: ''),
+                'ស្ថានភាព' => $s->status === 'active' ? 'កំពុងសិក្សា' : $s->status,
+            ];
+        });
+
+        $teachers = Teacher::orderBy('id')->get()->map(function ($t) {
+            return [
+                'អត្តលេខគ្រូ' => $t->teacher_id_card ?: ('TCH-' . str_pad($t->id, 3, '0', STR_PAD_LEFT)),
+                'ឈ្មោះគ្រូ (ខ្មែរ)' => $t->name_khmer ?: ($t->first_name . ' ' . $t->last_name),
+                'ឈ្មោះគ្រូ (ឡាតាំង)' => $t->name_latin ?: ($t->user?->name ?: ''),
+                'ភេទ' => $t->gender,
+                'មុខវិជ្ជាជំនាញ' => $t->subject ?: '',
+                'ថ្នាក់ប្រចាំ' => $t->class_assigned ?: '',
+                'លេខទូរស័ព្ទ' => $t->phone ?: '',
+                'អ៊ីមែល' => $t->user?->email ?: ($t->email ?: ''),
+                'ស្ថានភាព' => $t->status === 'active' ? 'កំពុងបង្រៀន' : $t->status,
+            ];
+        });
+
+        $classes = SchoolClass::with('teacher')->orderBy('name')->get()->map(function ($c) {
+            return [
+                'ឈ្មោះថ្នាក់' => $c->name,
+                'បន្ទប់រៀន' => $c->room ?: '',
+                'កម្រិតថ្នាក់' => $c->grade_level ?: '',
+                'គ្រូបន្ទុកថ្នាក់' => $c->teacher?->name_khmer ?: ($c->teacher?->user?->name ?: 'មិនទាន់ចាត់តាំង'),
+                'ចំនួនសិស្ស' => Student::where('grade', $c->name)->count(),
+            ];
+        });
+
+        $subjects = CourseSubject::orderBy('code')->get()->map(function ($sub) {
+            return [
+                'កូដមុខវិជ្ជា' => $sub->code,
+                'ឈ្មោះមុខវិជ្ជា (ខ្មែរ)' => $sub->name_khmer,
+                'ឈ្មោះមុខវិជ្ជា (ឡាតាំង)' => $sub->name_en ?: '',
+                'ពិន្ទុអតិបរមា' => $sub->max_score,
+                'មេគុណ' => $sub->credit ?: 1,
+            ];
+        });
+
+        $academicYears = AcademicYear::orderBy('name', 'desc')->get()->map(function ($ay) {
+            return [
+                'ឆ្នាំសិក្សា' => $ay->name,
+                'កាលបរិច្ឆេទចាប់ផ្តើម' => $ay->start_date ? (is_string($ay->start_date) ? $ay->start_date : $ay->start_date->toDateString()) : '',
+                'កាលបរិច្ឆេទបញ្ចប់' => $ay->end_date ? (is_string($ay->end_date) ? $ay->end_date : $ay->end_date->toDateString()) : '',
+                'ស្ថានភាព' => $ay->is_current ? 'សកម្ម (បច្ចុប្បន្ន)' : 'អសកម្ម',
+            ];
+        });
+
+        $examinations = Examination::orderBy('id', 'desc')->get()->map(function ($ex) {
+            return [
+                'សម័យប្រឡង' => $ex->title,
+                'ថ្នាក់រៀន' => $ex->class_name,
+                'មុខវិជ្ជា' => $ex->subject_name ?: '',
+                'កាលបរិច្ឆេទ' => $ex->exam_date ?: '',
+                'ឆមាស' => 'ឆមាសទី ' . ($ex->semester ?: 1),
+                'ប្រភេទ' => $ex->type ?: 'monthly',
+                'ពិន្ទុពេញ' => $ex->max_score ?: 100,
+            ];
+        });
+
+        $scores = ExaminationScore::with(['examination', 'student'])->take(500)->get()->map(function ($sc) {
+            return [
+                'សម័យប្រឡង' => $sc->examination?->title ?: '',
+                'ថ្នាក់' => $sc->class_name ?: ($sc->examination?->class_name ?: ''),
+                'អត្តលេខសិស្ស' => $sc->student?->student_id_card ?: '',
+                'ឈ្មោះសិស្ស' => $sc->student?->name_khmer ?: ($sc->student?->name_latin ?: ''),
+                'មុខវិជ្ជា' => $sc->subject_name ?: '',
+                'ពិន្ទុទទួលបាន' => $sc->score,
+                'និទ្ទេស' => $sc->grade_letter ?: '',
+            ];
+        });
+
+        $attendances = Attendance::with('student')->orderBy('date', 'desc')->take(500)->get()->map(function ($att) {
+            $statusMap = [
+                'present' => 'វត្តមាន',
+                'late' => 'មកយឺត',
+                'permission' => 'ច្បាប់',
+                'absent' => 'អវត្តមាន',
+            ];
+            return [
+                'កាលបរិច្ឆេទ' => is_string($att->date) ? $att->date : $att->date?->toDateString(),
+                'ថ្នាក់រៀន' => $att->class_name,
+                'អត្តលេខសិស្ស' => $att->student?->student_id_card ?: '',
+                'ឈ្មោះសិស្ស' => $att->student?->name_khmer ?: '',
+                'ស្ថានភាព' => $statusMap[$att->status] ?? $att->status,
+                'មូលហេតុ' => $att->notes ?: '',
+            ];
+        });
+
+        $finances = Invoice::with('student')->orderBy('created_at', 'desc')->take(500)->get()->map(function ($inv) {
+            return [
+                'លេខវិក្កយបត្រ' => $inv->invoice_number,
+                'អត្តលេខសិស្ស' => $inv->student?->student_id_card ?: '',
+                'ឈ្មោះសិស្ស' => $inv->student?->name_khmer ?: '',
+                'ចំនួនទឹកប្រាក់សរុប' => $inv->total_amount,
+                'ចំនួនបានបង់' => $inv->paid_amount,
+                'នៅខ្វះ' => $inv->balance_due,
+                'រូបិយប័ណ្ណ' => $inv->currency ?: 'USD',
+                'ស្ថានភាព' => $inv->status === 'paid' ? 'បានបង់រួច' : ($inv->status === 'pending' ? 'រង់ចាំការបង់' : $inv->status),
+                'កាលបរិច្ឆេទ' => $inv->due_date ? $inv->due_date->toDateString() : ($inv->created_at ? $inv->created_at->toDateString() : ''),
+            ];
+        });
+
+        $settings = SystemSetting::pluck('value', 'key')->toArray();
+        $settingsList = [
+            ['ឈ្មោះកំណត់' => 'ឈ្មោះសាលារៀន (ខ្មែរ)', 'តម្លៃ' => $settings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី PDT'],
+            ['ឈ្មោះកំណត់' => 'ឈ្មោះសាលារៀន (English)', 'តម្លៃ' => $settings['school_name_en'] ?? 'PDT New Generation School'],
+            ['ឈ្មោះកំណត់' => 'ឈ្មោះនាយកសាលា', 'តម្លៃ' => $settings['principal_name'] ?? 'លោក ឈុន វណ្ណា'],
+            ['ឈ្មោះកំណត់' => 'ឆ្នាំសិក្សាបច្ចុប្បន្ន', 'តម្លៃ' => $settings['current_academic_year'] ?? '2025-2026'],
+            ['ឈ្មោះកំណត់' => 'ឆមាសសកម្ម', 'តម្លៃ' => 'ឆមាសទី ' . ($settings['current_semester'] ?? '1')],
+            ['ឈ្មោះកំណត់' => 'រូបិយប័ណ្ណគោល', 'តម្លៃ' => $settings['currency'] ?? 'USD'],
+            ['ឈ្មោះកំណត់' => 'អត្រាប្តូរប្រាក់ (1 USD)', 'តម្លៃ' => ($settings['exchange_rate'] ?? '4100') . ' KHR'],
+            ['ឈ្មោះកំណត់' => 'លេខទូរស័ព្ទ', 'តម្លៃ' => $settings['school_phone'] ?? '023 880 880 / 012 345 678'],
+            ['ឈ្មោះកំណត់' => 'អ៊ីមែល', 'តម្លៃ' => $settings['school_email'] ?? 'contact@pdt-school.edu.kh'],
+            ['ឈ្មោះកំណត់' => 'អាសយដ្ឋាន', 'តម្លៃ' => $settings['school_address'] ?? ''],
+        ];
+
+        return response()->json([
+            'success' => true,
+            'filename' => 'PDT_School_Backup_' . date('Y_m_d_His') . '.xlsx',
+            'data' => [
+                'សិស្ស (Students)' => $students,
+                'គ្រូបង្រៀន (Teachers)' => $teachers,
+                'ថ្នាក់រៀន (Classes)' => $classes,
+                'មុខវិជ្ជា (Subjects)' => $subjects,
+                'ឆ្នាំសិក្សា (Academic Years)' => $academicYears,
+                'ការប្រឡង (Examinations)' => $examinations,
+                'ពិន្ទុប្រឡង (Exam Scores)' => $scores,
+                'វត្តមាន (Attendance)' => $attendances,
+                'ហិរញ្ញវត្ថុ (Finance)' => $finances,
+                'ការកំណត់ប្រព័ន្ធ (Settings)' => $settingsList,
+            ]
         ]);
     }
 

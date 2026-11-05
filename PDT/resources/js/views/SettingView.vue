@@ -494,24 +494,62 @@
       </div>
 
       <!-- Backup Database Section -->
-      <div class="p-5 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h4 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-            <i class="fa-solid fa-download text-blue-600"></i>
-            <span>ទាញយកទិន្នន័យបម្រុងមូលដ្ឋានទិន្នន័យ (Backup Database)</span>
-          </h4>
-          <p class="text-[11px] text-slate-500 mt-0.5">
-            ទាញយកទិន្នន័យប្រព័ន្ធទាំងអស់ជាឯកសារ SQL Dump ពេញលេញ រួមមានសិស្ស គ្រូ ពិន្ទុ វត្តមាន និងហិរញ្ញវត្ថុ
-          </p>
+      <div class="p-5 sm:p-6 bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-slate-50 border border-blue-200/80 rounded-2xl space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <span class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-base shadow-xs flex-shrink-0">
+              <i class="fa-solid fa-cloud-arrow-down"></i>
+            </span>
+            <div>
+              <h4 class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                <span>ទាញយកទិន្នន័យបម្រុងមូលដ្ឋានទិន្នន័យ (Backup Database)</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">Backup</span>
+              </h4>
+              <p class="text-[11px] text-slate-500 mt-0.5">
+                ទាញយកទិន្នន័យប្រព័ន្ធទាំងអស់ជាឯកសារ Excel (.xlsx) គ្រប់សន្លឹក (សិស្ស គ្រូ ថ្នាក់ មុខវិជ្ជា ពិន្ទុ វត្តមាន ហិរញ្ញវត្ថុ) ឬជា SQL Dump ពេញលេញ
+              </p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2.5">
+            <!-- Download Excel Button -->
+            <button 
+              @click="handleBackupExcel" 
+              :disabled="isExportingExcel"
+              type="button"
+              class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer"
+            >
+              <i v-if="isExportingExcel" class="fa-solid fa-spinner fa-spin"></i>
+              <i v-else class="fa-solid fa-file-excel"></i>
+              <span>{{ isExportingExcel ? 'កំពុងបង្កើត Excel...' : 'ទាញយក Excel (.xlsx)' }}</span>
+            </button>
+
+            <!-- Download SQL Button -->
+            <button 
+              @click="handleBackup" 
+              type="button"
+              class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer"
+            >
+              <i class="fa-solid fa-database"></i>
+              <span>ទាញយក SQL Dump</span>
+            </button>
+          </div>
         </div>
-        <button 
-          @click="handleBackup" 
-          type="button"
-          class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer"
-        >
-          <i class="fa-solid fa-file-arrow-down"></i>
-          <span>ទាញយកទិន្នន័យបម្រុង (Download SQL)</span>
-        </button>
+
+        <!-- Sheet Badges Info -->
+        <div class="pt-3 border-t border-blue-100/80 flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+          <span class="font-bold text-slate-700 flex items-center gap-1">
+            <i class="fa-solid fa-table-cells text-emerald-600"></i>
+            <span>សន្លឹកទិន្នន័យក្នុង Excel:</span>
+          </span>
+          <span class="px-2 py-0.5 bg-white border border-slate-200 rounded-md font-medium text-slate-700">🧑‍🎓 សិស្ស</span>
+          <span class="px-2 py-0.5 bg-white border border-slate-200 rounded-md font-medium text-slate-700">👨‍🏫 គ្រូបង្រៀន</span>
+          <span class="px-2 py-0.5 bg-white border border-slate-200 rounded-md font-medium text-slate-700">🏫 ថ្នាក់រៀន</span>
+          <span class="px-2 py-0.5 bg-white border border-slate-200 rounded-md font-medium text-slate-700">📚 មុខវិជ្ជា</span>
+          <span class="px-2 py-0.5 bg-white border border-slate-200 rounded-md font-medium text-slate-700">📝 ពិន្ទុប្រឡង</span>
+          <span class="px-2 py-0.5 bg-white border border-slate-200 rounded-md font-medium text-slate-700">📋 វត្តមាន</span>
+          <span class="px-2 py-0.5 bg-white border border-slate-200 rounded-md font-medium text-slate-700">💵 ហិរញ្ញវត្ថុ</span>
+        </div>
       </div>
 
       <!-- Danger Zone: Purge All Demo Data -->
@@ -571,6 +609,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
+import * as XLSX from 'xlsx';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
 import EntityBanner from '../components/EntityBanner.vue';
@@ -839,6 +878,54 @@ const handleSave = async () => {
     alert('ការរក្សាទុកបានបរាជ័យ សូមព្យាយាមម្តងទៀត។');
   } finally {
     isSaving.value = false;
+  }
+};
+
+const isExportingExcel = ref(false);
+const handleBackupExcel = async () => {
+  isExportingExcel.value = true;
+  try {
+    const res = await axios.get('/api/settings/backup-excel');
+    if (res.data && res.data.success && res.data.data) {
+      const wb = XLSX.utils.book_new();
+      const allSheets = res.data.data;
+      
+      let sheetCount = 0;
+      Object.keys(allSheets).forEach(sheetName => {
+        const rows = allSheets[sheetName];
+        if (rows && rows.length > 0) {
+          const ws = XLSX.utils.json_to_sheet(rows);
+          // Auto calculate column widths for nice padding
+          const colWidths = Object.keys(rows[0] || {}).map(key => {
+            const maxValLen = Math.max(...rows.map(r => String(r[key] ?? '').length));
+            const colLen = Math.max(key.length, maxValLen);
+            return { wch: Math.min(Math.max(colLen + 4, 14), 45) };
+          });
+          ws['!cols'] = colWidths;
+          // Excel sheet names cannot exceed 31 chars
+          const safeName = sheetName.substring(0, 31);
+          XLSX.utils.book_append_sheet(wb, ws, safeName);
+          sheetCount++;
+        }
+      });
+
+      if (sheetCount === 0) {
+        const ws = XLSX.utils.aoa_to_sheet([['ទិន្នន័យទទេ (Database is Empty)']]);
+        XLSX.utils.book_append_sheet(wb, ws, 'Info');
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+      const filename = `PDT_School_Database_Backup_${today}.xlsx`;
+      XLSX.writeFile(wb, filename);
+      alert('បានបង្កើត និងទាញយកឯកសារ Excel (' + filename + ') ដោយជោគជ័យ!');
+    } else {
+      throw new Error('No data received from server');
+    }
+  } catch (err) {
+    console.error('Backup Excel error:', err);
+    alert('ការទាញយក Excel បរាជ័យ៖ ' + (err.response?.data?.message || err.message));
+  } finally {
+    isExportingExcel.value = false;
   }
 };
 
