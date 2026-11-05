@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @php
-      $sysSettings = \App\Models\SystemSetting::pluck('value', 'key');
+      $sysSettings = \App\Models\SystemSetting::allSettings();
       $logoPath = $sysSettings['school_logo'] ?? '';
       $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : asset('storage/' . ltrim($logoPath, '/'))) : asset('images/logo.png');
     @endphp

@@ -53,7 +53,7 @@
       </FilterBar>
 
       <!-- Data Table -->
-      <DataTable>
+      <DataTable :loading="isLoadingExams" :empty="filteredExams.length === 0" :colSpan="7" loadingText="កំពុងទាញយកទិន្នន័យការប្រឡង...">
         <template #header>
           <tr>
             <th class="py-3 px-4 font-bold text-slate-700">{{ $t('examinations.examName') }}</th>
@@ -391,17 +391,10 @@
         <div class="flex items-center justify-center gap-2 pt-1">
           <button 
             type="button" 
-            @click="selectedMatrixClass = '11D'; loadMatrixSheet()" 
+            @click="selectedMatrixClass = '7A'; loadMatrixSheet()" 
             class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5"
           >
-            <span>👉 បង្ហាញថ្នាក់ 11D (សិស្ស ៥២ នាក់ & ពិន្ទុពេញលេញ)</span>
-          </button>
-          <button 
-            type="button" 
-            @click="selectedMatrixClass = '10A'; loadMatrixSheet()" 
-            class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-bold transition"
-          >
-            <span>បង្ហាញថ្នាក់ 10A</span>
+            <span>👉 បង្ហាញថ្នាក់ 7A (សិស្ស ៩៥ នាក់)</span>
           </button>
         </div>
       </div>
@@ -820,7 +813,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onActivated } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
@@ -839,6 +832,22 @@ const examsList = ref([]);
 const classesList = ref([]);
 const subjectsList = ref([]);
 const academicYearsList = ref([]);
+const isLoadingExams = ref(true);
+
+// Hydrate from localStorage cache
+try {
+  const cached = localStorage.getItem('pdt_cached_exams');
+  if (cached) {
+    const d = JSON.parse(cached);
+    if (d.examinations && d.examinations.length) {
+      examsList.value = d.examinations;
+      isLoadingExams.value = false;
+    }
+    if (d.classes) classesList.value = d.classes;
+    if (d.subjects) subjectsList.value = d.subjects;
+    if (d.academicYears) academicYearsList.value = d.academicYears;
+  }
+} catch (e) {}
 
 const showCreateModal = ref(false);
 const showEditModal = ref(false);
@@ -846,7 +855,7 @@ const selectedExam = ref(null);
 const isSubmitting = ref(false);
 
 const selectedExamId = ref('');
-const selectedClassForScores = ref('');
+const selectedClassForScores = ref('7A');
 const selectedSubjectForScores = ref('');
 const scoreSheetStudents = ref([]);
 const scoresMap = ref({});
@@ -855,7 +864,7 @@ const isSavingScores = ref(false);
 
 // Matrix State
 const selectedMatrixExamId = ref('');
-const selectedMatrixClass = ref('');
+const selectedMatrixClass = ref('7A');
 const matrixSubjects = ref([]);
 const matrixStudents = ref([]);
 const matrixData = ref({});
@@ -892,15 +901,21 @@ const editForm = ref({
 });
 
 const fetchExams = async () => {
+  if (examsList.value.length === 0) {
+    isLoadingExams.value = true;
+  }
   try {
     const demoMode = localStorage.getItem('pdt_demo_mode') || '0';
     const res = await axios.get('/api/examinations', {
-      params: { demo_mode: demoMode }
+      params: { demo_mode: demoMode, _t: Date.now() }
     });
     examsList.value = res.data.examinations || [];
     classesList.value = res.data.classes || [];
     subjectsList.value = res.data.subjects || [];
     academicYearsList.value = res.data.academicYears || [];
+    try {
+      localStorage.setItem('pdt_cached_exams', JSON.stringify(res.data));
+    } catch (e) {}
     if (!selectedExamId.value && examsList.value.length > 0) {
       selectedExamId.value = examsList.value[0].id;
     }
@@ -908,23 +923,31 @@ const fetchExams = async () => {
       selectedMatrixExamId.value = examsList.value[0].id;
     }
     if (!selectedClassForScores.value && classesList.value.length > 0) {
-      selectedClassForScores.value = classesList.value.includes('11D') ? '11D' : (classesList.value.includes('10A') ? '10A' : classesList.value[0]);
+      selectedClassForScores.value = classesList.value.includes('7A') ? '7A' : classesList.value[0];
     }
     if (!selectedMatrixClass.value && classesList.value.length > 0) {
-      selectedMatrixClass.value = classesList.value.includes('11D') ? '11D' : (classesList.value.includes('10A') ? '10A' : classesList.value[0]);
+      selectedMatrixClass.value = classesList.value.includes('7A') ? '7A' : classesList.value[0];
     }
     if (!selectedSubjectForScores.value && subjectsList.value.length > 0) {
       selectedSubjectForScores.value = subjectsList.value[0].id;
     }
     if (activeTab.value === 'matrix') {
       await loadMatrixSheet();
+    } else if (activeTab.value === 'scores') {
+      await loadScoreSheet();
     }
   } catch (err) {
     console.error('Failed to fetch exams:', err);
+  } finally {
+    isLoadingExams.value = false;
   }
 };
 
 onMounted(() => {
+  fetchExams();
+});
+
+onActivated(() => {
   fetchExams();
 });
 
@@ -1005,18 +1028,33 @@ const openScoresForExam = (ex) => {
 };
 
 const loadScoreSheet = async () => {
-  if (!selectedExamId.value || !selectedClassForScores.value) return;
+  if (!selectedClassForScores.value) {
+    selectedClassForScores.value = '7A';
+  }
+  if (!selectedExamId.value && examsList.value.length > 0) {
+    selectedExamId.value = examsList.value[0].id;
+  }
+  if (!selectedSubjectForScores.value && subjectsList.value.length > 0) {
+    selectedSubjectForScores.value = subjectsList.value[0].id;
+  }
+  const examId = selectedExamId.value || (examsList.value[0]?.id || 1);
   isLoadingScores.value = true;
   try {
     const demoMode = localStorage.getItem('pdt_demo_mode') || '0';
-    const res = await axios.get(`/api/examinations/${selectedExamId.value}/scores`, {
+    const res = await axios.get(`/api/examinations/${examId}/scores`, {
       params: {
         class: selectedClassForScores.value,
         subject_id: selectedSubjectForScores.value,
         demo_mode: demoMode,
+        _t: Date.now()
       }
     });
-    scoreSheetStudents.value = res.data.students || [];
+    const list = res.data.students || [];
+    scoreSheetStudents.value = [...list].sort((a, b) => {
+      const nameA = a.name || a.name_khmer || '';
+      const nameB = b.name || b.name_khmer || '';
+      return nameA.localeCompare(nameB, 'km');
+    });
     scoresMap.value = {};
     scoreSheetStudents.value.forEach(st => {
       scoresMap.value[st.student_id] = st.score !== null ? st.score : '';
@@ -1104,18 +1142,30 @@ const exportSingleSubjectExcel = () => {
 
 // --- MATRIX SHEET OPERATIONS ---
 const loadMatrixSheet = async () => {
-  if (!selectedMatrixExamId.value || !selectedMatrixClass.value) return;
+  if (!selectedMatrixClass.value) {
+    selectedMatrixClass.value = '7A';
+  }
+  if (!selectedMatrixExamId.value && examsList.value.length > 0) {
+    selectedMatrixExamId.value = examsList.value[0].id;
+  }
+  const examId = selectedMatrixExamId.value || (examsList.value[0]?.id || 1);
   isLoadingMatrix.value = true;
   try {
     const demoMode = localStorage.getItem('pdt_demo_mode') || '0';
-    const res = await axios.get(`/api/examinations/${selectedMatrixExamId.value}/matrix-scores`, {
+    const res = await axios.get(`/api/examinations/${examId}/matrix-scores`, {
       params: { 
         class: selectedMatrixClass.value,
         demo_mode: demoMode,
+        _t: Date.now()
       }
     });
     matrixSubjects.value = res.data.subjects || [];
-    matrixStudents.value = res.data.students || [];
+    const rawList = res.data.students || [];
+    matrixStudents.value = [...rawList].sort((a, b) => {
+      const nameA = a.name || a.name_khmer || '';
+      const nameB = b.name || b.name_khmer || '';
+      return nameA.localeCompare(nameB, 'km');
+    });
     matrixStats.value = res.data.stats || null;
 
     const dataObj = {};
@@ -1197,11 +1247,16 @@ const calculateStudentRank = (studentId) => {
 };
 
 const filteredMatrixStudents = computed(() => {
-  if (!matrixSearch.value) return matrixStudents.value;
-  const s = matrixSearch.value.toLowerCase();
-  return matrixStudents.value.filter(st => {
-    return (st.name && st.name.toLowerCase().includes(s)) ||
-           (st.student_id_card && st.student_id_card.toLowerCase().includes(s));
+  let list = matrixStudents.value || [];
+  if (matrixSearch.value) {
+    const s = matrixSearch.value.toLowerCase().trim();
+    list = list.filter(st => {
+      return (st.name && st.name.toLowerCase().includes(s)) ||
+             (st.student_id_card && st.student_id_card.toLowerCase().includes(s));
+    });
+  }
+  return [...list].sort((a, b) => {
+    return (a.student_id_card || '').localeCompare(b.student_id_card || '', undefined, { numeric: true, sensitivity: 'base' });
   });
 });
 

@@ -312,7 +312,7 @@
         </template>
       </FilterBar>
 
-      <DataTable>
+      <DataTable :loading="false" :empty="filteredRoles.length === 0" :colSpan="7">
         <template #header>
           <tr>
             <th class="py-3 px-4 font-bold text-slate-700">Role ID</th>

@@ -203,7 +203,7 @@ const fetchTimetables = async () => {
     timetablesList.value = res.data.timetables || [];
     classesList.value = res.data.classes || [];
     subjectsList.value = res.data.subjects || [];
-    teachersList.value = res.data.teachers || [];
+    teachersList.value = [...(res.data.teachers || [])].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
   } catch (err) {
     console.error('Failed to fetch timetables:', err);
   }

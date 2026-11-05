@@ -45,7 +45,7 @@
     </FilterBar>
 
     <!-- Data Table -->
-    <DataTable>
+    <DataTable :loading="isLoading" :empty="filteredSubjects.length === 0" :colSpan="9" loadingText="កំពុងទាញយកទិន្នន័យមុខវិជ្ជា...">
       <template #header>
         <tr>
           <th class="py-3 px-4 font-bold text-slate-700">{{ $t('subjects.subjectCode') }}</th>
@@ -508,7 +508,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onActivated } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
@@ -522,6 +522,19 @@ const { t } = useI18n();
 const activeTab = ref('all');
 const searchQuery = ref('');
 const subjectsList = ref([]);
+const isLoading = ref(true);
+
+// Hydrate from cache
+try {
+  const cached = localStorage.getItem('pdt_cached_subjects');
+  if (cached) {
+    const d = JSON.parse(cached);
+    if (d.subjects && d.subjects.length) {
+      subjectsList.value = d.subjects;
+      isLoading.value = false;
+    }
+  }
+} catch (e) {}
 
 const showCreateModal = ref(false);
 const showEditModal = ref(false);
@@ -567,15 +580,27 @@ const editForm = ref({
 });
 
 const fetchSubjects = async () => {
+  if (subjectsList.value.length === 0) {
+    isLoading.value = true;
+  }
   try {
-    const res = await axios.get('/api/course-subjects');
+    const res = await axios.get('/api/course-subjects', { params: { _t: Date.now() } });
     subjectsList.value = res.data.subjects || [];
+    try {
+      localStorage.setItem('pdt_cached_subjects', JSON.stringify(res.data));
+    } catch (e) {}
   } catch (err) {
     console.error('Failed to fetch subjects:', err);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 onMounted(() => {
+  fetchSubjects();
+});
+
+onActivated(() => {
   fetchSubjects();
 });
 

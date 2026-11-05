@@ -26,7 +26,7 @@
     </div>
 
     <!-- Data Table -->
-    <DataTable>
+    <DataTable :loading="isLoading" :empty="years.length === 0" :colSpan="7" loadingText="កំពុងទាញយកឆ្នាំសិក្សា...">
       <template #header>
         <tr>
           <th class="py-3 px-4 font-bold text-slate-700">{{ $t('academicYears.yearName') }}</th>
@@ -235,7 +235,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onActivated } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
@@ -247,12 +247,26 @@ const { t } = useI18n();
 const activeTab = ref('all');
 
 const years = ref([]);
+const isLoading = ref(true);
 const stats = ref({
   total: 0,
   currentYear: localStorage.getItem('pdt_current_academic_year') || window.__INITIAL_SETTINGS__?.current_academic_year || '2026-2027',
   currentSemester: 'ឆមាសទី ១',
   status: 'សកម្ម (Active)'
 });
+
+// Hydrate from localStorage
+try {
+  const cached = localStorage.getItem('pdt_cached_academic_years');
+  if (cached) {
+    const d = JSON.parse(cached);
+    if (d.years && d.years.length) {
+      years.value = d.years;
+      isLoading.value = false;
+    }
+    if (d.stats) stats.value = { ...stats.value, ...d.stats };
+  }
+} catch (e) {}
 
 // Modal State
 const showModal = ref(false);
@@ -270,11 +284,17 @@ const form = ref({
 });
 
 const fetchAcademicYears = async () => {
+  if (years.value.length === 0) {
+    isLoading.value = true;
+  }
   try {
-    const res = await axios.get('/api/academic-years');
+    const res = await axios.get('/api/academic-years', { params: { _t: Date.now() } });
     if (res.data) {
       if (res.data.years) {
         years.value = res.data.years;
+        try {
+          localStorage.setItem('pdt_cached_academic_years', JSON.stringify(res.data));
+        } catch (e) {}
       }
       if (res.data.stats) {
         stats.value = res.data.stats;
@@ -285,10 +305,16 @@ const fetchAcademicYears = async () => {
     }
   } catch (err) {
     console.error('Failed to load academic years:', err);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 onMounted(() => {
+  fetchAcademicYears();
+});
+
+onActivated(() => {
   fetchAcademicYears();
 });
 

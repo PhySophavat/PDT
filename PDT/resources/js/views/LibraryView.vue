@@ -44,7 +44,7 @@
     </FilterBar>
 
     <!-- TAB 1: Books Catalog -->
-    <DataTable v-if="activeTab === 'books'">
+    <DataTable v-if="activeTab === 'books'" :loading="isLoading" :empty="filteredBooks.length === 0" :colSpan="8" loadingText="កំពុងទាញយកទិន្នន័យសៀវភៅ...">
       <template #header>
         <tr>
           <th class="py-3 px-4 font-bold text-slate-700">{{ $t('library.isbn') }}</th>
@@ -92,7 +92,7 @@
     </DataTable>
 
     <!-- TAB 2: Borrows Records -->
-    <DataTable v-else>
+    <DataTable v-else :loading="isLoading" :empty="filteredBorrows.length === 0" :colSpan="6" loadingText="កំពុងទាញយកកំណត់ត្រាខ្ចីសៀវភៅ...">
       <template #header>
         <tr>
           <th class="py-3 px-4 font-bold text-slate-700">{{ $t('library.bookTitle') }}</th>
@@ -452,7 +452,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onActivated } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
@@ -465,6 +465,7 @@ const { t } = useI18n();
 
 const activeTab = ref('books');
 const searchQuery = ref('');
+const isLoading = ref(true);
 
 const stats = ref({
   total: 0,
@@ -477,6 +478,22 @@ const booksList = ref([]);
 const borrowsList = ref([]);
 const categoriesList = ref([]);
 const studentsList = ref([]);
+
+// Hydrate from localStorage
+try {
+  const cached = localStorage.getItem('pdt_cached_library');
+  if (cached) {
+    const d = JSON.parse(cached);
+    if (d.books && d.books.length) {
+      booksList.value = d.books;
+      isLoading.value = false;
+    }
+    if (d.stats) stats.value = d.stats;
+    if (d.borrows) borrowsList.value = d.borrows;
+    if (d.categories) categoriesList.value = d.categories;
+    if (d.students) studentsList.value = d.students;
+  }
+} catch (e) {}
 
 const showAddBookModal = ref(false);
 const showBorrowModal = ref(false);
@@ -542,13 +559,16 @@ const filteredBooksForBorrow = computed(() => {
 const filteredStudentsForBorrow = computed(() => {
   const q = studentSearchQuery.value.trim().toLowerCase();
   const grade = studentGradeFilter.value;
-  return studentsList.value.filter(s => {
+  const list = studentsList.value.filter(s => {
     if (grade && s.grade !== grade) return false;
     if (!q) return true;
     return s.name.toLowerCase().includes(q) || 
            (s.student_id_card && s.student_id_card.toLowerCase().includes(q)) ||
            (s.grade && s.grade.toLowerCase().includes(q));
-  }).slice(0, 15);
+  });
+
+  // Sort strictly by Khmer Alphabetical Order (អក្ខរក្រមខ្មែរ)
+  return list.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km')).slice(0, 15);
 });
 
 const selectBook = (book) => {
@@ -588,21 +608,33 @@ const extendDueDate = (days) => {
 };
 
 const fetchLibraryData = async () => {
+  if (booksList.value.length === 0) {
+    isLoading.value = true;
+  }
   try {
-    const res = await axios.get('/api/library');
+    const res = await axios.get('/api/library', { params: { _t: Date.now() } });
     if (res.data) {
       stats.value = res.data.stats || { total: 0, available: 0, borrows: 0, overdue: 0 };
       booksList.value = res.data.books || [];
       borrowsList.value = res.data.borrows || [];
       categoriesList.value = res.data.categories || [];
-      studentsList.value = res.data.students || [];
+      studentsList.value = [...(res.data.students || [])].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
+      try {
+        localStorage.setItem('pdt_cached_library', JSON.stringify(res.data));
+      } catch (e) {}
     }
   } catch (err) {
     console.error('Failed to fetch library:', err);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 onMounted(() => {
+  fetchLibraryData();
+});
+
+onActivated(() => {
   fetchLibraryData();
 });
 

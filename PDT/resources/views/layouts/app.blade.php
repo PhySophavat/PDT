@@ -13,9 +13,19 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
   @php
-    $sysSettings = \App\Models\SystemSetting::pluck('value', 'key');
-    $logoPath = $sysSettings['school_logo'] ?? '';
-    $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : asset('storage/' . ltrim($logoPath, '/'))) : asset('images/logo.png');
+    $cachedSettings = \Illuminate\Support\Facades\Cache::remember('portal_app_layout_settings', 300, function () {
+        $sysSettings = \App\Models\SystemSetting::pluck('value', 'key')->toArray();
+        $logoPath = $sysSettings['school_logo'] ?? '';
+        $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : (str_starts_with($logoPath, 'images/') ? asset($logoPath) : asset('storage/' . ltrim($logoPath, '/')))) : asset('images/logo.png');
+        $activeYear = $sysSettings['current_academic_year'] ?? (\App\Models\AcademicYear::where('is_current', true)->value('name') ?: '2025-2026');
+        return [
+            'logoUrl' => $logoUrl,
+            'school_name' => $sysSettings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី PDT',
+            'school_name_en' => $sysSettings['school_name_en'] ?? 'PDT New Generation School',
+            'activeYear' => $activeYear,
+        ];
+    });
+    $logoUrl = $cachedSettings['logoUrl'];
   @endphp
   <link id="app-favicon" rel="icon" type="image/png" href="{{ $logoUrl }}">
   
@@ -28,16 +38,11 @@
       email: "{{ Auth::user()?->email ?? 'admin@pdt-school.edu.kh' }}",
       avatar: "{{ Auth::user()?->avatar ?? '' }}"
     };
-    @php
-      $activeYear = \App\Models\SystemSetting::get('current_academic_year')
-        ?: \App\Models\AcademicYear::where('is_current', true)->value('name')
-        ?: '2026-2027';
-    @endphp
     window.__INITIAL_SETTINGS__ = {
-      school_logo_url: "{{ $logoUrl }}",
-      school_name: "{{ $sysSettings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី PDT' }}",
-      school_name_en: "{{ $sysSettings['school_name_en'] ?? 'PDT New Generation School' }}",
-      current_academic_year: "{{ $activeYear }}"
+      school_logo_url: "{{ $cachedSettings['logoUrl'] }}",
+      school_name: "{{ $cachedSettings['school_name'] }}",
+      school_name_en: "{{ $cachedSettings['school_name_en'] }}",
+      current_academic_year: "{{ $cachedSettings['activeYear'] }}"
     };
   </script>
 </head>

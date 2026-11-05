@@ -23,4 +23,25 @@ export default defineConfig({
             '@': '/resources/js',
         },
     },
+    build: {
+        chunkSizeWarningLimit: 800,
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        if (id.includes('xlsx')) {
+                            return 'vendor-xlsx';
+                        }
+                        if (id.includes('vue') || id.includes('vue-router') || id.includes('vue-i18n')) {
+                            return 'vendor-vue';
+                        }
+                        if (id.includes('axios') || id.includes('qrcode')) {
+                            return 'vendor-utils';
+                        }
+                        return 'vendor';
+                    }
+                },
+            },
+        },
+    },
 });

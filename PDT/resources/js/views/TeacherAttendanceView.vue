@@ -488,7 +488,13 @@ const displayedTeachersList = computed(() => {
       return (sum.leaveCount + sum.absentCount + sum.lateCount) > 0;
     });
   }
-  return list;
+
+  // Sort strictly by Khmer Alphabetical Order (អក្ខរក្រមខ្មែរ)
+  return [...list].sort((a, b) => {
+    const nameA = a.name_khmer || a.name || '';
+    const nameB = b.name_khmer || b.name || '';
+    return nameA.localeCompare(nameB, 'km');
+  });
 });
 
 const getMonthKhmerLabel = (key) => {

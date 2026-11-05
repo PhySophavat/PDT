@@ -73,7 +73,7 @@
     </FilterBar>
 
     <!-- Data Table -->
-    <DataTable>
+    <DataTable :loading="isLoading" :empty="filteredParents.length === 0" :colSpan="8" loadingText="កំពុងទាញយកទិន្នន័យមាតាបិតា...">
       <template #header>
         <tr>
           <th class="py-3 px-4 font-bold text-slate-700">អត្តលេខ</th>
@@ -662,7 +662,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onActivated } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
@@ -683,6 +683,23 @@ const relationFilter = ref('all');
 const parents = ref([]);
 const pendingCount = ref(0);
 const activeCount = ref(0);
+const isLoading = ref(true);
+
+// Hydrate from localStorage cache
+try {
+  const cached = localStorage.getItem('pdt_cached_parents');
+  if (cached) {
+    const d = JSON.parse(cached);
+    if (d.parents && d.parents.length) {
+      parents.value = d.parents;
+      isLoading.value = false;
+    }
+    if (d.counts) {
+      pendingCount.value = d.counts.pending || 0;
+      activeCount.value = d.counts.active || 0;
+    }
+  }
+} catch (e) {}
 
 // QR Code Modal State
 const showQrModal = ref(false);
@@ -717,11 +734,17 @@ const approveForm = ref({
 const isSubmittingApproval = ref(false);
 
 const fetchParents = async () => {
+  if (parents.value.length === 0) {
+    isLoading.value = true;
+  }
   try {
-    const res = await axios.get('/api/parents');
+    const res = await axios.get('/api/parents', { params: { _t: Date.now() } });
     if (res.data) {
       if (res.data.parents) {
         parents.value = res.data.parents;
+        try {
+          localStorage.setItem('pdt_cached_parents', JSON.stringify(res.data));
+        } catch (e) {}
       }
       if (res.data.counts) {
         pendingCount.value = res.data.counts.pending || 0;
@@ -733,12 +756,18 @@ const fetchParents = async () => {
     }
   } catch (e) {
     console.error('Failed to load parents:', e);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 onMounted(() => {
   fetchParents();
   publicRegistrationUrl.value = window.location.origin + '/register-parent';
+});
+
+onActivated(() => {
+  fetchParents();
 });
 
 const totalChildrenCount = computed(() => {

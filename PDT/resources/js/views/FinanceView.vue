@@ -421,7 +421,7 @@ const fetchFinanceData = async () => {
     invoicesList.value = res.data.invoices || [];
     paymentsList.value = res.data.payments || [];
     expensesList.value = res.data.expenses || [];
-    studentsList.value = res.data.students || [];
+    studentsList.value = [...(res.data.students || [])].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
     feeCategoriesList.value = res.data.feeCategories || [];
   } catch (err) {
     console.error('Failed to fetch finance:', err);

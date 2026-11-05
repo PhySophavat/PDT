@@ -95,7 +95,7 @@
     </FilterBar>
 
     <!-- Data Table -->
-    <DataTable>
+    <DataTable :loading="isLoading" :empty="filteredStudents.length === 0" :colSpan="7" loadingText="កំពុងទាញយកទិន្នន័យសិស្សពី Server...">
       <template #header>
         <tr>
           <th class="py-3 px-4 font-bold text-slate-700">{{ t('students.studentId') }}</th>
@@ -109,8 +109,23 @@
       </template>
 
       <template #body>
-        <tr v-if="filteredStudents.length === 0">
-          <td colspan="7" class="py-10 text-center text-slate-400 font-khmer">{{ t('common.noData') }}</td>
+        <!-- Loading Spinner State while fetching -->
+        <tr v-if="isLoading && filteredStudents.length === 0">
+          <td colspan="7" class="py-14 text-center text-slate-500 font-khmer">
+            <div class="flex flex-col items-center justify-center gap-2.5">
+              <div class="w-7 h-7 rounded-full border-3 border-blue-600 border-t-transparent animate-spin"></div>
+              <span class="text-xs font-semibold text-slate-600">កំពុងទាញយកទិន្នន័យសិស្សពី Server...</span>
+            </div>
+          </td>
+        </tr>
+        <!-- Real Empty State only when NOT loading -->
+        <tr v-else-if="filteredStudents.length === 0">
+          <td colspan="7" class="py-12 text-center text-slate-400 font-khmer">
+            <div class="flex flex-col items-center justify-center gap-2">
+              <i class="fa-solid fa-user-graduate text-3xl text-slate-300"></i>
+              <span>{{ t('common.noData') }}</span>
+            </div>
+          </td>
         </tr>
         <tr v-for="st in filteredStudents" :key="st.id" class="hover:bg-slate-50/70 transition-colors">
           <td class="py-3 px-4 font-mono font-bold text-blue-600">
@@ -1104,7 +1119,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onActivated } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
@@ -1130,6 +1145,23 @@ const pendingCount = ref(0);
 const activeCount = ref(0);
 const graduatedCount = ref(0);
 const transferredCount = ref(0);
+const isLoading = ref(true);
+
+// Instantly hydrate from local storage cache so there is NEVER a 0 or empty flash on page refresh
+try {
+  const cachedStudents = localStorage.getItem('pdt_cached_students');
+  if (cachedStudents) {
+    const parsed = JSON.parse(cachedStudents);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      students.value = parsed;
+      activeCount.value = parsed.filter(st => st.status === 'active' || st.status === 'enrolled').length;
+      pendingCount.value = parsed.filter(st => st.status === 'pending').length;
+      graduatedCount.value = parsed.filter(st => st.status === 'graduated').length;
+      transferredCount.value = parsed.filter(st => st.status === 'transferred').length;
+      isLoading.value = false;
+    }
+  }
+} catch (e) {}
 
 const availableClasses = ref([
   '7A', '7B', '7C', '7D',
@@ -1215,6 +1247,9 @@ const fetchStudents = async () => {
     if (res.data) {
       if (res.data.students) {
         students.value = res.data.students;
+        try {
+          localStorage.setItem('pdt_cached_students', JSON.stringify(res.data.students));
+        } catch (e) {}
       }
       if (res.data.counts) {
         pendingCount.value = res.data.counts.pending || 0;
@@ -1230,7 +1265,17 @@ const fetchStudents = async () => {
     }
   } catch (e) {
     console.error('Failed to load students:', e);
+  } finally {
+    isLoading.value = false;
   }
+};
+
+const notifyDataChanged = () => {
+  try {
+    localStorage.removeItem('pdt_cached_dashboard');
+    localStorage.removeItem('pdt_cached_students');
+    window.dispatchEvent(new CustomEvent('pdt-data-updated'));
+  } catch (e) {}
 };
 
 onMounted(() => {
@@ -1238,8 +1283,12 @@ onMounted(() => {
   publicRegistrationUrl.value = window.location.origin + '/register-student';
 });
 
+onActivated(() => {
+  fetchStudents();
+});
+
 const filteredStudents = computed(() => {
-  return students.value.filter(st => {
+  const result = students.value.filter(st => {
     let matchesTab = true;
     if (activeTab.value === 'all') {
       matchesTab = true;
@@ -1267,6 +1316,13 @@ const filteredStudents = computed(() => {
     const matchesGrade = !gradeFilter.value || st.grade === gradeFilter.value;
 
     return matchesTab && matchesSearch && matchesGender && matchesGrade;
+  });
+
+  // Sort strictly by Khmer Alphabetical Order (អក្ខរក្រមខ្មែរ)
+  return result.sort((a, b) => {
+    const nameA = a.name_khmer || a.name || '';
+    const nameB = b.name_khmer || b.name || '';
+    return nameA.localeCompare(nameB, 'km');
   });
 });
 
@@ -1366,6 +1422,7 @@ const submitCreateStudent = async () => {
     if (res.data && res.data.success) {
       alert(res.data.message);
       showCreateModal.value = false;
+      notifyDataChanged();
       await fetchStudents();
     }
   } catch (err) {
@@ -1398,6 +1455,7 @@ const submitApproval = async () => {
     if (res.data && res.data.success) {
       alert(res.data.message);
       showApproveModal.value = false;
+      notifyDataChanged();
       await fetchStudents();
     }
   } catch (err) {
@@ -1441,6 +1499,7 @@ const submitEditStudent = async () => {
     if (res.data && res.data.success) {
       alert(res.data.message);
       showEditModal.value = false;
+      notifyDataChanged();
       await fetchStudents();
     }
   } catch (err) {
@@ -1458,6 +1517,7 @@ const confirmDeleteStudent = async (st) => {
     const res = await axios.delete(`/api/students/${st.id}`);
     if (res.data && res.data.success) {
       alert(res.data.message);
+      notifyDataChanged();
       await fetchStudents();
     }
   } catch (err) {
@@ -1751,12 +1811,19 @@ const parsePastedText = () => {
     }
 
     let gender = 'ប្រុស';
-    if (/(ស្រី|female|\bF\b|ស\b)/i.test(line)) {
+    // School Convention: Trailing 'ស' or 'ស្រី' denotes Female; no marker or 'ប'/'ប្រុស' denotes Male
+    if (/[\s,\t]+(ស|ស្រី|female|f)$/i.test(line)) {
       gender = 'ស្រី';
-      line = line.replace(/(ស្រី|female|\bF\b|ស\b)/gi, '').trim();
-    } else if (/(ប្រុស|male|\bM\b|ប\b)/i.test(line)) {
+      line = line.replace(/[\s,\t]+(ស|ស្រី|female|f)$/i, '').trim();
+    } else if (/[\s,\t]+(ប|ប្រុស|male|m)$/i.test(line)) {
       gender = 'ប្រុស';
-      line = line.replace(/(ប្រុស|male|\bM\b|ប\b)/gi, '').trim();
+      line = line.replace(/[\s,\t]+(ប|ប្រុស|male|m)$/i, '').trim();
+    } else if (/[\s,\t]+(ស្រី|female)[\s,\t]+/i.test(line)) {
+      gender = 'ស្រី';
+      line = line.replace(/[\s,\t]+(ស្រី|female)[\s,\t]+/i, ' ').trim();
+    } else if (/[\s,\t]+(ប្រុស|male)[\s,\t]+/i.test(line)) {
+      gender = 'ប្រុស';
+      line = line.replace(/[\s,\t]+(ប្រុស|male)[\s,\t]+/i, ' ').trim();
     }
 
     let name = line;
@@ -1818,11 +1885,12 @@ const submitBulkStudents = async () => {
       }))
     };
 
-    const res = await axios.post('/api/students/bulk-store', payload);
+    const res = await axios.post('/api/students/bulk-store', payload, { timeout: 180000 });
     if (res.data && res.data.success) {
       alert(res.data.message || `បានបញ្ចូលសិស្សចំនួន ${res.data.count} នាក់ដោយជោគជ័យ!`);
       showBulkModal.value = false;
       bulkStudents.value = [];
+      notifyDataChanged();
       await fetchStudents();
     } else {
       alert(res.data?.message || 'មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ។');

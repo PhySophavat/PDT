@@ -129,8 +129,8 @@ const fetchReports = async () => {
   try {
     const res = await axios.get('/api/reports');
     if (res.data) {
-      students.value = res.data.students || [];
-      teachers.value = res.data.teachers || [];
+      students.value = [...(res.data.students || [])].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
+      teachers.value = [...(res.data.teachers || [])].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
       generalMetrics.value = res.data.generalMetrics || [];
     }
   } catch (err) {

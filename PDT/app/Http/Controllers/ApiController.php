@@ -28,156 +28,228 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class ApiController extends Controller
 {
     public function dashboard(Request $request)
     {
-        $totalStudents = Student::count();
-        $totalTeachers = Teacher::count();
-        $totalClasses = SchoolClass::count();
-        $totalSubjects = CourseSubject::count();
+        if ($request->has('_t') || $request->has('force')) {
+            Cache::forget('portal_dashboard_payload');
+        }
 
-        // Female calculation for NGS statistics
-        $femaleStudents = Student::where('gender', 'ស្រី')->orWhere('gender', 'female')->count();
-        $femaleRatio = $totalStudents > 0 ? round(($femaleStudents / $totalStudents) * 100) : 0;
-        $maleStudents = max(0, $totalStudents - $femaleStudents);
+        $payload = Cache::remember('portal_dashboard_payload', 60, function () {
+            // Optimized student counts: combine total and female in 1 single query
+            $studentStats = Student::selectRaw('COUNT(*) as total, SUM(CASE WHEN gender IN ("ស្រី", "female") THEN 1 ELSE 0 END) as female, SUM(CASE WHEN status IN ("scholarship", "អាហារូបករណ៍") THEN 1 ELSE 0 END) as scholarship')->first();
+            $totalStudents = (int) ($studentStats->total ?? 0);
+            $femaleStudents = (int) ($studentStats->female ?? 0);
+            $scholarshipCount = (int) ($studentStats->scholarship ?? 0);
 
-        // Attendance stats
-        $today = Carbon::today()->toDateString();
-        $todayTotal = Attendance::whereDate('date', $today)->count();
-        $todayPresent = Attendance::whereDate('date', $today)->whereIn('status', ['present', 'late'])->count();
-        $attendanceRate = $todayTotal > 0 ? round(($todayPresent / $todayTotal) * 100, 1) : 0;
+            $totalTeachers = Teacher::count();
+            $totalClasses = SchoolClass::count();
+            $totalSubjects = CourseSubject::count();
 
-        $teacherAtt = TeacherAttendance::whereDate('date', $today)->count();
-        $teacherPresent = TeacherAttendance::whereDate('date', $today)->where('status', 'present')->count();
-        $teacherAttendanceRate = $teacherAtt > 0 ? round(($teacherPresent / $teacherAtt) * 100) : 0;
+            $femaleRatio = $totalStudents > 0 ? round(($femaleStudents / $totalStudents) * 100) : 0;
+            $maleStudents = max(0, $totalStudents - $femaleStudents);
 
-        // All classes for dashboard with homeroom teacher info
-        $allClasses = SchoolClass::with('teacher')->orderBy('name')->get()->map(function ($cls) use ($today) {
-            $stuCount = Student::where('grade', $cls->name)->count();
-            $presentCount = Attendance::where('class_name', $cls->name)->whereDate('date', $today)->whereIn('status', ['present', 'late'])->count();
-            $absentCount = Attendance::where('class_name', $cls->name)->whereDate('date', $today)->where('status', 'absent')->count();
-            $rate = $stuCount > 0 ? round(($presentCount / $stuCount) * 100, 1) : 0;
+            // Attendance stats in 1 single query
+            $today = Carbon::today()->toDateString();
+            $attStats = Attendance::whereDate('date', $today)
+                ->selectRaw('COUNT(*) as total, SUM(CASE WHEN status IN ("present", "late") THEN 1 ELSE 0 END) as present')
+                ->first();
+            $todayTotal = (int) ($attStats->total ?? 0);
+            $todayPresent = (int) ($attStats->present ?? 0);
+            $attendanceRate = $todayTotal > 0 ? round(($todayPresent / $todayTotal) * 100, 1) : 0;
 
-            preg_match('/^\d+/', $cls->name, $matches);
-            $gradeLevel = $matches[0] ?? ($cls->grade_level ?: '7');
+            // Teacher attendance stats in 1 single query
+            $teacherAttStats = TeacherAttendance::whereDate('date', $today)
+                ->selectRaw('COUNT(*) as total, SUM(CASE WHEN status = "present" THEN 1 ELSE 0 END) as present')
+                ->first();
+            $teacherAtt = (int) ($teacherAttStats->total ?? 0);
+            $teacherPresent = (int) ($teacherAttStats->present ?? 0);
+            $teacherAttendanceRate = $teacherAtt > 0 ? round(($teacherPresent / $teacherAtt) * 100) : 0;
+
+            // Batch student counts per grade in 1 single query
+            $studentCounts = Student::select('grade', DB::raw('count(*) as count'))->groupBy('grade')->pluck('count', 'grade')->toArray();
+
+            // Batch attendance counts per class today in 1 single query
+            $attendanceToday = Attendance::whereDate('date', $today)
+                ->select('class_name', 'status', DB::raw('count(*) as count'))
+                ->groupBy('class_name', 'status')
+                ->get();
+            
+            $presentCounts = [];
+            $absentCounts = [];
+            foreach ($attendanceToday as $att) {
+                $clsName = $att->class_name;
+                if (in_array($att->status, ['present', 'late'])) {
+                    $presentCounts[$clsName] = ($presentCounts[$clsName] ?? 0) + $att->count;
+                } elseif ($att->status === 'absent') {
+                    $absentCounts[$clsName] = ($absentCounts[$clsName] ?? 0) + $att->count;
+                }
+            }
+
+            // All classes for dashboard with homeroom teacher info (eager-load teacher.user to eliminate N+1)
+            $allClasses = SchoolClass::with('teacher.user')->orderBy('name')->get()->map(function ($cls) use ($studentCounts, $presentCounts, $absentCounts) {
+                $stuCount = $studentCounts[$cls->name] ?? 0;
+                $presentCount = $presentCounts[$cls->name] ?? 0;
+                $absentCount = $absentCounts[$cls->name] ?? 0;
+                $rate = $stuCount > 0 ? round(($presentCount / $stuCount) * 100, 1) : 0;
+
+                preg_match('/^\d+/', $cls->name, $matches);
+                $gradeLevel = $matches[0] ?? ($cls->grade_level ?: '7');
+
+                return [
+                    'id' => $cls->id,
+                    'name' => $cls->name,
+                    'grade_level' => $gradeLevel,
+                    'room' => $cls->room ?: ('បន្ទប់ ' . $cls->name),
+                    'teacher' => $cls->teacher ? ($cls->teacher->name_khmer ?: ($cls->teacher->user?->name ?: null)) : null,
+                    'teacher_photo' => $cls->teacher?->photo ?: '',
+                    'teacher_id' => $cls->teacher_id,
+                    'students' => $stuCount,
+                    'present' => $presentCount,
+                    'absent' => $absentCount,
+                    'rate' => $rate,
+                ];
+            });
+
+            // Weekly attendance trend (Mon - Sat) in 1 query
+            $daysOfWeek = [
+                ['day' => 'ចន្ទ', 'dayEn' => 'Mon'],
+                ['day' => 'អង្គារ', 'dayEn' => 'Tue'],
+                ['day' => 'ពុធ', 'dayEn' => 'Wed'],
+                ['day' => 'ព្រហស្បតិ៍', 'dayEn' => 'Thu'],
+                ['day' => 'សុក្រ', 'dayEn' => 'Fri'],
+                ['day' => 'សៅរ៍', 'dayEn' => 'Sat'],
+            ];
+
+            $startOfWeek = Carbon::now()->startOfWeek()->toDateString();
+            $endOfWeek = Carbon::now()->startOfWeek()->addDays(5)->toDateString();
+            $weeklyAttendance = Attendance::whereBetween('date', [$startOfWeek, $endOfWeek])
+                ->select('date', 'status', DB::raw('count(*) as count'))
+                ->groupBy('date', 'status')
+                ->get();
+
+            $weekPresentByDate = [];
+            $weekAbsentByDate = [];
+            foreach ($weeklyAttendance as $row) {
+                $dStr = Carbon::parse($row->date)->toDateString();
+                if (in_array($row->status, ['present', 'late'])) {
+                    $weekPresentByDate[$dStr] = ($weekPresentByDate[$dStr] ?? 0) + $row->count;
+                } elseif ($row->status === 'absent') {
+                    $weekAbsentByDate[$dStr] = ($weekAbsentByDate[$dStr] ?? 0) + $row->count;
+                }
+            }
+
+            $weeklyTrend = [];
+            $start = Carbon::now()->startOfWeek();
+            foreach ($daysOfWeek as $index => $d) {
+                $targetDate = $start->copy()->addDays($index)->toDateString();
+                $pCount = $weekPresentByDate[$targetDate] ?? 0;
+                $aCount = $weekAbsentByDate[$targetDate] ?? 0;
+                $tot = $pCount + $aCount;
+                $rate = $tot > 0 ? round(($pCount / $tot) * 100, 1) : 0;
+                $weeklyTrend[] = [
+                    'day' => $d['day'],
+                    'date' => Carbon::parse($targetDate)->format('d/m'),
+                    'present' => $pCount,
+                    'absent' => $aCount,
+                    'rate' => $rate,
+                ];
+            }
+
+            // Recent real academic activities
+            $recentAnnouncements = Announcement::latest()->take(3)->get()->map(fn($a) => [
+                'type' => 'announcement',
+                'title' => $a->title,
+                'time' => $a->created_at ? $a->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                'icon' => 'fa-bullhorn',
+                'color' => 'bg-amber-100 text-amber-700'
+            ]);
+
+            $recentBorrows = BookBorrow::with('student', 'book')->latest()->take(2)->get()->map(fn($b) => [
+                'type' => 'library',
+                'title' => 'សិស្ស ' . ($b->student?->name_khmer ?: ($b->student?->name ?: '')) . ' ខ្ចីសៀវភៅ "' . ($b->book?->title ?: '') . '"',
+                'time' => $b->created_at ? $b->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                'icon' => 'fa-book-open',
+                'color' => 'bg-blue-100 text-blue-700'
+            ]);
+
+            $activities = $recentAnnouncements->concat($recentBorrows)->values();
+
+            // Real Top Classes for leaderboard
+            $topClasses = $allClasses->filter(fn($c) => $c['students'] > 0)->sortByDesc('rate')->take(4)->values();
+
+            // Academic years in 1 query
+            $allAcademicYears = AcademicYear::orderBy('name', 'desc')->get();
+            $academicYearsList = $allAcademicYears->pluck('name')->toArray();
+            $activeYear = SystemSetting::get('current_academic_year')
+                ?: ($allAcademicYears->firstWhere('is_current', true)?->name ?: ($allAcademicYears->first()?->name ?: '2025-2026'));
+            if (empty($academicYearsList)) {
+                $academicYearsList = [$activeYear];
+            }
+            if (!in_array($activeYear, $academicYearsList)) {
+                array_unshift($academicYearsList, $activeYear);
+            }
+
+            // Real pass rate calculation in 1 single query
+            $scoreStats = \App\Models\ExaminationScore::selectRaw('COUNT(*) as total, SUM(CASE WHEN score >= 50 THEN 1 ELSE 0 END) as passed')->first();
+            $totalScores = (int) ($scoreStats->total ?? 0);
+            $passedScores = (int) ($scoreStats->passed ?? 0);
+            $averagePassRate = $totalScores > 0 ? round(($passedScores / $totalScores) * 100, 1) : 0;
 
             return [
-                'id' => $cls->id,
-                'name' => $cls->name,
-                'grade_level' => $gradeLevel,
-                'room' => $cls->room ?: ('បន្ទប់ ' . $cls->name),
-                'teacher' => $cls->teacher ? ($cls->teacher->name_khmer ?: ($cls->teacher->user?->name ?: null)) : null,
-                'teacher_photo' => $cls->teacher?->photo ?: '',
-                'teacher_id' => $cls->teacher_id,
-                'students' => $stuCount,
-                'present' => $presentCount,
-                'absent' => $absentCount,
-                'rate' => $rate,
+                'stats' => [
+                    'students' => $totalStudents,
+                    'teachers' => $totalTeachers,
+                    'classes' => $totalClasses,
+                    'subjects' => $totalSubjects,
+                    'attendanceRate' => $attendanceRate,
+                    'teacherAttendanceRate' => $teacherAttendanceRate,
+                    'femaleRatio' => $femaleRatio,
+                    'femaleCount' => $femaleStudents,
+                    'maleCount' => $maleStudents,
+                    'averagePassRate' => $averagePassRate,
+                    'scholarshipCount' => $scholarshipCount,
+                ],
+                'currentAcademicYear' => $activeYear,
+                'academicYears' => $academicYearsList,
+                'recentClasses' => $allClasses->take(10)->values(),
+                'allClasses' => $allClasses,
+                'weeklyTrend' => $weeklyTrend,
+                'genderDistribution' => [
+                    'female' => $femaleStudents,
+                    'male' => $maleStudents,
+                    'femaleRatio' => $femaleRatio,
+                    'maleRatio' => 100 - $femaleRatio,
+                ],
+                'recentActivities' => $activities,
+                'topClasses' => $topClasses,
             ];
         });
 
-        // Weekly attendance trend (Mon - Sat)
-        $daysOfWeek = [
-            ['day' => 'ចន្ទ', 'dayEn' => 'Mon'],
-            ['day' => 'អង្គារ', 'dayEn' => 'Tue'],
-            ['day' => 'ពុធ', 'dayEn' => 'Wed'],
-            ['day' => 'ព្រហស្បតិ៍', 'dayEn' => 'Thu'],
-            ['day' => 'សុក្រ', 'dayEn' => 'Fri'],
-            ['day' => 'សៅរ៍', 'dayEn' => 'Sat'],
-        ];
+        return response()->json($payload);
+    }
 
-        $weeklyTrend = [];
-        $startOfWeek = Carbon::now()->startOfWeek();
-        foreach ($daysOfWeek as $index => $d) {
-            $targetDate = $startOfWeek->copy()->addDays($index)->toDateString();
-            $pCount = Attendance::whereDate('date', $targetDate)->whereIn('status', ['present', 'late'])->count();
-            $aCount = Attendance::whereDate('date', $targetDate)->where('status', 'absent')->count();
-            $tot = $pCount + $aCount;
-            $rate = $tot > 0 ? round(($pCount / $tot) * 100, 1) : 0;
-            $weeklyTrend[] = [
-                'day' => $d['day'],
-                'date' => Carbon::parse($targetDate)->format('d/m'),
-                'present' => $pCount,
-                'absent' => $aCount,
-                'rate' => $rate,
-            ];
+    /**
+     * Sort collection of students strictly by Khmer Alphabetical Order (អក្ខរក្រមខ្មែរ)
+     */
+    protected function sortStudentsByKhmerAlphabet($students, string $nameKey = 'name')
+    {
+        if (class_exists('Collator')) {
+            $collator = new \Collator('km');
+            return $students->sort(function ($a, $b) use ($collator, $nameKey) {
+                $nameA = is_array($a) ? ($a[$nameKey] ?? ($a['name_khmer'] ?? '')) : ($a->name_khmer ?: ($a->display_name ?? ($a->{$nameKey} ?? '')));
+                $nameB = is_array($b) ? ($b[$nameKey] ?? ($b['name_khmer'] ?? '')) : ($b->name_khmer ?: ($b->display_name ?? ($b->{$nameKey} ?? '')));
+                return $collator->compare((string) $nameA, (string) $nameB);
+            })->values();
         }
 
-        // Recent real academic activities
-        $recentAnnouncements = Announcement::latest()->take(3)->get()->map(fn($a) => [
-            'type' => 'announcement',
-            'title' => $a->title,
-            'time' => $a->created_at ? $a->created_at->diffForHumans() : 'ថ្មីៗនេះ',
-            'icon' => 'fa-bullhorn',
-            'color' => 'bg-amber-100 text-amber-700'
-        ]);
-
-        $recentBorrows = BookBorrow::with('student', 'book')->latest()->take(2)->get()->map(fn($b) => [
-            'type' => 'library',
-            'title' => 'សិស្ស ' . ($b->student?->name_khmer ?: ($b->student?->name ?: '')) . ' ខ្ចីសៀវភៅ "' . ($b->book?->title ?: '') . '"',
-            'time' => $b->created_at ? $b->created_at->diffForHumans() : 'ថ្មីៗនេះ',
-            'icon' => 'fa-book-open',
-            'color' => 'bg-blue-100 text-blue-700'
-        ]);
-
-        $activities = $recentAnnouncements->concat($recentBorrows)->values();
-
-        // Real Top Classes for leaderboard
-        $topClasses = $allClasses->filter(fn($c) => $c['students'] > 0)->sortByDesc('rate')->take(4)->values();
-
-        $activeYear = SystemSetting::get('current_academic_year')
-            ?: AcademicYear::where('is_current', true)->value('name')
-            ?: AcademicYear::latest()->value('name')
-            ?: '2025-2026';
-        $academicYearsList = AcademicYear::orderBy('name', 'desc')->pluck('name')->toArray();
-        if (empty($academicYearsList)) {
-            $academicYearsList = [$activeYear];
-        }
-        if (!in_array($activeYear, $academicYearsList)) {
-            array_unshift($academicYearsList, $activeYear);
-        }
-
-        // Real pass rate calculation
-        $totalScores = \App\Models\ExaminationScore::count();
-        $passedScores = \App\Models\ExaminationScore::where('score', '>=', 50)->count();
-        $averagePassRate = $totalScores > 0 ? round(($passedScores / $totalScores) * 100, 1) : 0;
-
-        // Real scholarship count
-        $scholarshipCount = Student::where('status', 'scholarship')
-            ->orWhere('status', 'អាហារូបករណ៍')
-            ->count();
-
-        return response()->json([
-            'stats' => [
-                'students' => $totalStudents,
-                'teachers' => $totalTeachers,
-                'classes' => $totalClasses,
-                'subjects' => $totalSubjects,
-                'attendanceRate' => $attendanceRate,
-                'teacherAttendanceRate' => $teacherAttendanceRate,
-                'femaleRatio' => $femaleRatio,
-                'femaleCount' => $femaleStudents,
-                'maleCount' => $maleStudents,
-                'averagePassRate' => $averagePassRate,
-                'scholarshipCount' => $scholarshipCount,
-            ],
-            'currentAcademicYear' => $activeYear,
-            'academicYears' => $academicYearsList,
-            'recentClasses' => $allClasses->take(10)->values(),
-            'allClasses' => $allClasses,
-            'weeklyTrend' => $weeklyTrend,
-            'genderDistribution' => [
-                'female' => $femaleStudents,
-                'male' => $maleStudents,
-                'femaleRatio' => $femaleRatio,
-                'maleRatio' => 100 - $femaleRatio,
-            ],
-            'recentActivities' => $activities,
-            'topClasses' => $topClasses,
-        ]);
+        return $students->sortBy(function ($item) use ($nameKey) {
+            return is_array($item) ? ($item[$nameKey] ?? ($item['name_khmer'] ?? '')) : ($item->name_khmer ?: ($item->display_name ?? ''));
+        })->values();
     }
 
     public function students(Request $request)
@@ -224,6 +296,9 @@ class ApiController extends Controller
             'created_at' => $st->created_at ? $st->created_at->format('Y-m-d H:i') : null,
         ]);
 
+        // Sort students by Khmer Alphabetical Order (អក្ខរក្រមខ្មែរ)
+        $students = $this->sortStudentsByKhmerAlphabet($students, 'name');
+
         $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '0'));
 
         if ($students->isEmpty() && $demoMode !== '0') {
@@ -252,15 +327,17 @@ class ApiController extends Controller
             ]);
         }
 
-        $pendingCount = Student::where('status', 'pending')->count();
-        $activeCount = Student::whereIn('status', ['active', 'enrolled'])->count();
-        $graduatedCount = Student::where('status', 'graduated')->count();
-        $transferredCount = Student::where('status', 'transferred')->count();
+        $statusCounts = Student::select('status', DB::raw('count(*) as count'))->groupBy('status')->pluck('count', 'status')->toArray();
+        $totalCount = array_sum($statusCounts);
+        $pendingCount = $statusCounts['pending'] ?? 0;
+        $activeCount = ($statusCounts['active'] ?? 0) + ($statusCounts['enrolled'] ?? 0);
+        $graduatedCount = $statusCounts['graduated'] ?? 0;
+        $transferredCount = $statusCounts['transferred'] ?? 0;
 
         return response()->json([
             'students' => $students,
             'counts' => [
-                'total' => Student::count(),
+                'total' => $totalCount,
                 'active' => $activeCount,
                 'pending' => $pendingCount,
                 'graduated' => $graduatedCount,
@@ -332,6 +409,8 @@ class ApiController extends Controller
             ]);
             $student->parents()->syncWithoutDetaching([$parent->id => ['relationship' => $parent->relationship]]);
         }
+
+        Cache::forget('portal_dashboard_payload');
 
         return response()->json([
             'success' => true,
@@ -418,6 +497,8 @@ class ApiController extends Controller
             $student->parents()->syncWithoutDetaching([$parent->id => ['relationship' => $parent->relationship]]);
         }
 
+        Cache::forget('portal_dashboard_payload');
+
         return response()->json([
             'success' => true,
             'message' => "បានបន្ថែមសិស្ស {$student->display_name} (អត្តលេខ: {$studentIdCard}) ដោយជោគជ័យ!",
@@ -449,6 +530,8 @@ class ApiController extends Controller
             ]);
         }
 
+        Cache::forget('portal_dashboard_payload');
+
         return response()->json([
             'success' => true,
             'message' => "បានកែប្រែព័ត៌មានសិស្ស {$student->display_name} ដោយជោគជ័យ!",
@@ -476,6 +559,8 @@ class ApiController extends Controller
             \App\Models\BookBorrow::where('student_id', $student->id)->delete();
             $student->delete();
         });
+
+        Cache::forget('portal_dashboard_payload');
 
         return response()->json([
             'success' => true,
@@ -664,6 +749,9 @@ class ApiController extends Controller
 
     public function bulkStoreStudents(Request $request)
     {
+        @set_time_limit(300);
+        @ini_set('max_execution_time', '300');
+
         $validated = $request->validate([
             'target_class' => 'nullable|string|max:50',
             'students' => 'required|array|min:1',
@@ -677,11 +765,22 @@ class ApiController extends Controller
         $defaultClass = $validated['target_class'] ?: '10A';
         $year = date('Y');
         $studentRole = Role::where('name', 'student')->first();
+        $defaultPasswordHash = Hash::make('123456');
 
         $createdStudents = [];
 
-        DB::transaction(function () use ($validated, $defaultClass, $year, $studentRole, &$createdStudents) {
+        DB::transaction(function () use ($validated, $defaultClass, $year, $studentRole, $defaultPasswordHash, &$createdStudents) {
             $sequences = [];
+            $roleUserInserts = [];
+            $studentsToInsert = [];
+            $now = Carbon::now();
+            $today = Carbon::today()->toDateString();
+
+            // Fetch active academic year once
+            $activeAcademicYearId = DB::table('academic_years')->where('is_current', 1)->value('id');
+
+            // Cache existing emails in one single set to prevent individual DB roundtrips
+            $existingEmails = User::pluck('email')->flip()->toArray();
 
             foreach ($validated['students'] as $item) {
                 $rawClass = !empty($item['grade']) ? $item['grade'] : $defaultClass;
@@ -712,46 +811,76 @@ class ApiController extends Controller
                 $seqNumber = $sequences[$cleanClass];
                 $studentIdCard = sprintf('STU-%s-%s-%03d', $year, $cleanClass, $seqNumber);
 
-                $g = trim($item['gender'] ?? '');
-                $gender = (str_contains($g, 'ស្រី') || str_contains($g, 'ស') || strtolower($g) === 'female' || strtolower($g) === 'f') ? 'female' : 'male';
+                $g = trim((string)($item['gender'] ?? ''));
+                $isFemale = (
+                    in_array(mb_strtolower($g), ['female', 'f', 'ស្រី', 'ស']) ||
+                    $g === 'ស' ||
+                    $g === 'ស្រី'
+                );
+                $gender = $isFemale ? 'female' : 'male';
 
                 $baseName = $item['name'] ?: ($item['english_name'] ?? 'Student');
-                $email = strtolower(str_replace([' ', '-'], '', $studentIdCard)) . '@school.edu.kh';
-                if (User::where('email', $email)->exists()) {
-                    $email = strtolower(str_replace([' ', '-'], '', $studentIdCard)) . '_' . uniqid() . '@school.edu.kh';
+                $cleanPrefix = strtolower(str_replace([' ', '-'], '', $studentIdCard));
+                $email = $cleanPrefix . '@school.edu.kh';
+                if (isset($existingEmails[$email])) {
+                    $email = $cleanPrefix . '_' . substr(bin2hex(random_bytes(3)), 0, 6) . '@school.edu.kh';
                 }
+                $existingEmails[$email] = true;
 
-                $user = User::create([
+                $userId = DB::table('users')->insertGetId([
                     'name' => $baseName,
                     'email' => $email,
-                    'password' => Hash::make('123456'),
+                    'password' => $defaultPasswordHash,
+                    'created_at' => $now,
+                    'updated_at' => $now,
                 ]);
 
                 if ($studentRole) {
-                    $user->roles()->syncWithoutDetaching([$studentRole->id]);
+                    $roleUserInserts[] = [
+                        'user_id' => $userId,
+                        'role_id' => $studentRole->id,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
                 }
 
-                $student = Student::create([
-                    'user_id' => $user->id,
+                $studentsToInsert[] = [
+                    'user_id' => $userId,
                     'student_id_card' => $studentIdCard,
                     'name_khmer' => $item['name'],
-                    'name_latin' => $item['english_name'] ?: null,
+                    'name_latin' => !empty($item['english_name']) ? $item['english_name'] : null,
                     'gender' => $gender,
                     'grade' => $rawClass,
-                    'phone' => $item['phone'] ?: null,
+                    'phone' => !empty($item['phone']) ? $item['phone'] : null,
                     'status' => 'active',
-                    'enrollment_date' => Carbon::today(),
-                ]);
+                    'academic_year_id' => $activeAcademicYearId,
+                    'enrollment_date' => $today,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
 
                 $createdStudents[] = [
-                    'id' => $student->id,
                     'student_id_card' => $studentIdCard,
-                    'name' => $student->name_khmer,
+                    'name' => $item['name'],
                     'gender' => $gender === 'female' ? 'ស្រី' : 'ប្រុស',
                     'grade' => $rawClass,
                 ];
             }
+
+            // Bulk insert role_user mappings in 1 query
+            if (!empty($roleUserInserts)) {
+                DB::table('role_user')->insert($roleUserInserts);
+            }
+
+            // Bulk insert all students in 1 query (or chunks of 100)
+            if (!empty($studentsToInsert)) {
+                foreach (array_chunk($studentsToInsert, 100) as $chunk) {
+                    DB::table('students')->insert($chunk);
+                }
+            }
         });
+
+        Cache::forget('portal_dashboard_payload');
 
         $count = count($createdStudents);
         $message = "បានបញ្ចូលសិស្សចំនួន {$count} នាក់ដោយជោគជ័យ!";
@@ -811,6 +940,9 @@ class ApiController extends Controller
             'created_at' => $t->created_at ? $t->created_at->format('Y-m-d H:i') : null,
         ]);
 
+        // Sort teachers strictly by Khmer Alphabetical Order (អក្ខរក្រមខ្មែរ)
+        $teachers = $this->sortStudentsByKhmerAlphabet($teachers, 'name');
+
         $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '0'));
 
         if ($teachers->isEmpty() && $demoMode !== '0') {
@@ -836,14 +968,16 @@ class ApiController extends Controller
             ]);
         }
 
-        $pendingCount = Teacher::where('status', 'pending')->count();
-        $activeCount = Teacher::whereIn('status', ['active', 'fulltime', 'parttime'])->count();
-        $leaveCount = Teacher::where('status', 'leave')->count();
+        $statusCounts = Teacher::select('status', DB::raw('count(*) as count'))->groupBy('status')->pluck('count', 'status')->toArray();
+        $totalCount = array_sum($statusCounts);
+        $pendingCount = $statusCounts['pending'] ?? 0;
+        $activeCount = ($statusCounts['active'] ?? 0) + ($statusCounts['fulltime'] ?? 0) + ($statusCounts['parttime'] ?? 0);
+        $leaveCount = $statusCounts['leave'] ?? 0;
 
         return response()->json([
             'teachers' => $teachers,
             'counts' => [
-                'total' => Teacher::count(),
+                'total' => $totalCount,
                 'active' => $activeCount,
                 'pending' => $pendingCount,
                 'leave' => $leaveCount,
@@ -1093,6 +1227,7 @@ class ApiController extends Controller
             'student_id_card' => $s->student_id_card,
             'grade' => $s->grade,
         ]);
+        $students = $this->sortStudentsByKhmerAlphabet($students, 'name');
 
         return response()->json([
             'stats' => [
@@ -1292,6 +1427,7 @@ class ApiController extends Controller
             'id' => $t->id,
             'name' => $t->display_name,
         ]);
+        $teachers = $this->sortStudentsByKhmerAlphabet($teachers, 'name');
 
         $academicYears = AcademicYear::where('status', 'active')->get()->map(fn ($y) => [
             'id' => $y->id,
@@ -1304,6 +1440,7 @@ class ApiController extends Controller
             'grade' => $s->grade,
             'student_id_card' => $s->student_id_card,
         ]);
+        $students = $this->sortStudentsByKhmerAlphabet($students, 'name');
 
         return response()->json([
             'classes' => $classes,
@@ -1431,34 +1568,43 @@ class ApiController extends Controller
 
         $classes = SchoolClass::orderedNames();
 
-        $students = Student::with('user')
-            ->where('grade', $selectedClass)
-            ->get()
-            ->map(function ($st) use ($today) {
-                $att = Attendance::where('student_id', $st->id)
-                    ->where('date', $today)
-                    ->first();
+        $studentList = Student::with('user')->where('grade', $selectedClass)->get();
+        // Sort strictly by Khmer Alphabetical Order (អក្ខរក្រមខ្មែរ)
+        $studentList = $this->sortStudentsByKhmerAlphabet($studentList);
 
-                return [
-                    'student_id' => $st->id,
-                    'name' => $st->display_name,
-                    'student_id_card' => $st->student_id_card,
-                    'gender' => $st->gender,
-                    'status' => $att?->status ?? 'present',
-                    'remark' => $att?->remark ?? '',
-                ];
-            });
+        $todayAtts = Attendance::whereIn('student_id', $studentList->pluck('id'))
+            ->where('date', $today)
+            ->get()
+            ->keyBy('student_id');
+
+        $students = $studentList->map(function ($st) use ($todayAtts) {
+            $att = $todayAtts->get($st->id);
+
+            return [
+                'student_id' => $st->id,
+                'name' => $st->display_name,
+                'student_id_card' => $st->student_id_card,
+                'gender' => $st->gender,
+                'status' => $att?->status ?? 'present',
+                'remark' => $att?->remark ?? '',
+            ];
+        });
 
         $academicYears = AcademicYear::orderBy('name', 'desc')->pluck('name');
         if ($academicYears->isEmpty()) {
             $academicYears = collect(['2025-2026', '2024-2025']);
         }
 
+        $attCounts = Attendance::where('date', $today)
+            ->select('status', \Illuminate\Support\Facades\DB::raw('count(*) as aggregate'))
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
         $stats = [
-            'present' => Attendance::where('status', 'present')->where('date', $today)->count(),
-            'late' => Attendance::where('status', 'late')->where('date', $today)->count(),
-            'absent' => Attendance::where('status', 'absent')->where('date', $today)->count(),
-            'holiday' => Attendance::whereIn('status', ['holiday', 'excused'])->where('date', $today)->count(),
+            'present' => (int) ($attCounts['present'] ?? 0),
+            'late' => (int) ($attCounts['late'] ?? 0),
+            'absent' => (int) ($attCounts['absent'] ?? 0),
+            'holiday' => (int) (($attCounts['holiday'] ?? 0) + ($attCounts['excused'] ?? 0)),
         ];
 
         // Real Matrix attendance data for this class
@@ -1491,33 +1637,38 @@ class ApiController extends Controller
         }
 
         // Fetch real absence & leave records for this class
-        $absenceRecords = Attendance::where('class_name', $selectedClass)
+        $rawAbsences = Attendance::where('class_name', $selectedClass)
             ->whereIn('status', ['excused', 'absent', 'late', 'holiday'])
             ->with(['student', 'student.user'])
             ->orderBy('date', 'desc')
-            ->get()
-            ->map(function ($att) {
-                $st = $att->student;
-                $dateStr = Carbon::parse($att->date)->toDateString();
-                $leaveReq = StudentLeaveRequest::where('student_id', $att->student_id)
-                    ->whereDate('start_date', '<=', $dateStr)
-                    ->whereDate('end_date', '>=', $dateStr)
-                    ->first();
+            ->get();
 
-                return [
-                    'id' => $att->id,
-                    'date' => $dateStr,
-                    'day' => (int) Carbon::parse($att->date)->format('j'),
-                    'month' => strtolower(Carbon::parse($att->date)->format('F')),
-                    'student_id' => $att->student_id,
-                    'student_name' => $st?->display_name ?? 'N/A',
-                    'student_id_card' => $st?->student_id_card ?? 'N/A',
-                    'gender' => $st?->gender ?? 'male',
-                    'status' => $att->status,
-                    'remark' => $att->remark ?: ($leaveReq ? "សុំច្បាប់: {$leaveReq->leave_type} - {$leaveReq->reason}" : ''),
-                    'attachment_url' => $leaveReq?->attachment_path ? asset('storage/' . $leaveReq->attachment_path) : null,
-                ];
+        $absStudentIds = $rawAbsences->pluck('student_id')->unique()->filter();
+        $allLeaveReqs = $absStudentIds->isNotEmpty() 
+            ? StudentLeaveRequest::whereIn('student_id', $absStudentIds)->get()
+            : collect();
+
+        $absenceRecords = $rawAbsences->map(function ($att) use ($allLeaveReqs) {
+            $st = $att->student;
+            $dateStr = Carbon::parse($att->date)->toDateString();
+            $leaveReq = $allLeaveReqs->first(function ($l) use ($att, $dateStr) {
+                return $l->student_id == $att->student_id && $l->start_date <= $dateStr && $l->end_date >= $dateStr;
             });
+
+            return [
+                'id' => $att->id,
+                'date' => $dateStr,
+                'day' => (int) Carbon::parse($att->date)->format('j'),
+                'month' => strtolower(Carbon::parse($att->date)->format('F')),
+                'student_id' => $att->student_id,
+                'student_name' => $st?->display_name ?? 'N/A',
+                'student_id_card' => $st?->student_id_card ?? 'N/A',
+                'gender' => $st?->gender ?? 'male',
+                'status' => $att->status,
+                'remark' => $att->remark ?: ($leaveReq ? "សុំច្បាប់: {$leaveReq->leave_type} - {$leaveReq->reason}" : ''),
+                'attachment_url' => $leaveReq?->attachment_path ? asset('storage/' . $leaveReq->attachment_path) : null,
+            ];
+        });
 
         // Student-level attendance map for monthly roster: [student_id][date] = {status, remark}
         $studentAttendanceMap = [];
@@ -1585,10 +1736,11 @@ class ApiController extends Controller
     {
         $today = $request->input('date', Carbon::today()->toDateString());
 
-        $teachers = Teacher::with('user')
-            ->orderBy('id', 'asc')
-            ->get()
-            ->map(function ($tc) use ($today) {
+        $rawTeachers = Teacher::with('user')->get();
+        // Sort teachers strictly by Khmer Alphabetical Order (អក្ខរក្រមខ្មែរ)
+        $rawTeachers = $this->sortStudentsByKhmerAlphabet($rawTeachers);
+
+        $teachers = $rawTeachers->map(function ($tc) use ($today) {
                 $att = TeacherAttendance::where('teacher_id', $tc->id)
                     ->where('date', $today)
                     ->first();
@@ -2174,33 +2326,37 @@ class ApiController extends Controller
         $subjectId = $request->input('subject_id');
         $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '0'));
 
-        $students = collect();
+        $rawStudents = Student::with('user')
+            ->where('grade', $className)
+            ->get();
+        // Sort strictly by Khmer Alphabetical Order (អក្ខរក្រមខ្មែរ)
+        $rawStudents = $this->sortStudentsByKhmerAlphabet($rawStudents);
+
+        $scores = collect();
         if ($exam) {
-            $students = Student::with('user')
-                ->where('grade', $className)
-                ->get()
-                ->map(function ($s) use ($exam, $subjectId, $className) {
-                    $scoreQuery = ExaminationScore::where('examination_id', $exam->id)
-                        ->where('student_id', $s->id)
-                        ->where('class_name', $className);
+            $scoreQuery = ExaminationScore::where('examination_id', $exam->id)
+                ->where('class_name', $className);
 
-                    if ($subjectId) {
-                        $scoreQuery->where('course_subject_id', $subjectId);
-                    }
+            if ($subjectId) {
+                $scoreQuery->where('course_subject_id', $subjectId);
+            }
 
-                    $score = $scoreQuery->first();
-
-                    return [
-                        'student_id' => $s->id,
-                        'name' => $s->display_name,
-                        'student_id_card' => $s->student_id_card,
-                        'gender' => $s->gender,
-                        'score' => $score?->score,
-                        'max_score' => $score?->max_score ?? 100,
-                        'grade_letter' => $score?->grade_letter,
-                    ];
-                });
+            $scores = $scoreQuery->get()->keyBy('student_id');
         }
+
+        $students = $rawStudents->map(function ($s) use ($scores) {
+            $score = $scores->get($s->id);
+
+            return [
+                'student_id' => $s->id,
+                'name' => $s->display_name,
+                'student_id_card' => $s->student_id_card,
+                'gender' => $s->gender,
+                'score' => $score?->score,
+                'max_score' => $score?->max_score ?? 100,
+                'grade_letter' => $score?->grade_letter,
+            ];
+        });
 
         if ($students->isEmpty() && $demoMode !== '0') {
             $demoStudents = $this->getDemoStudentsList();
@@ -2302,7 +2458,11 @@ class ApiController extends Controller
             ]);
         }
 
-        $students = $exam ? Student::with('user')->where('grade', $className)->get() : collect();
+        $students = Student::with('user')
+            ->where('grade', $className)
+            ->get();
+        // Sort strictly by Khmer Alphabetical Order (អក្ខរក្រមខ្មែរ)
+        $students = $this->sortStudentsByKhmerAlphabet($students);
 
         $allScores = collect();
         if ($exam) {
@@ -2410,7 +2570,7 @@ class ApiController extends Controller
         $finalRows = $rows->map(function ($item) use ($rankMap) {
             $item['rank'] = $rankMap[$item['student_id']] ?? '-';
             return $item;
-        });
+        })->sortBy('student_id_card')->values();
 
         // Statistics
         $evaluatedStudents = $finalRows->filter(fn ($r) => $r['entered_count'] > 0);
@@ -2859,6 +3019,7 @@ class ApiController extends Controller
             'student_id_card' => $s->student_id_card,
             'grade' => $s->grade,
         ]);
+        $students = $this->sortStudentsByKhmerAlphabet($students, 'name');
 
         return response()->json([
             'stats' => [
@@ -2989,6 +3150,9 @@ class ApiController extends Controller
             'salary' => (float)$t->salary,
         ]);
 
+        $students = $this->sortStudentsByKhmerAlphabet($students, 'name');
+        $teachers = $this->sortStudentsByKhmerAlphabet($teachers, 'name');
+
         $generalMetrics = [
             ['name' => 'Average Student Attendance Rate', 'dept' => 'Student Affairs', 'value' => $attendanceRate . '%'],
             ['name' => 'Total Fee Revenue Collected', 'dept' => 'Finance Office', 'value' => '$' . number_format($totalRevenue, 2)],
@@ -3011,75 +3175,79 @@ class ApiController extends Controller
 
     public function settings()
     {
-        $raw = SystemSetting::pluck('value', 'key')->toArray();
+        $payload = Cache::remember('portal_system_settings_payload', 300, function () {
+            $raw = SystemSetting::pluck('value', 'key')->toArray();
 
-        $defaults = [
-            'school_name' => 'សាលារៀន ជំនាន់ថ្មី PDT',
-            'school_name_en' => 'PDT New Generation School',
-            'principal_name' => 'លោក ឈុន វណ្ណា',
-            'school_phone' => '023 880 880 / 012 345 678',
-            'school_email' => 'contact@pdt-school.edu.kh',
-            'school_website' => 'https://pdt-school.edu.kh',
-            'school_address' => 'មហាវិថីសហព័ន្ធរុស្ស៊ី សង្កាត់ទឹកល្អក់១ ខណ្ឌទួលគោក រាជធានីភ្នំពេញ',
-            'school_logo' => null,
-            'school_stamp' => null,
-            'current_academic_year' => '2025-2026',
-            'current_semester' => '1',
-            'academic_start_date' => '2025-10-01',
-            'academic_end_date' => '2026-07-31',
-            'passing_grade' => '50',
-            'morning_shift_time' => '07:00 - 11:00',
-            'afternoon_shift_time' => '13:00 - 17:00',
-            'late_threshold_minutes' => '15',
-            'currency' => 'USD',
-            'currency_symbol' => '$',
-            'exchange_rate' => '4100',
-            'invoice_prefix' => 'INV-2026-',
-            'bank_name' => 'ABA Bank',
-            'bank_account_name' => 'PDT SCHOOL CO., LTD',
-            'bank_account_number' => '001 234 567',
-            'khqr_image' => null,
-            'demo_mode' => '0',
-            'enable_public_registration' => '1',
-            'enable_teacher_score_edit' => '1',
-            'role_permissions' => json_encode([
-                'admin' => ['manage_students', 'attendance', 'scores', 'finance', 'reports', 'settings'],
-                'teacher' => ['attendance', 'scores', 'reports'],
-                'accountant' => ['finance', 'reports'],
-                'student_parent' => ['attendance', 'scores'],
-            ]),
-        ];
+            $defaults = [
+                'school_name' => 'សាលារៀន ជំនាន់ថ្មី PDT',
+                'school_name_en' => 'PDT New Generation School',
+                'principal_name' => 'លោក ឈុន វណ្ណា',
+                'school_phone' => '023 880 880 / 012 345 678',
+                'school_email' => 'contact@pdt-school.edu.kh',
+                'school_website' => 'https://pdt-school.edu.kh',
+                'school_address' => 'មហាវិថីសហព័ន្ធរុស្ស៊ី សង្កាត់ទឹកល្អក់១ ខណ្ឌទួលគោក រាជធានីភ្នំពេញ',
+                'school_logo' => null,
+                'school_stamp' => null,
+                'current_academic_year' => '2025-2026',
+                'current_semester' => '1',
+                'academic_start_date' => '2025-10-01',
+                'academic_end_date' => '2026-07-31',
+                'passing_grade' => '50',
+                'morning_shift_time' => '07:00 - 11:00',
+                'afternoon_shift_time' => '13:00 - 17:00',
+                'late_threshold_minutes' => '15',
+                'currency' => 'USD',
+                'currency_symbol' => '$',
+                'exchange_rate' => '4100',
+                'invoice_prefix' => 'INV-2026-',
+                'bank_name' => 'ABA Bank',
+                'bank_account_name' => 'PDT SCHOOL CO., LTD',
+                'bank_account_number' => '001 234 567',
+                'khqr_image' => null,
+                'demo_mode' => '0',
+                'enable_public_registration' => '1',
+                'enable_teacher_score_edit' => '1',
+                'role_permissions' => json_encode([
+                    'admin' => ['manage_students', 'attendance', 'scores', 'finance', 'reports', 'settings'],
+                    'teacher' => ['attendance', 'scores', 'reports'],
+                    'accountant' => ['finance', 'reports'],
+                    'student_parent' => ['attendance', 'scores'],
+                ]),
+            ];
 
-        $merged = array_merge($defaults, $raw);
+            $merged = array_merge($defaults, $raw);
 
-        if (!empty($merged['school_logo'])) {
-            $merged['school_logo_url'] = (str_starts_with($merged['school_logo'], 'http') || str_starts_with($merged['school_logo'], 'data:'))
-                ? $merged['school_logo']
-                : asset('storage/' . ltrim($merged['school_logo'], '/'));
-        } else {
-            $merged['school_logo_url'] = asset('images/logo.png');
-        }
-        if (!empty($merged['school_stamp'])) {
-            $merged['school_stamp_url'] = (str_starts_with($merged['school_stamp'], 'http') || str_starts_with($merged['school_stamp'], 'data:'))
-                ? $merged['school_stamp']
-                : asset('storage/' . ltrim($merged['school_stamp'], '/'));
-        } else {
-            $merged['school_stamp_url'] = '';
-        }
-        if (!empty($merged['khqr_image'])) {
-            $merged['khqr_image_url'] = (str_starts_with($merged['khqr_image'], 'http') || str_starts_with($merged['khqr_image'], 'data:'))
-                ? $merged['khqr_image']
-                : asset('storage/' . ltrim($merged['khqr_image'], '/'));
-        } else {
-            $merged['khqr_image_url'] = '';
-        }
+            if (!empty($merged['school_logo'])) {
+                $merged['school_logo_url'] = (str_starts_with($merged['school_logo'], 'http') || str_starts_with($merged['school_logo'], 'data:'))
+                    ? $merged['school_logo']
+                    : asset('storage/' . ltrim($merged['school_logo'], '/'));
+            } else {
+                $merged['school_logo_url'] = asset('images/logo.png');
+            }
+            if (!empty($merged['school_stamp'])) {
+                $merged['school_stamp_url'] = (str_starts_with($merged['school_stamp'], 'http') || str_starts_with($merged['school_stamp'], 'data:'))
+                    ? $merged['school_stamp']
+                    : asset('storage/' . ltrim($merged['school_stamp'], '/'));
+            } else {
+                $merged['school_stamp_url'] = '';
+            }
+            if (!empty($merged['khqr_image'])) {
+                $merged['khqr_image_url'] = (str_starts_with($merged['khqr_image'], 'http') || str_starts_with($merged['khqr_image'], 'data:'))
+                    ? $merged['khqr_image']
+                    : asset('storage/' . ltrim($merged['khqr_image'], '/'));
+            } else {
+                $merged['khqr_image_url'] = '';
+            }
 
-        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
+            $academicYears = AcademicYear::orderBy('name', 'desc')->get();
 
-        return response()->json([
-            'settings' => $merged,
-            'academicYears' => $academicYears,
-        ]);
+            return [
+                'settings' => $merged,
+                'academicYears' => $academicYears,
+            ];
+        });
+
+        return response()->json($payload);
     }
 
     public function updateSettings(Request $request)
@@ -3133,6 +3301,9 @@ class ApiController extends Controller
                 ? $logoPath
                 : asset('storage/' . ltrim($logoPath, '/'));
         }
+
+        Cache::forget('portal_system_settings_payload');
+        Cache::forget('portal_app_layout_settings');
 
         return response()->json([
             'success' => true,

@@ -143,7 +143,19 @@
           </div>
         </div>
 
-        <div v-if="displayedStudentsList.length === 0" class="py-16 text-center text-slate-400 text-xs">
+        <!-- Loading State for Monthly Roster -->
+        <div v-if="isLoading && studentsList.length === 0" class="py-16 text-center text-slate-500 font-khmer">
+          <div class="flex flex-col items-center justify-center gap-3">
+            <div class="relative w-9 h-9">
+              <div class="w-9 h-9 rounded-full border-3 border-blue-100"></div>
+              <div class="absolute inset-0 w-9 h-9 rounded-full border-3 border-blue-600 border-t-transparent animate-spin"></div>
+            </div>
+            <p class="text-xs font-bold text-slate-700">កំពុងទាញយកទិន្នន័យវត្តមានប្រចាំខែ...</p>
+            <p class="text-[11px] text-slate-400">សូមរង់ចាំបន្តិច ប្រព័ន្ធកំពុងទាញយកទិន្នន័យពី Server...</p>
+          </div>
+        </div>
+
+        <div v-else-if="displayedStudentsList.length === 0" class="py-16 text-center text-slate-400 text-xs">
           <div class="flex flex-col items-center justify-center gap-2">
             <span class="text-3xl">🎉</span>
             <span class="font-bold text-emerald-600 text-sm">ពុំមានសិស្សណាមានអវត្តមាន ឬសុំច្បាប់ក្នុងខែនេះឡើយ (វត្តមាន ១០០%)</span>
@@ -294,7 +306,17 @@
       </div>
 
       <!-- Student Sheet Table -->
-      <div v-if="studentsList.length === 0" class="py-12 text-center text-slate-400">
+      <div v-if="isLoading && studentsList.length === 0" class="py-16 text-center text-slate-500 font-khmer">
+        <div class="flex flex-col items-center justify-center gap-3">
+          <div class="relative w-9 h-9">
+            <div class="w-9 h-9 rounded-full border-3 border-blue-100"></div>
+            <div class="absolute inset-0 w-9 h-9 rounded-full border-3 border-blue-600 border-t-transparent animate-spin"></div>
+          </div>
+          <p class="text-xs font-bold text-slate-700">កំពុងទាញយកទិន្នន័យវត្តមានសិស្ស...</p>
+          <p class="text-[11px] text-slate-400">សូមរង់ចាំបន្តិច...</p>
+        </div>
+      </div>
+      <div v-else-if="studentsList.length === 0" class="py-12 text-center text-slate-400">
         <div class="flex flex-col items-center justify-center gap-2">
           <span class="text-3xl">📋</span>
           <span>មិនទាន់មានសិស្សនៅក្នុងថ្នាក់ {{ selectedClass }} ឡើយ។</span>
@@ -674,7 +696,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onActivated } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import QRCode from 'qrcode';
@@ -688,6 +710,7 @@ const { t } = useI18n();
 // Tab state: 'matrix', 'daily', or 'leaves'
 const activeTab = ref('matrix');
 const filterStatus = ref('all');
+const isLoading = ref(true);
 
 // Advanced Filter Bar States
 const selectedClass = ref('7A');
@@ -856,10 +879,17 @@ const getStudentSummary = (studentId) => {
 };
 
 const displayedStudentsList = computed(() => {
-  if (!onlyShowAbsentStudents.value) return studentsList.value;
-  return studentsList.value.filter(st => {
-    const sum = getStudentSummary(st.student_id);
-    return (sum.leaveCount + sum.absentCount + sum.lateCount) > 0;
+  let list = studentsList.value;
+  if (onlyShowAbsentStudents.value) {
+    list = list.filter(st => {
+      const sum = getStudentSummary(st.student_id);
+      return (sum.leaveCount + sum.absentCount + sum.lateCount) > 0;
+    });
+  }
+  return [...list].sort((a, b) => {
+    const nameA = a.name || a.name_khmer || '';
+    const nameB = b.name || b.name_khmer || '';
+    return nameA.localeCompare(nameB, 'km');
   });
 });
 
@@ -900,11 +930,15 @@ const getStatusClass = (status) => {
 };
 
 const fetchAttendanceData = async () => {
+  if (studentsList.value.length === 0) {
+    isLoading.value = true;
+  }
   try {
     const res = await axios.get('/api/attendance', {
       params: {
         class: selectedClass.value,
         date: selectedDate.value,
+        _t: Date.now()
       }
     });
     if (res.data) {
@@ -918,7 +952,12 @@ const fetchAttendanceData = async () => {
       if (res.data.matrix) matrixData.value = res.data.matrix;
       if (res.data.absence_records) absenceRecords.value = res.data.absence_records;
       if (res.data.student_attendance_map) studentAttendanceMap.value = res.data.student_attendance_map;
-      studentsList.value = res.data.students || [];
+      const raw = res.data.students || [];
+      studentsList.value = [...raw].sort((a, b) => {
+        const nameA = a.name || a.name_khmer || '';
+        const nameB = b.name || b.name_khmer || '';
+        return nameA.localeCompare(nameB, 'km');
+      });
       attendanceMap.value = {};
       remarksMap.value = {};
       studentsList.value.forEach(st => {
@@ -928,8 +967,18 @@ const fetchAttendanceData = async () => {
     }
   } catch (err) {
     console.error('Failed to fetch attendance:', err);
+  } finally {
+    isLoading.value = false;
   }
 };
+
+onMounted(() => {
+  fetchAttendanceData();
+});
+
+onActivated(() => {
+  fetchAttendanceData();
+});
 
 // Leave Link & QR Generator
 const openLeaveLinkModal = async () => {

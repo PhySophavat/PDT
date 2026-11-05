@@ -60,7 +60,7 @@
     </FilterBar>
 
     <!-- Tab 1: All Classes Table View -->
-    <DataTable v-if="activeTab === 'all'">
+    <DataTable v-if="activeTab === 'all'" :loading="isLoading" :empty="filteredClasses.length === 0" :colSpan="7" loadingText="កំពុងទាញយកទិន្នន័យថ្នាក់រៀន...">
       <template #header>
         <tr>
           <th class="py-3 px-4 font-bold text-slate-700">{{ $t('classes.className') }}</th>
@@ -393,7 +393,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onActivated } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
@@ -415,6 +415,22 @@ const classesList = ref([]);
 const teachersList = ref([]);
 const academicYearsList = ref([]);
 const studentsList = ref([]);
+const isLoading = ref(true);
+
+// Hydrate from cache immediately
+try {
+  const cached = localStorage.getItem('pdt_cached_classes');
+  if (cached) {
+    const d = JSON.parse(cached);
+    if (d.classes && d.classes.length) {
+      classesList.value = d.classes;
+      isLoading.value = false;
+    }
+    if (d.teachers) teachersList.value = d.teachers;
+    if (d.academicYears) academicYearsList.value = d.academicYears;
+    if (d.students) studentsList.value = d.students;
+  }
+} catch (e) {}
 
 const showCreateModal = ref(false);
 const showEditModal = ref(false);
@@ -452,18 +468,30 @@ const transferForm = ref({
 });
 
 const fetchClassesData = async () => {
+  if (classesList.value.length === 0) {
+    isLoading.value = true;
+  }
   try {
-    const res = await axios.get('/api/classes');
+    const res = await axios.get('/api/classes', { params: { _t: Date.now() } });
     classesList.value = res.data.classes || [];
-    teachersList.value = res.data.teachers || [];
+    teachersList.value = [...(res.data.teachers || [])].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
     academicYearsList.value = res.data.academicYears || [];
-    studentsList.value = res.data.students || [];
+    studentsList.value = [...(res.data.students || [])].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
+    try {
+      localStorage.setItem('pdt_cached_classes', JSON.stringify(res.data));
+    } catch (e) {}
   } catch (err) {
     console.error('Failed to fetch classes:', err);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 onMounted(() => {
+  fetchClassesData();
+});
+
+onActivated(() => {
   fetchClassesData();
 });
 

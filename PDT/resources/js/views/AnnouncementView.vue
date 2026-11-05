@@ -43,7 +43,7 @@
     </FilterBar>
 
     <!-- Data Table -->
-    <DataTable>
+    <DataTable :loading="isLoading" :empty="filteredAnnouncements.length === 0" :colSpan="6" loadingText="កំពុងទាញយកសេចក្តីជូនដំណឹង...">
       <template #header>
         <tr>
           <th class="py-3 px-4 font-bold text-slate-700">{{ $t('announcements.noticeTitle') }}</th>
@@ -184,7 +184,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onActivated } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
@@ -202,6 +202,19 @@ const selectedNotice = ref(null);
 const isSubmitting = ref(false);
 
 const announcementsList = ref([]);
+const isLoading = ref(true);
+
+// Hydrate from localStorage
+try {
+  const cached = localStorage.getItem('pdt_cached_announcements');
+  if (cached) {
+    const d = JSON.parse(cached);
+    if (d.announcements && d.announcements.length) {
+      announcementsList.value = d.announcements;
+      isLoading.value = false;
+    }
+  }
+} catch (e) {}
 
 const newNotice = ref({
   title: '',
@@ -212,15 +225,27 @@ const newNotice = ref({
 });
 
 const fetchAnnouncements = async () => {
+  if (announcementsList.value.length === 0) {
+    isLoading.value = true;
+  }
   try {
-    const res = await axios.get('/api/announcements');
+    const res = await axios.get('/api/announcements', { params: { _t: Date.now() } });
     announcementsList.value = res.data.announcements || [];
+    try {
+      localStorage.setItem('pdt_cached_announcements', JSON.stringify(res.data));
+    } catch (e) {}
   } catch (err) {
     console.error('Failed to fetch announcements:', err);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 onMounted(() => {
+  fetchAnnouncements();
+});
+
+onActivated(() => {
   fetchAnnouncements();
 });
 

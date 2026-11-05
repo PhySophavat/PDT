@@ -70,7 +70,7 @@
     </FilterBar>
 
     <!-- Data Table -->
-    <DataTable>
+    <DataTable :loading="isLoading" :empty="filteredTeachers.length === 0" :colSpan="7" loadingText="កំពុងទាញយកទិន្នន័យគ្រូបង្រៀន...">
       <template #header>
         <tr>
           <th class="py-3 px-4 font-bold text-slate-700">{{ t('teachers.teacherId') }}</th>
@@ -609,7 +609,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onActivated } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
@@ -631,6 +631,24 @@ const teachers = ref([]);
 const pendingCount = ref(0);
 const activeCount = ref(0);
 const leaveCount = ref(0);
+const isLoading = ref(true);
+
+// Hydrate from localStorage cache to show data immediately
+try {
+  const cachedTeachers = localStorage.getItem('pdt_cached_teachers');
+  if (cachedTeachers) {
+    const d = JSON.parse(cachedTeachers);
+    if (d.teachers && d.teachers.length) {
+      teachers.value = d.teachers;
+      isLoading.value = false;
+    }
+    if (d.counts) {
+      pendingCount.value = d.counts.pending || 0;
+      activeCount.value = d.counts.active || 0;
+      leaveCount.value = d.counts.leave || 0;
+    }
+  }
+} catch (e) {}
 
 // QR Code Modal State
 const showQrModal = ref(false);
@@ -664,13 +682,19 @@ const isSubmittingApproval = ref(false);
 
 const fetchTeachers = async () => {
   const currentMode = localStorage.getItem('pdt_demo_mode') || '0';
+  if (teachers.value.length === 0) {
+    isLoading.value = true;
+  }
   try {
     const res = await axios.get('/api/teachers', {
-      params: { demo_mode: currentMode }
+      params: { demo_mode: currentMode, _t: Date.now() }
     });
     if (res.data) {
       if (res.data.teachers) {
         teachers.value = res.data.teachers;
+        try {
+          localStorage.setItem('pdt_cached_teachers', JSON.stringify(res.data));
+        } catch (e) {}
       }
       if (res.data.counts) {
         pendingCount.value = res.data.counts.pending || 0;
@@ -684,6 +708,8 @@ const fetchTeachers = async () => {
     }
   } catch (e) {
     console.error('Failed to load teachers:', e);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -692,8 +718,12 @@ onMounted(() => {
   publicRegistrationUrl.value = window.location.origin + '/register-teacher';
 });
 
+onActivated(() => {
+  fetchTeachers();
+});
+
 const filteredTeachers = computed(() => {
-  return teachers.value.filter(tc => {
+  const result = teachers.value.filter(tc => {
     let matchesTab = true;
     if (activeTab.value === 'all') {
       matchesTab = true;
@@ -718,6 +748,13 @@ const filteredTeachers = computed(() => {
       (genderFilter.value === 'female' && (tc.gender === 'female' || tc.gender === 'ស្រី'));
 
     return matchesTab && matchesSearch && matchesGender;
+  });
+
+  // Sort strictly by Khmer Alphabetical Order (អក្ខរក្រមខ្មែរ)
+  return result.sort((a, b) => {
+    const nameA = a.name_khmer || a.name || '';
+    const nameB = b.name_khmer || b.name || '';
+    return nameA.localeCompare(nameB, 'km');
   });
 });
 

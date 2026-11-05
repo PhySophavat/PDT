@@ -14,13 +14,20 @@
         <span>ផ្ទុកទំព័រឡើងវិញ (Reload)</span>
       </button>
     </div>
-    <router-view v-else />
+    <router-view v-else v-slot="{ Component }">
+      <keep-alive>
+        <component :is="Component" />
+      </keep-alive>
+    </router-view>
   </AdminLayout>
+  <!-- Global Modern Floating Toast Notifications (No more blocking browser alert dialogs!) -->
+  <ToastContainer />
 </template>
 
 <script setup>
 import { ref, onErrorCaptured } from 'vue';
 import AdminLayout from './components/AdminLayout.vue';
+import ToastContainer from './components/ToastContainer.vue';
 
 const error = ref(null);
 

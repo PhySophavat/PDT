@@ -850,7 +850,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onActivated, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
@@ -901,6 +901,22 @@ const chartDays = ref([]);
 const displayTopClasses = ref([]);
 
 const displayActivities = ref([]);
+
+// Instant cache hydration from localStorage so stats and charts never flash 0 or disappear
+try {
+  const cachedDashboard = localStorage.getItem('pdt_cached_dashboard');
+  if (cachedDashboard) {
+    const d = JSON.parse(cachedDashboard);
+    if (d.stats) stats.value = { ...stats.value, ...d.stats };
+    if (d.allClasses && d.allClasses.length) allClasses.value = d.allClasses;
+    if (d.recentClasses && d.recentClasses.length) recentClasses.value = d.recentClasses;
+    if (d.weeklyTrend && d.weeklyTrend.length) chartDays.value = d.weeklyTrend;
+    if (d.topClasses && d.topClasses.length) displayTopClasses.value = d.topClasses;
+    if (d.recentActivities && d.recentActivities.length) displayActivities.value = d.recentActivities;
+    if (d.currentAcademicYear) activeAcademicYear.value = d.currentAcademicYear;
+    if (d.academicYears && d.academicYears.length) academicYearsList.value = d.academicYears;
+  }
+} catch (e) {}
 
 // Filtered classrooms based on quick search and grade dropdown
 const filteredClasses = computed(() => {
@@ -1031,11 +1047,14 @@ const getRankBadgeClass = (idx) => {
   return 'bg-blue-50 text-blue-700 border border-blue-200';
 };
 
-// Lifecycle
-onMounted(async () => {
+// Fetch Dashboard Data
+const fetchDashboardData = async () => {
   try {
     const res = await axios.get('/api/dashboard', {
-      params: { demo_mode: '0' }
+      params: { 
+        demo_mode: '0',
+        _t: Date.now() 
+      }
     });
     if (res.data) {
       if (res.data.currentAcademicYear) {
@@ -1063,10 +1082,22 @@ onMounted(async () => {
       if (res.data.recentActivities && res.data.recentActivities.length) {
         displayActivities.value = res.data.recentActivities;
       }
+      try {
+        localStorage.setItem('pdt_cached_dashboard', JSON.stringify(res.data));
+      } catch (e) {}
     }
   } catch (e) {
     console.error('Failed to load dashboard:', e);
   }
+};
+
+const onDataUpdated = () => {
+  fetchDashboardData();
+};
+
+// Lifecycle
+onMounted(async () => {
+  await fetchDashboardData();
 
   // Fetch teachers for quick assign modal
   try {
@@ -1079,6 +1110,17 @@ onMounted(async () => {
   } catch (e) {
     // Non-critical
   }
+
+  window.addEventListener('pdt-data-updated', onDataUpdated);
+});
+
+// Reactivate when navigating back through keep-alive
+onActivated(async () => {
+  await fetchDashboardData();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('pdt-data-updated', onDataUpdated);
 });
 
 // Actions
