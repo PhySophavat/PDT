@@ -41,7 +41,7 @@ class ApiController extends Controller
 
         // Female calculation for NGS statistics
         $femaleStudents = Student::where('gender', 'ស្រី')->orWhere('gender', 'female')->count();
-        $femaleRatio = $totalStudents > 0 ? round(($femaleStudents / $totalStudents) * 100) : 52;
+        $femaleRatio = $totalStudents > 0 ? round(($femaleStudents / $totalStudents) * 100) : 0;
         $maleStudents = max(0, $totalStudents - $femaleStudents);
 
         // Attendance stats
@@ -52,7 +52,7 @@ class ApiController extends Controller
 
         $teacherAtt = TeacherAttendance::whereDate('date', $today)->count();
         $teacherPresent = TeacherAttendance::whereDate('date', $today)->where('status', 'present')->count();
-        $teacherAttendanceRate = $teacherAtt > 0 ? round(($teacherPresent / $teacherAtt) * 100) : ($totalTeachers > 0 ? 100 : 95);
+        $teacherAttendanceRate = $teacherAtt > 0 ? round(($teacherPresent / $teacherAtt) * 100) : 0;
 
         // All classes for dashboard with homeroom teacher info
         $allClasses = SchoolClass::with('teacher')->orderBy('name')->get()->map(function ($cls) use ($today) {
@@ -95,15 +95,18 @@ class ApiController extends Controller
             $targetDate = $startOfWeek->copy()->addDays($index)->toDateString();
             $pCount = Attendance::whereDate('date', $targetDate)->whereIn('status', ['present', 'late'])->count();
             $aCount = Attendance::whereDate('date', $targetDate)->where('status', 'absent')->count();
+            $tot = $pCount + $aCount;
+            $rate = $tot > 0 ? round(($pCount / $tot) * 100, 1) : 0;
             $weeklyTrend[] = [
                 'day' => $d['day'],
-                'date' => $targetDate,
+                'date' => Carbon::parse($targetDate)->format('d/m'),
                 'present' => $pCount,
                 'absent' => $aCount,
+                'rate' => $rate,
             ];
         }
 
-        // Recent academic activities
+        // Recent real academic activities
         $recentAnnouncements = Announcement::latest()->take(3)->get()->map(fn($a) => [
             'type' => 'announcement',
             'title' => $a->title,
@@ -114,32 +117,16 @@ class ApiController extends Controller
 
         $recentBorrows = BookBorrow::with('student', 'book')->latest()->take(2)->get()->map(fn($b) => [
             'type' => 'library',
-            'title' => 'សិស្ស ' . ($b->student?->name_khmer ?: '') . ' ខ្ចីសៀវភៅ "' . ($b->book?->title ?: 'STEM') . '"',
+            'title' => 'សិស្ស ' . ($b->student?->name_khmer ?: ($b->student?->name ?: '')) . ' ខ្ចីសៀវភៅ "' . ($b->book?->title ?: '') . '"',
             'time' => $b->created_at ? $b->created_at->diffForHumans() : 'ថ្មីៗនេះ',
             'icon' => 'fa-book-open',
             'color' => 'bg-blue-100 text-blue-700'
         ]);
 
         $activities = $recentAnnouncements->concat($recentBorrows)->values();
-        if ($activities->isEmpty()) {
-            $activities = collect([
-                ['type' => 'attendance', 'title' => 'គ្រូ សុខា បានស្រង់វត្តមានថ្នាក់ 7A', 'time' => '១០ នាទីមុន', 'icon' => 'fa-clipboard-user', 'color' => 'bg-emerald-100 text-emerald-700'],
-                ['type' => 'score', 'title' => 'គ្រូ វណ្ណា បានបញ្ចូលពិន្ទុរូបវិទ្យា ថ្នាក់ 10B', 'time' => '២៥ នាទីមុន', 'icon' => 'fa-pen-to-square', 'color' => 'bg-blue-100 text-blue-700'],
-                ['type' => 'stem', 'title' => 'បន្ទប់ពិសោធន៍ STEM Lab បើកបង្រៀនថ្នាក់ 11D', 'time' => '១ ម៉ោងមុន', 'icon' => 'fa-microscope', 'color' => 'bg-purple-100 text-purple-700'],
-                ['type' => 'robotics', 'title' => 'ក្លឹប Robotics សាលា PDT បានបញ្ចប់ការហ្វឹកហាត់', 'time' => '២ ម៉ោងមុន', 'icon' => 'fa-robot', 'color' => 'bg-amber-100 text-amber-700'],
-            ]);
-        }
 
-        // Top Classes for leaderboard
-        $topClasses = $allClasses->sortByDesc('rate')->take(4)->values();
-        if ($topClasses->isEmpty() || $topClasses->first()['students'] === 0) {
-            $topClasses = collect([
-                ['name' => '11D', 'rate' => 99.2, 'students' => 52, 'teacher' => 'លោកគ្រូ ហេង បូរ៉ា'],
-                ['name' => '12A', 'rate' => 98.6, 'students' => 35, 'teacher' => 'លោកគ្រូ សេង វិបុល'],
-                ['name' => '10A', 'rate' => 97.8, 'students' => 38, 'teacher' => 'លោកគ្រូ ជា វណ្ណៈ'],
-                ['name' => '8B', 'rate' => 97.1, 'students' => 36, 'teacher' => 'អ្នកគ្រូ អ៊ុក សោភា'],
-            ]);
-        }
+        // Real Top Classes for leaderboard
+        $topClasses = $allClasses->filter(fn($c) => $c['students'] > 0)->sortByDesc('rate')->take(4)->values();
 
         $activeYear = SystemSetting::get('current_academic_year')
             ?: AcademicYear::where('is_current', true)->value('name')
@@ -153,19 +140,29 @@ class ApiController extends Controller
             array_unshift($academicYearsList, $activeYear);
         }
 
+        // Real pass rate calculation
+        $totalScores = \App\Models\ExaminationScore::count();
+        $passedScores = \App\Models\ExaminationScore::where('score', '>=', 50)->count();
+        $averagePassRate = $totalScores > 0 ? round(($passedScores / $totalScores) * 100, 1) : 0;
+
+        // Real scholarship count
+        $scholarshipCount = Student::where('status', 'scholarship')
+            ->orWhere('status', 'អាហារូបករណ៍')
+            ->count();
+
         return response()->json([
             'stats' => [
                 'students' => $totalStudents,
                 'teachers' => $totalTeachers,
-                'classes' => $totalClasses > 0 ? $totalClasses : 48,
-                'subjects' => $totalSubjects > 0 ? $totalSubjects : 11,
+                'classes' => $totalClasses,
+                'subjects' => $totalSubjects,
                 'attendanceRate' => $attendanceRate,
                 'teacherAttendanceRate' => $teacherAttendanceRate,
                 'femaleRatio' => $femaleRatio,
                 'femaleCount' => $femaleStudents,
                 'maleCount' => $maleStudents,
-                'averagePassRate' => 85,
-                'scholarshipCount' => 45,
+                'averagePassRate' => $averagePassRate,
+                'scholarshipCount' => $scholarshipCount,
             ],
             'currentAcademicYear' => $activeYear,
             'academicYears' => $academicYearsList,

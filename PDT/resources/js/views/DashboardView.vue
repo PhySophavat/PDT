@@ -43,7 +43,7 @@
             </div>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 ring-1 ring-blue-500/20">
               <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-              ស្រី {{ stats.femaleRatio || 52 }}%
+              ស្រី {{ stats.students > 0 ? (stats.femaleRatio ?? 0) : 0 }}%
             </span>
           </div>
           <div class="mt-4">
@@ -53,7 +53,7 @@
               <span class="text-xs font-medium text-slate-400">នាក់</span>
             </div>
             <p class="text-[11px] text-slate-500 mt-2 font-medium">
-              ប្រុស <span class="font-bold text-slate-700">{{ stats.maleCount || Math.round((stats.students || 0) * 0.48) }}</span> នាក់ • ស្រី <span class="font-bold text-slate-700">{{ stats.femaleCount || Math.round((stats.students || 0) * 0.52) }}</span> នាក់
+              ប្រុស <span class="font-bold text-slate-700">{{ stats.maleCount ?? 0 }}</span> នាក់ • ស្រី <span class="font-bold text-slate-700">{{ stats.femaleCount ?? 0 }}</span> នាក់
             </p>
           </div>
         </div>
@@ -69,13 +69,13 @@
             </div>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 ring-1 ring-emerald-500/20">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              វត្តមានថ្ងៃនេះ {{ stats.teacherAttendanceRate || 95 }}%
+              វត្តមានថ្ងៃនេះ {{ stats.teachers > 0 ? (stats.teacherAttendanceRate ?? 0) : 0 }}%
             </span>
           </div>
           <div class="mt-4">
             <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">{{ t('dashboard.totalTeachers') }}</h3>
             <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.teachers }}</span>
+              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.teachers ?? 0 }}</span>
               <span class="text-xs font-medium text-slate-400">នាក់</span>
             </div>
             <p class="text-[11px] text-emerald-700 mt-2 font-medium">
@@ -100,7 +100,7 @@
           <div class="mt-4">
             <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">{{ t('dashboard.totalClasses') }}</h3>
             <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.classes || 48 }}</span>
+              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.classes ?? 0 }}</span>
               <span class="text-xs font-medium text-slate-400">ថ្នាក់រៀន</span>
             </div>
             <p class="text-[11px] text-purple-700 mt-2 font-medium">
@@ -125,7 +125,7 @@
           <div class="mt-4">
             <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">{{ t('dashboard.totalSubjects') }}</h3>
             <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.subjects || 11 }}</span>
+              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.subjects ?? 0 }}</span>
               <span class="text-xs font-medium text-slate-400">មុខវិជ្ជា</span>
             </div>
             <p class="text-[11px] text-amber-700 mt-2 font-medium">
@@ -143,17 +143,17 @@
               <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
               </svg>
-              អត្រាប្រឡងជាប់មធ្យម: <strong class="text-emerald-700 ml-0.5">{{ stats.averagePassRate || 85 }}%</strong>
+              អត្រាប្រឡងជាប់មធ្យម: <strong class="text-emerald-700 ml-0.5">{{ stats.averagePassRate ?? 0 }}%</strong>
             </span>
             <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 border border-purple-200/80 text-purple-800 rounded-xl text-xs font-semibold">
               <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
               </svg>
-              សិស្សអាហារូបករណ៍: <strong class="text-purple-700 ml-0.5">{{ stats.scholarshipCount || 45 }} នាក់</strong>
+              សិស្សអាហារូបករណ៍: <strong class="text-purple-700 ml-0.5">{{ stats.scholarshipCount ?? 0 }} នាក់</strong>
             </span>
             <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 border border-blue-200/80 text-blue-800 rounded-xl text-xs font-semibold">
               <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-              {{ t('dashboard.attendanceToday') }}: <strong class="text-blue-700 ml-0.5">{{ stats.attendanceRate }}%</strong>
+              {{ t('dashboard.attendanceToday') }}: <strong class="text-blue-700 ml-0.5">{{ stats.attendanceRate ?? 0 }}%</strong>
             </span>
           </div>
         </template>
@@ -208,7 +208,11 @@
 
           <!-- Chart Visual Area (Responsive SVG Area Chart) -->
           <div class="relative w-full h-64 mt-4 select-none">
-            <svg class="w-full h-full overflow-visible" viewBox="0 0 600 200" preserveAspectRatio="none">
+            <div v-if="chartDays.length === 0" class="h-full flex flex-col items-center justify-center text-slate-400">
+              <span class="text-3xl block mb-2">📈</span>
+              <p class="text-xs font-medium">មិនទាន់មានទិន្នន័យវត្តមានប្រចាំសប្តាហ៍</p>
+            </div>
+            <svg v-else class="w-full h-full overflow-visible" viewBox="0 0 600 200" preserveAspectRatio="none">
               <defs>
                 <!-- Present Gradient -->
                 <linearGradient id="presentGradient" x1="0" y1="0" x2="0" y2="1">
@@ -595,7 +599,11 @@
               </span>
             </div>
 
-            <div class="space-y-2.5">
+            <div v-if="displayTopClasses.length === 0" class="py-8 text-center text-slate-400">
+              <span class="text-2xl block mb-1">📊</span>
+              <p class="text-xs font-medium">មិនទាន់មានទិន្នន័យថ្នាក់គំរូ</p>
+            </div>
+            <div v-else class="space-y-2.5">
               <div 
                 v-for="(top, idx) in displayTopClasses" 
                 :key="top.name"
@@ -616,7 +624,7 @@
 
                   <div>
                     <div class="font-bold text-slate-800 text-xs">ថ្នាក់ {{ top.name }}</div>
-                    <div class="text-[10px] text-slate-500 font-medium">{{ top.teacher || 'លោកគ្រូ សុខា' }}</div>
+                    <div class="text-[10px] text-slate-500 font-medium">{{ top.teacher || 'មិនទាន់ចាត់តាំង' }}</div>
                   </div>
                 </div>
 
@@ -640,7 +648,11 @@
               <span class="text-[10px] text-slate-400 font-medium">Real-time</span>
             </div>
 
-            <div class="space-y-3">
+            <div v-if="displayActivities.length === 0" class="py-8 text-center text-slate-400">
+              <span class="text-2xl block mb-1">📢</span>
+              <p class="text-xs font-medium">មិនទាន់មានសកម្មភាពថ្មីៗកត់ត្រាក្នុងប្រព័ន្ធ</p>
+            </div>
+            <div v-else class="space-y-3">
               <div 
                 v-for="(act, idx) in displayActivities" 
                 :key="idx"
@@ -881,41 +893,24 @@ const teachersList = ref([]);
 const stats = ref({
   students: 0,
   teachers: 0,
-  classes: 48,
-  subjects: 11,
+  classes: 0,
+  subjects: 0,
   attendanceRate: 0,
-  teacherAttendanceRate: 95,
-  femaleRatio: 52,
+  teacherAttendanceRate: 0,
+  femaleRatio: 0,
   femaleCount: 0,
   maleCount: 0,
-  averagePassRate: 85,
-  scholarshipCount: 45,
+  averagePassRate: 0,
+  scholarshipCount: 0,
 });
 
 const allClasses = ref([]);
 const recentClasses = ref([]);
-const chartDays = ref([
-  { day: 'ច័ន្ទ', date: '03/11', present: 114, absent: 6, rate: 95.0 },
-  { day: 'អង្គារ', date: '04/11', present: 117, absent: 3, rate: 97.5 },
-  { day: 'ពុធ', date: '05/11', present: 115, absent: 5, rate: 95.8 },
-  { day: 'ព្រហស្បតិ៍', date: '06/11', present: 118, absent: 2, rate: 98.3 },
-  { day: 'សុក្រ', date: '07/11', present: 116, absent: 4, rate: 96.6 },
-  { day: 'សៅរ៍', date: '08/11', present: 112, absent: 8, rate: 93.3 },
-]);
+const chartDays = ref([]);
 
-const displayTopClasses = ref([
-  { name: '11D', rate: 99.2, students: 52, teacher: 'លោកគ្រូ ហេង បូរ៉ា' },
-  { name: '12A', rate: 98.6, students: 35, teacher: 'លោកគ្រូ សេង វិបុល' },
-  { name: '10A', rate: 97.8, students: 38, teacher: 'លោកគ្រូ ជា វណ្ណៈ' },
-  { name: '8B', rate: 97.1, students: 36, teacher: 'អ្នកគ្រូ អ៊ុក សោភា' },
-]);
+const displayTopClasses = ref([]);
 
-const displayActivities = ref([
-  { type: 'attendance', title: 'គ្រូ សុខា បានស្រង់វត្តមានថ្នាក់ 7A', time: '១០ នាទីមុន', color: 'bg-emerald-100 text-emerald-700' },
-  { type: 'score', title: 'គ្រូ វណ្ណា បានបញ្ចូលពិន្ទុរូបវិទ្យា ថ្នាក់ 10B', time: '២៥ នាទីមុន', color: 'bg-blue-100 text-blue-700' },
-  { type: 'stem', title: 'បន្ទប់ពិសោធន៍ STEM Lab បើកបង្រៀនថ្នាក់ 11D', time: '១ ម៉ោងមុន', color: 'bg-purple-100 text-purple-700' },
-  { type: 'other', title: 'ក្លឹប Robotics សាលា PDT បានបញ្ចប់ការហ្វឹកហាត់', time: '២ ម៉ោងមុន', color: 'bg-amber-100 text-amber-700' },
-]);
+const displayActivities = ref([]);
 
 // Filtered classrooms based on quick search and grade dropdown
 const filteredClasses = computed(() => {
@@ -949,14 +944,16 @@ const getX = (index) => {
 };
 
 const getYPresent = (present, absent) => {
-  const total = (present + absent) || 100;
+  const total = (present + absent);
+  if (!total || total === 0) return 160;
   const rate = (present / total) * 100;
   // map rate 0-100% to Y: 100% -> 25, 0% -> 160
   return 160 - ((rate / 100) * 135);
 };
 
 const getYAbsent = (present, absent) => {
-  const total = (present + absent) || 100;
+  const total = (present + absent);
+  if (!total || total === 0) return 160;
   const rate = (absent / total) * 100;
   // map absent 0-25% to Y: 0% -> 160, 25% -> 120
   return 160 - ((rate / 100) * 135);
@@ -1001,17 +998,26 @@ const absentAreaPath = computed(() => {
 const CIRCUMFERENCE = 389.55;
 
 const donutFemaleDash = computed(() => {
-  const femaleRatio = (stats.value.femaleRatio || 52) / 100;
+  if (!stats.value.students || stats.value.students === 0) {
+    return `0 ${CIRCUMFERENCE}`;
+  }
+  const femaleRatio = (stats.value.femaleRatio ?? 0) / 100;
   const dash = femaleRatio * CIRCUMFERENCE;
   return `${dash} ${CIRCUMFERENCE}`;
 });
 
 const donutMaleDash = computed(() => {
+  if (!stats.value.students || stats.value.students === 0) {
+    return `0 ${CIRCUMFERENCE}`;
+  }
   return `${CIRCUMFERENCE} ${CIRCUMFERENCE}`;
 });
 
 const donutFemaleOffset = computed(() => {
-  const maleRatio = (100 - (stats.value.femaleRatio || 52)) / 100;
+  if (!stats.value.students || stats.value.students === 0) {
+    return 0;
+  }
+  const maleRatio = (100 - (stats.value.femaleRatio ?? 0)) / 100;
   return - (maleRatio * CIRCUMFERENCE);
 });
 
