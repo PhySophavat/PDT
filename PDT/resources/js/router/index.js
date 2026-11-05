@@ -1,22 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import AttendanceView from '../views/AttendanceView.vue';
-import TeacherAttendanceView from '../views/TeacherAttendanceView.vue';
-import DashboardView from '../views/DashboardView.vue';
-import StudentView from '../views/StudentView.vue';
-import TeacherView from '../views/TeacherView.vue';
-import ClassView from '../views/ClassView.vue';
-import AcademicYearView from '../views/AcademicYearView.vue';
-import CourseSubjectView from '../views/CourseSubjectView.vue';
-import TimetableView from '../views/TimetableView.vue';
-import ExaminationView from '../views/ExaminationView.vue';
-import ParentView from '../views/ParentView.vue';
-import FinanceView from '../views/FinanceView.vue';
-import LibraryView from '../views/LibraryView.vue';
-import AnnouncementView from '../views/AnnouncementView.vue';
-import ReportView from '../views/ReportView.vue';
-import SettingView from '../views/SettingView.vue';
-import RoleView from '../views/RoleView.vue';
+// Lazy-loaded Views for Code-Splitting & High Performance Initial Load
+const DashboardView = () => import('../views/DashboardView.vue');
+const AttendanceView = () => import('../views/AttendanceView.vue');
+const TeacherAttendanceView = () => import('../views/TeacherAttendanceView.vue');
+const StudentView = () => import('../views/StudentView.vue');
+const TeacherView = () => import('../views/TeacherView.vue');
+const ClassView = () => import('../views/ClassView.vue');
+const AcademicYearView = () => import('../views/AcademicYearView.vue');
+const CourseSubjectView = () => import('../views/CourseSubjectView.vue');
+const TimetableView = () => import('../views/TimetableView.vue');
+const ExaminationView = () => import('../views/ExaminationView.vue');
+const ParentView = () => import('../views/ParentView.vue');
+const FinanceView = () => import('../views/FinanceView.vue');
+const LibraryView = () => import('../views/LibraryView.vue');
+const AnnouncementView = () => import('../views/AnnouncementView.vue');
+const ReportView = () => import('../views/ReportView.vue');
+const SettingView = () => import('../views/SettingView.vue');
+const RoleView = () => import('../views/RoleView.vue');
 
 const routes = [
   { path: '/', redirect: '/dashboard' },

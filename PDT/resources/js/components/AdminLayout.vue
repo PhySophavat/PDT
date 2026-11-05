@@ -41,12 +41,6 @@
               </span>
             </div>
           </router-link>
-          
-          <button @click="sidebarOpen = !sidebarOpen" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition" title="Toggle Menu">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-          </button>
         </div>
 
         <!-- Navigation Menu -->

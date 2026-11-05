@@ -22,25 +22,30 @@
       avatar: "{{ Auth::user()?->avatar ?? '' }}"
     };
     @php
-      $logoPath = \App\Models\SystemSetting::get('school_logo');
+      $sysSettings = \App\Models\SystemSetting::pluck('value', 'key');
+      $logoPath = $sysSettings['school_logo'] ?? '';
       $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : asset('storage/' . ltrim($logoPath, '/'))) : '';
     @endphp
     window.__INITIAL_SETTINGS__ = {
       school_logo_url: "{{ $logoUrl }}",
-      school_name: "{{ \App\Models\SystemSetting::get('school_name', 'សាលារៀន ជំនាន់ថ្មី PDT') }}",
-      school_name_en: "{{ \App\Models\SystemSetting::get('school_name_en', 'PDT New Generation School') }}"
+      school_name: "{{ $sysSettings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី PDT' }}",
+      school_name_en: "{{ $sysSettings['school_name_en'] ?? 'PDT New Generation School' }}"
     };
   </script>
 </head>
 <body class="bg-[#dce4f7] min-h-screen p-2 sm:p-4 lg:p-6 flex items-center justify-center antialiased text-slate-800">
   <!-- Vue.js 3 Master Single Page Application Mount Point -->
   <div id="app" class="w-full flex items-center justify-center">
-    @hasSection('content')
-      <!-- Fallback for non-JS / search engines -->
-      <noscript>
-        @yield('content')
-      </noscript>
-    @endif
+    <!-- Instant Loading Indicator while JS Chunks Mount -->
+    <div class="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-slate-500 font-khmer p-6">
+      <div class="w-14 h-14 rounded-2xl bg-white shadow-xl shadow-blue-500/10 border border-slate-200/80 flex items-center justify-center text-blue-600 text-2xl animate-pulse">
+        <i class="fa-solid fa-school"></i>
+      </div>
+      <div class="flex items-center gap-2 text-xs font-semibold text-slate-600 mt-1">
+        <div class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></div>
+        <span>កំពុងដំណើរការប្រព័ន្ធ...</span>
+      </div>
+    </div>
   </div>
 
   @stack('scripts')
