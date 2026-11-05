@@ -34,7 +34,7 @@ class ApiController extends Controller
 {
     public function dashboard(Request $request)
     {
-        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '1'));
+        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '0'));
 
         if ($demoMode === '0') {
             // Live Production Mode: return strictly real database records
@@ -148,7 +148,7 @@ class ApiController extends Controller
             'created_at' => $st->created_at ? $st->created_at->format('Y-m-d H:i') : null,
         ]);
 
-        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '1'));
+        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '0'));
 
         if ($students->isEmpty() && $demoMode !== '0') {
             $demoList = $this->getDemoStudentsList();
@@ -735,7 +735,7 @@ class ApiController extends Controller
             'created_at' => $t->created_at ? $t->created_at->format('Y-m-d H:i') : null,
         ]);
 
-        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '1'));
+        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '0'));
 
         if ($teachers->isEmpty() && $demoMode !== '0') {
             $demoList = $this->getDemoTeachersList();
@@ -1924,7 +1924,7 @@ class ApiController extends Controller
 
     public function examinations(Request $request)
     {
-        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '1'));
+        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '0'));
 
         $exams = Examination::with('academicYear')->withCount('scores')->latest()->get()->map(fn ($ex) => [
             'id' => $ex->id,
@@ -2078,7 +2078,7 @@ class ApiController extends Controller
         $exam = $examination instanceof Examination ? $examination : Examination::find($examination);
         $className = $request->input('class', '7A');
         $subjectId = $request->input('subject_id');
-        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '1'));
+        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '0'));
 
         $students = collect();
         if ($exam) {
@@ -2184,7 +2184,7 @@ class ApiController extends Controller
     {
         $exam = $examination instanceof Examination ? $examination : Examination::find($examination);
         $className = $request->input('class', '7A');
-        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '1'));
+        $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '0'));
 
         $subjects = CourseSubject::orderBy('id')->get()->map(function ($s) use ($className) {
             return [
@@ -2915,7 +2915,7 @@ class ApiController extends Controller
             'bank_account_name' => 'PDT SCHOOL CO., LTD',
             'bank_account_number' => '001 234 567',
             'khqr_image' => null,
-            'demo_mode' => '1',
+            'demo_mode' => '0',
             'enable_public_registration' => '1',
             'enable_teacher_score_edit' => '1',
             'role_permissions' => json_encode([
@@ -3041,6 +3041,65 @@ class ApiController extends Controller
             'Content-Type' => 'application/sql',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
+    }
+
+    public function resetDemoData(Request $request)
+    {
+        try {
+            $isSqlite = \DB::connection()->getDriverName() === 'sqlite';
+            if ($isSqlite) {
+                \DB::statement('PRAGMA foreign_keys = OFF;');
+            } else {
+                \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            }
+
+            // Wipe all student, teacher, score, attendance, timetable, finance, and announcement demo records
+            \App\Models\ExaminationScore::query()->delete();
+            \App\Models\Attendance::query()->delete();
+            \App\Models\Payment::query()->delete();
+            \App\Models\Invoice::query()->delete();
+            \App\Models\SchoolExpense::query()->delete();
+            \App\Models\BookBorrow::query()->delete();
+            \App\Models\Timetable::query()->delete();
+            \App\Models\Examination::query()->delete();
+            \App\Models\Announcement::query()->delete();
+            \App\Models\Student::query()->delete();
+            \App\Models\Teacher::query()->delete();
+
+            // Retain admin user account
+            $adminUserIds = \App\Models\User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))
+                ->orWhere('email', 'admin@example.com')
+                ->pluck('id')
+                ->toArray();
+
+            if (!empty($adminUserIds)) {
+                \App\Models\User::whereNotIn('id', $adminUserIds)->delete();
+            } else {
+                \App\Models\User::where('email', '!=', 'admin@example.com')->delete();
+            }
+
+            // Clear teacher assignments from classes
+            \App\Models\SchoolClass::query()->update(['teacher_id' => null]);
+
+            // Set system mode strictly to Live Production
+            SystemSetting::set('demo_mode', '0');
+
+            if ($isSqlite) {
+                \DB::statement('PRAGMA foreign_keys = ON;');
+            } else {
+                \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'បានលុបទិន្នន័យ Demo ទាំងអស់ដោយជោគជ័យ! ប្រព័ន្ធបានត្រៀមរួចរាល់សម្រាប់ការបញ្ចូលទិន្នន័យជាក់ស្តែង (Production)។',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'កំហុសក្នុងការលុបទិន្នន័យ៖ ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function roles()

@@ -1217,7 +1217,7 @@ const editForm = ref({
 });
 
 const fetchStudents = async () => {
-  const currentMode = localStorage.getItem('pdt_demo_mode') || '1';
+  const currentMode = localStorage.getItem('pdt_demo_mode') || '0';
   try {
     const res = await axios.get('/api/students', {
       params: { demo_mode: currentMode }

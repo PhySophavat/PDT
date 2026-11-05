@@ -48,114 +48,6 @@
         </div>
       </div>
 
-      <!-- Demo / Dev Mode Switch Card (Radio Switch) -->
-      <div class="p-5 bg-gradient-to-r from-indigo-50/90 via-blue-50/70 to-slate-50 border border-blue-200/90 rounded-2xl space-y-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <span class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
-              <i class="fa-solid fa-flask"></i>
-            </span>
-            <div>
-              <h3 class="text-xs font-bold text-slate-900 flex items-center gap-2">
-                <span>របៀបដំណើរការទិន្នន័យ (System Mode / Dev Mode)</span>
-                <span :class="[
-                  'px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase',
-                  form.demo_mode === '1' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-700'
-                ]">
-                  {{ form.demo_mode === '1' ? '⚡ Demo Mode Active' : '🟢 Live Production' }}
-                </span>
-              </h3>
-              <p class="text-[11px] text-slate-500">
-                ជ្រើសរើសរបៀបសម្រាប់បង្ហាញទិន្នន័យសាកល្បង (Demo) ពេញលេញគ្រប់ទំព័រ ឬប្រើទិន្នន័យផ្ទាល់ពី Database
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="modeMessage" class="px-3.5 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-semibold flex items-center gap-2 animate-pulse">
-          <i class="fa-solid fa-circle-check text-emerald-600"></i>
-          <span>{{ modeMessage }}</span>
-        </div>
-
-        <!-- Radio Switch Options -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-          <!-- Option 1: Demo / Dev Mode -->
-          <div 
-            @click="handleModeChange('1')"
-            :class="[
-              'flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all select-none',
-              form.demo_mode === '1' 
-                ? 'border-blue-600 bg-white shadow-xs ring-2 ring-blue-500/20' 
-                : 'border-slate-200 bg-white/70 hover:bg-white hover:border-slate-300'
-            ]"
-          >
-            <input 
-              type="radio" 
-              name="system_mode" 
-              value="1" 
-              :checked="form.demo_mode === '1'" 
-              class="mt-1 text-blue-600 focus:ring-blue-500 pointer-events-none" 
-            />
-            <div class="flex-1">
-              <span class="block text-xs font-bold text-slate-900">
-                🚀 របៀបសាកល្បង (Demo / Dev Mode)
-              </span>
-              <span class="block text-[11px] text-slate-500 mt-0.5 leading-relaxed">
-                បង្ហាញទិន្នន័យគំរូពេញលេញ (សិស្ស ២០+ នាក់, គ្រូ ១០+ នាក់, វត្តមាន, ពិន្ទុ, ហិរញ្ញវត្ថុ) សម្រាប់ Demo បានគ្រប់កន្លែង ទោះបីលើ Production ក៏ដោយ។
-              </span>
-            </div>
-          </div>
-
-          <!-- Option 2: Live / Production Mode -->
-          <div 
-            @click="handleModeChange('0')"
-            :class="[
-              'flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all select-none',
-              form.demo_mode === '0' 
-                ? 'border-blue-600 bg-white shadow-xs ring-2 ring-blue-500/20' 
-                : 'border-slate-200 bg-white/70 hover:bg-white hover:border-slate-300'
-            ]"
-          >
-            <input 
-              type="radio" 
-              name="system_mode" 
-              value="0" 
-              :checked="form.demo_mode === '0'" 
-              class="mt-1 text-blue-600 focus:ring-blue-500 pointer-events-none" 
-            />
-            <div class="flex-1">
-              <span class="block text-xs font-bold text-slate-900">
-                🔒 របៀបផ្ទាល់ (Live / Production Mode)
-              </span>
-              <span class="block text-[11px] text-slate-500 mt-0.5 leading-relaxed">
-                បង្ហាញតែទិន្នន័យពិតប្រាកដដែលបានបញ្ចូល និងរក្សាទុកក្នុង Database ជាក់ស្តែងប៉ុណ្ណោះ។
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Seeder Quick Action -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 border-t border-blue-200/60">
-          <div class="flex items-center gap-2 text-[11px] text-slate-600">
-            <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
-              <i class="fa-solid fa-database"></i>
-            </span>
-            <span>
-              <strong>បញ្ចូលទិន្នន័យគំរូកម្ពុជាពេញលេញ៖</strong> សិស្ស ៨៧ នាក់ (11D ៥២ នាក់, 10A ៣៥ នាក់), គ្រូ ១៥ នាក់, ពិន្ទុប្រឡង ៣ សម័យ, កាលវិភាគ
-            </span>
-          </div>
-          <button 
-            @click="handleRunSeed" 
-            :disabled="isSeeding" 
-            type="button" 
-            class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 transition flex items-center gap-2 cursor-pointer flex-shrink-0"
-          >
-            <i :class="isSeeding ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-wand-magic-sparkles'"></i>
-            <span>{{ isSeeding ? 'កំពុងបញ្ចូលទិន្នន័យ...' : 'Seed ទិន្នន័យគំរូទៅក្នុង DB' }}</span>
-          </button>
-        </div>
-      </div>
-
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <!-- School Name Khmer -->
         <div>
@@ -621,6 +513,34 @@
           <span>ទាញយកទិន្នន័យបម្រុង (Download SQL)</span>
         </button>
       </div>
+
+      <!-- Danger Zone: Purge All Demo Data -->
+      <div class="p-5 bg-gradient-to-r from-rose-50/90 via-red-50/70 to-slate-50 border border-rose-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <span class="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold text-base shadow-xs flex-shrink-0">
+            <i class="fa-solid fa-trash-can"></i>
+          </span>
+          <div>
+            <h4 class="text-xs font-bold text-rose-900 flex items-center gap-2">
+              <span>លុប និងសម្អាតទិន្នន័យ Demo ទាំងអស់ (Purge All Demo Data)</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">DANGER ZONE</span>
+            </h4>
+            <p class="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+              លុបទិន្នន័យគំរូទាំងអស់ (សិស្ស គ្រូ ពិន្ទុប្រឡង វត្តមាន កាលវិភាគ វិក្កយបត្រ) ដើម្បីទុកឱ្យប្រព័ន្ធស្អាត ត្រៀមសម្រាប់ការបញ្ចូលទិន្នន័យពិតប្រាកដ (Production)។ គណនី Admin និងការកំណត់សាលានៅរក្សាដដែល។
+            </p>
+          </div>
+        </div>
+        <button 
+          @click="handlePurgeDemoData" 
+          :disabled="isPurging" 
+          type="button" 
+          class="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md shadow-rose-600/20 transition flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer"
+        >
+          <i v-if="isPurging" class="fa-solid fa-spinner fa-spin"></i>
+          <i v-else class="fa-solid fa-triangle-exclamation"></i>
+          <span>{{ isPurging ? 'កំពុងលុបទិន្នន័យ...' : 'លុបទិន្នន័យ Demo ទាំងអស់' }}</span>
+        </button>
+      </div>
     </div>
 
     <!-- Save Settings Action Footer Bar -->
@@ -666,7 +586,7 @@ const academicYears = ref([]);
 
 const form = ref({
   // Demo Mode Switch
-  demo_mode: localStorage.getItem('pdt_demo_mode') || '1',
+  demo_mode: localStorage.getItem('pdt_demo_mode') || '0',
 
   // Tab 1: School Info
   school_name: 'សាលារៀន ជំនាន់ថ្មី PDT',
@@ -717,20 +637,25 @@ const isSwitchingMode = ref(false);
 const modeMessage = ref('');
 const isSeeding = ref(false);
 
-const handleRunSeed = async () => {
-  if (!confirm('តើអ្នកពិតជាចង់បញ្ចូលទិន្នន័យគំរូកម្ពុជាពេញលេញ (សិស្ស ៨៧ នាក់, គ្រូ ១៥ នាក់, ពិន្ទុ ២០៨៨ កំណត់ត្រា) ទៅក្នុង Database មែនទេ?')) {
+const isPurging = ref(false);
+const handlePurgeDemoData = async () => {
+  const confirmText = prompt('តើអ្នកពិតជាចង់លុបទិន្នន័យគំរូ (Demo Data) ទាំងអស់មែនទេ?\nសកម្មភាពនេះនឹងលុបសិស្ស គ្រូ ពិន្ទុ វត្តមាន កាលវិភាគ និងវិក្កយបត្រទាំងអស់ពី Database ដើម្បីឱ្យប្រព័ន្ធស្អាតសម្រាប់ Production។\n\nសូមវាយពាក្យ "DELETE" ដើម្បីបញ្ជាក់ការលុប៖');
+  if (confirmText !== 'DELETE') {
+    if (confirmText !== null) alert('ពាក្យបញ្ជាក់មិនត្រឹមត្រូវ! ការលុបទិន្នន័យត្រូវបានបោះបង់។');
     return;
   }
-  isSeeding.value = true;
+  isPurging.value = true;
   try {
-    const res = await axios.post('/api/seed');
-    alert(res.data.message || 'បាន Seed ទិន្នន័យជោគជ័យ!');
-    await fetchSettings();
+    const res = await axios.post('/api/settings/reset-demo-data');
+    localStorage.setItem('pdt_demo_mode', '0');
+    form.value.demo_mode = '0';
+    alert(res.data.message || 'បានសម្អាតទិន្នន័យ Demo ដោយជោគជ័យ!');
+    window.location.reload();
   } catch (err) {
-    console.error('Seed error:', err);
-    alert('ការ Seed បានបរាជ័យ៖ ' + (err.response?.data?.message || err.message));
+    console.error('Purge error:', err);
+    alert('ការលុបបានបរាជ័យ៖ ' + (err.response?.data?.message || err.message));
   } finally {
-    isSeeding.value = false;
+    isPurging.value = false;
   }
 };
 

@@ -72,7 +72,7 @@ class ComprehensiveSchoolSeeder extends Seeder
             'currency' => 'USD',
             'currency_symbol' => '$',
             'grading_system' => 'A:90-100, B:80-89, C:70-79, D:60-69, E:50-59, F:0-49',
-            'demo_mode' => '1',
+            'demo_mode' => '0',
         ];
 
         foreach ($settings as $key => $val) {

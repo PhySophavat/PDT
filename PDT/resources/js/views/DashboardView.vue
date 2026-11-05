@@ -124,31 +124,21 @@ const { t } = useI18n();
 
 const activeTab = ref('overview');
 
-const isDemo = localStorage.getItem('pdt_demo_mode') !== '0';
-
 const stats = ref({
-  students: isDemo ? 120 : 0,
-  teachers: isDemo ? 15 : 0,
-  classes: isDemo ? 48 : 0,
-  subjects: isDemo ? 11 : 0,
-  revenue: isDemo ? 14250.00 : 0,
-  attendanceRate: isDemo ? 96.8 : 0,
+  students: 0,
+  teachers: 0,
+  classes: 0,
+  subjects: 0,
+  revenue: 0,
+  attendanceRate: 0,
 });
 
-const recentClasses = ref(isDemo ? [
-  { name: '7A', teacher: 'លោកគ្រូ សុខ ចាន់ដារ៉ា', students: 35, present: 34, absent: 1, rate: 97.1 },
-  { name: '8A', teacher: 'អ្នកគ្រូ កែវ មុនីរ័ត្ន', students: 36, present: 35, absent: 1, rate: 97.2 },
-  { name: '9A', teacher: 'លោកគ្រូ ជា វណ្ណៈ', students: 34, present: 32, absent: 2, rate: 94.1 },
-  { name: '10A', teacher: 'លោកគ្រូ ហេង បូរ៉ា', students: 38, present: 37, absent: 1, rate: 97.4 },
-  { name: '11A', teacher: 'អ្នកគ្រូ អ៊ុក សោភា', students: 32, present: 31, absent: 1, rate: 96.9 },
-  { name: '12A', teacher: 'លោកគ្រូ សេង វិបុល', students: 35, present: 35, absent: 0, rate: 100.0 }
-] : []);
+const recentClasses = ref([]);
 
 onMounted(async () => {
-  const currentMode = localStorage.getItem('pdt_demo_mode') || '1';
   try {
     const res = await axios.get('/api/dashboard', {
-      params: { demo_mode: currentMode }
+      params: { demo_mode: '0' }
     });
     if (res.data) {
       if (res.data.stats) {
