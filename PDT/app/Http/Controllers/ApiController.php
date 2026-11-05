@@ -383,7 +383,23 @@ class ApiController extends Controller
     public function destroyStudent(Student $student)
     {
         $name = $student->display_name;
-        $student->delete();
+
+        // 1. Relational Integrity Check: Prevent deleting student with unpaid invoices
+        $unpaidInvoices = \App\Models\Invoice::where('student_id', $student->id)->where('status', 'unpaid')->count();
+        if ($unpaidInvoices > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => "មិនអាចលុបសិស្ស {$name} បានទេ ព្រោះសិស្សមានវិក្កយបត្រមិនទាន់ទូទាត់ចំនួន {$unpaidInvoices} ច្បាប់! សូមទូទាត់ ឬលុបវិក្កយបត្រជាមុនសិន។"
+            ], 422);
+        }
+
+        // 2. Clean up child records in transaction to preserve database integrity
+        \Illuminate\Support\Facades\DB::transaction(function () use ($student) {
+            \App\Models\ExaminationScore::where('student_id', $student->id)->delete();
+            \App\Models\Attendance::where('student_id', $student->id)->delete();
+            \App\Models\BookBorrow::where('student_id', $student->id)->delete();
+            $student->delete();
+        });
 
         return response()->json([
             'success' => true,
@@ -933,6 +949,25 @@ class ApiController extends Controller
     public function destroyTeacher(Teacher $teacher)
     {
         $name = $teacher->display_name;
+
+        // 1. Relational Integrity Check: Prevent deleting teacher if assigned as homeroom teacher
+        $assignedClasses = SchoolClass::where('teacher_id', $teacher->id)->pluck('name')->toArray();
+        if (!empty($assignedClasses)) {
+            $classList = implode(', ', $assignedClasses);
+            return response()->json([
+                'success' => false,
+                'message' => "មិនអាចលុបគ្រូបង្រៀន {$name} បានទេ ព្រោះលោកគ្រូ/អ្នកគ្រូកំពុងជាគ្រូបន្ទុកថ្នាក់ ({$classList})! សូមផ្ទេរគ្រូបន្ទុកថ្នាក់ជាមុនសិន។"
+            ], 422);
+        }
+
+        // 2. Prevent deleting teacher if currently assigned in active timetables
+        if (\App\Models\Timetable::where('teacher_id', $teacher->id)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => "មិនអាចលុបគ្រូបង្រៀន {$name} បានទេ ព្រោះមានកាលវិភាគបង្រៀនកំពុងចាត់តាំងលោកគ្រូ/អ្នកគ្រូ! សូមកែប្រែកាលវិភាគជាមុនសិន។"
+            ], 422);
+        }
+
         $teacher->delete();
 
         return response()->json([
@@ -1254,6 +1289,24 @@ class ApiController extends Controller
     public function destroyClass(SchoolClass $class)
     {
         $name = $class->name;
+
+        // 1. Relational Integrity Check: Prevent deleting class if active students exist
+        $studentCount = Student::where('grade', $name)->count();
+        if ($studentCount > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => "មិនអាចលុបថ្នាក់ {$name} បានទេ ព្រោះមានសិស្សកំពុងរៀនចំនួន {$studentCount} នាក់! សូមផ្ទេរសិស្សទៅថ្នាក់ផ្សេងជាមុនសិន។"
+            ], 422);
+        }
+
+        // 2. Prevent deleting class if active timetable schedules exist
+        if (\App\Models\Timetable::where('class_name', $name)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => "មិនអាចលុបថ្នាក់ {$name} បានទេ ព្រោះមានកាលវិភាគបង្រៀនកំពុងប្រើប្រាស់ថ្នាក់នេះ! សូមលុបកាលវិភាគជាមុនសិន។"
+            ], 422);
+        }
+
         $class->delete();
 
         return response()->json([
