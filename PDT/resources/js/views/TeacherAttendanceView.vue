@@ -360,7 +360,11 @@ import EntityBanner from '../components/EntityBanner.vue';
 import StatCard from '../components/StatCard.vue';
 
 const activeTab = ref('matrix');
-const selectedAcademicYear = ref('2025-2026');
+const selectedAcademicYear = ref(
+  localStorage.getItem('pdt_current_academic_year') ||
+  window.__INITIAL_SETTINGS__?.current_academic_year ||
+  '2026-2027'
+);
 const selectedMonth = ref('november');
 const selectedDate = ref(new Date().toISOString().slice(0, 10));
 const searchQuery = ref('');
@@ -511,6 +515,10 @@ const fetchTeacherAttendance = async () => {
     });
     if (res.data) {
       if (res.data.stats) stats.value = res.data.stats;
+      if (res.data.currentAcademicYear) {
+        selectedAcademicYear.value = res.data.currentAcademicYear;
+        localStorage.setItem('pdt_current_academic_year', res.data.currentAcademicYear);
+      }
       if (res.data.academicYears) academicYearsList.value = res.data.academicYears;
       if (res.data.teacher_attendance_map) teacherAttendanceMap.value = res.data.teacher_attendance_map;
       teachersList.value = res.data.teachers || [];

@@ -29,7 +29,7 @@
     <!-- 4 Statistics Summary Cards (Dynamic from Database) -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="$t('academicYears.title')" :value="stats.total || years.length" />
-      <StatCard :title="$t('academicYears.currentYear')" :value="stats.currentYear || '2025-2026'" />
+      <StatCard :title="$t('academicYears.currentYear')" :value="stats.currentYear || '2026-2027'" />
       <StatCard :title="$t('settings.currentSemester')" :value="stats.currentSemester || $t('academicYears.semester1')" />
       <StatCard :title="$t('common.status')" :value="stats.status || $t('common.active')" />
     </div>
@@ -259,7 +259,7 @@ const activeTab = ref('all');
 const years = ref([]);
 const stats = ref({
   total: 0,
-  currentYear: '2025-2026',
+  currentYear: localStorage.getItem('pdt_current_academic_year') || window.__INITIAL_SETTINGS__?.current_academic_year || '2026-2027',
   currentSemester: 'ឆមាសទី ១',
   status: 'សកម្ម (Active)'
 });
@@ -288,6 +288,9 @@ const fetchAcademicYears = async () => {
       }
       if (res.data.stats) {
         stats.value = res.data.stats;
+        if (res.data.stats.currentYear) {
+          localStorage.setItem('pdt_current_academic_year', res.data.stats.currentYear);
+        }
       }
     }
   } catch (err) {
@@ -361,6 +364,14 @@ const setAsCurrent = async (id) => {
   try {
     const res = await axios.post(`/api/academic-years/${id}/set-current`);
     if (res.data && res.data.success) {
+      if (res.data.year?.name) {
+        localStorage.setItem('pdt_current_academic_year', res.data.year.name);
+        window.dispatchEvent(new CustomEvent('pdt-settings-saved', {
+          detail: {
+            current_academic_year: res.data.year.name
+          }
+        }));
+      }
       alert(res.data.message || 'បានកំណត់ជាឆ្នាំសិក្សាបច្ចុប្បន្នដោយជោគជ័យ!');
       await fetchAcademicYears();
     }

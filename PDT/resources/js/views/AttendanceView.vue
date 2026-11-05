@@ -701,7 +701,11 @@ const filterStatus = ref('all');
 
 // Advanced Filter Bar States
 const selectedClass = ref('7A');
-const selectedAcademicYear = ref('2025-2026');
+const selectedAcademicYear = ref(
+  localStorage.getItem('pdt_current_academic_year') ||
+  window.__INITIAL_SETTINGS__?.current_academic_year ||
+  '2026-2027'
+);
 const selectedMonth = ref('november');
 const selectedDate = ref(new Date().toISOString().slice(0, 10));
 
@@ -916,6 +920,10 @@ const fetchAttendanceData = async () => {
     if (res.data) {
       if (res.data.stats) stats.value = res.data.stats;
       if (res.data.classes && res.data.classes.length > 0) classesList.value = res.data.classes;
+      if (res.data.currentAcademicYear) {
+        selectedAcademicYear.value = res.data.currentAcademicYear;
+        localStorage.setItem('pdt_current_academic_year', res.data.currentAcademicYear);
+      }
       if (res.data.academicYears && res.data.academicYears.length > 0) academicYearsList.value = res.data.academicYears;
       if (res.data.matrix) matrixData.value = res.data.matrix;
       if (res.data.absence_records) absenceRecords.value = res.data.absence_records;

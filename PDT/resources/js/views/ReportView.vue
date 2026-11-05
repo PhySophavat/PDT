@@ -33,7 +33,7 @@
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="$t('reports.filterCategory')" :value="activeReportType.toUpperCase()" />
-      <StatCard :title="$t('students.academicYear')" :value="'2025-2026'" />
+      <StatCard :title="$t('students.academicYear')" :value="currentAcademicYear" />
       <StatCard :title="$t('common.status')" :value="$t('common.active')" />
       <StatCard title="Export Ready" :value="'PDF / Excel'" />
     </div>
@@ -98,7 +98,7 @@
         <template v-else>
           <tr v-for="item in generalMetrics" :key="item.name" class="hover:bg-slate-50/70 transition-colors">
             <td class="py-3 px-4 font-semibold text-slate-800">{{ item.name }}</td>
-            <td class="py-3 px-4 text-slate-600">Semester 1 (2025-2026)</td>
+            <td class="py-3 px-4 text-slate-600">Semester 1 ({{ currentAcademicYear }})</td>
             <td class="py-3 px-4 text-slate-600">{{ item.dept }}</td>
             <td class="py-3 px-4 text-right font-bold text-slate-900">{{ item.value }}</td>
             <td class="py-3 px-4 text-center">
@@ -125,6 +125,11 @@ import DataTable from '../components/DataTable.vue';
 
 const { t } = useI18n();
 const activeReportType = ref('students');
+const currentAcademicYear = ref(
+  localStorage.getItem('pdt_current_academic_year') ||
+  window.__INITIAL_SETTINGS__?.current_academic_year ||
+  '2026-2027'
+);
 
 const students = ref([]);
 const teachers = ref([]);

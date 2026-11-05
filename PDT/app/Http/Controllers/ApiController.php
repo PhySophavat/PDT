@@ -141,6 +141,18 @@ class ApiController extends Controller
             ]);
         }
 
+        $activeYear = SystemSetting::get('current_academic_year')
+            ?: AcademicYear::where('is_current', true)->value('name')
+            ?: AcademicYear::latest()->value('name')
+            ?: '2025-2026';
+        $academicYearsList = AcademicYear::orderBy('name', 'desc')->pluck('name')->toArray();
+        if (empty($academicYearsList)) {
+            $academicYearsList = [$activeYear];
+        }
+        if (!in_array($activeYear, $academicYearsList)) {
+            array_unshift($academicYearsList, $activeYear);
+        }
+
         return response()->json([
             'stats' => [
                 'students' => $totalStudents,
@@ -155,6 +167,8 @@ class ApiController extends Controller
                 'averagePassRate' => 85,
                 'scholarshipCount' => 45,
             ],
+            'currentAcademicYear' => $activeYear,
+            'academicYears' => $academicYearsList,
             'recentClasses' => $allClasses->take(10)->values(),
             'allClasses' => $allClasses,
             'weeklyTrend' => $weeklyTrend,
@@ -1518,11 +1532,16 @@ class ApiController extends Controller
             ];
         }
 
+        $currentYear = SystemSetting::get('current_academic_year')
+            ?: AcademicYear::where('is_current', true)->value('name')
+            ?: ($academicYears->first() ?? '2025-2026');
+
         return response()->json([
             'stats' => $stats,
             'students' => $students,
             'classes' => $classes,
             'academicYears' => $academicYears,
+            'currentAcademicYear' => $currentYear,
             'selectedDate' => $today,
             'selectedClass' => $selectedClass,
             'matrix' => $realMatrix,
@@ -1614,10 +1633,15 @@ class ApiController extends Controller
             ];
         }
 
+        $currentYear = SystemSetting::get('current_academic_year')
+            ?: AcademicYear::where('is_current', true)->value('name')
+            ?: ($academicYears->first() ?? '2025-2026');
+
         return response()->json([
             'stats' => $stats,
             'teachers' => $teachers,
             'academicYears' => $academicYears,
+            'currentAcademicYear' => $currentYear,
             'selectedDate' => $today,
             'teacher_attendance_map' => $teacherAttendanceMap,
         ]);
@@ -1654,28 +1678,36 @@ class ApiController extends Controller
 
     public function academicYears()
     {
-        $years = AcademicYear::orderBy('name', 'desc')->get()->map(fn ($y) => [
-            'id' => $y->id,
-            'name' => $y->name,
-            'start_date' => $y->start_date ? Carbon::parse($y->start_date)->format('Y-m-d') : null,
-            'end_date' => $y->end_date ? Carbon::parse($y->end_date)->format('Y-m-d') : null,
-            'start' => $y->start_date ? Carbon::parse($y->start_date)->format('d-M-Y') : 'N/A',
-            'end' => $y->end_date ? Carbon::parse($y->end_date)->format('d-M-Y') : 'N/A',
-            'sem1' => $y->semester_1 ?: 'Oct-Feb',
-            'sem2' => $y->semester_2 ?: 'Mar-Jul',
-            'status' => $y->status ?? 'active',
-            'is_current' => (bool) $y->is_current,
-            'isCurrent' => (bool) $y->is_current,
-        ]);
+        $settingYearName = SystemSetting::get('current_academic_year');
+        $currentYear = $settingYearName 
+            ? (AcademicYear::where('name', $settingYearName)->first() ?: AcademicYear::where('is_current', true)->first())
+            : (AcademicYear::where('is_current', true)->first() ?: AcademicYear::latest()->first());
+        $currentYearName = $currentYear?->name ?? ($settingYearName ?: '2025-2026');
 
-        $currentYear = AcademicYear::where('is_current', true)->first() ?: AcademicYear::latest()->first();
+        $years = AcademicYear::orderBy('name', 'desc')->get()->map(function ($y) use ($currentYearName) {
+            $isCur = ($y->name === $currentYearName) || (bool) $y->is_current;
+            return [
+                'id' => $y->id,
+                'name' => $y->name,
+                'start_date' => $y->start_date ? Carbon::parse($y->start_date)->format('Y-m-d') : null,
+                'end_date' => $y->end_date ? Carbon::parse($y->end_date)->format('Y-m-d') : null,
+                'start' => $y->start_date ? Carbon::parse($y->start_date)->format('d-M-Y') : 'N/A',
+                'end' => $y->end_date ? Carbon::parse($y->end_date)->format('d-M-Y') : 'N/A',
+                'sem1' => $y->semester_1 ?: 'Oct-Feb',
+                'sem2' => $y->semester_2 ?: 'Mar-Jul',
+                'status' => $isCur ? 'active' : ($y->status ?? 'active'),
+                'is_current' => $isCur,
+                'isCurrent' => $isCur,
+            ];
+        });
+
         $currentSem = SystemSetting::get('current_semester', '1');
 
         return response()->json([
             'years' => $years,
             'stats' => [
                 'total' => $years->count(),
-                'currentYear' => $currentYear?->name ?? '2025-2026',
+                'currentYear' => $currentYearName,
                 'currentSemester' => $currentSem == '2' ? 'ឆមាសទី ២' : 'ឆមាសទី ១',
                 'status' => 'សកម្ម (Active)'
             ]
@@ -3077,6 +3109,26 @@ class ApiController extends Controller
             SystemSetting::set('khqr_image', $path);
         }
 
+        if ($request->has('current_academic_year')) {
+            $yearName = trim((string)$request->input('current_academic_year'));
+            if ($yearName) {
+                SystemSetting::set('current_academic_year', $yearName);
+                AcademicYear::where('is_current', true)->update(['is_current' => false]);
+                $match = AcademicYear::where('name', $yearName)->first();
+                if ($match) {
+                    $match->update(['is_current' => true, 'status' => 'active']);
+                } else {
+                    AcademicYear::create([
+                        'name' => $yearName,
+                        'is_current' => true,
+                        'status' => 'active',
+                        'semester_1' => 'ឆមាសទី ១',
+                        'semester_2' => 'ឆមាសទី ២',
+                    ]);
+                }
+            }
+        }
+
         $logoPath = SystemSetting::get('school_logo');
         $logoUrl = asset('images/logo.png');
         if ($logoPath) {
@@ -3091,6 +3143,7 @@ class ApiController extends Controller
             'school_logo_url' => $logoUrl,
             'school_name' => SystemSetting::get('school_name', 'សាលារៀន ជំនាន់ថ្មី PDT'),
             'school_name_en' => SystemSetting::get('school_name_en', 'PDT New Generation School'),
+            'current_academic_year' => SystemSetting::get('current_academic_year', '2025-2026'),
         ]);
     }
 

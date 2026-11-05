@@ -28,10 +28,16 @@
       email: "{{ Auth::user()?->email ?? 'admin@example.com' }}",
       avatar: "{{ Auth::user()?->avatar ?? '' }}"
     };
+    @php
+      $activeYear = \App\Models\SystemSetting::get('current_academic_year')
+        ?: \App\Models\AcademicYear::where('is_current', true)->value('name')
+        ?: '2026-2027';
+    @endphp
     window.__INITIAL_SETTINGS__ = {
       school_logo_url: "{{ $logoUrl }}",
       school_name: "{{ $sysSettings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី PDT' }}",
-      school_name_en: "{{ $sysSettings['school_name_en'] ?? 'PDT New Generation School' }}"
+      school_name_en: "{{ $sysSettings['school_name_en'] ?? 'PDT New Generation School' }}",
+      current_academic_year: "{{ $activeYear }}"
     };
   </script>
 </head>

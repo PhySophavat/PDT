@@ -640,7 +640,7 @@ const form = ref({
   school_stamp_url: '',
 
   // Tab 2: Academic Setup
-  current_academic_year: '2025-2026',
+  current_academic_year: localStorage.getItem('pdt_current_academic_year') || window.__INITIAL_SETTINGS__?.current_academic_year || '2026-2027',
   current_semester: '1',
   academic_start_date: '2025-10-01',
   academic_end_date: '2026-07-31',
@@ -730,6 +730,9 @@ const fetchSettings = async () => {
         Object.assign(form.value, s);
         if (s.school_logo_url) {
           updateFavicon(s.school_logo_url);
+        }
+        if (s.current_academic_year) {
+          localStorage.setItem('pdt_current_academic_year', s.current_academic_year);
         }
         // Sync demo_mode from DB or localStorage
         if (s.demo_mode !== undefined && s.demo_mode !== null) {
@@ -866,15 +869,19 @@ const handleSave = async () => {
       if (form.value.school_name_en) {
         localStorage.setItem('pdt_school_name_en', form.value.school_name_en);
       }
+      if (form.value.current_academic_year) {
+        localStorage.setItem('pdt_current_academic_year', form.value.current_academic_year);
+      }
       alert(res.data.message || 'បានរក្សាទុកការកំណត់ប្រព័ន្ធដោយជោគជ័យ!');
       await fetchSettings();
 
-      // Broadcast saved school logo and name to sidebar
+      // Broadcast saved school logo, name and academic year to sidebar and components
       window.dispatchEvent(new CustomEvent('pdt-settings-saved', {
         detail: {
           school_logo_url: res.data.school_logo_url || form.value.school_logo_url,
           school_name: res.data.school_name || form.value.school_name,
-          school_name_en: res.data.school_name_en || form.value.school_name_en
+          school_name_en: res.data.school_name_en || form.value.school_name_en,
+          current_academic_year: form.value.current_academic_year
         }
       }));
     }

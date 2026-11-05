@@ -17,3 +17,4 @@ export function updateFavicon(url) {
     console.debug('Failed to update favicon:', e);
   }
 }
+

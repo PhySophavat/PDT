@@ -426,6 +426,9 @@ onMounted(() => {
       schoolNameEn.value = e.detail.school_name_en;
       localStorage.setItem('pdt_school_name_en', e.detail.school_name_en);
     }
+    if (e.detail?.current_academic_year) {
+      localStorage.setItem('pdt_current_academic_year', e.detail.current_academic_year);
+    }
   });
 
   // Listen for storage events from other tabs/windows

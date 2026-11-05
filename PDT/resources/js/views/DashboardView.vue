@@ -22,7 +22,7 @@
     <!-- Entity / School Banner -->
     <EntityBanner 
       name="សាលារៀន ជំនាន់ថ្មី PDT - School Management Suite"
-      subtitle="ប្រព័ន្ធគ្រប់គ្រងសាលារៀនជំនាន់ថ្មី (New Generation School - NGS) | ឆ្នាំសិក្សា ២០២៥-២០២៦"
+      :subtitle="`ប្រព័ន្ធគ្រប់គ្រងសាលារៀនជំនាន់ថ្មី (New Generation School - NGS) | ឆ្នាំសិក្សា ${activeAcademicYear}`"
       metaId="SCH-PDT-2026"
       @print="handlePrint"
       @download="handleDownload"
@@ -170,8 +170,10 @@
             </label>
           </div>
 
-          <select class="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-medium focus:outline-none shadow-2xs font-khmer">
-            <option>{{ t('academicYears.currentYear') }} ២០២៥-២០២៦</option>
+          <select v-model="activeAcademicYear" class="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold focus:outline-none shadow-2xs font-khmer">
+            <option v-for="ay in academicYearsList" :key="ay" :value="ay">
+              {{ t('academicYears.currentYear') }} {{ ay }}
+            </option>
           </select>
         </template>
       </FilterBar>
@@ -374,29 +376,43 @@
 
             <!-- Center Text -->
             <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-              <span class="text-2xl font-black text-slate-800 tracking-tight">{{ stats.students || 120 }}</span>
+              <span class="text-2xl font-black text-slate-800 tracking-tight">{{ stats.students }}</span>
               <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">សិស្សសរុប</span>
             </div>
           </div>
 
           <!-- Donut Legend & Stats -->
-          <div class="space-y-2 pt-2 border-t border-slate-100">
-            <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-pink-50/70 border border-pink-100/60">
-              <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-pink-500 shadow-xs"></span>
-                <span class="font-bold text-slate-700">សិស្សស្រី</span>
-              </div>
-              <span class="font-bold text-pink-700">{{ stats.femaleCount || Math.round((stats.students || 0) * 0.52) }} នាក់ ({{ stats.femaleRatio || 52 }}%)</span>
-            </div>
+         
+<div class="space-y-2 pt-2 border-t border-slate-100">
+  <!-- Female Students -->
+  <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-pink-50/70 border border-pink-100/60">
+    <div class="flex items-center gap-2">
+      <span class="w-3 h-3 rounded-full bg-pink-500 shadow-xs"></span>
+      <span class="font-bold text-slate-700">សិស្សស្រី</span>
+    </div>
+    <span class="font-bold text-pink-700">
+      {{ stats.femaleCount ?? 0 }} នាក់
+      ({{ stats.students > 0
+        ? Math.round(((stats.femaleCount ?? 0) / stats.students) * 100)
+        : 0 }}%)
+    </span>
+  </div>
 
-            <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-blue-50/70 border border-blue-100/60">
-              <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-blue-500 shadow-xs"></span>
-                <span class="font-bold text-slate-700">សិស្សប្រុស</span>
-              </div>
-              <span class="font-bold text-blue-700">{{ stats.maleCount || Math.round((stats.students || 0) * 0.48) }} នាក់ ({{ 100 - (stats.femaleRatio || 52) }}%)</span>
-            </div>
-          </div>
+  <!-- Male Students -->
+  <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-blue-50/70 border border-blue-100/60">
+    <div class="flex items-center gap-2">
+      <span class="w-3 h-3 rounded-full bg-blue-500 shadow-xs"></span>
+      <span class="font-bold text-slate-700">សិស្សប្រុស</span>
+    </div>
+    <span class="font-bold text-blue-700">
+      {{ stats.maleCount ?? 0 }} នាក់
+      ({{ stats.students > 0
+        ? Math.round(((stats.maleCount ?? 0) / stats.students) * 100)
+        : 0 }}%)
+    </span>
+  </div>
+</div>
+
         </div>
       </div>
 
@@ -848,6 +864,13 @@ const classSearchQuery = ref('');
 const selectedGradeLevel = ref('all');
 const hoveredDay = ref(null);
 
+const activeAcademicYear = ref(
+  localStorage.getItem('pdt_current_academic_year') ||
+  window.__INITIAL_SETTINGS__?.current_academic_year ||
+  '2026-2027'
+);
+const academicYearsList = ref([activeAcademicYear.value]);
+
 // Assign teacher modal states
 const showAssignModal = ref(false);
 const targetClass = ref(null);
@@ -1019,6 +1042,13 @@ onMounted(async () => {
       params: { demo_mode: '0' }
     });
     if (res.data) {
+      if (res.data.currentAcademicYear) {
+        activeAcademicYear.value = res.data.currentAcademicYear;
+        localStorage.setItem('pdt_current_academic_year', res.data.currentAcademicYear);
+      }
+      if (res.data.academicYears && res.data.academicYears.length) {
+        academicYearsList.value = res.data.academicYears;
+      }
       if (res.data.stats) {
         stats.value = { ...stats.value, ...res.data.stats };
       }
