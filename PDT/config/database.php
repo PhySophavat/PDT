@@ -59,9 +59,17 @@ return [
             'strict' => env('DB_STRICT_MODE', true),
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA', env('DB_SSL', false) ? (file_exists(storage_path('certs/ca.pem')) ? storage_path('certs/ca.pem') : (file_exists('/etc/ssl/certs/ca-certificates.crt') ? '/etc/ssl/certs/ca-certificates.crt' : true)) : null),
-                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT', null),
-            ]) : [],
+                PDO::MYSQL_ATTR_SSL_CA => (function () {
+                    $ca = env('MYSQL_ATTR_SSL_CA');
+                    if ($ca && file_exists($ca)) return realpath($ca);
+                    if ($ca && file_exists(base_path($ca))) return realpath(base_path($ca));
+                    if (file_exists(storage_path('certs/ca.pem'))) return realpath(storage_path('certs/ca.pem'));
+                    if (file_exists('C:\\xampp\\apache\\bin\\curl-ca-bundle.crt')) return 'C:\\xampp\\apache\\bin\\curl-ca-bundle.crt';
+                    if (file_exists('/etc/ssl/certs/ca-certificates.crt')) return '/etc/ssl/certs/ca-certificates.crt';
+                    return env('DB_SSL', false) ? true : null;
+                })(),
+                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT', false),
+            ], fn($v) => !is_null($v)) : [],
         ],
 
         'mariadb' => [
@@ -80,9 +88,17 @@ return [
             'strict' => env('DB_STRICT_MODE', true),
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA', env('DB_SSL', false) ? (file_exists(storage_path('certs/ca.pem')) ? storage_path('certs/ca.pem') : (file_exists('/etc/ssl/certs/ca-certificates.crt') ? '/etc/ssl/certs/ca-certificates.crt' : true)) : null),
-                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT', null),
-            ]) : [],
+                PDO::MYSQL_ATTR_SSL_CA => (function () {
+                    $ca = env('MYSQL_ATTR_SSL_CA');
+                    if ($ca && file_exists($ca)) return realpath($ca);
+                    if ($ca && file_exists(base_path($ca))) return realpath(base_path($ca));
+                    if (file_exists(storage_path('certs/ca.pem'))) return realpath(storage_path('certs/ca.pem'));
+                    if (file_exists('C:\\xampp\\apache\\bin\\curl-ca-bundle.crt')) return 'C:\\xampp\\apache\\bin\\curl-ca-bundle.crt';
+                    if (file_exists('/etc/ssl/certs/ca-certificates.crt')) return '/etc/ssl/certs/ca-certificates.crt';
+                    return env('DB_SSL', false) ? true : null;
+                })(),
+                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT', false),
+            ], fn($v) => !is_null($v)) : [],
         ],
 
         'pgsql' => [
