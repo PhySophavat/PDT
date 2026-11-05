@@ -14,7 +14,7 @@
   
   @php
     $cachedSettings = \Illuminate\Support\Facades\Cache::remember('portal_app_layout_settings', 300, function () {
-        $sysSettings = \App\Models\SystemSetting::pluck('value', 'key')->toArray();
+        $sysSettings = \App\Models\SystemSetting::allSettings();
         $logoPath = $sysSettings['school_logo'] ?? '';
         $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : (str_starts_with($logoPath, 'images/') ? asset($logoPath) : asset('storage/' . ltrim($logoPath, '/')))) : asset('images/logo.png');
         $activeYear = $sysSettings['current_academic_year'] ?? (\App\Models\AcademicYear::where('is_current', true)->value('name') ?: '2025-2026');
@@ -32,18 +32,18 @@
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 
   <script>
-    window.__INITIAL_USER__ = {
-      name: "{{ Auth::user()?->name ?? 'portal sala' }}",
-      role: "{{ Auth::user()?->roles?->first()?->name ?? 'Admin' }}",
-      email: "{{ Auth::user()?->email ?? 'admin@pdt-school.edu.kh' }}",
-      avatar: "{{ Auth::user()?->avatar ?? '' }}"
-    };
-    window.__INITIAL_SETTINGS__ = {
-      school_logo_url: "{{ $cachedSettings['logoUrl'] }}",
-      school_name: "{{ $cachedSettings['school_name'] }}",
-      school_name_en: "{{ $cachedSettings['school_name_en'] }}",
-      current_academic_year: "{{ $cachedSettings['activeYear'] }}"
-    };
+    window.__INITIAL_USER__ = @json([
+      'name' => Auth::user()?->name ?? 'portal sala',
+      'role' => Auth::user()?->roles?->first()?->name ?? 'Admin',
+      'email' => Auth::user()?->email ?? 'admin@pdt-school.edu.kh',
+      'avatar' => Auth::user()?->avatar ?? ''
+    ]);
+    window.__INITIAL_SETTINGS__ = @json([
+      'school_logo_url' => $cachedSettings['logoUrl'],
+      'school_name' => $cachedSettings['school_name'],
+      'school_name_en' => $cachedSettings['school_name_en'],
+      'current_academic_year' => $cachedSettings['activeYear']
+    ]);
   </script>
 </head>
 <body class="bg-[#dce4f7] min-h-screen p-2 sm:p-4 lg:p-6 flex items-center justify-center antialiased text-slate-800">

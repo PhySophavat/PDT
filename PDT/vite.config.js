@@ -24,21 +24,12 @@ export default defineConfig({
         },
     },
     build: {
-        chunkSizeWarningLimit: 800,
+        chunkSizeWarningLimit: 1200,
         rollupOptions: {
             output: {
                 manualChunks(id) {
-                    if (id.includes('node_modules')) {
-                        if (id.includes('xlsx')) {
-                            return 'vendor-xlsx';
-                        }
-                        if (id.includes('vue') || id.includes('vue-router') || id.includes('vue-i18n')) {
-                            return 'vendor-vue';
-                        }
-                        if (id.includes('axios') || id.includes('qrcode')) {
-                            return 'vendor-utils';
-                        }
-                        return 'vendor';
+                    if (id.includes('node_modules') && id.includes('xlsx')) {
+                        return 'vendor-xlsx';
                     }
                 },
             },
