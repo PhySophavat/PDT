@@ -111,6 +111,10 @@ const router = createRouter({
   }
 });
 
+router.afterEach(() => {
+  document.title = 'sala-portal';
+});
+
 router.onError((error, to) => {
   console.error('Router navigation error:', error);
   if (

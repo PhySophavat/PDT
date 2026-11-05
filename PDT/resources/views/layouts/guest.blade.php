@@ -6,7 +6,13 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'LMSTICK - ចូលប្រើប្រព័ន្ធ')</title>
+    @php
+      $sysSettings = \App\Models\SystemSetting::pluck('value', 'key');
+      $logoPath = $sysSettings['school_logo'] ?? '';
+      $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : asset('storage/' . ltrim($logoPath, '/'))) : asset('images/logo.png');
+    @endphp
+    <title>@yield('title', 'sala-portal')</title>
+    <link rel="icon" type="image/png" href="{{ $logoUrl }}">
 
     <!-- Google Fonts: Kantumruy Pro & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

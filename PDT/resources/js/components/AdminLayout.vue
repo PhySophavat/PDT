@@ -298,6 +298,7 @@ import {
   KeyRound,
   Users
 } from 'lucide-vue-next';
+import { updateFavicon } from '../utils/favicon';
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -330,6 +331,7 @@ const loadSchoolSettings = async () => {
       if (s.school_logo_url) {
         schoolLogo.value = s.school_logo_url;
         localStorage.setItem('pdt_school_logo', s.school_logo_url);
+        updateFavicon(s.school_logo_url);
       }
       if (s.school_name) {
         schoolName.value = s.school_name;
@@ -395,12 +397,17 @@ onMounted(() => {
     isFullscreen.value = !!document.fullscreenElement;
   });
 
+  if (schoolLogo.value) {
+    updateFavicon(schoolLogo.value);
+  }
+
   loadSchoolSettings();
 
   // Listen for instant logo file selection from SettingView
   window.addEventListener('pdt-logo-preview', (e) => {
     if (e.detail?.logoUrl) {
       schoolLogo.value = e.detail.logoUrl;
+      updateFavicon(e.detail.logoUrl);
     }
   });
 
@@ -409,6 +416,7 @@ onMounted(() => {
     if (e.detail?.school_logo_url) {
       schoolLogo.value = e.detail.school_logo_url;
       localStorage.setItem('pdt_school_logo', e.detail.school_logo_url);
+      updateFavicon(e.detail.school_logo_url);
     }
     if (e.detail?.school_name) {
       schoolName.value = e.detail.school_name;
@@ -424,6 +432,7 @@ onMounted(() => {
   window.addEventListener('storage', (e) => {
     if (e.key === 'pdt_school_logo' && e.newValue) {
       schoolLogo.value = e.newValue;
+      updateFavicon(e.newValue);
     }
     if (e.key === 'pdt_school_name' && e.newValue) {
       schoolName.value = e.newValue;

@@ -4,14 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>@yield('title', 'សាលារៀន ជំនាន់ថ្មី PDT - New Generation School')</title>
+  <title>@yield('title', 'sala-portal')</title>
   
   <!-- Typography matching Attendance Reference -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="icon" type="image/png" href="/images/logo.png">
+  
+  @php
+    $sysSettings = \App\Models\SystemSetting::pluck('value', 'key');
+    $logoPath = $sysSettings['school_logo'] ?? '';
+    $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : asset('storage/' . ltrim($logoPath, '/'))) : asset('images/logo.png');
+  @endphp
+  <link id="app-favicon" rel="icon" type="image/png" href="{{ $logoUrl }}">
   
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -22,11 +28,6 @@
       email: "{{ Auth::user()?->email ?? 'admin@example.com' }}",
       avatar: "{{ Auth::user()?->avatar ?? '' }}"
     };
-    @php
-      $sysSettings = \App\Models\SystemSetting::pluck('value', 'key');
-      $logoPath = $sysSettings['school_logo'] ?? '';
-      $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : asset('storage/' . ltrim($logoPath, '/'))) : asset('images/logo.png');
-    @endphp
     window.__INITIAL_SETTINGS__ = {
       school_logo_url: "{{ $logoUrl }}",
       school_name: "{{ $sysSettings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី PDT' }}",

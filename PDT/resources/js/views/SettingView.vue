@@ -610,6 +610,7 @@ import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
+import { updateFavicon } from '../utils/favicon';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
 import EntityBanner from '../components/EntityBanner.vue';
@@ -727,6 +728,9 @@ const fetchSettings = async () => {
       if (res.data.settings) {
         const s = res.data.settings;
         Object.assign(form.value, s);
+        if (s.school_logo_url) {
+          updateFavicon(s.school_logo_url);
+        }
         // Sync demo_mode from DB or localStorage
         if (s.demo_mode !== undefined && s.demo_mode !== null) {
           form.value.demo_mode = String(s.demo_mode);
@@ -763,7 +767,8 @@ const handleLogoChange = (e) => {
         console.warn('LocalStorage quota:', err);
       }
 
-      // Instantly reflect logo in sidebar top header
+      // Instantly reflect logo in sidebar top header & browser favicon
+      updateFavicon(base64);
       window.dispatchEvent(new CustomEvent('pdt-logo-preview', {
         detail: { logoUrl: base64 }
       }));
