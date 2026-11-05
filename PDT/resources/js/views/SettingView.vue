@@ -22,7 +22,7 @@
     <!-- Entity Banner -->
     <EntityBanner 
       :name="$t('settings.title')"
-      :subtitle="'ប្រព័ន្ធគ្រប់គ្រងសាលារៀន LMSTICK | ការកំណត់រចនាសម្ព័ន្ធ និងទិន្នន័យទូទៅ'"
+      :subtitle="'ប្រព័ន្ធគ្រប់គ្រងសាលារៀន ជំនាន់ថ្មី PDT | ការកំណត់រចនាសម្ព័ន្ធ និងទិន្នន័យទូទៅ'"
       metaId="CFG-SYS-2026"
       @print="handlePrint"
       @download="handleBackup"
@@ -31,7 +31,7 @@
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="$t('common.active') + ' Modules'" :value="18" />
-      <StatCard :title="$t('settings.systemVersion')" :value="'v2.4.0 (LMSTICK)'" />
+      <StatCard :title="$t('settings.systemVersion')" :value="'v2.4.0 (NGS PDT)'" />
       <StatCard :title="$t('settings.databaseStatus')" :value="'Connected'" />
       <StatCard title="ឆ្នាំសិក្សាបច្ចុប្បន្ន" :value="form.current_academic_year" />
     </div>

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'វត្តមានសិស្សានុសិស្ស | LMSTICK School')
+@section('title', 'វត្តមានសិស្សានុសិស្ស | សាលារៀន ជំនាន់ថ្មី PDT')
 
 @section('content')
 <div class="space-y-6 font-khmer w-full">

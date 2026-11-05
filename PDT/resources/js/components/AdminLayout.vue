@@ -22,10 +22,10 @@
 
             <div v-if="sidebarOpen" class="flex flex-col truncate">
               <span class="text-base font-extrabold tracking-tight text-[#1e293b] leading-tight truncate">
-                {{ schoolName || 'LMSTICK' }}
+                {{ schoolName || 'សាលារៀន ជំនាន់ថ្មី PDT' }}
               </span>
-              <span v-if="schoolNameEn" class="text-[10px] text-slate-400 font-medium truncate leading-none mt-0.5">
-                {{ schoolNameEn }}
+              <span class="text-[10px] text-slate-400 font-medium truncate leading-none mt-0.5">
+                {{ schoolNameEn || 'PDT New Generation School' }}
               </span>
             </div>
           </router-link>
@@ -314,12 +314,12 @@ const schoolLogo = ref(
 const schoolName = ref(
   localStorage.getItem('pdt_school_name') || 
   window.__INITIAL_SETTINGS__?.school_name || 
-  'LMSTICK'
+  'សាលារៀន ជំនាន់ថ្មី PDT'
 );
 const schoolNameEn = ref(
   localStorage.getItem('pdt_school_name_en') || 
   window.__INITIAL_SETTINGS__?.school_name_en || 
-  ''
+  'PDT New Generation School'
 );
 
 const loadSchoolSettings = async () => {
