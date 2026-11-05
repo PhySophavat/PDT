@@ -1,5 +1,14 @@
 <?php
 
+// 0. Set CORS headers so API and assets can be accessed across domains
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-CSRF-TOKEN');
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
 // 1. Prepare writable /tmp directories on Vercel serverless environment
 $dirs = [
     '/tmp/storage/framework/views',
@@ -13,6 +22,14 @@ foreach ($dirs as $dir) {
     if (!is_dir($dir)) {
         @mkdir($dir, 0777, true);
     }
+}
+
+// Warm up package discovery caches for ultra-fast serverless boots
+if (file_exists(__DIR__ . '/../bootstrap/cache/packages.php') && !file_exists('/tmp/bootstrap/cache/packages.php')) {
+    @copy(__DIR__ . '/../bootstrap/cache/packages.php', '/tmp/bootstrap/cache/packages.php');
+}
+if (file_exists(__DIR__ . '/../bootstrap/cache/services.php') && !file_exists('/tmp/bootstrap/cache/services.php')) {
+    @copy(__DIR__ . '/../bootstrap/cache/services.php', '/tmp/bootstrap/cache/services.php');
 }
 
 // 2. Set environment variables for serverless runtime

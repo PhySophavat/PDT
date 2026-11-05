@@ -1,23 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-// Lazy-loaded Views for Code-Splitting & High Performance Initial Load
-const DashboardView = () => import('../views/DashboardView.vue');
-const AttendanceView = () => import('../views/AttendanceView.vue');
-const TeacherAttendanceView = () => import('../views/TeacherAttendanceView.vue');
-const StudentView = () => import('../views/StudentView.vue');
-const TeacherView = () => import('../views/TeacherView.vue');
-const ClassView = () => import('../views/ClassView.vue');
-const AcademicYearView = () => import('../views/AcademicYearView.vue');
-const CourseSubjectView = () => import('../views/CourseSubjectView.vue');
-const TimetableView = () => import('../views/TimetableView.vue');
-const ExaminationView = () => import('../views/ExaminationView.vue');
-const ParentView = () => import('../views/ParentView.vue');
-const FinanceView = () => import('../views/FinanceView.vue');
-const LibraryView = () => import('../views/LibraryView.vue');
-const AnnouncementView = () => import('../views/AnnouncementView.vue');
-const ReportView = () => import('../views/ReportView.vue');
-const SettingView = () => import('../views/SettingView.vue');
-const RoleView = () => import('../views/RoleView.vue');
+// Synchronous imports to ensure instant 0ms page transitions and eliminate chunk 404 / CORS failures across deployments
+import DashboardView from '../views/DashboardView.vue';
+import AttendanceView from '../views/AttendanceView.vue';
+import TeacherAttendanceView from '../views/TeacherAttendanceView.vue';
+import StudentView from '../views/StudentView.vue';
+import TeacherView from '../views/TeacherView.vue';
+import ClassView from '../views/ClassView.vue';
+import AcademicYearView from '../views/AcademicYearView.vue';
+import CourseSubjectView from '../views/CourseSubjectView.vue';
+import TimetableView from '../views/TimetableView.vue';
+import ExaminationView from '../views/ExaminationView.vue';
+import ParentView from '../views/ParentView.vue';
+import FinanceView from '../views/FinanceView.vue';
+import LibraryView from '../views/LibraryView.vue';
+import AnnouncementView from '../views/AnnouncementView.vue';
+import ReportView from '../views/ReportView.vue';
+import SettingView from '../views/SettingView.vue';
+import RoleView from '../views/RoleView.vue';
 
 const routes = [
   { path: '/', redirect: '/dashboard' },
@@ -105,7 +105,25 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  scrollBehavior() {
+    return { top: 0 };
+  }
+});
+
+router.onError((error, to) => {
+  console.error('Router navigation error:', error);
+  if (
+    error.message?.includes('Failed to fetch dynamically imported module') ||
+    error.message?.includes('Importing a module script failed') ||
+    error.message?.includes('error loading dynamically imported module')
+  ) {
+    const retryKey = 'chunk_retry_' + (to?.fullPath || window.location.pathname);
+    if (!sessionStorage.getItem(retryKey)) {
+      sessionStorage.setItem(retryKey, 'true');
+      window.location.href = to?.fullPath || window.location.pathname;
+    }
+  }
 });
 
 export default router;
