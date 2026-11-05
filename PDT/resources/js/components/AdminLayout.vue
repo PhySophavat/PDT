@@ -13,23 +13,11 @@
         <!-- Logo Header -->
         <div class="h-20 px-4 md:px-5 flex items-center justify-between border-b border-slate-50">
           <router-link to="/attendance" class="flex items-center gap-3 group min-w-0">
-            <!-- Custom School Logo (if uploaded) -->
+            <!-- School Brand Logo -->
             <div 
-              v-if="schoolLogo" 
               class="w-10 h-10 rounded-xl overflow-hidden border border-slate-100 bg-white flex items-center justify-center p-1 shadow-xs group-hover:scale-105 transition-transform flex-shrink-0"
             >
-              <img :src="schoolLogo" alt="School Logo" class="w-full h-full object-contain" @error="schoolLogo = ''" />
-            </div>
-
-            <!-- Default Brand Mark Circle (Blue & Navy) when no logo uploaded -->
-            <div 
-              v-else 
-              class="w-10 h-10 rounded-full bg-gradient-to-tr from-[#1e3a8a] to-[#2563eb] flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform flex-shrink-0"
-            >
-              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" opacity="0.3"/>
-                <path d="M12 4a8 8 0 0 1 8 8h-8V4z" fill="#ffffff"/>
-              </svg>
+              <img :src="schoolLogo || '/images/logo.png'" alt="School Logo" class="w-full h-full object-contain" @error="schoolLogo = '/images/logo.png'" />
             </div>
 
             <div v-if="sidebarOpen" class="flex flex-col truncate">
@@ -321,7 +309,7 @@ const openDropdowns = ref(['attendance']);
 const schoolLogo = ref(
   localStorage.getItem('pdt_school_logo') || 
   window.__INITIAL_SETTINGS__?.school_logo_url || 
-  ''
+  '/images/logo.png'
 );
 const schoolName = ref(
   localStorage.getItem('pdt_school_name') || 

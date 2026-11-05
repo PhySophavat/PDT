@@ -255,8 +255,7 @@
           </label>
           <div class="flex items-center gap-4">
             <div class="w-16 h-16 rounded-xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-2xs">
-              <img v-if="logoPreview || form.school_logo_url" :src="logoPreview || form.school_logo_url" class="w-full h-full object-contain p-1" />
-              <i v-else class="fa-solid fa-graduation-cap text-2xl text-slate-300"></i>
+              <img :src="logoPreview || form.school_logo_url || '/images/logo.png'" class="w-full h-full object-contain p-1" />
             </div>
             <div class="flex-1">
               <input 
@@ -744,7 +743,7 @@ const form = ref({
   school_phone: '023 880 880 / 012 345 678',
   school_email: 'contact@pdt-school.edu.kh',
   school_address: 'មហាវិថីសហព័ន្ធរុស្ស៊ី សង្កាត់ទឹកល្អក់១ ខណ្ឌទួលគោក រាជធានីភ្នំពេញ',
-  school_logo_url: '',
+  school_logo_url: '/images/logo.png',
   school_stamp_url: '',
 
   // Tab 2: Academic Setup

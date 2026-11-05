@@ -2880,7 +2880,7 @@ class ApiController extends Controller
                 ? $merged['school_logo']
                 : asset('storage/' . ltrim($merged['school_logo'], '/'));
         } else {
-            $merged['school_logo_url'] = '';
+            $merged['school_logo_url'] = asset('images/logo.png');
         }
         if (!empty($merged['school_stamp'])) {
             $merged['school_stamp_url'] = (str_starts_with($merged['school_stamp'], 'http') || str_starts_with($merged['school_stamp'], 'data:'))
@@ -2930,7 +2930,7 @@ class ApiController extends Controller
         }
 
         $logoPath = SystemSetting::get('school_logo');
-        $logoUrl = '';
+        $logoUrl = asset('images/logo.png');
         if ($logoPath) {
             $logoUrl = (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:'))
                 ? $logoPath

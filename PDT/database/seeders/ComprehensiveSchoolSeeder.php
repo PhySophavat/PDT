@@ -66,6 +66,7 @@ class ComprehensiveSchoolSeeder extends Seeder
             'school_phone' => '023 880 880 / 012 345 678',
             'school_email' => 'contact@pdt-school.edu.kh',
             'school_website' => 'https://pdt-school.edu.kh',
+            'school_logo' => '/images/logo.png',
             'current_academic_year' => '2025-2026',
             'current_semester' => '1',
             'currency' => 'USD',
