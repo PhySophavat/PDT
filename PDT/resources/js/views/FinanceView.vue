@@ -18,15 +18,6 @@
       ]"
     />
 
-    <!-- Entity Banner -->
-    <EntityBanner 
-      :name="$t('finance.title')"
-      :subtitle="$t('nav.feesCollection') + ' - ការគ្រប់គ្រងហិរញ្ញវត្ថុ វិក្កយបត្រ និងការទូទាត់ថ្លៃសិក្សា'"
-      metaId="ADM-FIN-TR"
-      @print="handlePrint"
-      @download="handleExport"
-    />
-
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="$t('dashboard.totalRevenue')" :value="formatCurrency(stats.revenue)" />
@@ -372,7 +363,6 @@ import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
-import EntityBanner from '../components/EntityBanner.vue';
 import StatCard from '../components/StatCard.vue';
 import FilterBar from '../components/FilterBar.vue';
 import DataTable from '../components/DataTable.vue';

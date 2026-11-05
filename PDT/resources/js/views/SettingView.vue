@@ -19,15 +19,6 @@
       ]"
     />
 
-    <!-- Entity Banner -->
-    <EntityBanner 
-      :name="$t('settings.title')"
-      :subtitle="'ប្រព័ន្ធគ្រប់គ្រងសាលារៀន ជំនាន់ថ្មី PDT | ការកំណត់រចនាសម្ព័ន្ធ និងទិន្នន័យទូទៅ'"
-      metaId="CFG-SYS-2026"
-      @print="handlePrint"
-      @download="handleBackup"
-    />
-
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="$t('common.active') + ' Modules'" :value="18" />
@@ -560,7 +551,6 @@ import * as XLSX from 'xlsx';
 import { updateFavicon } from '../utils/favicon';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
-import EntityBanner from '../components/EntityBanner.vue';
 import StatCard from '../components/StatCard.vue';
 
 const { t } = useI18n();

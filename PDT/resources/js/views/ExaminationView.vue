@@ -19,15 +19,6 @@
       ]"
     />
 
-    <!-- Entity Banner -->
-    <EntityBanner 
-      :name="$t('examinations.title')"
-      :subtitle="$t('nav.exam') + ' - ការគ្រប់គ្រងសម័យប្រឡង និងលទ្ធផលសិក្សា'"
-      metaId="ADM-EXM-BRD"
-      @print="handlePrint"
-      @download="handleExport"
-    />
-
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="$t('examinations.examList')" :value="examsList.length" />
@@ -835,7 +826,6 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
-import EntityBanner from '../components/EntityBanner.vue';
 import StatCard from '../components/StatCard.vue';
 import FilterBar from '../components/FilterBar.vue';
 import DataTable from '../components/DataTable.vue';

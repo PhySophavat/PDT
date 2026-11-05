@@ -36,15 +36,6 @@
       ]"
     />
 
-    <!-- Entity Banner -->
-    <EntityBanner 
-      :name="t('attendance.title')"
-      :subtitle="`${t('students.grade')}: ថ្នាក់ ${selectedClass} | ឆ្នាំសិក្សា: ${selectedAcademicYear} | កាលបរិច្ឆេទ: ${selectedDate}`"
-      metaId="ADM-ATT-SYS"
-      @print="handlePrint"
-      @download="handleExport"
-    />
-
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="t('attendance.totalPresent')" :value="stats.present" />
@@ -689,7 +680,6 @@ import axios from 'axios';
 import QRCode from 'qrcode';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
-import EntityBanner from '../components/EntityBanner.vue';
 import StatCard from '../components/StatCard.vue';
 import DataTable from '../components/DataTable.vue';
 

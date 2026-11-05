@@ -31,15 +31,6 @@
       ]"
     />
 
-    <!-- Entity Banner -->
-    <EntityBanner 
-      name="បញ្ជីគ្រប់គ្រងអាណាព្យាបាល និងទំនាក់ទំនងមាតាបិតាសិស្ស (Parent Directory)"
-      :subtitle="`${t('parents.title')} | ចំនួនអាណាព្យាបាលសរុប: ${parents.length}`"
-      metaId="ADM-PAR-DIR"
-      @print="handlePrint"
-      @download="handleDownload"
-    />
-
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="t('parents.registeredParents')" :value="parents.length" />
@@ -678,7 +669,6 @@ import axios from 'axios';
 import QRCode from 'qrcode';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
-import EntityBanner from '../components/EntityBanner.vue';
 import StatCard from '../components/StatCard.vue';
 import FilterBar from '../components/FilterBar.vue';
 import DataTable from '../components/DataTable.vue';

@@ -17,15 +17,6 @@
       ]"
     />
 
-    <!-- Entity Banner -->
-    <EntityBanner 
-      name="វត្តមានលោកគ្រូ-អ្នកគ្រូ"
-      :subtitle="`ឆ្នាំសិក្សា: ${selectedAcademicYear} | ខែ: ${getMonthKhmerLabel(activeMonthKey)} | កាលបរិច្ឆេទ: ${selectedDate}`"
-      metaId="ADM-TCH-ATT"
-      @print="handlePrint"
-      @download="handleExport"
-    />
-
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard title="វត្តមានគ្រូសរុប (Present)" :value="stats.present" />
@@ -356,7 +347,6 @@ import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
-import EntityBanner from '../components/EntityBanner.vue';
 import StatCard from '../components/StatCard.vue';
 
 const activeTab = ref('matrix');

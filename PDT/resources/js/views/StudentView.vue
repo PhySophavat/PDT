@@ -44,15 +44,6 @@
       ]"
     />
 
-    <!-- Entity Banner -->
-    <EntityBanner 
-      name="បញ្ជីគ្រប់គ្រងសិស្សានុសិស្សទូទាំងសាលា (Students Directory)"
-      :subtitle="`${t('students.studentList')} | ${t('students.totalStudents')}: ${students.length}`"
-      metaId="ADM-STU-DIR"
-      @print="handlePrint"
-      @download="handleDownload"
-    />
-
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="t('students.totalStudents')" :value="students.length" />
@@ -1122,7 +1113,6 @@ import * as XLSX from 'xlsx';
 // Note: Tesseract.js removed — Khmer OCR is unreliable. Using Reference Image + Quick Entry instead.
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
-import EntityBanner from '../components/EntityBanner.vue';
 import StatCard from '../components/StatCard.vue';
 import FilterBar from '../components/FilterBar.vue';
 import DataTable from '../components/DataTable.vue';

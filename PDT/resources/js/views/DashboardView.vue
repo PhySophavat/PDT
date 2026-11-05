@@ -19,15 +19,6 @@
       ]"
     />
 
-    <!-- Entity / School Banner -->
-    <EntityBanner 
-      name="សាលារៀន ជំនាន់ថ្មី PDT - School Management Suite"
-      :subtitle="`ប្រព័ន្ធគ្រប់គ្រងសាលារៀនជំនាន់ថ្មី (New Generation School - NGS) | ឆ្នាំសិក្សា ${activeAcademicYear}`"
-      metaId="SCH-PDT-2026"
-      @print="handlePrint"
-      @download="handleDownload"
-    />
-
     <!-- Tab 1: Overview Tab (Primary Dashboard) -->
     <div v-show="activeTab === 'overview'" class="space-y-6">
       <!-- 2. Upgrade the 4 KPI Summary Cards (Vibrant & Modern Pastel Themes) -->
@@ -865,7 +856,6 @@ import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
-import EntityBanner from '../components/EntityBanner.vue';
 import FilterBar from '../components/FilterBar.vue';
 
 const { t } = useI18n();

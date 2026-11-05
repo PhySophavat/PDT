@@ -32,15 +32,6 @@
       ]"
     />
 
-    <!-- Entity Banner -->
-    <EntityBanner 
-      name="បញ្ជីគ្រប់គ្រងគ្រូបង្រៀន និងបុគ្គលិកអប់រំ (Faculty Directory)"
-      :subtitle="`${t('teachers.teacherProfile')} | ${t('teachers.totalTeachers')}: ${teachers.length}`"
-      metaId="ADM-TCH-DIR"
-      @print="handlePrint"
-      @download="handleDownload"
-    />
-
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="t('teachers.totalTeachers')" :value="teachers.length" />
@@ -625,7 +616,6 @@ import axios from 'axios';
 import QRCode from 'qrcode';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
-import EntityBanner from '../components/EntityBanner.vue';
 import StatCard from '../components/StatCard.vue';
 import FilterBar from '../components/FilterBar.vue';
 import DataTable from '../components/DataTable.vue';

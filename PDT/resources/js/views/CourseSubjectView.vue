@@ -21,15 +21,6 @@
       ]"
     />
 
-    <!-- Entity Banner -->
-    <EntityBanner 
-      :name="$t('subjects.title')"
-      :subtitle="$t('nav.inventory') + ' - កាតាឡុកមុខវិជ្ជា ពិន្ទុអតិប្បរមា ក្រេឌីតសម្រាប់ចែក និងបន្ទុកម៉ោងបង្រៀន'"
-      metaId="ADM-SBJ-CAT"
-      @print="handlePrint"
-      @download="handleExport"
-    />
-
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="$t('subjects.totalSubjects')" :value="subjectsList.length" />
@@ -522,7 +513,6 @@ import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
-import EntityBanner from '../components/EntityBanner.vue';
 import StatCard from '../components/StatCard.vue';
 import FilterBar from '../components/FilterBar.vue';
 import DataTable from '../components/DataTable.vue';

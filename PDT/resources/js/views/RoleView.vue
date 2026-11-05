@@ -18,15 +18,6 @@
       ]"
     />
 
-    <!-- Entity Banner -->
-    <EntityBanner 
-      name="តួនាទី និងសិទ្ធិប្រើប្រាស់ប្រព័ន្ធ (Access Control & Security)"
-      subtitle="ប្រព័ន្ធគ្រប់គ្រងសិទ្ធិអ្នកប្រើប្រាស់តាមតួនាទី (Role-Based Access Control - RBAC) ពេញលេញ"
-      metaId="SEC-RBAC-2026"
-      @print="handlePrint"
-      @download="handleDownload"
-    />
-
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard title="តួនាទីសរុប (Roles)" :value="rolesList.length" />
@@ -382,7 +373,6 @@ import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
-import EntityBanner from '../components/EntityBanner.vue';
 import StatCard from '../components/StatCard.vue';
 import FilterBar from '../components/FilterBar.vue';
 import DataTable from '../components/DataTable.vue';

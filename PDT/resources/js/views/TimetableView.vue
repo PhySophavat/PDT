@@ -22,15 +22,6 @@
       ]"
     />
 
-    <!-- Entity Banner -->
-    <EntityBanner 
-      :name="$t('timetables.title')"
-      :subtitle="$t('nav.homework') + ' - កាលវិភាគបង្រៀន និងរៀនប្រចាំសប្តាហ៍'"
-      metaId="ADM-TMT-SCH"
-      @print="handlePrint"
-      @download="handleExport"
-    />
-
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="$t('timetables.period')" :value="filteredTimetables.length" />
@@ -180,7 +171,6 @@ import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
-import EntityBanner from '../components/EntityBanner.vue';
 import StatCard from '../components/StatCard.vue';
 import DataTable from '../components/DataTable.vue';
 

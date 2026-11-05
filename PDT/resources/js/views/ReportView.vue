@@ -21,15 +21,6 @@
       ]"
     />
 
-    <!-- Entity Banner -->
-    <EntityBanner 
-      :name="$t('reports.title')"
-      :subtitle="$t('nav.rolesPermissions') + ' - ប្រព័ន្ធស្ថិតិ និងរបាយការណ៍សាលារៀន'"
-      metaId="ADM-RPT-SYS"
-      @print="handlePrint"
-      @download="handleDownload"
-    />
-
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="$t('reports.filterCategory')" :value="activeReportType.toUpperCase()" />
@@ -119,7 +110,6 @@ import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
-import EntityBanner from '../components/EntityBanner.vue';
 import StatCard from '../components/StatCard.vue';
 import DataTable from '../components/DataTable.vue';
 

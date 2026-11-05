@@ -19,15 +19,6 @@
       ]"
     />
 
-    <!-- Entity Banner -->
-    <EntityBanner 
-      :name="$t('classes.title')"
-      :subtitle="$t('nav.academics') + ' - គ្រប់គ្រងថ្នាក់រៀន បន្ទប់សិក្សា និងការផ្ទេរថ្នាក់'"
-      metaId="ADM-CLS-DIR"
-      @print="handlePrint"
-      @download="handleExport"
-    />
-
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="$t('classes.totalClasses')" :value="classesList.length" />
@@ -408,7 +399,6 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
-import EntityBanner from '../components/EntityBanner.vue';
 import StatCard from '../components/StatCard.vue';
 import FilterBar from '../components/FilterBar.vue';
 import DataTable from '../components/DataTable.vue';
