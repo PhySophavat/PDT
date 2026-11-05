@@ -151,6 +151,11 @@
           <form id="spa-logout-form" action="/logout" method="POST" class="hidden">
             <input type="hidden" name="_token" :value="csrfToken">
           </form>
+
+          <!-- Developer Credit -->
+          <div v-if="sidebarOpen" class="mt-2.5 pt-2 border-t border-slate-100/80 text-center">
+            <p class="text-[10px] text-slate-400 font-medium">Developed by <span class="font-bold text-slate-600">Phy Sophavat</span></p>
+          </div>
         </div>
       </aside>
 
@@ -241,7 +246,7 @@
                 />
               </div>
               <div class="text-right hidden sm:block">
-                <h4 class="text-xs font-bold text-slate-900 leading-tight">{{ user.name || 'Stevne Zone' }}</h4>
+                <h4 class="text-xs font-bold text-slate-900 leading-tight">{{ user.name || 'portal sala' }}</h4>
                 <p class="text-[10px] text-slate-400 leading-tight">{{ currentLocale === 'km' ? 'អ្នកគ្រប់គ្រង (Admin)' : 'Admin' }}</p>
               </div>
             </div>

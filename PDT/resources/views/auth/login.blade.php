@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', 'ចូលប្រើប្រព័ន្ធ | LMSTICK School Management')
+@section('title', 'ចូលប្រើប្រព័ន្ធ | portal sala')
 
 @section('content')
 <div class="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-3xl p-7 sm:p-9 shadow-xl shadow-slate-200/60 space-y-6">
@@ -9,7 +9,7 @@
     <div class="text-center space-y-2">
         <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-full text-xs font-bold">
             <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-            <span>PORTAL LOGIN • ច្រកចូលប្រព័ន្ធ</span>
+            <span>PORTAL LOGIN • portal sala</span>
         </div>
         <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">
             ចូលប្រើប្រព័ន្ធ
@@ -59,9 +59,10 @@
                     id="email" 
                     type="email" 
                     name="email" 
-                    value="{{ old('email', 'admin@example.com') }}" 
-                    placeholder="name@example.com" 
+                    value="{{ old('email') }}" 
+                    placeholder="name@pdt-school.edu.kh" 
                     required
+                    autofocus
                     class="w-full pl-10 pr-4 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition"
                 >
             </div>
@@ -84,7 +85,7 @@
                     type="password" 
                     name="password" 
                     placeholder="••••••••" 
-                    value="password"
+                    value=""
                     required
                     class="w-full pl-10 pr-10 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition"
                 >
@@ -117,38 +118,6 @@
         </button>
     </form>
 
-    <!-- Quick Demo Accounts Helper -->
-    <div class="pt-4 border-t border-slate-100 text-xs">
-        <div class="flex items-center justify-between mb-2">
-            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">គណនីគំរូសម្រាប់តេស្ត (Demo Fill)</span>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-            <button 
-                type="button" 
-                onclick="fillCredentials('admin@example.com', 'password')"
-                class="px-2.5 py-1.5 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 border border-slate-200/80 rounded-xl text-left transition group cursor-pointer"
-            >
-                <div class="font-bold text-slate-700 group-hover:text-blue-700 flex items-center gap-1.5 text-[11px]">
-                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                    <span>Admin</span>
-                </div>
-                <div class="text-[10px] text-slate-400 font-mono">admin@example.com</div>
-            </button>
-
-            <button 
-                type="button" 
-                onclick="fillCredentials('teacher@example.com', 'password')"
-                class="px-2.5 py-1.5 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 border border-slate-200/80 rounded-xl text-left transition group cursor-pointer"
-            >
-                <div class="font-bold text-slate-700 group-hover:text-emerald-700 flex items-center gap-1.5 text-[11px]">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    <span>Teacher</span>
-                </div>
-                <div class="text-[10px] text-slate-400 font-mono">teacher@example.com</div>
-            </button>
-        </div>
-    </div>
-
 </div>
 @endsection
 
@@ -165,22 +134,6 @@
             passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
             toggleIcon.className = isPassword ? 'fa-regular fa-eye-slash text-sm text-blue-600' : 'fa-regular fa-eye text-sm';
         });
-    }
-
-    // Quick Fill Helper
-    function fillCredentials(email, pwd) {
-        const emailEl = document.getElementById('email');
-        const pwdEl = document.getElementById('password');
-        if (emailEl && pwdEl) {
-            emailEl.value = email;
-            pwdEl.value = pwd;
-            emailEl.classList.add('ring-2', 'ring-blue-400');
-            pwdEl.classList.add('ring-2', 'ring-blue-400');
-            setTimeout(() => {
-                emailEl.classList.remove('ring-2', 'ring-blue-400');
-                pwdEl.classList.remove('ring-2', 'ring-blue-400');
-            }, 800);
-        }
     }
 </script>
 @endpush

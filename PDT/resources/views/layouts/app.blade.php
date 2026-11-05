@@ -23,9 +23,9 @@
 
   <script>
     window.__INITIAL_USER__ = {
-      name: "{{ Auth::user()?->name ?? 'Stevne Zone' }}",
+      name: "{{ Auth::user()?->name ?? 'portal sala' }}",
       role: "{{ Auth::user()?->roles?->first()?->name ?? 'Admin' }}",
-      email: "{{ Auth::user()?->email ?? 'admin@example.com' }}",
+      email: "{{ Auth::user()?->email ?? 'admin@pdt-school.edu.kh' }}",
       avatar: "{{ Auth::user()?->avatar ?? '' }}"
     };
     @php

@@ -66,16 +66,17 @@
     <!-- Header Bar -->
     <header class="w-full px-6 py-5 flex items-center justify-between max-w-6xl mx-auto z-10">
         <a href="{{ url('/') }}" class="flex items-center gap-3 group">
-            <!-- Brand Mark Circle (Blue & Navy) -->
-            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#1e3a8a] to-[#2563eb] flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform flex-shrink-0">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" opacity="0.3"/>
-                    <path d="M12 4a8 8 0 0 1 8 8h-8V4z" fill="#ffffff"/>
-                </svg>
-            </div>
+            @if(!empty($logoUrl))
+                <img src="{{ $logoUrl }}" alt="Logo" class="w-10 h-10 object-contain rounded-2xl shadow-xs group-hover:scale-105 transition-transform flex-shrink-0" onerror="this.onerror=null; this.src='/images/logo.png';">
+            @else
+                <!-- Brand Mark Circle -->
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#1e3a8a] to-[#2563eb] flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform flex-shrink-0">
+                    <i class="fa-solid fa-graduation-cap text-lg"></i>
+                </div>
+            @endif
             <div>
-                <span class="text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-blue-700 transition">LMSTICK</span>
-                <span class="block text-[11px] font-semibold text-slate-400 leading-tight">School Management</span>
+                <span class="text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-blue-700 transition">portal sala</span>
+                <span class="block text-[11px] font-semibold text-slate-400 leading-tight">សាលារៀន ជំនាន់ថ្មី PDT</span>
             </div>
         </a>
 
@@ -94,8 +95,9 @@
     </main>
 
     <!-- Footer -->
-    <footer class="w-full text-center py-6 text-xs text-slate-400 z-10">
-        <p>© {{ date('Y') }} LMSTICK School Management System. រក្សាសិទ្ធិគ្រប់យ៉ាង។</p>
+    <footer class="w-full text-center py-6 text-xs text-slate-400 z-10 space-y-1">
+        <p>© {{ date('Y') }} portal sala • សាលារៀន ជំនាន់ថ្មី PDT. រក្សាសិទ្ធិគ្រប់យ៉ាង។</p>
+        <p class="text-[11px] text-slate-500 font-medium">Developed by <span class="font-bold text-slate-700">Phy Sophavat</span></p>
     </footer>
 
     @stack('scripts')
