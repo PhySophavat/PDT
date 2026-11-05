@@ -119,15 +119,24 @@
           <h3 class="font-bold text-slate-800 text-base">បញ្ចូលពិន្ទុប្រឡងសិស្ស (Enter Student Scores)</h3>
           <p class="text-xs text-slate-500">ជ្រើសរើសសម័យប្រឡង ថ្នាក់រៀន និងមុខវិជ្ជាដើម្បីកត់ត្រាពិន្ទុ</p>
         </div>
-        <button 
-          v-if="scoreSheetStudents.length > 0" 
-          @click="submitSaveScores" 
-          :disabled="isSavingScores"
-          class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition shadow-sm disabled:opacity-50"
-        >
-          <span v-if="isSavingScores">កំពុងរក្សាទុក...</span>
-          <span v-else>💾 រក្សាទុកពិន្ទុទាំងអស់</span>
-        </button>
+        <div v-if="scoreSheetStudents.length > 0" class="flex items-center gap-2">
+          <button 
+            type="button"
+            @click="exportSingleSubjectExcel" 
+            class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+            title="ទាញយកពិន្ទុមុខវិជ្ជានេះជា Excel"
+          >
+            <span>📊 ទាញយក Excel</span>
+          </button>
+          <button 
+            @click="submitSaveScores" 
+            :disabled="isSavingScores"
+            class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition shadow-sm disabled:opacity-50"
+          >
+            <span v-if="isSavingScores">កំពុងរក្សាទុក...</span>
+            <span v-else>💾 រក្សាទុកពិន្ទុទាំងអស់</span>
+          </button>
+        </div>
       </div>
 
       <!-- Selectors Bar -->
@@ -823,6 +832,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
+import * as XLSX from 'xlsx';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
 import EntityBanner from '../components/EntityBanner.vue';
@@ -1050,6 +1060,58 @@ const submitSaveScores = async () => {
   }
 };
 
+const exportSingleSubjectExcel = () => {
+  if (scoreSheetStudents.value.length === 0) return;
+  const exam = examsList.value.find(e => e.id == selectedExamId.value);
+  const examTitle = exam ? exam.title : 'Exam';
+  const sub = subjectsList.value.find(s => s.id == selectedSubjectForScores.value);
+  const subName = sub ? sub.name : 'Subject';
+  const maxScore = sub?.max_score || 100;
+
+  const headers = ['ល.រ', 'អត្តលេខ', 'ឈ្មោះសិស្ស', 'ភេទ', 'ថ្នាក់រៀន', 'មុខវិជ្ជា', 'ពិន្ទុទទួលបាន', 'ពិន្ទុពេញ', 'និទ្ទេស', 'លទ្ធផល'];
+  const rows = scoreSheetStudents.value.map((st, idx) => {
+    const scoreVal = scoresMap.value[st.student_id];
+    let grade = '-';
+    let result = '-';
+    if (scoreVal !== undefined && scoreVal !== null && scoreVal !== '') {
+      const num = Number(scoreVal);
+      grade = gradeLetterFor(num);
+      result = (num >= (maxScore * 0.5)) ? 'ជាប់' : 'ធ្លាក់';
+    }
+    return [
+      idx + 1,
+      st.id_card || st.student_id,
+      st.name,
+      st.gender,
+      selectedClassForScores.value,
+      subName,
+      (scoreVal !== undefined && scoreVal !== null && scoreVal !== '') ? Number(scoreVal) : '-',
+      maxScore,
+      grade,
+      result
+    ];
+  });
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws['!cols'] = [
+    { wch: 6 },
+    { wch: 14 },
+    { wch: 25 },
+    { wch: 8 },
+    { wch: 10 },
+    { wch: 22 },
+    { wch: 14 },
+    { wch: 10 },
+    { wch: 10 },
+    { wch: 12 }
+  ];
+  XLSX.utils.book_append_sheet(wb, ws, 'ពិន្ទុប្រឡង');
+  const filename = `ពិន្ទុ_${subName}_ថ្នាក់${selectedClassForScores.value}_${examTitle}.xlsx`;
+  XLSX.writeFile(wb, filename);
+  alert(`បានទាញយកឯកសារ Excel (${filename}) ដោយជោគជ័យ!`);
+};
+
 // --- MATRIX SHEET OPERATIONS ---
 const loadMatrixSheet = async () => {
   if (!selectedMatrixExamId.value || !selectedMatrixClass.value) return;
@@ -1175,27 +1237,32 @@ const submitSaveMatrix = async () => {
 };
 
 const exportMatrixToExcel = () => {
-  if (matrixStudents.value.length === 0) return;
+  if (matrixStudents.value.length === 0) {
+    alert('សូមជ្រើសរើស សម័យប្រឡង និងថ្នាក់រៀនដែលមានសិស្សដើម្បីទាញយកពិន្ទុ!');
+    return;
+  }
   const exam = examsList.value.find(e => e.id == selectedMatrixExamId.value);
   const examTitle = exam ? exam.title.replace(/[\/\\?%*:|"<>]/g, '_') : 'Exam';
-  
-  // Headers WITHOUT 'អត្តលេខ'
-  const headers = [
+
+  const wb = XLSX.utils.book_new();
+
+  // --- SHEET 1: Master Score Sheet (តារាងពិន្ទុរួម) ---
+  const matrixHeaders = [
     'ល.រ',
     'ឈ្មោះសិស្ស',
     'ភេទ',
-    'ថ្នាក់',
-    ...matrixSubjects.value.map(s => `${s.name} (${s.code}${s.max_score ? ` [${s.max_score}pt/${s.credit || 1}cr]` : ''})`),
+    'ថ្នាក់រៀន',
+    ...matrixSubjects.value.map(s => `${s.name} (${s.code}${s.max_score ? ` [${s.max_score}pt]` : ''})`),
     'ពិន្ទុសរុប',
     'មធ្យមភាគ',
     'និទ្ទេស',
     'ចំណាត់ថ្នាក់'
   ];
 
-  const rows = matrixStudents.value.map((st, idx) => {
+  const matrixRows = matrixStudents.value.map((st, idx) => {
     const scores = matrixSubjects.value.map(s => {
       const val = matrixData.value[st.student_id]?.[s.id];
-      return val !== undefined && val !== null ? val : '';
+      return val !== undefined && val !== null && val !== '' ? Number(val) : '-';
     });
     const total = calculateStudentTotal(st.student_id);
     const avg = calculateStudentAverage(st.student_id);
@@ -1204,26 +1271,97 @@ const exportMatrixToExcel = () => {
 
     return [
       idx + 1,
-      `"${st.name}"`,
-      `"${st.gender}"`,
-      `"${selectedMatrixClass.value}"`,
+      st.name,
+      st.gender,
+      selectedMatrixClass.value,
       ...scores,
       total,
       avg,
-      `"${grade}"`,
+      grade,
       rank
-    ].join(',');
+    ];
   });
 
-  const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', `តារាងពិន្ទុរួម_ថ្នាក់${selectedMatrixClass.value}_${examTitle}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  const wsMatrix = XLSX.utils.aoa_to_sheet([matrixHeaders, ...matrixRows]);
+  
+  // Set clean column widths for Matrix Sheet
+  const matrixCols = [
+    { wch: 6 },   // No
+    { wch: 25 },  // Student Name
+    { wch: 8 },   // Gender
+    { wch: 10 },  // Class
+    ...matrixSubjects.value.map(s => ({ wch: Math.max(s.name.length + 4, 16) })),
+    { wch: 12 },  // Total
+    { wch: 12 },  // Avg
+    { wch: 10 },  // Grade
+    { wch: 14 }   // Rank
+  ];
+  wsMatrix['!cols'] = matrixCols;
+  XLSX.utils.book_append_sheet(wb, wsMatrix, 'តារាងពិន្ទុរួមប្រចាំថ្នាក់');
+
+  // --- SHEET 2: Individual Student Scores List (ពិន្ទុសិស្សលម្អិតតាមមុខវិជ្ជា) ---
+  // Specially designed for students/parents to lookup: Student Name, Subject Name, Score, Max, Grade, Result
+  const detailHeaders = [
+    'ល.រ',
+    'ឈ្មោះសិស្ស',
+    'ភេទ',
+    'ថ្នាក់រៀន',
+    'ឈ្មោះមុខវិជ្ជា',
+    'កូដមុខវិជ្ជា',
+    'ពិន្ទុទទួលបាន',
+    'ពិន្ទុពេញ',
+    'និទ្ទេស',
+    'លទ្ធផល'
+  ];
+
+  const detailRows = [];
+  let counter = 1;
+  matrixStudents.value.forEach(st => {
+    matrixSubjects.value.forEach(s => {
+      const scoreVal = matrixData.value[st.student_id]?.[s.id];
+      const maxScore = s.max_score || 100;
+      let grade = '-';
+      let result = '-';
+      if (scoreVal !== undefined && scoreVal !== null && scoreVal !== '') {
+        const num = Number(scoreVal);
+        grade = gradeLetterFor(num);
+        result = (num >= (maxScore * 0.5)) ? 'ជាប់' : 'ធ្លាក់';
+      }
+
+      detailRows.push([
+        counter++,
+        st.name,
+        st.gender,
+        selectedMatrixClass.value,
+        s.name,
+        s.code || '',
+        (scoreVal !== undefined && scoreVal !== null && scoreVal !== '') ? Number(scoreVal) : '-',
+        maxScore,
+        grade,
+        result
+      ]);
+    });
+  });
+
+  const wsDetail = XLSX.utils.aoa_to_sheet([detailHeaders, ...detailRows]);
+  wsDetail['!cols'] = [
+    { wch: 6 },   // No
+    { wch: 25 },  // Student Name
+    { wch: 8 },   // Gender
+    { wch: 10 },  // Class
+    { wch: 22 },  // Subject Name
+    { wch: 12 },  // Code
+    { wch: 14 },  // Score
+    { wch: 10 },  // Max Score
+    { wch: 10 },  // Grade
+    { wch: 12 }   // Result (ជាប់/ធ្លាក់)
+  ];
+  XLSX.utils.book_append_sheet(wb, wsDetail, 'ពិន្ទុសិស្សលម្អិតតាមមុខវិជ្ជា');
+
+  // Save as modern .xlsx workbook
+  const filename = `តារាងពិន្ទុ_ថ្នាក់${selectedMatrixClass.value}_${examTitle}.xlsx`;
+  XLSX.writeFile(wb, filename);
+  alert(`បានទាញយកឯកសារ Excel (${filename}) ដោយជោគជ័យ!`);
 };
 
 const downloadMatrixTemplate = () => {
@@ -1243,22 +1381,24 @@ const downloadMatrixTemplate = () => {
     const emptyScores = matrixSubjects.value.map(() => '');
     return [
       idx + 1,
-      `"${st.name}"`,
-      `"${st.gender}"`,
-      `"${selectedMatrixClass.value}"`,
+      st.name,
+      st.gender,
+      selectedMatrixClass.value,
       ...emptyScores
-    ].join(',');
+    ];
   });
 
-  const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', `គំរូបញ្ចូលពិន្ទុ_ថ្នាក់${selectedMatrixClass.value}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws['!cols'] = [
+    { wch: 6 },
+    { wch: 25 },
+    { wch: 8 },
+    { wch: 10 },
+    ...matrixSubjects.value.map(() => ({ wch: 12 }))
+  ];
+  XLSX.utils.book_append_sheet(wb, ws, 'គំរូបញ្ចូលពិន្ទុ');
+  XLSX.writeFile(wb, `គំរូបញ្ចូលពិន្ទុ_ថ្នាក់${selectedMatrixClass.value}.xlsx`);
 };
 
 const openImportModal = () => {
@@ -1445,24 +1585,36 @@ const handleDelete = async (ex) => {
 const handlePrint = () => window.print();
 
 const handleExport = () => {
-  const csv = [
-    ['ឈ្មោះការប្រឡង', 'ប្រភេទ', 'ឆ្នាំសិក្សា', 'កាលបរិច្ឆេទចាប់ផ្តើម', 'កាលបរិច្ឆេទបញ្ចប់', 'ឆមាស', 'ស្ថានភាព'].join(','),
-    ...examsList.value.map(ex => [
-      `"${ex.title}"`,
-      `"${ex.exam_type}"`,
-      `"${ex.academic_year}"`,
-      `"${ex.start_date || ''}"`,
-      `"${ex.end_date || ''}"`,
-      `"${ex.semester}"`,
-      `"${ex.status}"`
-    ].join(','))
-  ].join('\n');
+  if (examsList.value.length === 0) {
+    alert('មិនទាន់មានបញ្ជីការប្រឡងសម្រាប់ទាញយកទេ!');
+    return;
+  }
+  const headers = ['ល.រ', 'ឈ្មោះការប្រឡង', 'ប្រភេទ', 'ឆ្នាំសិក្សា', 'កាលបរិច្ឆេទចាប់ផ្តើម', 'កាលបរិច្ឆេទបញ្ចប់', 'ឆមាស', 'ស្ថានភាព'];
+  const rows = examsList.value.map((ex, idx) => [
+    idx + 1,
+    ex.title,
+    ex.exam_type,
+    ex.academic_year,
+    ex.start_date || '',
+    ex.end_date || '',
+    ex.semester,
+    ex.status
+  ]);
 
-  const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `LMSTICK_Exams_${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws['!cols'] = [
+    { wch: 6 },
+    { wch: 30 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 18 },
+    { wch: 18 },
+    { wch: 10 },
+    { wch: 12 }
+  ];
+  XLSX.utils.book_append_sheet(wb, ws, 'បញ្ជីសម័យប្រឡង');
+  const today = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `LMSTICK_Exams_${today}.xlsx`);
 };
 </script>
