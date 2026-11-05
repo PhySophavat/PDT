@@ -114,8 +114,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
 import EntityBanner from '../components/EntityBanner.vue';
@@ -125,23 +126,26 @@ import DataTable from '../components/DataTable.vue';
 const { t } = useI18n();
 const activeReportType = ref('students');
 
-const students = ref([
-  { id: 1, idCard: 'STU-2025-0001', name: 'សុខ សុភក្ត្រ', gender: 'ប្រុស', grade: '7A', phone: '012 345 678' },
-  { id: 2, idCard: 'STU-2025-0002', name: 'ចាន់ ស្រីនាង', gender: 'ស្រី', grade: '7A', phone: '088 123 456' },
-  { id: 3, idCard: 'STU-2025-0003', name: 'ឡុង វិសាល', gender: 'ប្រុស', grade: '8A', phone: '097 555 777' },
-]);
+const students = ref([]);
+const teachers = ref([]);
+const generalMetrics = ref([]);
 
-const teachers = ref([
-  { id: 1, idCard: 'TCH-2025-0001', name: 'សុខ ចាន់ដារ៉ា', qualification: 'បរិញ្ញាបត្រជាន់ខ្ពស់', specialization: 'គណិតវិទ្យា', salary: 450.00 },
-  { id: 2, idCard: 'TCH-2025-0002', name: 'កែវ មុនីរ័ត្ន', qualification: 'បរិញ្ញាបត្រ', specialization: 'ភាសាខ្មែរ', salary: 400.00 },
-]);
+const fetchReports = async () => {
+  try {
+    const res = await axios.get('/api/reports');
+    if (res.data) {
+      students.value = res.data.students || [];
+      teachers.value = res.data.teachers || [];
+      generalMetrics.value = res.data.generalMetrics || [];
+    }
+  } catch (err) {
+    console.error('Failed to load reports:', err);
+  }
+};
 
-const generalMetrics = ref([
-  { name: 'Average Student Attendance Rate', dept: 'Student Affairs', value: '96.8%' },
-  { name: 'Total Fee Revenue Collected', dept: 'Finance Office', value: '$14,250.00' },
-  { name: 'Semester Exam Average Score', dept: 'Exam Board', value: '82.4 / 100' },
-  { name: 'Books Circulation Rate', dept: 'Library Services', value: '85 Books' },
-]);
+onMounted(() => {
+  fetchReports();
+});
 
 const handlePrint = () => window.print();
 const handleDownload = () => alert(t('common.download'));

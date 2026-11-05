@@ -734,9 +734,9 @@ const filteredAbsenceRecords = computed(() => {
 });
 
 const stats = ref({
-  present: 116,
-  late: 3,
-  absent: 1,
+  present: 0,
+  late: 0,
+  absent: 0,
   holiday: 0
 });
 
@@ -881,35 +881,10 @@ const displayedMonthKeys = computed(() => {
   return allMonthKeys;
 });
 
-const mockMatrix = {
-  2: { january: 'A', july: 'A', december: 'A' },
-  3: { march: 'A', october: 'L' },
-  4: { january: 'H', november: 'L' },
-  5: { february: 'H', may: 'A' },
-  6: { january: 'A', august: 'L', november: 'L' },
-  7: { february: 'L', april: 'A', july: 'A' },
-  8: { march: 'A', july: 'A', september: 'H', december: 'A' },
-  9: { february: 'A', july: 'A' },
-  10: { july: 'L', november: 'A' },
-  11: { february: 'L', july: 'A', september: 'A' },
-  12: { january: 'A', july: 'A', october: 'L' },
-  13: { january: 'L', march: 'A', august: 'L', november: 'L' },
-  14: { february: 'H', april: 'A', october: 'A' },
-  15: { february: 'L', may: 'A', july: 'A', october: 'A', december: 'A' },
-  16: { january: 'H', november: 'A' },
-  17: { march: 'A', may: 'A', september: 'H' },
-  18: { january: 'A', july: 'A', august: 'L' },
-  19: { march: 'L' },
-  21: { february: 'A', april: 'A', july: 'A', december: 'A' },
-  22: { september: 'A' }
-};
-
 const getMatrixStatus = (day, monthKey) => {
-  let val = 'P';
-  if (matrixData.value[day] && matrixData.value[day][monthKey]) {
+  let val = '-';
+  if (matrixData.value && matrixData.value[day] && matrixData.value[day][monthKey]) {
     val = matrixData.value[day][monthKey];
-  } else if (mockMatrix[day] && mockMatrix[day][monthKey]) {
-    val = mockMatrix[day][monthKey];
   }
 
   if (filterStatus.value !== 'all' && val !== filterStatus.value) {

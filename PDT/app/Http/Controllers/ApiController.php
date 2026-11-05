@@ -1379,10 +1379,10 @@ class ApiController extends Controller
         }
 
         $stats = [
-            'present' => Attendance::where('status', 'present')->where('date', $today)->count() ?: 116,
-            'late' => Attendance::where('status', 'late')->where('date', $today)->count() ?: 3,
-            'absent' => Attendance::where('status', 'absent')->where('date', $today)->count() ?: 1,
-            'holiday' => Attendance::whereIn('status', ['holiday', 'excused'])->where('date', $today)->count() ?: 0,
+            'present' => Attendance::where('status', 'present')->where('date', $today)->count(),
+            'late' => Attendance::where('status', 'late')->where('date', $today)->count(),
+            'absent' => Attendance::where('status', 'absent')->where('date', $today)->count(),
+            'holiday' => Attendance::whereIn('status', ['holiday', 'excused'])->where('date', $today)->count(),
         ];
 
         // Real Matrix attendance data for this class
@@ -1532,7 +1532,7 @@ class ApiController extends Controller
         }
 
         $stats = [
-            'present' => TeacherAttendance::where('status', 'present')->where('date', $today)->count() ?: $teachers->count(),
+            'present' => TeacherAttendance::where('status', 'present')->where('date', $today)->count(),
             'late' => TeacherAttendance::where('status', 'late')->where('date', $today)->count(),
             'absent' => TeacherAttendance::where('status', 'absent')->where('date', $today)->count(),
             'holiday' => TeacherAttendance::where('status', 'excused')->where('date', $today)->count(),
@@ -2873,7 +2873,34 @@ class ApiController extends Controller
         $totalStudents = Student::count();
         $totalTeachers = Teacher::count();
         $totalRevenue = (float) Payment::sum('amount');
-        $attendanceRate = 96.8;
+        $totalAtt = Attendance::count();
+        $presentAtt = Attendance::whereIn('status', ['present', 'late'])->count();
+        $attendanceRate = $totalAtt > 0 ? round(($presentAtt / $totalAtt) * 100, 1) : 0;
+
+        $students = Student::take(50)->get()->map(fn($s) => [
+            'id' => $s->id,
+            'idCard' => $s->student_id_card ?: ('STD-' . str_pad($s->id, 4, '0', STR_PAD_LEFT)),
+            'name' => $s->name_khmer ?: ($s->first_name . ' ' . $s->last_name),
+            'gender' => $s->gender,
+            'grade' => $s->grade ?: ($s->schoolClass?->name ?: ''),
+            'phone' => $s->phone ?: ($s->parent_phone ?: 'N/A'),
+        ]);
+
+        $teachers = Teacher::take(50)->get()->map(fn($t) => [
+            'id' => $t->id,
+            'idCard' => $t->teacher_id_card ?: ('TCH-' . str_pad($t->id, 3, '0', STR_PAD_LEFT)),
+            'name' => $t->name_khmer ?: ($t->first_name . ' ' . $t->last_name),
+            'qualification' => $t->qualification ?: 'បរិញ្ញាបត្រ',
+            'specialization' => $t->subject ?: 'ទូទៅ',
+            'salary' => (float)$t->salary,
+        ]);
+
+        $generalMetrics = [
+            ['name' => 'Average Student Attendance Rate', 'dept' => 'Student Affairs', 'value' => $attendanceRate . '%'],
+            ['name' => 'Total Fee Revenue Collected', 'dept' => 'Finance Office', 'value' => '$' . number_format($totalRevenue, 2)],
+            ['name' => 'Total Students Enrolled', 'dept' => 'Registrar', 'value' => $totalStudents . ' Students'],
+            ['name' => 'Active Teachers Count', 'dept' => 'Human Resources', 'value' => $totalTeachers . ' Teachers'],
+        ];
 
         return response()->json([
             'stats' => [
@@ -2882,6 +2909,9 @@ class ApiController extends Controller
                 'totalRevenue' => $totalRevenue,
                 'attendanceRate' => $attendanceRate,
             ],
+            'students' => $students,
+            'teachers' => $teachers,
+            'generalMetrics' => $generalMetrics,
         ]);
     }
 
@@ -3225,6 +3255,8 @@ class ApiController extends Controller
             // Wipe all student, teacher, score, attendance, timetable, finance, and announcement demo records
             \App\Models\ExaminationScore::query()->delete();
             \App\Models\Attendance::query()->delete();
+            \App\Models\TeacherAttendance::query()->delete();
+            \App\Models\StudentLeaveRequest::query()->delete();
             \App\Models\Payment::query()->delete();
             \App\Models\Invoice::query()->delete();
             \App\Models\SchoolExpense::query()->delete();
@@ -3282,11 +3314,11 @@ class ApiController extends Controller
 
         if ($roles->isEmpty()) {
             $roles = collect([
-                ['id' => 1, 'name' => 'admin', 'displayName' => 'អ្នកគ្រប់គ្រងប្រព័ន្ធ (Admin)', 'userCount' => 2],
-                ['id' => 2, 'name' => 'teacher', 'displayName' => 'លោកគ្រូ-អ្នកគ្រូ (Teacher)', 'userCount' => Teacher::count() ?: 15],
-                ['id' => 3, 'name' => 'accountant', 'displayName' => 'គណនេយ្យករ (Accountant)', 'userCount' => 2],
-                ['id' => 4, 'name' => 'student', 'displayName' => 'សិស្សានុសិស្ស (Student)', 'userCount' => Student::count() ?: 87],
-                ['id' => 5, 'name' => 'parent', 'displayName' => 'មាតាបិតា-អាណាព្យាបាល (Parent)', 'userCount' => 35],
+                ['id' => 1, 'name' => 'admin', 'displayName' => 'អ្នកគ្រប់គ្រងប្រព័ន្ធ (Admin)', 'userCount' => User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->count() ?: 1],
+                ['id' => 2, 'name' => 'teacher', 'displayName' => 'លោកគ្រូ-អ្នកគ្រូ (Teacher)', 'userCount' => Teacher::count()],
+                ['id' => 3, 'name' => 'accountant', 'displayName' => 'គណនេយ្យករ (Accountant)', 'userCount' => User::whereHas('roles', fn ($q) => $q->where('name', 'accountant'))->count()],
+                ['id' => 4, 'name' => 'student', 'displayName' => 'សិស្សានុសិស្ស (Student)', 'userCount' => Student::count()],
+                ['id' => 5, 'name' => 'parent', 'displayName' => 'មាតាបិតា-អាណាព្យាបាល (Parent)', 'userCount' => SchoolParent::count()],
             ]);
         }
 

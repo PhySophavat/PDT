@@ -33,7 +33,7 @@
       <StatCard :title="$t('examinations.examList')" :value="examsList.length" />
       <StatCard :title="$t('examinations.scores')" :value="totalScoresCount" />
       <StatCard :title="$t('examinations.passRate')" :value="computedPassRate" />
-      <StatCard :title="$t('classes.totalClasses')" :value="classesList.length || 48" />
+      <StatCard :title="$t('classes.totalClasses')" :value="classesList.length" />
     </div>
 
     <!-- TAB 1: Examination List View -->
@@ -973,7 +973,7 @@ const computedPassRate = computed(() => {
   if (matrixStats.value && matrixStats.value.pass_rate !== undefined) {
     return matrixStats.value.pass_rate + '% ជាប់';
   }
-  return '96.2% ជាប់';
+  return matrixStats.value ? '0% ជាប់' : '-';
 });
 
 const gradeLetterFor = (score) => {
