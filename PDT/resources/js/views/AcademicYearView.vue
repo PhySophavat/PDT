@@ -17,15 +17,6 @@
       ]"
     />
 
-    <!-- Entity Banner -->
-    <EntityBanner 
-      :name="$t('academicYears.title')"
-      :subtitle="$t('nav.academics') + ' - ការគ្រប់គ្រងឆ្នាំសិក្សា និងឆមាស'"
-      metaId="ADM-AY-CAL"
-      @print="handlePrint"
-      @download="handleDownload"
-    />
-
     <!-- 4 Statistics Summary Cards (Dynamic from Database) -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="$t('academicYears.title')" :value="stats.total || years.length" />
@@ -249,7 +240,6 @@ import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
-import EntityBanner from '../components/EntityBanner.vue';
 import StatCard from '../components/StatCard.vue';
 import DataTable from '../components/DataTable.vue';
 
