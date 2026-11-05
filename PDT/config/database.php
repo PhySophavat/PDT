@@ -59,7 +59,7 @@ return [
             'strict' => env('DB_STRICT_MODE', true),
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA', env('DB_SSL', false) ? (file_exists('/etc/ssl/certs/ca-certificates.crt') ? '/etc/ssl/certs/ca-certificates.crt' : true) : null),
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA', env('DB_SSL', false) ? (file_exists(storage_path('certs/ca.pem')) ? storage_path('certs/ca.pem') : (file_exists('/etc/ssl/certs/ca-certificates.crt') ? '/etc/ssl/certs/ca-certificates.crt' : true)) : null),
                 PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT', null),
             ]) : [],
         ],
@@ -80,7 +80,7 @@ return [
             'strict' => env('DB_STRICT_MODE', true),
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA', env('DB_SSL', false) ? (file_exists('/etc/ssl/certs/ca-certificates.crt') ? '/etc/ssl/certs/ca-certificates.crt' : true) : null),
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA', env('DB_SSL', false) ? (file_exists(storage_path('certs/ca.pem')) ? storage_path('certs/ca.pem') : (file_exists('/etc/ssl/certs/ca-certificates.crt') ? '/etc/ssl/certs/ca-certificates.crt' : true)) : null),
                 PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT', null),
             ]) : [],
         ],
