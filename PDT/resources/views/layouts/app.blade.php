@@ -26,24 +26,26 @@
         ];
     });
     $logoUrl = $cachedSettings['logoUrl'];
+    $initialUserJson = json_encode([
+        'name' => Auth::user()?->name ?? 'portal sala',
+        'role' => Auth::user()?->roles?->first()?->name ?? 'Admin',
+        'email' => Auth::user()?->email ?? 'admin@pdt-school.edu.kh',
+        'avatar' => Auth::user()?->avatar ?? ''
+    ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+    $initialSettingsJson = json_encode([
+        'school_logo_url' => $cachedSettings['logoUrl'],
+        'school_name' => $cachedSettings['school_name'],
+        'school_name_en' => $cachedSettings['school_name_en'],
+        'current_academic_year' => $cachedSettings['activeYear']
+    ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
   @endphp
   <link id="app-favicon" rel="icon" type="image/png" href="{{ $logoUrl }}">
   
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 
   <script>
-    window.__INITIAL_USER__ = @json([
-      'name' => Auth::user()?->name ?? 'portal sala',
-      'role' => Auth::user()?->roles?->first()?->name ?? 'Admin',
-      'email' => Auth::user()?->email ?? 'admin@pdt-school.edu.kh',
-      'avatar' => Auth::user()?->avatar ?? ''
-    ]);
-    window.__INITIAL_SETTINGS__ = @json([
-      'school_logo_url' => $cachedSettings['logoUrl'],
-      'school_name' => $cachedSettings['school_name'],
-      'school_name_en' => $cachedSettings['school_name_en'],
-      'current_academic_year' => $cachedSettings['activeYear']
-    ]);
+    window.__INITIAL_USER__ = {!! $initialUserJson !!};
+    window.__INITIAL_SETTINGS__ = {!! $initialSettingsJson !!};
   </script>
 </head>
 <body class="bg-[#dce4f7] min-h-screen p-2 sm:p-4 lg:p-6 flex items-center justify-center antialiased text-slate-800">
