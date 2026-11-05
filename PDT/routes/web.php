@@ -121,6 +121,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/settings/backup', [ApiController::class, 'backupDatabase'])->name('settings.backup');
         Route::match(['get', 'post'], '/seed', [ApiController::class, 'seedDemoDatabase']);
         Route::get('/roles', [ApiController::class, 'roles']);
+        Route::post('/roles/permissions', [ApiController::class, 'updateRolePermissions']);
     });
 
     // 1. Dashboard & Profile (Vue 3 Master Attendance UI)

@@ -3052,7 +3052,57 @@ class ApiController extends Controller
             'userCount' => \App\Models\User::whereHas('roles', fn ($q) => $q->where('id', $r->id))->count(),
         ]);
 
-        return response()->json(['roles' => $roles]);
+        if ($roles->isEmpty()) {
+            $roles = collect([
+                ['id' => 1, 'name' => 'admin', 'displayName' => 'អ្នកគ្រប់គ្រងប្រព័ន្ធ (Admin)', 'userCount' => 2],
+                ['id' => 2, 'name' => 'teacher', 'displayName' => 'លោកគ្រូ-អ្នកគ្រូ (Teacher)', 'userCount' => Teacher::count() ?: 15],
+                ['id' => 3, 'name' => 'accountant', 'displayName' => 'គណនេយ្យករ (Accountant)', 'userCount' => 2],
+                ['id' => 4, 'name' => 'student', 'displayName' => 'សិស្សានុសិស្ស (Student)', 'userCount' => Student::count() ?: 87],
+                ['id' => 5, 'name' => 'parent', 'displayName' => 'មាតាបិតា-អាណាព្យាបាល (Parent)', 'userCount' => 35],
+            ]);
+        }
+
+        $defaultPermissions = [
+            'admin' => ['students', 'attendance', 'examinations', 'classes_timetable', 'finance', 'library', 'announcements', 'reports', 'settings'],
+            'teacher' => ['attendance', 'examinations', 'library', 'reports'],
+            'accountant' => ['finance', 'reports'],
+            'student_parent' => ['attendance', 'examinations', 'library'],
+        ];
+
+        $savedRaw = SystemSetting::get('role_permissions', '');
+        $savedPermissions = json_decode($savedRaw, true);
+        if (!is_array($savedPermissions) || empty($savedPermissions)) {
+            $savedPermissions = $defaultPermissions;
+        }
+
+        return response()->json([
+            'roles' => $roles,
+            'permissions' => $savedPermissions,
+            'controls' => [
+                'enable_public_registration' => SystemSetting::get('enable_public_registration', '1'),
+                'enable_teacher_score_edit' => SystemSetting::get('enable_teacher_score_edit', '1'),
+                'enable_public_teacher_registration' => SystemSetting::get('enable_public_teacher_registration', '1'),
+                'enable_public_leave_request' => SystemSetting::get('enable_public_leave_request', '1'),
+            ]
+        ]);
+    }
+
+    public function updateRolePermissions(Request $request)
+    {
+        if ($request->has('permissions')) {
+            SystemSetting::set('role_permissions', json_encode($request->input('permissions')));
+        }
+        if ($request->has('controls')) {
+            $controls = $request->input('controls');
+            foreach ($controls as $k => $v) {
+                SystemSetting::set($k, (string) $v);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'បានរក្សាទុកតារាងបែងចែកសិទ្ធិ និងការគ្រប់គ្រងប្រព័ន្ធដោយជោគជ័យ!',
+        ]);
     }
 
     public function seedDemoDatabase(Request $request)

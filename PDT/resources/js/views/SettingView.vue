@@ -15,7 +15,7 @@
         { id: 'general', label: 'ព័ត៌មានគ្រឹះស្ថានសិក្សា' },
         { id: 'academic', label: 'ឆ្នាំសិក្សា និងឆមាសសកម្ម' },
         { id: 'currency', label: 'រូបិយប័ណ្ណគោល' },
-        { id: 'security', label: 'តួនាទី និងសិទ្ធិ' }
+        { id: 'backup', label: 'ទិន្នន័យបម្រុង (Database Backup)' }
       ]"
     />
 
@@ -564,115 +564,48 @@
       </div>
     </div>
 
-    <!-- Tab 4: Roles, Permissions & System Control -->
-    <div v-show="activeTab === 'security'" class="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-2xs space-y-6 transition-all">
+    <!-- Tab 4: Database Backup & Security Navigation -->
+    <div v-show="activeTab === 'backup'" class="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-2xs space-y-6 transition-all">
       <div class="flex items-center gap-2.5 pb-4 border-b border-slate-100">
-        <span class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-sm">
-          <i class="fa-solid fa-shield-halved"></i>
+        <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
+          <i class="fa-solid fa-database"></i>
         </span>
         <div>
-          <h2 class="text-sm font-bold text-slate-900">តួនាទី សិទ្ធិ និងការគ្រប់គ្រងប្រព័ន្ធ (Roles, Permissions & System Control)</h2>
-          <p class="text-[11px] text-slate-500">កំណត់សិទ្ធិតាមតួនាទី បើក/បិទមុខងារស្នូល និងទាញយកទិន្នន័យបម្រុង</p>
+          <h2 class="text-sm font-bold text-slate-900">ទិន្នន័យបម្រុង និងសុវត្ថិភាពមូលដ្ឋានទិន្នន័យ (Database Backup & Security)</h2>
+          <p class="text-[11px] text-slate-500">ទាញយកទិន្នន័យប្រព័ន្ធបម្រុងទុកការពារហានិភ័យ និងតំណភ្ជាប់ទៅកាន់ការកំណត់សិទ្ធិ</p>
         </div>
       </div>
 
-      <!-- Feature Toggles -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Public Registration Toggle -->
-        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between">
+      <!-- Roles & Permissions Redirect Card -->
+      <div class="p-5 bg-gradient-to-r from-purple-50/90 via-indigo-50/70 to-slate-50 border border-purple-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <span class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-base shadow-xs flex-shrink-0">
+            <i class="fa-solid fa-shield-halved"></i>
+          </span>
           <div>
-            <h4 class="text-xs font-bold text-slate-800">ការចុះឈ្មោះសិស្សថ្មីតាម Link / QR Code</h4>
-            <p class="text-[11px] text-slate-500">បើកឱ្យសិស្ស និងអាណាព្យាបាលអាចចុះឈ្មោះតាមតំណភ្ជាប់សាធារណៈ</p>
+            <h4 class="text-xs font-bold text-slate-900 flex items-center gap-2">
+              <span>គ្រប់គ្រងតួនាទី និងសិទ្ធិប្រើប្រាស់ (Roles & Permissions)</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700">RBAC</span>
+            </h4>
+            <p class="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+              ការបែងចែកសិទ្ធិតាមតួនាទី (Role Permissions Matrix) និងការគ្រប់គ្រងសុវត្ថិភាពប្រព័ន្ធ ត្រូវបានរៀបចំក្នុងទំព័រ <strong>«តួនាទី និងសិទ្ធិ»</strong> ពេញលេញ។
+            </p>
           </div>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" v-model="form.enable_public_registration" true-value="1" false-value="0" class="sr-only peer">
-            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-          </label>
         </div>
-
-        <!-- Teacher Score Edit Toggle -->
-        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between">
-          <div>
-            <h4 class="text-xs font-bold text-slate-800">អនុញ្ញាតឱ្យគ្រូបង្រៀនកែប្រែពិន្ទុប្រឡង</h4>
-            <p class="text-[11px] text-slate-500">បើក/បិទសិទ្ធិកែប្រែពិន្ទុបន្ទាប់ពីបានរក្សាទុករួច</p>
-          </div>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" v-model="form.enable_teacher_score_edit" true-value="1" false-value="0" class="sr-only peer">
-            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-          </label>
-        </div>
-      </div>
-
-      <!-- Role Permissions Matrix -->
-      <div>
-        <h4 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-2">
-          <i class="fa-solid fa-user-lock text-slate-500"></i>
-          <span>តារាងបែងចែកសិទ្ធិប្រើប្រាស់តាមតួនាទី (Role Permissions Matrix)</span>
-        </h4>
-        <div class="overflow-x-auto border border-slate-200 rounded-2xl">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
-              <tr>
-                <th class="py-3 px-4">មុខងារប្រព័ន្ធ</th>
-                <th class="py-3 px-3 text-center">អ្នកគ្រប់គ្រង (Admin)</th>
-                <th class="py-3 px-3 text-center">គ្រូបង្រៀន (Teacher)</th>
-                <th class="py-3 px-3 text-center">គណនេយ្យករ (Accountant)</th>
-                <th class="py-3 px-3 text-center">សិស្ស/អាណាព្យាបាល</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 text-slate-600">
-              <tr class="hover:bg-slate-50/50">
-                <td class="py-2.5 px-4 font-semibold text-slate-800">គ្រប់គ្រងសិស្សានុសិស្ស</td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" checked disabled class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" checked class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" class="rounded text-blue-600"></td>
-              </tr>
-              <tr class="hover:bg-slate-50/50">
-                <td class="py-2.5 px-4 font-semibold text-slate-800">កត់ត្រា និងគ្រប់គ្រងវត្តមាន</td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" checked disabled class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" checked class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" class="rounded text-blue-600"></td>
-              </tr>
-              <tr class="hover:bg-slate-50/50">
-                <td class="py-2.5 px-4 font-semibold text-slate-800">បញ្ចូលពិន្ទុ និងការប្រឡង</td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" checked disabled class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" checked class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" class="rounded text-blue-600"></td>
-              </tr>
-              <tr class="hover:bg-slate-50/50">
-                <td class="py-2.5 px-4 font-semibold text-slate-800">ហិរញ្ញវត្ថុ វិក្កយបត្រ និងការបង់ប្រាក់</td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" checked disabled class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" checked class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" class="rounded text-blue-600"></td>
-              </tr>
-              <tr class="hover:bg-slate-50/50">
-                <td class="py-2.5 px-4 font-semibold text-slate-800">ទាញយករបាយការណ៍ និងស្ថិតិ</td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" checked disabled class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" checked class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" checked class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" class="rounded text-blue-600"></td>
-              </tr>
-              <tr class="hover:bg-slate-50/50">
-                <td class="py-2.5 px-4 font-semibold text-slate-800">ការកំណត់ប្រព័ន្ធ និងគេហទំព័រ</td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" checked disabled class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" class="rounded text-blue-600"></td>
-                <td class="py-2.5 px-3 text-center"><input type="checkbox" class="rounded text-blue-600"></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <router-link 
+          to="/roles" 
+          class="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl shadow-md shadow-purple-600/20 transition flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer"
+        >
+          <i class="fa-solid fa-user-lock"></i>
+          <span>ទៅកាន់ទំព័រ តួនាទី និងសិទ្ធិ</span>
+        </router-link>
       </div>
 
       <!-- Backup Database Section -->
       <div class="p-5 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h4 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-            <i class="fa-solid fa-database text-blue-600"></i>
+            <i class="fa-solid fa-download text-blue-600"></i>
             <span>ទាញយកទិន្នន័យបម្រុងមូលដ្ឋានទិន្នន័យ (Backup Database)</span>
           </h4>
           <p class="text-[11px] text-slate-500 mt-0.5">
@@ -682,10 +615,10 @@
         <button 
           @click="handleBackup" 
           type="button"
-          class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-2 flex-shrink-0"
+          class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer"
         >
-          <i class="fa-solid fa-download"></i>
-          <span>ទាញយកទិន្នន័យបម្រុង (Backup Database)</span>
+          <i class="fa-solid fa-file-arrow-down"></i>
+          <span>ទាញយកទិន្នន័យបម្រុង (Download SQL)</span>
         </button>
       </div>
     </div>
