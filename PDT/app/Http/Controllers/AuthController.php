@@ -11,6 +11,10 @@ class AuthController extends Controller
 {
     public function showLoginForm()
     {
+        if (Auth::check()) {
+            return redirect()->intended($this->defaultRedirectPath(Auth::user()));
+        }
+
         return view('auth.login');
     }
 
@@ -21,7 +25,10 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials)) {
+        // Default to true so device stays logged in across browser closes
+        $remember = $request->boolean('remember', true);
+
+        if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
             if ($this->shouldForgetIntendedUrl($request->user(), $request->session()->get('url.intended'))) {
