@@ -135,5 +135,32 @@
             toggleIcon.className = isPassword ? 'fa-regular fa-eye-slash text-sm text-blue-600' : 'fa-regular fa-eye text-sm';
         });
     }
+
+    // Auto-refresh CSRF token on mobile (Safari / Telegram in-app browser / bfcache)
+    const refreshCsrfToken = () => {
+        fetch('/csrf-token', { headers: { 'Accept': 'application/json' } })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.csrf_token) {
+                    document.querySelectorAll('input[name="_token"]').forEach(el => el.value = data.csrf_token);
+                    const meta = document.querySelector('meta[name="csrf-token"]');
+                    if (meta) meta.setAttribute('content', data.csrf_token);
+                }
+            })
+            .catch(() => {});
+    };
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            refreshCsrfToken();
+        }
+    });
+
+    window.addEventListener('focus', refreshCsrfToken);
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+            refreshCsrfToken();
+        }
+    });
 </script>
 @endpush

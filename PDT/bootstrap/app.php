@@ -27,7 +27,15 @@ $app = Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('login') || $request->is('/')) {
+                return redirect()->route('login')->with('error', 'សម័យការរបស់អ្នកបានផុតកំណត់ សូមសាកល្បងចូលម្តងទៀត។');
+            }
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'CSRF token mismatch. Please refresh.'], 419);
+            }
+            return redirect()->back()->with('error', 'សម័យការរបស់អ្នកបានផុតកំណត់ សូមសាកល្បងម្តងទៀត។');
+        });
     })->create();
 
 if (isset($_ENV['VERCEL']) || getenv('VERCEL')) {

@@ -69,9 +69,15 @@ if (!getenv('APP_KEY')) {
 }
 
 if (!getenv('SESSION_DRIVER') || getenv('SESSION_DRIVER') === 'file') {
-    putenv('SESSION_DRIVER=cookie');
-    $_ENV['SESSION_DRIVER'] = 'cookie';
+    putenv('SESSION_DRIVER=database');
+    $_ENV['SESSION_DRIVER'] = 'database';
 }
+
+putenv('SESSION_SECURE_COOKIE=true');
+$_ENV['SESSION_SECURE_COOKIE'] = 'true';
+
+putenv('SESSION_SAME_SITE=lax');
+$_ENV['SESSION_SAME_SITE'] = 'lax';
 
 if (!getenv('CACHE_STORE')) {
     putenv('CACHE_STORE=array');
