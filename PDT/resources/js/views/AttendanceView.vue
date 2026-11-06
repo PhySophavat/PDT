@@ -934,7 +934,17 @@ const getStatusClass = (status) => {
   }
 };
 
-const fetchAttendanceData = async () => {
+let isFetchingAttendance = false;
+let lastAttendanceFetchTime = 0;
+
+const fetchAttendanceData = async (force = false) => {
+  const now = Date.now();
+  if (isFetchingAttendance || (!force && now - lastAttendanceFetchTime < 1500 && studentsList.value.length > 0)) {
+    return;
+  }
+  isFetchingAttendance = true;
+  lastAttendanceFetchTime = now;
+
   if (studentsList.value.length === 0) {
     isLoading.value = true;
   }
@@ -943,7 +953,6 @@ const fetchAttendanceData = async () => {
       params: {
         class: selectedClass.value,
         date: selectedDate.value,
-        _t: Date.now()
       }
     });
     if (res.data) {
@@ -973,6 +982,7 @@ const fetchAttendanceData = async () => {
   } catch (err) {
     console.error('Failed to fetch attendance:', err);
   } finally {
+    isFetchingAttendance = false;
     isLoading.value = false;
   }
 };

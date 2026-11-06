@@ -578,7 +578,11 @@ const goToNotificationLink = (link) => {
   router.push(link);
 };
 
+let isFetchingPendingNotifs = false;
+
 const fetchPendingNotifications = async () => {
+  if (isFetchingPendingNotifs) return;
+  isFetchingPendingNotifs = true;
   isLoadingNotifications.value = true;
   try {
     const res = await axios.get('/api/notifications/pending');
@@ -590,6 +594,7 @@ const fetchPendingNotifications = async () => {
   } catch (err) {
     console.error('Failed to fetch pending notifications:', err);
   } finally {
+    isFetchingPendingNotifs = false;
     isLoadingNotifications.value = false;
   }
 };

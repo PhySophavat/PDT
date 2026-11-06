@@ -684,14 +684,24 @@ const approveForm = ref({
 });
 const isSubmittingApproval = ref(false);
 
-const fetchTeachers = async () => {
+let isFetchingTeachers = false;
+let lastTeacherFetchTime = 0;
+
+const fetchTeachers = async (force = false) => {
+  const now = Date.now();
+  if (isFetchingTeachers || (!force && now - lastTeacherFetchTime < 1500 && teachers.value.length > 0)) {
+    return;
+  }
+  isFetchingTeachers = true;
+  lastTeacherFetchTime = now;
+
   const currentMode = localStorage.getItem('pdt_demo_mode') || '0';
   if (teachers.value.length === 0) {
     isLoading.value = true;
   }
   try {
     const res = await axios.get('/api/teachers', {
-      params: { demo_mode: currentMode, _t: Date.now() }
+      params: { demo_mode: currentMode }
     });
     if (res.data) {
       if (res.data.teachers) {
@@ -713,6 +723,7 @@ const fetchTeachers = async () => {
   } catch (e) {
     console.error('Failed to load teachers:', e);
   } finally {
+    isFetchingTeachers = false;
     isLoading.value = false;
   }
 };

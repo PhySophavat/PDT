@@ -1242,7 +1242,19 @@ const editForm = ref({
   status: 'enrolled',
 });
 
-const fetchStudents = async () => {
+let isFetchingStudents = false;
+let lastStudentFetchTime = 0;
+
+const fetchStudents = async (force = false) => {
+  const now = Date.now();
+  if (isFetchingStudents || (!force && now - lastStudentFetchTime < 1500 && students.value.length > 0)) {
+    return;
+  }
+  isFetchingStudents = true;
+  lastStudentFetchTime = now;
+  if (students.value.length === 0) {
+    isLoading.value = true;
+  }
   const currentMode = localStorage.getItem('pdt_demo_mode') || '0';
   try {
     const res = await axios.get('/api/students', {
@@ -1270,6 +1282,7 @@ const fetchStudents = async () => {
   } catch (e) {
     console.error('Failed to load students:', e);
   } finally {
+    isFetchingStudents = false;
     isLoading.value = false;
   }
 };
@@ -1288,6 +1301,7 @@ onMounted(() => {
 });
 
 onActivated(() => {
+  // onActivated only refetches if data wasn't just fetched in onMounted
   fetchStudents();
 });
 

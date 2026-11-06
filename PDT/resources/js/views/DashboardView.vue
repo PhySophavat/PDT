@@ -1047,15 +1047,22 @@ const getRankBadgeClass = (idx) => {
   return 'bg-blue-50 text-blue-700 border border-blue-200';
 };
 
+let isFetchingDashboard = false;
+let lastDashboardFetchTime = 0;
+
 // Fetch Dashboard Data
-const fetchDashboardData = async () => {
+const fetchDashboardData = async (force = false) => {
+  const now = Date.now();
+  if (isFetchingDashboard || (!force && now - lastDashboardFetchTime < 1500 && (allClasses.value.length > 0 || stats.value.totalStudents > 0))) {
+    return;
+  }
+  isFetchingDashboard = true;
+  lastDashboardFetchTime = now;
+
   try {
-    const res = await axios.get('/api/dashboard', {
-      params: { 
-        demo_mode: '0',
-        _t: Date.now() 
-      }
-    });
+    const params = { demo_mode: '0' };
+    if (force) params.force = 1;
+    const res = await axios.get('/api/dashboard', { params });
     if (res.data) {
       if (res.data.currentAcademicYear) {
         activeAcademicYear.value = res.data.currentAcademicYear;
@@ -1088,11 +1095,13 @@ const fetchDashboardData = async () => {
     }
   } catch (e) {
     console.error('Failed to load dashboard:', e);
+  } finally {
+    isFetchingDashboard = false;
   }
 };
 
 const onDataUpdated = () => {
-  fetchDashboardData();
+  fetchDashboardData(true);
 };
 
 // Lifecycle

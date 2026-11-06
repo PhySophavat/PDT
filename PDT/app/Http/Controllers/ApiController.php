@@ -35,11 +35,15 @@ class ApiController extends Controller
 {
     public function dashboard(Request $request)
     {
-        if ($request->has('_t') || $request->has('force')) {
+        if (session()->isStarted()) {
+            session()->save();
+        }
+
+        if ($request->has('force') || $request->input('refresh') === 'true') {
             Cache::forget('portal_dashboard_payload');
         }
 
-        $payload = Cache::remember('portal_dashboard_payload', 60, function () {
+        $payload = Cache::remember('portal_dashboard_payload', 120, function () {
             // Optimized student counts: combine total and female in 1 single query
             $studentStats = Student::selectRaw('COUNT(*) as total, SUM(CASE WHEN gender IN ("ស្រី", "female") THEN 1 ELSE 0 END) as female, SUM(CASE WHEN status IN ("scholarship", "អាហារូបករណ៍") THEN 1 ELSE 0 END) as scholarship')->first();
             $totalStudents = (int) ($studentStats->total ?? 0);
@@ -238,97 +242,109 @@ class ApiController extends Controller
      */
     public function getPendingNotifications(Request $request)
     {
-        // 1. Pending Students
-        $pendingStudents = Student::with('user')
-            ->where('status', 'pending')
-            ->latest()
-            ->take(20)
-            ->get();
-        $studentCount = Student::where('status', 'pending')->count();
-
-        // 2. Pending Teachers
-        $pendingTeachers = Teacher::with('user')
-            ->where('status', 'pending')
-            ->latest()
-            ->take(20)
-            ->get();
-        $teacherCount = Teacher::where('status', 'pending')->count();
-
-        // 3. Pending Student Leave Requests (សុំច្បាប់)
-        $pendingLeaves = StudentLeaveRequest::with('student')
-            ->where('status', 'pending')
-            ->latest()
-            ->take(20)
-            ->get();
-        $leaveCount = StudentLeaveRequest::where('status', 'pending')->count();
-
-        $notifications = collect();
-
-        foreach ($pendingStudents as $st) {
-            $name = $st->name_khmer ?: ($st->user?->name ?: ($st->name_latin ?: 'សិស្សថ្មី'));
-            $notifications->push([
-                'id' => 'student-' . $st->id,
-                'type' => 'student',
-                'type_label' => 'សិស្សចុះឈ្មោះថ្មី',
-                'name' => $name,
-                'title' => "សិស្ស {$name} បានចុះឈ្មោះចូលរៀន",
-                'subtitle' => 'ស្នើសុំចូលរៀនថ្នាក់ ' . ($st->grade ?: 'N/A') . ' • ' . ($st->phone ?: 'គ្មានលេខទូរស័ព្ទ'),
-                'time' => $st->created_at ? $st->created_at->diffForHumans() : 'ថ្មីៗនេះ',
-                'timestamp' => $st->created_at ? $st->created_at->timestamp : 0,
-                'link' => '/students?tab=pending',
-                'icon' => 'fa-solid fa-user-graduate',
-                'badge_color' => 'bg-emerald-500',
-                'bg_color' => 'bg-emerald-50 text-emerald-700 border-emerald-100',
-            ]);
+        if (session()->isStarted()) {
+            session()->save();
         }
 
-        foreach ($pendingTeachers as $tc) {
-            $name = $tc->name_khmer ?: ($tc->user?->name ?: ($tc->name_latin ?: 'គ្រូថ្មី'));
-            $notifications->push([
-                'id' => 'teacher-' . $tc->id,
-                'type' => 'teacher',
-                'type_label' => 'គ្រូចុះឈ្មោះថ្មី',
-                'name' => $name,
-                'title' => "លោកគ្រូ/អ្នកគ្រូ {$name} បានចុះឈ្មោះ",
-                'subtitle' => 'ឯកទេស ' . ($tc->specialization ?: ($tc->subject ?: 'ទូទៅ')) . ' • ' . ($tc->phone ?: 'គ្មានលេខទូរស័ព្ទ'),
-                'time' => $tc->created_at ? $tc->created_at->diffForHumans() : 'ថ្មីៗនេះ',
-                'timestamp' => $tc->created_at ? $tc->created_at->timestamp : 0,
-                'link' => '/teachers?tab=pending',
-                'icon' => 'fa-solid fa-chalkboard-user',
-                'badge_color' => 'bg-blue-500',
-                'bg_color' => 'bg-blue-50 text-blue-700 border-blue-100',
-            ]);
+        if ($request->has('force')) {
+            Cache::forget('pending_notifications_payload');
         }
 
-        foreach ($pendingLeaves as $lv) {
-            $name = $lv->student_name ?: ($lv->student?->name_khmer ?: 'សិស្ស');
-            $notifications->push([
-                'id' => 'leave-' . $lv->id,
-                'type' => 'leave',
-                'type_label' => 'សំណើសុំច្បាប់',
-                'name' => $name,
-                'title' => "សិស្ស {$name} សុំច្បាប់ឈប់សម្រាក",
-                'subtitle' => 'ថ្នាក់ ' . ($lv->class_name ?: 'N/A') . ' • រយៈពេល ' . ($lv->days_count ?: 1) . ' ថ្ងៃ (' . ($lv->reason ?: 'មានធុរៈផ្ទាល់ខ្លួន') . ')',
-                'time' => $lv->created_at ? $lv->created_at->diffForHumans() : 'ថ្មីៗនេះ',
-                'timestamp' => $lv->created_at ? $lv->created_at->timestamp : 0,
-                'link' => '/attendance?tab=leaves',
-                'icon' => 'fa-solid fa-calendar-minus',
-                'badge_color' => 'bg-amber-500',
-                'bg_color' => 'bg-amber-50 text-amber-700 border-amber-100',
-            ]);
-        }
+        $payload = Cache::remember('pending_notifications_payload', 30, function () {
+            // 1. Pending Students
+            $pendingStudents = Student::with('user:id,name')
+                ->where('status', 'pending')
+                ->latest('id')
+                ->take(20)
+                ->get();
+            $studentCount = Student::where('status', 'pending')->count();
 
-        $sortedNotifications = $notifications->sortByDesc('timestamp')->values();
+            // 2. Pending Teachers
+            $pendingTeachers = Teacher::with('user:id,name')
+                ->where('status', 'pending')
+                ->latest('id')
+                ->take(20)
+                ->get();
+            $teacherCount = Teacher::where('status', 'pending')->count();
 
-        return response()->json([
-            'total_count' => $studentCount + $teacherCount + $leaveCount,
-            'counts' => [
-                'students' => $studentCount,
-                'teachers' => $teacherCount,
-                'leaves' => $leaveCount,
-            ],
-            'notifications' => $sortedNotifications,
-        ]);
+            // 3. Pending Student Leave Requests (សុំច្បាប់)
+            $pendingLeaves = StudentLeaveRequest::with('student:id,name_khmer,name_latin')
+                ->where('status', 'pending')
+                ->latest('id')
+                ->take(20)
+                ->get();
+            $leaveCount = StudentLeaveRequest::where('status', 'pending')->count();
+
+            $notifications = collect();
+
+            foreach ($pendingStudents as $st) {
+                $name = $st->name_khmer ?: ($st->user?->name ?: ($st->name_latin ?: 'សិស្សថ្មី'));
+                $notifications->push([
+                    'id' => 'student-' . $st->id,
+                    'type' => 'student',
+                    'type_label' => 'សិស្សចុះឈ្មោះថ្មី',
+                    'name' => $name,
+                    'title' => "សិស្ស {$name} បានចុះឈ្មោះចូលរៀន",
+                    'subtitle' => 'ស្នើសុំចូលរៀនថ្នាក់ ' . ($st->grade ?: 'N/A') . ' • ' . ($st->phone ?: 'គ្មានលេខទូរស័ព្ទ'),
+                    'time' => $st->created_at ? $st->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                    'timestamp' => $st->created_at ? $st->created_at->timestamp : 0,
+                    'link' => '/students?tab=pending',
+                    'icon' => 'fa-solid fa-user-graduate',
+                    'badge_color' => 'bg-emerald-500',
+                    'bg_color' => 'bg-emerald-50 text-emerald-700 border-emerald-100',
+                ]);
+            }
+
+            foreach ($pendingTeachers as $tc) {
+                $name = $tc->name_khmer ?: ($tc->user?->name ?: ($tc->name_latin ?: 'គ្រូថ្មី'));
+                $notifications->push([
+                    'id' => 'teacher-' . $tc->id,
+                    'type' => 'teacher',
+                    'type_label' => 'គ្រូចុះឈ្មោះថ្មី',
+                    'name' => $name,
+                    'title' => "លោកគ្រូ/អ្នកគ្រូ {$name} បានចុះឈ្មោះ",
+                    'subtitle' => 'ឯកទេស ' . ($tc->specialization ?: ($tc->subject ?: 'ទូទៅ')) . ' • ' . ($tc->phone ?: 'គ្មានលេខទូរស័ព្ទ'),
+                    'time' => $tc->created_at ? $tc->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                    'timestamp' => $tc->created_at ? $tc->created_at->timestamp : 0,
+                    'link' => '/teachers?tab=pending',
+                    'icon' => 'fa-solid fa-chalkboard-user',
+                    'badge_color' => 'bg-blue-500',
+                    'bg_color' => 'bg-blue-50 text-blue-700 border-blue-100',
+                ]);
+            }
+
+            foreach ($pendingLeaves as $lv) {
+                $name = $lv->student_name ?: ($lv->student?->name_khmer ?: 'សិស្ស');
+                $notifications->push([
+                    'id' => 'leave-' . $lv->id,
+                    'type' => 'leave',
+                    'type_label' => 'សំណើសុំច្បាប់',
+                    'name' => $name,
+                    'title' => "សិស្ស {$name} សុំច្បាប់ឈប់សម្រាក",
+                    'subtitle' => 'ថ្នាក់ ' . ($lv->class_name ?: 'N/A') . ' • រយៈពេល ' . ($lv->days_count ?: 1) . ' ថ្ងៃ (' . ($lv->reason ?: 'មានធុរៈផ្ទាល់ខ្លួន') . ')',
+                    'time' => $lv->created_at ? $lv->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                    'timestamp' => $lv->created_at ? $lv->created_at->timestamp : 0,
+                    'link' => '/attendance?tab=leaves',
+                    'icon' => 'fa-solid fa-calendar-minus',
+                    'badge_color' => 'bg-amber-500',
+                    'bg_color' => 'bg-amber-50 text-amber-700 border-amber-100',
+                ]);
+            }
+
+            $sortedNotifications = $notifications->sortByDesc('timestamp')->values();
+
+            return [
+                'total_count' => $studentCount + $teacherCount + $leaveCount,
+                'counts' => [
+                    'students' => $studentCount,
+                    'teachers' => $teacherCount,
+                    'leaves' => $leaveCount,
+                ],
+                'notifications' => $sortedNotifications,
+            ];
+        });
+
+        return response()->json($payload);
     }
 
     /**
@@ -352,7 +368,11 @@ class ApiController extends Controller
 
     public function students(Request $request)
     {
-        $query = Student::with('user');
+        if (session()->isStarted()) {
+            session()->save();
+        }
+
+        $query = Student::with('user:id,name,email');
         if ($request->search) {
             $s = $request->search;
             $query->where(function ($q) use ($s) {
@@ -374,7 +394,7 @@ class ApiController extends Controller
             }
         }
 
-        $students = $query->latest()->get()->map(fn ($st) => [
+        $students = $query->latest('id')->get()->map(fn ($st) => [
             'id' => $st->id,
             'student_id_card' => $st->student_id_card ?: 'STU-រង់ចាំ',
             'name' => $st->display_name,
@@ -425,7 +445,9 @@ class ApiController extends Controller
             ]);
         }
 
-        $statusCounts = Student::select('status', DB::raw('count(*) as count'))->groupBy('status')->pluck('count', 'status')->toArray();
+        $statusCounts = Cache::remember('students_status_counts', 60, function () {
+            return Student::select('status', DB::raw('count(*) as count'))->groupBy('status')->pluck('count', 'status')->toArray();
+        });
         $totalCount = array_sum($statusCounts);
         $pendingCount = $statusCounts['pending'] ?? 0;
         $activeCount = ($statusCounts['active'] ?? 0) + ($statusCounts['enrolled'] ?? 0);
@@ -869,8 +891,8 @@ class ApiController extends Controller
 
         DB::transaction(function () use ($validated, $defaultClass, $year, $studentRole, $defaultPasswordHash, &$createdStudents) {
             $sequences = [];
-            $roleUserInserts = [];
-            $studentsToInsert = [];
+            $usersToInsert = [];
+            $metaList = [];
             $now = Carbon::now();
             $today = Carbon::today()->toDateString();
 
@@ -925,13 +947,46 @@ class ApiController extends Controller
                 }
                 $existingEmails[$email] = true;
 
-                $userId = DB::table('users')->insertGetId([
+                $usersToInsert[] = [
                     'name' => $baseName,
                     'email' => $email,
                     'password' => $defaultPasswordHash,
                     'created_at' => $now,
                     'updated_at' => $now,
-                ]);
+                ];
+
+                $metaList[] = [
+                    'email' => $email,
+                    'student_id_card' => $studentIdCard,
+                    'item' => $item,
+                    'gender' => $gender,
+                    'rawClass' => $rawClass,
+                ];
+            }
+
+            // 1. Bulk insert all users in 1 single roundtrip
+            if (!empty($usersToInsert)) {
+                foreach (array_chunk($usersToInsert, 100) as $chunk) {
+                    DB::table('users')->insert($chunk);
+                }
+            }
+
+            // 2. Fetch inserted user IDs by email in 1 single roundtrip
+            $emails = array_column($usersToInsert, 'email');
+            $userMap = DB::table('users')->whereIn('email', $emails)->pluck('id', 'email')->toArray();
+
+            $roleUserInserts = [];
+            $studentsToInsert = [];
+
+            foreach ($metaList as $meta) {
+                $email = $meta['email'];
+                $userId = $userMap[$email] ?? null;
+                if (!$userId) continue;
+
+                $studentIdCard = $meta['student_id_card'];
+                $item = $meta['item'];
+                $gender = $meta['gender'];
+                $rawClass = $meta['rawClass'];
 
                 if ($studentRole) {
                     $roleUserInserts[] = [
@@ -965,12 +1020,12 @@ class ApiController extends Controller
                 ];
             }
 
-            // Bulk insert role_user mappings in 1 query
+            // 3. Bulk insert role_user mappings in 1 query
             if (!empty($roleUserInserts)) {
                 DB::table('role_user')->insert($roleUserInserts);
             }
 
-            // Bulk insert all students in 1 query (or chunks of 100)
+            // 4. Bulk insert all students in 1 query
             if (!empty($studentsToInsert)) {
                 foreach (array_chunk($studentsToInsert, 100) as $chunk) {
                     DB::table('students')->insert($chunk);
@@ -979,6 +1034,8 @@ class ApiController extends Controller
         });
 
         Cache::forget('portal_dashboard_payload');
+        Cache::forget('students_status_counts');
+        Cache::forget('pending_notifications_payload');
 
         $count = count($createdStudents);
         $message = "បានបញ្ចូលសិស្សចំនួន {$count} នាក់ដោយជោគជ័យ!";
@@ -999,7 +1056,11 @@ class ApiController extends Controller
 
     public function teachers(Request $request)
     {
-        $query = Teacher::with('user');
+        if (session()->isStarted()) {
+            session()->save();
+        }
+
+        $query = Teacher::with('user:id,name,email');
         if ($request->search) {
             $s = $request->search;
             $query->where(function ($q) use ($s) {
@@ -1020,7 +1081,7 @@ class ApiController extends Controller
             }
         }
 
-        $teachers = $query->latest()->get()->map(fn ($t) => [
+        $teachers = $query->latest('id')->get()->map(fn ($t) => [
             'id' => $t->id,
             'idCard' => $t->teacher_id_card ?: 'TCH-រង់ចាំ',
             'name' => $t->display_name,
@@ -1066,7 +1127,9 @@ class ApiController extends Controller
             ]);
         }
 
-        $statusCounts = Teacher::select('status', DB::raw('count(*) as count'))->groupBy('status')->pluck('count', 'status')->toArray();
+        $statusCounts = Cache::remember('teachers_status_counts', 60, function () {
+            return Teacher::select('status', DB::raw('count(*) as count'))->groupBy('status')->pluck('count', 'status')->toArray();
+        });
         $totalCount = array_sum($statusCounts);
         $pendingCount = $statusCounts['pending'] ?? 0;
         $activeCount = ($statusCounts['active'] ?? 0) + ($statusCounts['fulltime'] ?? 0) + ($statusCounts['parttime'] ?? 0);
@@ -1661,19 +1724,24 @@ class ApiController extends Controller
 
     public function attendance(Request $request)
     {
+        if (session()->isStarted()) {
+            session()->save();
+        }
+
         $today = $request->input('date', Carbon::today()->toDateString());
         $selectedClass = $request->input('class', '7A');
 
         $classes = SchoolClass::orderedNames();
 
-        $studentList = Student::with('user')->where('grade', $selectedClass)->get();
+        $studentList = Student::with('user:id,name')->where('grade', $selectedClass)->get();
         // Sort strictly by Khmer Alphabetical Order (អក្ខរក្រមខ្មែរ)
         $studentList = $this->sortStudentsByKhmerAlphabet($studentList);
+        $studentMap = $studentList->keyBy('id');
 
-        $todayAtts = Attendance::whereIn('student_id', $studentList->pluck('id'))
-            ->where('date', $today)
-            ->get()
-            ->keyBy('student_id');
+        // Fetch real attendances for this class in 1 single query
+        $classAttendances = Attendance::where('class_name', $selectedClass)->get();
+
+        $todayAtts = $classAttendances->where('date', $today)->keyBy('student_id');
 
         $students = $studentList->map(function ($st) use ($todayAtts) {
             $att = $todayAtts->get($st->id);
@@ -1693,21 +1761,16 @@ class ApiController extends Controller
             $academicYears = collect(['2025-2026', '2024-2025']);
         }
 
-        $attCounts = Attendance::where('date', $today)
-            ->select('status', \Illuminate\Support\Facades\DB::raw('count(*) as aggregate'))
-            ->groupBy('status')
-            ->pluck('aggregate', 'status');
-
         $stats = [
-            'present' => (int) ($attCounts['present'] ?? 0),
-            'late' => (int) ($attCounts['late'] ?? 0),
-            'absent' => (int) ($attCounts['absent'] ?? 0),
-            'holiday' => (int) (($attCounts['holiday'] ?? 0) + ($attCounts['excused'] ?? 0)),
+            'present' => (int) $todayAtts->where('status', 'present')->count(),
+            'late' => (int) $todayAtts->where('status', 'late')->count(),
+            'absent' => (int) $todayAtts->where('status', 'absent')->count(),
+            'holiday' => (int) $todayAtts->whereIn('status', ['holiday', 'excused'])->count(),
         ];
 
         // Real Matrix attendance data for this class
-        $classAttendances = Attendance::where('class_name', $selectedClass)->get();
         $realMatrix = [];
+        $studentAttendanceMap = [];
         foreach ($classAttendances as $att) {
             $carbon = Carbon::parse($att->date);
             $day = (int) $carbon->format('j');
@@ -1732,22 +1795,23 @@ class ApiController extends Controller
             } elseif ($statusChar === 'L' && !in_array($existing, ['A', 'H'])) {
                 $realMatrix[$day][$month] = 'L';
             }
+
+            $dateKey = $carbon->toDateString();
+            $studentAttendanceMap[$att->student_id][$dateKey] = [
+                'status' => $att->status,
+                'remark' => $att->remark,
+            ];
         }
 
-        // Fetch real absence & leave records for this class
-        $rawAbsences = Attendance::where('class_name', $selectedClass)
-            ->whereIn('status', ['excused', 'absent', 'late', 'holiday'])
-            ->with(['student', 'student.user'])
-            ->orderBy('date', 'desc')
-            ->get();
-
+        // Fetch real absence & leave records in-memory from $classAttendances
+        $rawAbsences = $classAttendances->whereIn('status', ['excused', 'absent', 'late', 'holiday'])->sortByDesc('date');
         $absStudentIds = $rawAbsences->pluck('student_id')->unique()->filter();
         $allLeaveReqs = $absStudentIds->isNotEmpty() 
             ? StudentLeaveRequest::whereIn('student_id', $absStudentIds)->get()
             : collect();
 
-        $absenceRecords = $rawAbsences->map(function ($att) use ($allLeaveReqs) {
-            $st = $att->student;
+        $absenceRecords = $rawAbsences->map(function ($att) use ($allLeaveReqs, $studentMap) {
+            $st = $studentMap->get($att->student_id);
             $dateStr = Carbon::parse($att->date)->toDateString();
             $leaveReq = $allLeaveReqs->first(function ($l) use ($att, $dateStr) {
                 return $l->student_id == $att->student_id && $l->start_date <= $dateStr && $l->end_date >= $dateStr;
@@ -1766,17 +1830,7 @@ class ApiController extends Controller
                 'remark' => $att->remark ?: ($leaveReq ? "សុំច្បាប់: {$leaveReq->leave_type} - {$leaveReq->reason}" : ''),
                 'attachment_url' => $leaveReq?->attachment_path ? asset('storage/' . $leaveReq->attachment_path) : null,
             ];
-        });
-
-        // Student-level attendance map for monthly roster: [student_id][date] = {status, remark}
-        $studentAttendanceMap = [];
-        foreach ($classAttendances as $att) {
-            $dateKey = Carbon::parse($att->date)->toDateString();
-            $studentAttendanceMap[$att->student_id][$dateKey] = [
-                'status' => $att->status,
-                'remark' => $att->remark,
-            ];
-        }
+        })->values();
 
         $currentYear = SystemSetting::get('current_academic_year')
             ?: AcademicYear::where('is_current', true)->value('name')
@@ -1808,21 +1862,32 @@ class ApiController extends Controller
         $className = $validated['class_name'];
         $date = $validated['date'];
         $academicYearId = AcademicYear::where('is_current', true)->value('id');
+        $remarks = $validated['remarks'] ?? [];
+        $now = now();
 
+        $records = [];
         foreach ($validated['attendance'] as $studentId => $status) {
-            Attendance::updateOrCreate(
-                [
-                    'student_id' => $studentId,
-                    'date' => $date,
-                ],
-                [
-                    'class_name' => $className,
-                    'status' => $status,
-                    'remark' => $validated['remarks'][$studentId] ?? null,
-                    'academic_year_id' => $academicYearId,
-                ]
+            $records[] = [
+                'student_id' => $studentId,
+                'date' => $date,
+                'class_name' => $className,
+                'status' => $status,
+                'remark' => $remarks[$studentId] ?? null,
+                'academic_year_id' => $academicYearId,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        if (!empty($records)) {
+            Attendance::upsert(
+                $records,
+                ['student_id', 'date'],
+                ['class_name', 'status', 'remark', 'academic_year_id', 'updated_at']
             );
         }
+
+        Cache::forget('portal_dashboard_payload');
 
         return response()->json([
             'success' => true,
@@ -1832,30 +1897,36 @@ class ApiController extends Controller
 
     public function teacherAttendance(Request $request)
     {
+        if (session()->isStarted()) {
+            session()->save();
+        }
+
         $today = $request->input('date', Carbon::today()->toDateString());
 
-        $rawTeachers = Teacher::with('user')->get();
+        $rawTeachers = Teacher::with('user:id,name')->get();
         // Sort teachers strictly by Khmer Alphabetical Order (អក្ខរក្រមខ្មែរ)
         $rawTeachers = $this->sortStudentsByKhmerAlphabet($rawTeachers);
 
-        $teachers = $rawTeachers->map(function ($tc) use ($today) {
-                $att = TeacherAttendance::where('teacher_id', $tc->id)
-                    ->where('date', $today)
-                    ->first();
+        // Fetch all teacher attendances in 1 single query
+        $allTeacherAttendances = TeacherAttendance::all();
+        $todayAtts = $allTeacherAttendances->where('date', $today)->keyBy('teacher_id');
 
-                return [
-                    'teacher_id' => $tc->id,
-                    'name' => $tc->display_name,
-                    'name_khmer' => $tc->name_khmer,
-                    'name_latin' => $tc->name_latin,
-                    'teacher_id_card' => $tc->teacher_id_card ?: ('TC-' . str_pad($tc->id, 4, '0', STR_PAD_LEFT)),
-                    'gender' => $tc->gender ?: 'male',
-                    'specialization' => $tc->specialization ?: ($tc->subject ?: 'ទូទៅ'),
-                    'phone' => $tc->phone ?: 'N/A',
-                    'status' => $att?->status ?? 'present',
-                    'remark' => $att?->remark ?? '',
-                ];
-            });
+        $teachers = $rawTeachers->map(function ($tc) use ($todayAtts) {
+            $att = $todayAtts->get($tc->id);
+
+            return [
+                'teacher_id' => $tc->id,
+                'name' => $tc->display_name,
+                'name_khmer' => $tc->name_khmer,
+                'name_latin' => $tc->name_latin,
+                'teacher_id_card' => $tc->teacher_id_card ?: ('TC-' . str_pad($tc->id, 4, '0', STR_PAD_LEFT)),
+                'gender' => $tc->gender ?: 'male',
+                'specialization' => $tc->specialization ?: ($tc->subject ?: 'ទូទៅ'),
+                'phone' => $tc->phone ?: 'N/A',
+                'status' => $att?->status ?? 'present',
+                'remark' => $att?->remark ?? '',
+            ];
+        });
 
         $academicYears = AcademicYear::orderBy('name', 'desc')->pluck('name');
         if ($academicYears->isEmpty()) {
@@ -1863,14 +1934,13 @@ class ApiController extends Controller
         }
 
         $stats = [
-            'present' => TeacherAttendance::where('status', 'present')->where('date', $today)->count(),
-            'late' => TeacherAttendance::where('status', 'late')->where('date', $today)->count(),
-            'absent' => TeacherAttendance::where('status', 'absent')->where('date', $today)->count(),
-            'holiday' => TeacherAttendance::where('status', 'excused')->where('date', $today)->count(),
+            'present' => $todayAtts->where('status', 'present')->count(),
+            'late' => $todayAtts->where('status', 'late')->count(),
+            'absent' => $todayAtts->where('status', 'absent')->count(),
+            'holiday' => $todayAtts->where('status', 'excused')->count(),
         ];
 
         // Teacher-level attendance map for monthly matrix: [teacher_id][date] = {status, remark}
-        $allTeacherAttendances = TeacherAttendance::all();
         $teacherAttendanceMap = [];
         foreach ($allTeacherAttendances as $att) {
             $dateKey = Carbon::parse($att->date)->toDateString();
@@ -1903,19 +1973,30 @@ class ApiController extends Controller
         ]);
 
         $date = $validated['date'];
+        $remarks = $validated['remarks'] ?? [];
+        $now = now();
 
+        $records = [];
         foreach ($validated['attendance'] as $teacherId => $status) {
-            TeacherAttendance::updateOrCreate(
-                [
-                    'teacher_id' => $teacherId,
-                    'date' => $date,
-                ],
-                [
-                    'status' => $status,
-                    'remark' => $validated['remarks'][$teacherId] ?? null,
-                ]
+            $records[] = [
+                'teacher_id' => $teacherId,
+                'date' => $date,
+                'status' => $status,
+                'remark' => $remarks[$teacherId] ?? null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        if (!empty($records)) {
+            TeacherAttendance::upsert(
+                $records,
+                ['teacher_id', 'date'],
+                ['status', 'remark', 'updated_at']
             );
         }
+
+        Cache::forget('portal_dashboard_payload');
 
         return response()->json([
             'success' => true,
@@ -2499,27 +2580,35 @@ class ApiController extends Controller
         $className = $validated['class_name'];
         $subject = CourseSubject::findOrFail($validated['course_subject_id']);
         $maxScore = $validated['max_score'] ?? 100;
+        $now = now();
 
+        $records = [];
         foreach ($validated['scores'] as $studentId => $scoreVal) {
             if ($scoreVal !== null && $scoreVal !== '') {
                 $scoreFloat = (float) $scoreVal;
                 $gradeLetter = ExaminationScore::calculateGradeLetter($scoreFloat, $maxScore);
 
-                ExaminationScore::updateOrCreate(
-                    [
-                        'examination_id' => $examination->id,
-                        'student_id' => $studentId,
-                        'course_subject_id' => $subject->id,
-                    ],
-                    [
-                        'class_name' => $className,
-                        'subject_name' => $subject->name,
-                        'score' => $scoreFloat,
-                        'max_score' => $maxScore,
-                        'grade_letter' => $gradeLetter,
-                    ]
-                );
+                $records[] = [
+                    'examination_id' => $examination->id,
+                    'student_id' => $studentId,
+                    'course_subject_id' => $subject->id,
+                    'class_name' => $className,
+                    'subject_name' => $subject->name,
+                    'score' => $scoreFloat,
+                    'max_score' => $maxScore,
+                    'grade_letter' => $gradeLetter,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
             }
+        }
+
+        if (!empty($records)) {
+            ExaminationScore::upsert(
+                $records,
+                ['examination_id', 'student_id', 'course_subject_id'],
+                ['class_name', 'subject_name', 'score', 'max_score', 'grade_letter', 'updated_at']
+            );
         }
 
         return response()->json([
@@ -2718,7 +2807,9 @@ class ApiController extends Controller
         $className = $validated['class_name'];
         $matrix = $validated['matrix'];
         $subjects = CourseSubject::all()->keyBy('id');
+        $now = now();
 
+        $records = [];
         $savedCount = 0;
         foreach ($matrix as $studentId => $subjectScores) {
             if (!is_array($subjectScores)) continue;
@@ -2733,27 +2824,35 @@ class ApiController extends Controller
                 $subjectName = $subject ? $subject->name : 'N/A';
                 $gradeLetter = ExaminationScore::calculateGradeLetter($scoreFloat, 100);
 
-                ExaminationScore::updateOrCreate(
-                    [
-                        'examination_id' => $examination->id,
-                        'student_id' => $studentId,
-                        'course_subject_id' => $subjectId,
-                    ],
-                    [
-                        'class_name' => $className,
-                        'subject_name' => $subjectName,
-                        'score' => $scoreFloat,
-                        'max_score' => 100,
-                        'grade_letter' => $gradeLetter,
-                    ]
-                );
+                $records[] = [
+                    'examination_id' => $examination->id,
+                    'student_id' => $studentId,
+                    'course_subject_id' => $subjectId,
+                    'class_name' => $className,
+                    'subject_name' => $subjectName,
+                    'score' => $scoreFloat,
+                    'max_score' => 100,
+                    'grade_letter' => $gradeLetter,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
                 $savedCount++;
+            }
+        }
+
+        if (!empty($records)) {
+            foreach (array_chunk($records, 150) as $chunk) {
+                ExaminationScore::upsert(
+                    $chunk,
+                    ['examination_id', 'student_id', 'course_subject_id'],
+                    ['class_name', 'subject_name', 'score', 'max_score', 'grade_letter', 'updated_at']
+                );
             }
         }
 
         return response()->json([
             'success' => true,
-            'message' => "បានរក្សាទុកពិន្ទុតារាងរួមចំនួន {$savedCount} កំណត់ត្រាសម្រាប់ថ្នាក់ {$className} ដោយជោគជ័យ!",
+            'message' => "បានរក្សាទុកពិន្ទុតារាង Matrix ចំនួន {$savedCount} ធាតុ ដោយជោគជ័យ!",
         ]);
     }
 

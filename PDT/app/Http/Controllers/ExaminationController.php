@@ -77,26 +77,34 @@ class ExaminationController extends Controller
         $subject = CourseSubject::findOrFail($validated['course_subject_id']);
         $maxScore = $validated['max_score'] ?? 100;
 
+        $now = now();
+        $records = [];
         foreach ($validated['scores'] as $studentId => $scoreVal) {
             if ($scoreVal !== null && $scoreVal !== '') {
                 $scoreFloat = (float) $scoreVal;
                 $gradeLetter = ExaminationScore::calculateGradeLetter($scoreFloat, $maxScore);
 
-                ExaminationScore::updateOrCreate(
-                    [
-                        'examination_id' => $examination->id,
-                        'student_id' => $studentId,
-                        'course_subject_id' => $subject->id,
-                    ],
-                    [
-                        'class_name' => $className,
-                        'subject_name' => $subject->name,
-                        'score' => $scoreFloat,
-                        'max_score' => $maxScore,
-                        'grade_letter' => $gradeLetter,
-                    ]
-                );
+                $records[] = [
+                    'examination_id' => $examination->id,
+                    'student_id' => $studentId,
+                    'course_subject_id' => $subject->id,
+                    'class_name' => $className,
+                    'subject_name' => $subject->name,
+                    'score' => $scoreFloat,
+                    'max_score' => $maxScore,
+                    'grade_letter' => $gradeLetter,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
             }
+        }
+
+        if (!empty($records)) {
+            ExaminationScore::upsert(
+                $records,
+                ['examination_id', 'student_id', 'course_subject_id'],
+                ['class_name', 'subject_name', 'score', 'max_score', 'grade_letter', 'updated_at']
+            );
         }
 
         return back()->with('success', "បានបញ្ចូលពិន្ទុមុខវិជ្ជា {$subject->name} សម្រាប់ថ្នាក់ {$className} ដោយជោគជ័យ!");

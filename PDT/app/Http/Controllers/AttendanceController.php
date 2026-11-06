@@ -77,18 +77,27 @@ class AttendanceController extends Controller
         $date = $validated['date'];
         $academicYearId = $validated['academic_year_id'] ?? AcademicYear::where('is_current', true)->value('id');
 
+        $remarks = $validated['remarks'] ?? [];
+        $now = now();
+        $records = [];
         foreach ($validated['attendance'] as $studentId => $status) {
-            Attendance::updateOrCreate(
-                [
-                    'student_id' => $studentId,
-                    'date' => $date,
-                ],
-                [
-                    'class_name' => $className,
-                    'status' => $status,
-                    'remark' => $validated['remarks'][$studentId] ?? null,
-                    'academic_year_id' => $academicYearId,
-                ]
+            $records[] = [
+                'student_id' => $studentId,
+                'date' => $date,
+                'class_name' => $className,
+                'status' => $status,
+                'remark' => $remarks[$studentId] ?? null,
+                'academic_year_id' => $academicYearId,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        if (!empty($records)) {
+            Attendance::upsert(
+                $records,
+                ['student_id', 'date'],
+                ['class_name', 'status', 'remark', 'academic_year_id', 'updated_at']
             );
         }
 
@@ -123,16 +132,25 @@ class AttendanceController extends Controller
 
         $date = $validated['date'];
 
+        $remarks = $validated['remarks'] ?? [];
+        $now = now();
+        $records = [];
         foreach ($validated['attendance'] as $teacherId => $status) {
-            TeacherAttendance::updateOrCreate(
-                [
-                    'teacher_id' => $teacherId,
-                    'date' => $date,
-                ],
-                [
-                    'status' => $status,
-                    'remark' => $validated['remarks'][$teacherId] ?? null,
-                ]
+            $records[] = [
+                'teacher_id' => $teacherId,
+                'date' => $date,
+                'status' => $status,
+                'remark' => $remarks[$teacherId] ?? null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        if (!empty($records)) {
+            TeacherAttendance::upsert(
+                $records,
+                ['teacher_id', 'date'],
+                ['status', 'remark', 'updated_at']
             );
         }
 
