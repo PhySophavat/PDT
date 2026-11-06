@@ -53,40 +53,6 @@ Route::get('/health-db', function () {
         ], 500);
     }
 });
-Route::get('/debug-students', [ApiController::class, 'students']);
-Route::get('/api/test-no-auth', fn() => response()->json(['ok' => true]));
-Route::any('/api/debug-path/{any?}', function ($any = null) {
-    return response()->json([
-        'matched' => '/api/debug-path',
-        'path' => request()->path(),
-        'url' => request()->url(),
-        'uri' => $_SERVER['REQUEST_URI'] ?? null,
-        'baseUrl' => request()->getBaseUrl(),
-        'pathInfo' => request()->getPathInfo(),
-    ]);
-})->where('any', '.*');
-
-Route::fallback(function () {
-    return response()->json([
-        'fallback_triggered' => true,
-        'path' => request()->path(),
-        'url' => request()->url(),
-        'uri' => $_SERVER['REQUEST_URI'] ?? null,
-        'baseUrl' => request()->getBaseUrl(),
-        'pathInfo' => request()->getPathInfo(),
-        'script_name' => $_SERVER['SCRIPT_NAME'] ?? null,
-        'php_self' => $_SERVER['PHP_SELF'] ?? null,
-    ], 404);
-});
-Route::get('/debug-request/{any?}', function ($any = null) {
-    return response()->json([
-        'path' => request()->path(),
-        'url' => request()->url(),
-        'uri' => $_SERVER['REQUEST_URI'] ?? null,
-        'script' => $_SERVER['SCRIPT_NAME'] ?? null,
-        'php_self' => $_SERVER['PHP_SELF'] ?? null,
-    ]);
-})->where('any', '.*');
 
 // Public Student Registration via Link & QR Code
 use App\Http\Controllers\PublicRegistrationController;
