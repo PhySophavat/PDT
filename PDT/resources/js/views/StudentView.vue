@@ -55,12 +55,12 @@
     <!-- Filter Bar -->
     <FilterBar>
       <template #left>
-        <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
           <input 
             v-model="searchQuery"
             type="text" 
             :placeholder="t('common.searchPlaceholder')" 
-            class="px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs w-64 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-khmer"
+            class="px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-khmer"
           />
 
           <!-- Action when students are checked -->

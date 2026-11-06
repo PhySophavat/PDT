@@ -60,9 +60,9 @@
     window.__INITIAL_SETTINGS__ = {!! $initialSettingsJson !!};
   </script>
 </head>
-<body class="bg-[#dce4f7] min-h-screen p-2 sm:p-4 lg:p-6 flex items-center justify-center antialiased text-slate-800">
+<body class="bg-white sm:bg-[#dce4f7] min-h-screen p-0 sm:p-3 lg:p-6 flex items-center justify-center antialiased text-slate-800">
   <!-- Vue.js 3 Master Single Page Application Mount Point -->
-  <div id="app" class="w-full flex items-center justify-center">
+  <div id="app" class="w-full h-full min-h-screen flex items-center justify-center">
     <!-- Instant Loading Indicator while JS Chunks Mount -->
     <div class="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-slate-500 font-khmer p-6">
       <div class="w-16 h-16 rounded-2xl bg-white shadow-xl shadow-blue-500/10 border border-slate-200/80 flex items-center justify-center p-2 animate-pulse">

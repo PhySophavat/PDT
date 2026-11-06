@@ -15,8 +15,8 @@
         :class="[
           'bg-white border-r border-slate-100 flex flex-col justify-between transition-all duration-300 flex-shrink-0',
           sidebarOpen 
-            ? 'fixed md:static inset-y-0 left-0 w-64 shadow-2xl md:shadow-none z-50 md:z-30 translate-x-0' 
-            : 'w-14 sm:w-16 md:w-20 z-30 translate-x-0'
+            ? 'fixed md:static inset-y-0 left-0 w-72 shadow-2xl md:shadow-none z-50 md:z-30 translate-x-0' 
+            : 'fixed md:static inset-y-0 left-0 -translate-x-full md:translate-x-0 w-16 lg:w-20 z-50 md:z-30'
         ]"
       >
         <!-- Logo Header -->
@@ -192,6 +192,16 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
               </svg>
             </button>
+
+            <!-- Mobile Brand Title -->
+            <div class="flex items-center gap-2 md:hidden min-w-0">
+              <div class="w-7 h-7 rounded-lg overflow-hidden border border-slate-100 bg-white flex items-center justify-center p-0.5 shadow-2xs flex-shrink-0">
+                <img :src="schoolLogo || '/images/logo.png'" alt="Logo" class="w-full h-full object-contain" />
+              </div>
+              <span class="text-xs font-bold text-slate-900 truncate max-w-[130px] sm:max-w-none">
+                {{ schoolName || 'សាលារៀន ជំនាន់ថ្មី' }}
+              </span>
+            </div>
 
             <!-- Search Bar (Desktop/Tablet Only to prevent overcrowding on mobile) -->
             <div class="hidden md:block relative w-44 sm:w-64 lg:w-80 transition-all">
@@ -469,13 +479,95 @@
           </div>
         </header>
 
-        <!-- View Body Content (Scrollable Full Height) -->
-        <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        <!-- View Body Content (Scrollable Full Height with bottom padding for mobile bar) -->
+        <div class="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 pb-24 md:pb-8 space-y-4 sm:space-y-6">
           <slot />
         </div>
       </main>
 
     </div>
+
+    <!-- 3. MOBILE BOTTOM NAVIGATION BAR (Sticky thumb-friendly navigation on phones) -->
+    <nav 
+      class="md:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200/90 px-3 py-1.5 z-40 flex items-center justify-around shadow-[0_-4px_25px_rgba(0,0,0,0.06)]"
+      style="padding-bottom: max(0.375rem, env(safe-area-inset-bottom));"
+      aria-label="Mobile Bottom Navigation"
+    >
+      <!-- 1. Dashboard -->
+      <router-link 
+        to="/dashboard" 
+        @click="sidebarOpen = false"
+        :class="[
+          'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
+          isActive('/dashboard') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+        ]"
+      >
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        <span>ផ្ទាំងដើម</span>
+      </router-link>
+
+      <!-- 2. Attendance -->
+      <router-link 
+        to="/attendance" 
+        @click="sidebarOpen = false"
+        :class="[
+          'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
+          isActive('/attendance') || isActive('/teacher-attendance') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+        ]"
+      >
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <span>វត្តមាន</span>
+      </router-link>
+
+      <!-- 3. Students -->
+      <router-link 
+        to="/students" 
+        @click="sidebarOpen = false"
+        :class="[
+          'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
+          isActive('/students') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+        ]"
+      >
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/>
+        </svg>
+        <span>សិស្ស</span>
+      </router-link>
+
+      <!-- 4. Teachers -->
+      <router-link 
+        to="/teachers" 
+        @click="sidebarOpen = false"
+        :class="[
+          'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
+          isActive('/teachers') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+        ]"
+      >
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+        </svg>
+        <span>គ្រូ</span>
+      </router-link>
+
+      <!-- 5. All Menu (Opens full drawer) -->
+      <button 
+        type="button" 
+        @click="sidebarOpen = !sidebarOpen" 
+        :class="[
+          'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px] cursor-pointer',
+          sidebarOpen ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+        ]"
+      >
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        <span>ម៉ឺនុយ</span>
+      </button>
+    </nav>
 
     <!-- Logout Confirmation Modal -->
     <div 
