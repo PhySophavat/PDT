@@ -54,6 +54,7 @@ Route::get('/health-db', function () {
     }
 });
 Route::get('/debug-students', [ApiController::class, 'students']);
+Route::get('/api/test-no-auth', fn() => response()->json(['ok' => true]));
 Route::get('/debug-request/{any?}', function ($any = null) {
     return response()->json([
         'path' => request()->path(),
