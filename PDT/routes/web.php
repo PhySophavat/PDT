@@ -28,6 +28,10 @@ Route::get('/csrf-token', fn() => response()->json(['csrf_token' => csrf_token()
 Route::get('/manifest.json', fn() => response()->file(public_path('manifest.json'), ['Content-Type' => 'application/manifest+json']));
 Route::get('/site.webmanifest', fn() => response()->file(public_path('site.webmanifest'), ['Content-Type' => 'application/manifest+json']));
 Route::get('/sw.js', fn() => response()->file(public_path('sw.js'), ['Content-Type' => 'application/javascript']));
+Route::get('/icon-192.png', fn() => response()->file(public_path('icon-192.png'), ['Content-Type' => 'image/png']));
+Route::get('/icon-512.png', fn() => response()->file(public_path('icon-512.png'), ['Content-Type' => 'image/png']));
+Route::get('/apple-touch-icon.png', fn() => response()->file(public_path('apple-touch-icon.png'), ['Content-Type' => 'image/png']));
+
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
