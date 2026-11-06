@@ -9,19 +9,6 @@
     >
       <template #extraActions>
         <button 
-          v-if="students.length > 0"
-          @click="openDeleteAllModal" 
-          type="button"
-          class="inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white rounded-full px-4 py-2 text-xs font-semibold shadow-md shadow-rose-600/20 transition-all hover:shadow-lg hover:shadow-rose-600/30 active:scale-95 cursor-pointer"
-          title="លុបសិស្សទាំងអស់ចេញពីប្រព័ន្ធ"
-        >
-          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-          </svg>
-          <span>🗑️ លុបសិស្សទាំងអស់</span>
-        </button>
-
-        <button 
           @click="openBulkScanModal" 
           type="button"
           class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-4 py-2 text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all hover:shadow-lg hover:shadow-indigo-600/30 active:scale-95 cursor-pointer"
