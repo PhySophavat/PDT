@@ -63,6 +63,7 @@ return [
                     $ca = env('MYSQL_ATTR_SSL_CA');
                     if ($ca && file_exists($ca)) return realpath($ca);
                     if ($ca && file_exists(base_path($ca))) return realpath(base_path($ca));
+                    if (file_exists('/tmp/storage/certs/ca.pem')) return '/tmp/storage/certs/ca.pem';
                     if (file_exists(storage_path('certs/ca.pem'))) return realpath(storage_path('certs/ca.pem'));
                     if (file_exists('C:\\xampp\\apache\\bin\\curl-ca-bundle.crt')) return 'C:\\xampp\\apache\\bin\\curl-ca-bundle.crt';
                     if (file_exists('/etc/ssl/certs/ca-certificates.crt')) return '/etc/ssl/certs/ca-certificates.crt';
@@ -92,6 +93,7 @@ return [
                     $ca = env('MYSQL_ATTR_SSL_CA');
                     if ($ca && file_exists($ca)) return realpath($ca);
                     if ($ca && file_exists(base_path($ca))) return realpath(base_path($ca));
+                    if (file_exists('/tmp/storage/certs/ca.pem')) return '/tmp/storage/certs/ca.pem';
                     if (file_exists(storage_path('certs/ca.pem'))) return realpath(storage_path('certs/ca.pem'));
                     if (file_exists('C:\\xampp\\apache\\bin\\curl-ca-bundle.crt')) return 'C:\\xampp\\apache\\bin\\curl-ca-bundle.crt';
                     if (file_exists('/etc/ssl/certs/ca-certificates.crt')) return '/etc/ssl/certs/ca-certificates.crt';

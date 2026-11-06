@@ -44,6 +44,15 @@
     "VIEW_COMPILED_PATH": "/tmp/storage/framework/views",
     "CACHE_STORE": "array",
     "SESSION_DRIVER": "cookie",
-    "LOG_CHANNEL": "stderr"
+    "LOG_CHANNEL": "stderr",
+    "DB_CONNECTION": "mysql",
+    "DB_HOST": "gateway01.ap-southeast-1.prod.aws.tidbcloud.com",
+    "DB_PORT": "4000",
+    "DB_DATABASE": "pdt",
+    "DB_USERNAME": "3mw5PACCeLp6Wb8.root",
+    "DB_PASSWORD": "H5GamPQkivCPJqR9",
+    "DB_SSL": "true",
+    "MYSQL_ATTR_SSL_CA": "storage/certs/ca.pem",
+    "MYSQL_ATTR_SSL_VERIFY_SERVER_CERT": "false"
   }
 }

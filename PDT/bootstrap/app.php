@@ -12,6 +12,14 @@ $app = Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+            'public/*',
+            'leave-request*',
+            'teacher-leave-request*',
+            'register-*',
+            'register/*',
+        ]);
         $middleware->alias([
             'protect.route' => \App\Http\Middleware\ProtectRoute::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,

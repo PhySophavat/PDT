@@ -15,6 +15,7 @@ $dirs = [
     '/tmp/storage/framework/sessions',
     '/tmp/storage/framework/cache',
     '/tmp/storage/logs',
+    '/tmp/storage/certs',
     '/tmp/bootstrap/cache',
 ];
 
@@ -22,6 +23,13 @@ foreach ($dirs as $dir) {
     if (!is_dir($dir)) {
         @mkdir($dir, 0777, true);
     }
+}
+
+// Copy SSL CA certificate to /tmp for TiDB Cloud MySQL connection
+$caSrc = __DIR__ . '/../storage/certs/ca.pem';
+$caDest = '/tmp/storage/certs/ca.pem';
+if (file_exists($caSrc) && !file_exists($caDest)) {
+    @copy($caSrc, $caDest);
 }
 
 // Warm up package discovery caches for ultra-fast serverless boots
@@ -76,12 +84,45 @@ if (!getenv('LOG_CHANNEL') || getenv('LOG_CHANNEL') === 'stack') {
 }
 
 // 3. Database configuration for Vercel
-// If an external MySQL DB is configured in Vercel Environment Variables, use MySQL.
-// Otherwise, copy pre-seeded database/database.sqlite to /tmp/database.sqlite for instant out-of-the-box working!
-if (!getenv('DB_CONNECTION') || getenv('DB_CONNECTION') === 'sqlite') {
-    putenv('DB_CONNECTION=sqlite');
-    $_ENV['DB_CONNECTION'] = 'sqlite';
+// Production permanently stores data in TiDB Cloud MySQL.
+$dbConn = getenv('DB_CONNECTION');
+if (!$dbConn || $dbConn === 'mysql') {
+    putenv('DB_CONNECTION=mysql');
+    $_ENV['DB_CONNECTION'] = 'mysql';
 
+    if (!getenv('DB_HOST')) {
+        putenv('DB_HOST=gateway01.ap-southeast-1.prod.aws.tidbcloud.com');
+        $_ENV['DB_HOST'] = 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com';
+    }
+    if (!getenv('DB_PORT')) {
+        putenv('DB_PORT=4000');
+        $_ENV['DB_PORT'] = '4000';
+    }
+    if (!getenv('DB_DATABASE')) {
+        putenv('DB_DATABASE=pdt');
+        $_ENV['DB_DATABASE'] = 'pdt';
+    }
+    if (!getenv('DB_USERNAME')) {
+        putenv('DB_USERNAME=3mw5PACCeLp6Wb8.root');
+        $_ENV['DB_USERNAME'] = '3mw5PACCeLp6Wb8.root';
+    }
+    if (!getenv('DB_PASSWORD')) {
+        putenv('DB_PASSWORD=H5GamPQkivCPJqR9');
+        $_ENV['DB_PASSWORD'] = 'H5GamPQkivCPJqR9';
+    }
+    if (!getenv('DB_SSL')) {
+        putenv('DB_SSL=true');
+        $_ENV['DB_SSL'] = 'true';
+    }
+    if (!getenv('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT')) {
+        putenv('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT=false');
+        $_ENV['MYSQL_ATTR_SSL_VERIFY_SERVER_CERT'] = 'false';
+    }
+    if (file_exists($caDest)) {
+        putenv("MYSQL_ATTR_SSL_CA={$caDest}");
+        $_ENV['MYSQL_ATTR_SSL_CA'] = $caDest;
+    }
+} elseif ($dbConn === 'sqlite') {
     $sqliteDest = '/tmp/database.sqlite';
     $sqliteSrc = __DIR__ . '/../database/database.sqlite';
 
