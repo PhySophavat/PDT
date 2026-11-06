@@ -128,5 +128,13 @@ if (!$dbConn || $dbConn === 'mysql') {
 putenv('APP_DEBUG=true');
 $_ENV['APP_DEBUG'] = 'true';
 
-// 4. Forward to public index.php
+// 4. Normalize server variables so Symfony does NOT treat /api as the base path.
+// When index.php is placed inside /api/ on Vercel, Symfony Request computes baseUrl as '/api'
+// and strips '/api' from the incoming request path (turning '/api/students' into '/students'
+// and returning the HTML SPA page instead of the students JSON API).
+$_SERVER['SCRIPT_NAME'] = '/index.php';
+$_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/../public/index.php';
+$_SERVER['PHP_SELF'] = '/index.php';
+
+// 5. Forward to public index.php
 require __DIR__ . '/../public/index.php';
