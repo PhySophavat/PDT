@@ -54,6 +54,15 @@ Route::get('/health-db', function () {
     }
 });
 Route::get('/debug-students', [ApiController::class, 'students']);
+Route::get('/debug-request/{any?}', function ($any = null) {
+    return response()->json([
+        'path' => request()->path(),
+        'url' => request()->url(),
+        'uri' => $_SERVER['REQUEST_URI'] ?? null,
+        'script' => $_SERVER['SCRIPT_NAME'] ?? null,
+        'php_self' => $_SERVER['PHP_SELF'] ?? null,
+    ]);
+})->where('any', '.*');
 
 // Public Student Registration via Link & QR Code
 use App\Http\Controllers\PublicRegistrationController;
@@ -83,6 +92,7 @@ Route::middleware(['auth'])->group(function () {
 
     // JSON API Endpoints for Vue 3 frontend
     Route::prefix('api')->group(function () {
+        Route::get('/debug-test', fn() => response()->json(['inside_api' => true]));
         Route::get('/dashboard', [ApiController::class, 'dashboard']);
         Route::get('/notifications/pending', [ApiController::class, 'getPendingNotifications']);
         Route::get('/students', [ApiController::class, 'students']);
