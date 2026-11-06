@@ -1099,7 +1099,7 @@
             </button>
             <button 
               @click="submitBulkStudents" 
-              :disabled="bulkStudents.length === 0 || isSubmittingBulk" 
+              :disabled="pendingBulkCount === 0 || isSubmittingBulk" 
               type="button" 
               class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/30 transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
             >
@@ -1107,7 +1107,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
               </svg>
               <div v-else class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>{{ isSubmittingBulk ? 'កំពុងរក្សាទុក...' : `✅ រក្សាទុកសិស្សទាំងអស់ (${bulkStudents.length} នាក់)` }}</span>
+              <span>{{ isSubmittingBulk ? 'កំពុងរក្សាទុក...' : `✅ រក្សាទុកសិស្សទាំងអស់ (${pendingBulkCount} នាក់)` }}</span>
             </button>
           </div>
         </div>
@@ -1200,6 +1200,17 @@ const referenceImageUrl = ref('');
 const imageExpanded = ref(false);
 const quickEntryText = ref('');
 const quickEntryNameRefs = ref([]);
+
+const pendingBulkCount = computed(() => {
+  if (bulkStudents.value.length > 0) return bulkStudents.value.length;
+  if (quickEntryText.value && quickEntryText.value.trim()) {
+    return quickEntryText.value.split('\n').filter(l => l.trim().length >= 2).length;
+  }
+  if (pasteTextContent.value && pasteTextContent.value.trim()) {
+    return pasteTextContent.value.split('\n').filter(l => l.trim().length >= 2).length;
+  }
+  return 0;
+});
 
 const showCreateModal = ref(false);
 const isSubmittingCreate = ref(false);
@@ -1880,6 +1891,15 @@ const parsePastedText = () => {
 };
 
 const submitBulkStudents = async () => {
+  // If bulkStudents is empty, automatically parse quickEntryText or pasteTextContent
+  if (bulkStudents.value.length === 0) {
+    if (quickEntryText.value && quickEntryText.value.trim()) {
+      parseQuickEntry();
+    } else if (pasteTextContent.value && pasteTextContent.value.trim()) {
+      parsePastedText();
+    }
+  }
+
   if (bulkStudents.value.length === 0) return;
 
   const invalid = bulkStudents.value.some(s => !s.name || !s.name.trim());
