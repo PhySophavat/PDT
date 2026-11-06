@@ -392,15 +392,7 @@
           <p class="font-bold text-slate-800 text-sm">មិនទាន់មានទិន្នន័យសិស្សនៅក្នុងថ្នាក់ {{ selectedMatrixClass }} នៅឡើយទេ</p>
           <p class="text-xs text-slate-500 mt-1">សូមជ្រើសរើសថ្នាក់ដែលមានទិន្នន័យស្រាប់ ឬចុចប៊ូតុងខាងក្រោមដើម្បីបង្ហាញតារាងពិន្ទុពេញ៖</p>
         </div>
-        <div class="flex items-center justify-center gap-2 pt-1">
-          <button 
-            type="button" 
-            @click="selectedMatrixClass = '7A'; loadMatrixSheet()" 
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5"
-          >
-            <span>👉 បង្ហាញថ្នាក់ 7A (សិស្ស ៩៥ នាក់)</span>
-          </button>
-        </div>
+       
       </div>
       <div v-else class="overflow-x-auto border border-slate-200 rounded-xl shadow-inner max-h-[calc(100vh-280px)] min-h-[400px] overflow-y-auto">
         <table class="w-full text-left text-xs whitespace-nowrap">
