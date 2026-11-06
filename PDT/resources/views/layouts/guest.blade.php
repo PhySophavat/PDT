@@ -14,6 +14,18 @@
     <title>@yield('title', 'sala-portal')</title>
     <link rel="icon" type="image/png" href="{{ $logoUrl }}">
 
+    <!-- Progressive Web App (PWA) Meta & Links -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="application-name" content="សាលារៀន">
+    <meta name="apple-mobile-web-app-title" content="សាលារៀន">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+
     <!-- Google Fonts: Kantumruy Pro & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -100,6 +112,7 @@
         <p class="text-[11px] text-slate-500 font-medium">Developed by <span class="font-bold text-slate-700">Phy Sophavat</span></p>
     </footer>
 
+    @include('partials.pwa-prompt')
     @stack('scripts')
 </body>
 </html>

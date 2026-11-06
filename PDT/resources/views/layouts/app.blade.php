@@ -41,6 +41,18 @@
   @endphp
   <link id="app-favicon" rel="icon" type="image/png" href="{{ $logoUrl }}">
   
+  <!-- Progressive Web App (PWA) Meta & Links -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="application-name" content="{{ $cachedSettings['school_name'] }}">
+  <meta name="apple-mobile-web-app-title" content="{{ $cachedSettings['school_name'] }}">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+  
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 
   <script>
@@ -63,6 +75,7 @@
     </div>
   </div>
 
+  @include('partials.pwa-prompt')
   @stack('scripts')
 </body>
 </html>

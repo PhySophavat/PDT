@@ -23,6 +23,12 @@ use App\Http\Controllers\SubjectController;
 // Authentication
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
 Route::get('/csrf-token', fn() => response()->json(['csrf_token' => csrf_token()]))->name('csrf-token');
+
+// PWA Fallbacks
+Route::get('/manifest.json', fn() => response()->file(public_path('manifest.json'), ['Content-Type' => 'application/manifest+json']));
+Route::get('/site.webmanifest', fn() => response()->file(public_path('site.webmanifest'), ['Content-Type' => 'application/manifest+json']));
+Route::get('/sw.js', fn() => response()->file(public_path('sw.js'), ['Content-Type' => 'application/javascript']));
+
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
