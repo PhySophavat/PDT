@@ -50,6 +50,7 @@ Route::middleware(['auth'])->group(function () {
     // JSON API Endpoints for Vue 3 frontend
     Route::prefix('api')->group(function () {
         Route::get('/dashboard', [ApiController::class, 'dashboard']);
+        Route::get('/notifications/pending', [ApiController::class, 'getPendingNotifications']);
         Route::get('/students', [ApiController::class, 'students']);
         Route::post('/students', [ApiController::class, 'storeStudent']);
         Route::post('/students/scan-ocr', [ApiController::class, 'scanStudentsOcr']);

@@ -234,6 +234,104 @@ class ApiController extends Controller
     }
 
     /**
+     * Get real pending notifications (new registered students, teachers, and leave requests)
+     */
+    public function getPendingNotifications(Request $request)
+    {
+        // 1. Pending Students
+        $pendingStudents = Student::with('user')
+            ->where('status', 'pending')
+            ->latest()
+            ->take(20)
+            ->get();
+        $studentCount = Student::where('status', 'pending')->count();
+
+        // 2. Pending Teachers
+        $pendingTeachers = Teacher::with('user')
+            ->where('status', 'pending')
+            ->latest()
+            ->take(20)
+            ->get();
+        $teacherCount = Teacher::where('status', 'pending')->count();
+
+        // 3. Pending Student Leave Requests (សុំច្បាប់)
+        $pendingLeaves = StudentLeaveRequest::with('student')
+            ->where('status', 'pending')
+            ->latest()
+            ->take(20)
+            ->get();
+        $leaveCount = StudentLeaveRequest::where('status', 'pending')->count();
+
+        $notifications = collect();
+
+        foreach ($pendingStudents as $st) {
+            $name = $st->name_khmer ?: ($st->user?->name ?: ($st->name_latin ?: 'សិស្សថ្មី'));
+            $notifications->push([
+                'id' => 'student-' . $st->id,
+                'type' => 'student',
+                'type_label' => 'សិស្សចុះឈ្មោះថ្មី',
+                'name' => $name,
+                'title' => "សិស្ស {$name} បានចុះឈ្មោះចូលរៀន",
+                'subtitle' => 'ស្នើសុំចូលរៀនថ្នាក់ ' . ($st->grade ?: 'N/A') . ' • ' . ($st->phone ?: 'គ្មានលេខទូរស័ព្ទ'),
+                'time' => $st->created_at ? $st->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                'timestamp' => $st->created_at ? $st->created_at->timestamp : 0,
+                'link' => '/students?tab=pending',
+                'icon' => 'fa-solid fa-user-graduate',
+                'badge_color' => 'bg-emerald-500',
+                'bg_color' => 'bg-emerald-50 text-emerald-700 border-emerald-100',
+            ]);
+        }
+
+        foreach ($pendingTeachers as $tc) {
+            $name = $tc->name_khmer ?: ($tc->user?->name ?: ($tc->name_latin ?: 'គ្រូថ្មី'));
+            $notifications->push([
+                'id' => 'teacher-' . $tc->id,
+                'type' => 'teacher',
+                'type_label' => 'គ្រូចុះឈ្មោះថ្មី',
+                'name' => $name,
+                'title' => "លោកគ្រូ/អ្នកគ្រូ {$name} បានចុះឈ្មោះ",
+                'subtitle' => 'ឯកទេស ' . ($tc->specialization ?: ($tc->subject ?: 'ទូទៅ')) . ' • ' . ($tc->phone ?: 'គ្មានលេខទូរស័ព្ទ'),
+                'time' => $tc->created_at ? $tc->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                'timestamp' => $tc->created_at ? $tc->created_at->timestamp : 0,
+                'link' => '/teachers?tab=pending',
+                'icon' => 'fa-solid fa-chalkboard-user',
+                'badge_color' => 'bg-blue-500',
+                'bg_color' => 'bg-blue-50 text-blue-700 border-blue-100',
+            ]);
+        }
+
+        foreach ($pendingLeaves as $lv) {
+            $name = $lv->student_name ?: ($lv->student?->name_khmer ?: 'សិស្ស');
+            $notifications->push([
+                'id' => 'leave-' . $lv->id,
+                'type' => 'leave',
+                'type_label' => 'សំណើសុំច្បាប់',
+                'name' => $name,
+                'title' => "សិស្ស {$name} សុំច្បាប់ឈប់សម្រាក",
+                'subtitle' => 'ថ្នាក់ ' . ($lv->class_name ?: 'N/A') . ' • រយៈពេល ' . ($lv->days_count ?: 1) . ' ថ្ងៃ (' . ($lv->reason ?: 'មានធុរៈផ្ទាល់ខ្លួន') . ')',
+                'time' => $lv->created_at ? $lv->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                'timestamp' => $lv->created_at ? $lv->created_at->timestamp : 0,
+                'link' => '/attendance?tab=leaves',
+                'icon' => 'fa-solid fa-calendar-minus',
+                'badge_color' => 'bg-amber-500',
+                'bg_color' => 'bg-amber-50 text-amber-700 border-amber-100',
+            ]);
+        }
+
+        $sortedNotifications = $notifications->sortByDesc('timestamp')->values();
+
+        return response()->json([
+            'total_count' => $studentCount + $teacherCount + $leaveCount,
+            'counts' => [
+                'students' => $studentCount,
+                'teachers' => $teacherCount,
+                'leaves' => $leaveCount,
+            ],
+            'notifications' => $sortedNotifications,
+        ]);
+    }
+
+    /**
      * Sort collection of students strictly by Khmer Alphabetical Order (អក្ខរក្រមខ្មែរ)
      */
     protected function sortStudentsByKhmerAlphabet($students, string $nameKey = 'name')

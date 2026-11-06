@@ -696,8 +696,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onActivated } from 'vue';
+import { ref, computed, onMounted, onActivated, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 import axios from 'axios';
 import QRCode from 'qrcode';
 import PageHeader from '../components/PageHeader.vue';
@@ -706,9 +707,13 @@ import StatCard from '../components/StatCard.vue';
 import DataTable from '../components/DataTable.vue';
 
 const { t } = useI18n();
+const route = useRoute();
 
 // Tab state: 'matrix', 'daily', or 'leaves'
-const activeTab = ref('matrix');
+const activeTab = ref(route.query?.tab || 'matrix');
+watch(() => route.query?.tab, (tab) => {
+  if (tab) activeTab.value = tab;
+});
 const filterStatus = ref('all');
 const isLoading = ref(true);
 

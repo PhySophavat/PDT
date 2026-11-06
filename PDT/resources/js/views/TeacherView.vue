@@ -609,9 +609,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onActivated } from 'vue';
+import { ref, computed, onMounted, onActivated, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 import QRCode from 'qrcode';
 import PageHeader from '../components/PageHeader.vue';
@@ -622,8 +622,12 @@ import DataTable from '../components/DataTable.vue';
 
 const { t } = useI18n();
 const router = useRouter();
+const route = useRoute();
 
-const activeTab = ref('all');
+const activeTab = ref(route.query?.tab || 'all');
+watch(() => route.query?.tab, (tab) => {
+  if (tab) activeTab.value = tab;
+});
 const searchQuery = ref('');
 const genderFilter = ref('all');
 

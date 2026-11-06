@@ -279,21 +279,193 @@
               </div>
             </div>
 
-            <!-- Cyan Message Badge -->
-            <button class="relative w-8 h-8 rounded-full bg-[#e8f7fa] text-[#0891b2] flex items-center justify-center hover:bg-[#d6f0f5] transition" title="Messages">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-              </svg>
-              <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#00bcd4] text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white">4</span>
-            </button>
+            <!-- Dynamic Notification Bell & Dropdown for New Students, Teachers & Leave Requests -->
+            <div class="relative" ref="notificationDropdownRef">
+              <button 
+                type="button"
+                @click.stop="toggleNotificationDropdown"
+                class="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#fef2f2] text-[#ef4444] flex items-center justify-center hover:bg-[#fee2e2] transition shadow-xs cursor-pointer"
+                title="ការជូនដំណឹង (Notifications)"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+                <span 
+                  v-if="pendingTotalCount > 0" 
+                  class="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[#ef4444] text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs animate-pulse"
+                >
+                  {{ pendingTotalCount > 99 ? '99+' : pendingTotalCount }}
+                </span>
+              </button>
 
-            <!-- Red Notification Bell Badge -->
-            <button class="relative w-8 h-8 rounded-full bg-[#fef2f2] text-[#ef4444] flex items-center justify-center hover:bg-[#fee2e2] transition" title="Notifications">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-              </svg>
-              <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#ef4444] text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white">8</span>
-            </button>
+              <!-- Notifications Dropdown Menu -->
+              <transition
+                enter-active-class="transition duration-200 ease-out"
+                enter-from-class="opacity-0 translate-y-1 scale-95"
+                enter-to-class="opacity-100 translate-y-0 scale-100"
+                leave-active-class="transition duration-150 ease-in"
+                leave-from-class="opacity-100 translate-y-0 scale-100"
+                leave-to-class="opacity-0 translate-y-1 scale-95"
+              >
+                <div 
+                  v-if="showNotificationDropdown" 
+                  class="absolute right-0 top-11 sm:top-12 z-50 w-80 sm:w-96 rounded-2xl bg-white shadow-2xl border border-slate-200/90 overflow-hidden font-khmer animate-in fade-in"
+                  @click.stop
+                >
+                  <!-- Header -->
+                  <div class="px-4 py-3 bg-gradient-to-r from-slate-50 to-rose-50/40 border-b border-slate-100 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-bell"></i>
+                      </div>
+                      <div>
+                        <h4 class="text-xs font-bold text-slate-800 leading-tight">ការជូនដំណឹង (Notifications)</h4>
+                        <p class="text-[10px] text-slate-400">សំណើរង់ចាំការអនុម័ត</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="pendingTotalCount > 0 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-500'">
+                        {{ pendingTotalCount }} សំណើ
+                      </span>
+                      <button 
+                        type="button" 
+                        @click="fetchPendingNotifications" 
+                        class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition text-[11px] cursor-pointer" 
+                        title="ផ្ទុកឡើងវិញ"
+                      >
+                        <i class="fa-solid fa-arrows-rotate" :class="{ 'fa-spin': isLoadingNotifications }"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Filter Pills: ទាំងអស់ | សិស្សថ្មី | គ្រូថ្មី | សុំច្បាប់ -->
+                  <div class="p-2 border-b border-slate-100 bg-slate-50/50 flex items-center gap-1 overflow-x-auto text-[11px]">
+                    <button
+                      type="button"
+                      @click="notificationFilter = 'all'"
+                      :class="[
+                        'px-2.5 py-1 rounded-lg transition font-medium whitespace-nowrap cursor-pointer',
+                        notificationFilter === 'all' ? 'bg-white text-blue-700 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
+                      ]"
+                    >
+                      ទាំងអស់ ({{ pendingTotalCount }})
+                    </button>
+                    <button
+                      type="button"
+                      @click="notificationFilter = 'student'"
+                      :class="[
+                        'px-2.5 py-1 rounded-lg transition font-medium whitespace-nowrap cursor-pointer',
+                        notificationFilter === 'student' ? 'bg-white text-emerald-700 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
+                      ]"
+                    >
+                      សិស្សថ្មី ({{ pendingCounts.students }})
+                    </button>
+                    <button
+                      type="button"
+                      @click="notificationFilter = 'teacher'"
+                      :class="[
+                        'px-2.5 py-1 rounded-lg transition font-medium whitespace-nowrap cursor-pointer',
+                        notificationFilter === 'teacher' ? 'bg-white text-blue-700 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
+                      ]"
+                    >
+                      គ្រូថ្មី ({{ pendingCounts.teachers }})
+                    </button>
+                    <button
+                      type="button"
+                      @click="notificationFilter = 'leave'"
+                      :class="[
+                        'px-2.5 py-1 rounded-lg transition font-medium whitespace-nowrap cursor-pointer',
+                        notificationFilter === 'leave' ? 'bg-white text-amber-700 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
+                      ]"
+                    >
+                      សុំច្បាប់ ({{ pendingCounts.leaves }})
+                    </button>
+                  </div>
+
+                  <!-- Notifications Items List -->
+                  <div class="max-h-80 overflow-y-auto divide-y divide-slate-50">
+                    <div v-if="isLoadingNotifications && pendingNotificationItems.length === 0" class="py-8 text-center text-xs text-slate-400">
+                      <i class="fa-solid fa-circle-notch fa-spin text-base text-blue-500 mb-2"></i>
+                      <p>កំពុងផ្ទុកការជូនដំណឹង...</p>
+                    </div>
+
+                    <div v-else-if="filteredNotificationItems.length === 0" class="py-8 px-4 text-center space-y-2">
+                      <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mx-auto text-base">
+                        <i class="fa-solid fa-check"></i>
+                      </div>
+                      <p class="text-xs font-bold text-slate-700">ពុំមានសំណើរង់ចាំការអនុម័តឡើយ</p>
+                      <p class="text-[10px] text-slate-400">រាល់ការចុះឈ្មោះ និងសំណើសុំច្បាប់ត្រូវបានអនុម័តរួចរាល់</p>
+                    </div>
+
+                    <div 
+                      v-else
+                      v-for="item in filteredNotificationItems" 
+                      :key="item.id"
+                      @click="goToNotificationLink(item.link)"
+                      class="p-3 hover:bg-slate-50/80 transition flex items-start gap-2.5 cursor-pointer group"
+                    >
+                      <!-- Type Icon Badge -->
+                      <div 
+                        class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs border shadow-xs"
+                        :class="item.bg_color"
+                      >
+                        <i :class="item.icon"></i>
+                      </div>
+
+                      <!-- Details -->
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-1 mb-0.5">
+                          <span 
+                            class="text-[9px] font-bold px-1.5 py-0.2 rounded"
+                            :class="item.type === 'student' ? 'bg-emerald-100 text-emerald-800' : (item.type === 'teacher' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800')"
+                          >
+                            {{ item.type_label }}
+                          </span>
+                          <span class="text-[10px] text-slate-400 shrink-0">{{ item.time }}</span>
+                        </div>
+                        <h5 class="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition leading-snug truncate">
+                          {{ item.title }}
+                        </h5>
+                        <p class="text-[11px] text-slate-500 truncate mt-0.5">
+                          {{ item.subtitle }}
+                        </p>
+                      </div>
+
+                      <div class="shrink-0 text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition text-xs mt-2">
+                        <i class="fa-solid fa-chevron-right"></i>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Footer Shortcuts -->
+                  <div class="p-2.5 bg-slate-50/90 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                    <button 
+                      type="button" 
+                      @click="goToNotificationLink('/students?tab=pending')"
+                      class="hover:text-blue-700 hover:underline cursor-pointer"
+                    >
+                      សិស្សរង់ចាំ
+                    </button>
+                    <span>•</span>
+                    <button 
+                      type="button" 
+                      @click="goToNotificationLink('/teachers?tab=pending')"
+                      class="hover:text-blue-700 hover:underline cursor-pointer"
+                    >
+                      គ្រូរង់ចាំ
+                    </button>
+                    <span>•</span>
+                    <button 
+                      type="button" 
+                      @click="goToNotificationLink('/attendance?tab=leaves')"
+                      class="hover:text-blue-700 hover:underline cursor-pointer"
+                    >
+                      សុំច្បាប់រង់ចាំ
+                    </button>
+                  </div>
+                </div>
+              </transition>
+            </div>
           </div>
         </header>
 
@@ -348,8 +520,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { setLocale } from '../i18n';
@@ -375,9 +547,58 @@ import { updateFavicon } from '../utils/favicon';
 
 const { t, locale } = useI18n();
 const route = useRoute();
+const router = useRouter();
 const sidebarOpen = ref(true);
 const isFullscreen = ref(false);
 const openDropdowns = ref(['attendance']);
+
+// Notification System (Pending Students, Teachers, and Leave Requests)
+const showNotificationDropdown = ref(false);
+const notificationDropdownRef = ref(null);
+const isLoadingNotifications = ref(false);
+const notificationFilter = ref('all');
+const pendingTotalCount = ref(0);
+const pendingCounts = ref({ students: 0, teachers: 0, leaves: 0 });
+const pendingNotificationItems = ref([]);
+
+const filteredNotificationItems = computed(() => {
+  if (notificationFilter.value === 'all') return pendingNotificationItems.value;
+  return pendingNotificationItems.value.filter(n => n.type === notificationFilter.value);
+});
+
+const toggleNotificationDropdown = () => {
+  showNotificationDropdown.value = !showNotificationDropdown.value;
+  if (showNotificationDropdown.value) {
+    fetchPendingNotifications();
+  }
+};
+
+const goToNotificationLink = (link) => {
+  showNotificationDropdown.value = false;
+  router.push(link);
+};
+
+const fetchPendingNotifications = async () => {
+  isLoadingNotifications.value = true;
+  try {
+    const res = await axios.get('/api/notifications/pending');
+    if (res.data) {
+      pendingTotalCount.value = res.data.total_count || 0;
+      pendingCounts.value = res.data.counts || { students: 0, teachers: 0, leaves: 0 };
+      pendingNotificationItems.value = res.data.notifications || [];
+    }
+  } catch (err) {
+    console.error('Failed to fetch pending notifications:', err);
+  } finally {
+    isLoadingNotifications.value = false;
+  }
+};
+
+const handleDocClick = (e) => {
+  if (notificationDropdownRef.value && !notificationDropdownRef.value.contains(e.target)) {
+    showNotificationDropdown.value = false;
+  }
+};
 
 // Logout Confirmation Modal State & Handlers
 const showLogoutModal = ref(false);
@@ -580,6 +801,17 @@ onMounted(() => {
     if (e.key === 'pdt_school_name_en' && e.newValue) {
       schoolNameEn.value = e.newValue;
     }
+  });
+
+  document.addEventListener('click', handleDocClick);
+  fetchPendingNotifications();
+  const notifInterval = setInterval(fetchPendingNotifications, 30000);
+  window.addEventListener('pdt-data-updated', fetchPendingNotifications);
+
+  onUnmounted(() => {
+    document.removeEventListener('click', handleDocClick);
+    clearInterval(notifInterval);
+    window.removeEventListener('pdt-data-updated', fetchPendingNotifications);
   });
 });
 
