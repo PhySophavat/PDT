@@ -1,12 +1,62 @@
 <template>
   <div class="space-y-6 font-khmer">
-    <!-- Header -->
+    <!-- Header with Extra Action Button for Mobile App Install -->
     <PageHeader 
       :title="$t('settings.title')" 
       :breadcrumb="$t('nav.websiteSetting')" 
       :actionLabel="$t('common.save')"
       @action="handleSave"
-    />
+    >
+      <template #extraActions>
+        <button 
+          type="button" 
+          @click="openPwaModal" 
+          class="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold rounded-full shadow-md shadow-blue-500/20 transition hover:shadow-lg active:scale-95 cursor-pointer"
+        >
+          <i class="fa-solid fa-mobile-screen-button text-sm"></i>
+          <span>ដំឡើង App លើទូរស័ព្ទ</span>
+        </button>
+      </template>
+    </PageHeader>
+
+    <!-- Always-Visible PWA Install Banner on Settings Page -->
+    <div class="p-4 sm:p-5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white rounded-3xl shadow-xl shadow-blue-500/20 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl flex-shrink-0 shadow-inner">
+          <i class="fa-solid fa-mobile-screen-button"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="text-sm font-bold text-white tracking-tight">ដំឡើងកម្មវិធីសាលារៀនលើទូរស័ព្ទ (School Mobile App)</h3>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-400 text-emerald-950">PWA Ready</span>
+          </div>
+          <p class="text-xs text-blue-100 mt-0.5">
+            ដំឡើងលើអេក្រង់ទូរស័ព្ទដើម្បីបើកលឿន ពេញអេក្រង់ និងមិនបាច់ Login ម្ដងទៀត (ទោះបីធ្លាប់ចុចខ្វែង X ពីមុនក៏អាចដំឡើងបានគ្រប់ពេល)
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5 w-full md:w-auto justify-end flex-shrink-0">
+        <button 
+          type="button" 
+          @click="openPwaModal" 
+          class="px-5 py-2.5 bg-white text-blue-700 hover:bg-blue-50 rounded-xl font-bold text-xs shadow-md transition flex items-center justify-center gap-2 active:scale-95 cursor-pointer flex-1 md:flex-none"
+        >
+          <i class="fa-solid fa-download"></i>
+          <span>ដំឡើង App ឥឡូវនេះ</span>
+        </button>
+
+        <button 
+          type="button" 
+          @click="restoreFloatingButton" 
+          class="px-3.5 py-2.5 bg-white/15 hover:bg-white/25 border border-white/20 text-white rounded-xl font-medium text-xs transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
+          title="បើកប៊ូតុងអណ្តែតលើអេក្រង់ឡើងវិញ"
+        >
+          <i class="fa-solid fa-rotate-left"></i>
+          <span class="hidden sm:inline">បង្ហាញប៊ូតុងអណ្តែត</span>
+        </button>
+      </div>
+    </div>
 
     <!-- Sub Tabs (Dynamic 5 Tabs) -->
     <TabNav 
@@ -730,6 +780,17 @@ const academicYears = ref([]);
 
 const openPwaModal = () => {
   localStorage.removeItem('pwa_dismissed_until');
+  if (typeof window !== 'undefined' && typeof window.pwaOpenModal === 'function') {
+    window.pwaOpenModal();
+  }
+};
+
+const restoreFloatingButton = () => {
+  localStorage.removeItem('pwa_dismissed_until');
+  const pill = document.getElementById('pwa-floating-btn');
+  const container = document.getElementById('pwa-install-container');
+  if (container) container.classList.remove('hidden');
+  if (pill) pill.classList.remove('hidden');
   if (typeof window !== 'undefined' && typeof window.pwaOpenModal === 'function') {
     window.pwaOpenModal();
   }
