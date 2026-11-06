@@ -35,7 +35,7 @@
       <div class="flex items-start justify-between">
         <div class="flex items-center gap-3">
           <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/20 p-2">
-            <img src="/icon-192.png" alt="App Icon" class="w-full h-full object-contain rounded-xl" onerror="this.src='/images/logo.png'">
+            <img src="/images/icon-192.png" alt="App Icon" class="w-full h-full object-contain rounded-xl" onerror="this.src='/images/logo.png'">
           </div>
           <div>
             <h3 class="text-base font-bold text-slate-900">ដំឡើងកម្មវិធីសាលារៀន</h3>

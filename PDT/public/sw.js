@@ -4,9 +4,9 @@ const STATIC_ASSETS = [
   '/',
   '/manifest.json',
   '/site.webmanifest',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/apple-touch-icon.png',
+  '/images/icon-192.png',
+  '/images/icon-512.png',
+  '/images/apple-touch-icon.png',
   '/images/logo.png'
 ];
 
