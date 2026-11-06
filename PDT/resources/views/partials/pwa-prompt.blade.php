@@ -45,7 +45,7 @@
         <button 
           type="button" 
           onclick="window.pwaCloseModal()" 
-          class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
+          class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
         >
           <i class="fa-solid fa-xmark text-sm"></i>
         </button>
@@ -62,12 +62,12 @@
         </p>
       </div>
 
-      <!-- Android Native Install Button (if available) -->
+      <!-- Android / Desktop Chrome Native Install Button (if available) -->
       <div id="pwa-android-direct" class="hidden">
         <button 
           type="button" 
           onclick="window.pwaTriggerInstall()"
-          class="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl font-bold text-sm shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 active:scale-95 transition-transform"
+          class="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl font-bold text-sm shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 active:scale-95 transition-transform cursor-pointer"
         >
           <i class="fa-solid fa-download"></i>
           <span>ចុចដើម្បីដំឡើង App ឥឡូវនេះ (Install)</span>
@@ -118,6 +118,20 @@
         </ol>
       </div>
 
+      <!-- Desktop Scanner helper (when viewed on PC) -->
+      <div id="pwa-desktop-instructions" class="hidden space-y-3 bg-slate-50/80 p-4 rounded-2xl border border-slate-100 text-center">
+        <div class="text-xs font-bold text-slate-700 flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-qrcode text-blue-600 text-sm"></i>
+          <span>ស្កេន QR Code ខាងក្រោមដោយទូរស័ព្ទដៃ៖</span>
+        </div>
+        <div class="w-36 h-36 mx-auto bg-white p-2 rounded-xl shadow-xs border border-slate-200/80 flex items-center justify-center">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://sala-portal.vercel.app" alt="Portal QR Code" class="w-full h-full object-contain">
+        </div>
+        <p class="text-[11px] text-slate-500">
+          បើកកាមេរ៉ាទូរស័ព្ទដៃស្កេន QR Code នេះដើម្បីបើក និងដំឡើង App លើទូរស័ព្ទដៃភ្លាមៗ។
+        </p>
+      </div>
+
       <!-- Benefits Footer -->
       <div class="grid grid-cols-3 gap-2 text-center pt-1 border-t border-slate-100 text-[11px] text-slate-500">
         <div class="p-2 rounded-xl bg-slate-50">
@@ -138,7 +152,7 @@
         <button 
           type="button" 
           onclick="window.pwaCloseModal()" 
-          class="text-xs text-slate-400 hover:text-slate-600 underline font-medium"
+          class="text-xs text-slate-400 hover:text-slate-600 underline font-medium cursor-pointer"
         >
           បិទផ្ទាំងនេះ
         </button>
@@ -156,33 +170,6 @@
     });
   }
 
-  // Detect standalone (already installed as PWA)
-  var isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                     window.navigator.standalone === true || 
-                     document.referrer.includes('android-app://');
-
-  if (isStandalone) {
-    // Already installed! Don't show prompts
-    return;
-  }
-
-  // Dismissed check
-  var dismissedUntil = localStorage.getItem('pwa_dismissed_until');
-  if (dismissedUntil && Number(dismissedUntil) > Date.now()) {
-    return;
-  }
-
-  var ua = navigator.userAgent || '';
-  var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-  var isAndroid = /Android/.test(ua);
-  var isInApp = /Telegram|FB_IAB|FBAN|FBAV|Instagram|Line/i.test(ua);
-  var isMobile = isIOS || isAndroid || window.innerWidth <= 768;
-
-  if (!isMobile) {
-    // Only show install helper on mobile devices
-    return;
-  }
-
   var deferredPrompt = null;
   window.addEventListener('beforeinstallprompt', function(e) {
     e.preventDefault();
@@ -193,31 +180,35 @@
     if (manualAndroid) manualAndroid.classList.add('hidden');
   });
 
-  // Reveal the container
-  var container = document.getElementById('pwa-install-container');
-  if (container) {
-    container.classList.remove('hidden');
-  }
-
-  // Adjust modal instructions based on OS
-  var iosBox = document.getElementById('pwa-ios-instructions');
-  var androidBox = document.getElementById('pwa-android-manual');
-  var inAppAlert = document.getElementById('pwa-inapp-alert');
-
-  if (isInApp && inAppAlert) {
-    inAppAlert.classList.remove('hidden');
-  }
-
-  if (isIOS) {
-    if (iosBox) iosBox.classList.remove('hidden');
-    if (androidBox) androidBox.classList.add('hidden');
-  } else {
-    if (iosBox) iosBox.classList.add('hidden');
-    if (androidBox) androidBox.classList.remove('hidden');
-  }
-
-  // Global Helpers
+  // Global Helpers ALWAYS Available (callable from Settings, Sidebar, or anywhere)
   window.pwaOpenModal = function() {
+    var container = document.getElementById('pwa-install-container');
+    if (container) container.classList.remove('hidden');
+
+    var ua = navigator.userAgent || '';
+    var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    var isAndroid = /Android/.test(ua);
+    var isMobile = isIOS || isAndroid || (window.innerWidth <= 768);
+
+    var iosBox = document.getElementById('pwa-ios-instructions');
+    var androidBox = document.getElementById('pwa-android-manual');
+    var desktopBox = document.getElementById('pwa-desktop-instructions');
+
+    if (isIOS) {
+      if (iosBox) iosBox.classList.remove('hidden');
+      if (androidBox) androidBox.classList.add('hidden');
+      if (desktopBox) desktopBox.classList.add('hidden');
+    } else if (isAndroid) {
+      if (iosBox) iosBox.classList.add('hidden');
+      if (androidBox) androidBox.classList.remove('hidden');
+      if (desktopBox) desktopBox.classList.add('hidden');
+    } else {
+      // Desktop
+      if (iosBox) iosBox.classList.add('hidden');
+      if (androidBox) androidBox.classList.add('hidden');
+      if (desktopBox) desktopBox.classList.remove('hidden');
+    }
+
     var backdrop = document.getElementById('pwa-modal-backdrop');
     var card = document.getElementById('pwa-modal-card');
     if (backdrop && card) {
@@ -248,7 +239,7 @@
     var pill = document.getElementById('pwa-floating-btn');
     if (pill) pill.classList.add('hidden');
     window.pwaCloseModal();
-    // Dismiss for 3 days
+    // Dismiss floating pill for 3 days
     localStorage.setItem('pwa_dismissed_until', String(Date.now() + (3 * 24 * 60 * 60 * 1000)));
   };
 
@@ -263,5 +254,24 @@
       });
     }
   };
+
+  // Auto-show Floating Pill on Mobile only if not standalone and not dismissed
+  var isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                     window.navigator.standalone === true || 
+                     document.referrer.includes('android-app://');
+
+  if (isStandalone) return;
+
+  var dismissedUntil = localStorage.getItem('pwa_dismissed_until');
+  if (dismissedUntil && Number(dismissedUntil) > Date.now()) {
+    return;
+  }
+
+  var ua = navigator.userAgent || '';
+  var isMobile = /iPad|iPhone|iPod|Android/.test(ua) || (window.innerWidth <= 768);
+  if (!isMobile) return;
+
+  var container = document.getElementById('pwa-install-container');
+  if (container) container.classList.remove('hidden');
 })();
 </script>

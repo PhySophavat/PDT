@@ -148,8 +148,27 @@
           </template>
         </div>
 
+        <!-- Install App Sidebar Button -->
+        <div class="px-2 sm:px-3 pb-1 border-t border-slate-50 pt-2">
+          <button 
+            type="button"
+            @click="triggerPwaModal"
+            :class="[
+              'w-full flex items-center rounded-xl text-[12px] font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50/70 transition group cursor-pointer',
+              sidebarOpen ? 'justify-between px-3 py-2' : 'justify-center p-2.5'
+            ]"
+            :title="!sidebarOpen ? 'ដំឡើង App លើទូរស័ព្ទ' : ''"
+          >
+            <div class="flex items-center gap-2.5 truncate">
+              <i class="fa-solid fa-mobile-screen-button text-sm text-blue-600 group-hover:scale-110 transition-transform"></i>
+              <span v-if="sidebarOpen" class="truncate font-bold text-xs">ដំឡើង App លើទូរស័ព្ទ</span>
+            </div>
+            <span v-if="sidebarOpen" class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span>
+          </button>
+        </div>
+
         <!-- Bottom Logout Button -->
-        <div class="p-3 border-t border-slate-50">
+        <div class="p-2 sm:p-3 pt-1">
           <button 
             type="button"
             @click="promptLogout"
@@ -694,6 +713,14 @@ const fetchPendingNotifications = async () => {
 const handleDocClick = (e) => {
   if (notificationDropdownRef.value && !notificationDropdownRef.value.contains(e.target)) {
     showNotificationDropdown.value = false;
+  }
+};
+
+// PWA Install Modal Trigger
+const triggerPwaModal = () => {
+  localStorage.removeItem('pwa_dismissed_until');
+  if (typeof window !== 'undefined' && typeof window.pwaOpenModal === 'function') {
+    window.pwaOpenModal();
   }
 };
 

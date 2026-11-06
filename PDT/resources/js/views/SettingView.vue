@@ -8,14 +8,15 @@
       @action="handleSave"
     />
 
-    <!-- Sub Tabs (Dynamic 4 Tabs) -->
+    <!-- Sub Tabs (Dynamic 5 Tabs) -->
     <TabNav 
       v-model="activeTab" 
       :tabs="[
         { id: 'general', label: 'ព័ត៌មានគ្រឹះស្ថានសិក្សា' },
         { id: 'academic', label: 'ឆ្នាំសិក្សា និងឆមាសសកម្ម' },
         { id: 'currency', label: 'រូបិយប័ណ្ណគោល' },
-        { id: 'backup', label: 'ទិន្នន័យបម្រុង' }
+        { id: 'backup', label: 'ទិន្នន័យបម្រុង' },
+        { id: 'mobile_app', label: '📱 កម្មវិធីទូរស័ព្ទ (App)' }
       ]"
     />
 
@@ -37,6 +38,27 @@
           <h2 class="text-sm font-bold text-slate-900">ព័ត៌មានគ្រឹះស្ថានសិក្សា</h2>
           <p class="text-[11px] text-slate-500">កំណត់អត្តសញ្ញាណ ព័ត៌មានទំនាក់ទំនង ឡូហ្គោ និងត្រារបស់សាលា</p>
         </div>
+      </div>
+
+      <!-- Quick PWA Install Callout Banner -->
+      <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50/60 border border-blue-200/80 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg flex-shrink-0 shadow-md shadow-blue-500/20">
+            <i class="fa-solid fa-mobile-screen-button"></i>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-800">ដំឡើងកម្មវិធីសាលារៀនលើទូរស័ព្ទ (School Mobile App)</h4>
+            <p class="text-[11px] text-slate-500">លោកអ្នកអាចដំឡើង App លើអេក្រង់ទូរស័ព្ទ ដើម្បីបើកលឿន ពេញអេក្រង់ និងមិនបាត់ Session</p>
+          </div>
+        </div>
+        <button 
+          type="button" 
+          @click="openPwaModal"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 flex-shrink-0 cursor-pointer shadow-sm active:scale-95"
+        >
+          <i class="fa-solid fa-download"></i>
+          <span>ដំឡើង App ឥឡូវនេះ</span>
+        </button>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -519,6 +541,151 @@
       </div>
     </div>
 
+    <!-- Tab 5: Mobile App & PWA Settings -->
+    <div v-show="activeTab === 'mobile_app'" class="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-2xs space-y-6 transition-all">
+      <div class="flex items-center gap-2.5 pb-4 border-b border-slate-100">
+        <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
+          <i class="fa-solid fa-mobile-screen-button"></i>
+        </span>
+        <div>
+          <h2 class="text-sm font-bold text-slate-900">កម្មវិធីទូរស័ព្ទដៃ (Progressive Web App - PWA)</h2>
+          <p class="text-[11px] text-slate-500">ដំឡើង និងគ្រប់គ្រងការប្រើប្រាស់លើទូរស័ព្ទដៃដូច Native App ពិតៗ</p>
+        </div>
+      </div>
+
+      <!-- Hero Banner with Direct Install Button -->
+      <div class="p-5 sm:p-6 bg-gradient-to-tr from-blue-600 via-indigo-600 to-blue-700 text-white rounded-3xl shadow-xl shadow-blue-500/20 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white p-2 flex items-center justify-center shadow-lg flex-shrink-0">
+            <img :src="form.school_logo_url || '/images/logo.png'" alt="App Logo" class="w-full h-full object-contain" />
+          </div>
+          <div class="space-y-1">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+              <span>PWA Ready • v2.4.0</span>
+            </div>
+            <h3 class="text-base sm:text-lg font-extrabold tracking-tight">{{ form.school_name || 'សាលារៀន ជំនាន់ថ្មី' }}</h3>
+            <p class="text-xs text-blue-100 max-w-md">
+              ដំឡើង App លើអេក្រង់ទូរស័ព្ទដៃ ដើម្បីបើកប្រើបានលឿន ពេញអេក្រង់ មិនបាត់ Session និងមិនបាច់វាយបញ្ចូល Password ម្ដងទៀតឡើយ!
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <button 
+            type="button" 
+            @click="openPwaModal"
+            class="w-full sm:w-auto px-6 py-3 bg-white text-blue-700 hover:bg-blue-50 rounded-2xl font-bold text-xs shadow-lg transition flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
+          >
+            <i class="fa-solid fa-download text-sm"></i>
+            <span>ដំឡើង App លើទូរស័ព្ទឥឡូវនេះ</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Feature Grid: 3 Benefits -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50/70 space-y-1.5">
+          <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-bold">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-800">ល្បឿនលឿនរហ័ស</h4>
+          <p class="text-[11px] text-slate-500 leading-relaxed">
+            ប្រើប្រាស់បច្ចេកវិទ្យា Service Worker Caching បើកទំព័រភ្លាមៗដោយមិនបាច់រង់ចាំយូរ។
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50/70 space-y-1.5">
+          <div class="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-bold">
+            <i class="fa-solid fa-mobile-screen"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-800">ពេញអេក្រង់ទូរស័ព្ទ</h4>
+          <p class="text-[11px] text-slate-500 leading-relaxed">
+            គ្មានរបារ URL ខាងលើរំខានភ្នែក មាន Bottom Navigation ស្រួលចុចដោយមេដៃដូច App ពិតៗ។
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50/70 space-y-1.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-800">រក្សាការ Login ទុក ១ ឆ្នាំ</h4>
+          <p class="text-[11px] text-slate-500 leading-relaxed">
+            មិនបារម្ភរឿង Page Expired ឬទាមទារ Password ញឹកញាប់ទៀតឡើយ Login តែម្តងប្រើបានរហូត។
+          </p>
+        </div>
+      </div>
+
+      <!-- Two Detailed Step-by-Step Cards (iOS & Android) + QR Code -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
+        <!-- iOS Guide -->
+        <div class="p-5 rounded-2xl border border-slate-200/90 bg-white space-y-3">
+          <div class="flex items-center gap-2 text-xs font-bold text-slate-900 border-b border-slate-100 pb-2.5">
+            <i class="fa-brands fa-apple text-lg text-slate-900"></i>
+            <span>សម្រាប់ iPhone / iPad (Safari)</span>
+          </div>
+          <ol class="space-y-2.5 text-xs text-slate-600">
+            <li class="flex items-start gap-2">
+              <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">1</span>
+              <span>បើក Safari ចូលគេហទំព័រ <strong class="text-blue-600">sala-portal.vercel.app</strong></span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">2</span>
+              <span>ចុចប៊ូតុង <strong>Share</strong> (សញ្ញាព្រួញឡើងលើ 📤 នៅខាងក្រោម)</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">3</span>
+              <span>អូសចុះក្រោម រួចចុច <strong>"Add to Home Screen" (បន្ថែមទៅអេក្រង់ដើម)</strong></span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">4</span>
+              <span>ចុច <strong>"Add"</strong> នៅជ្រុងខាងស្តាំលើ ជាការស្រេច!</span>
+            </li>
+          </ol>
+        </div>
+
+        <!-- Android Guide -->
+        <div class="p-5 rounded-2xl border border-slate-200/90 bg-white space-y-3">
+          <div class="flex items-center gap-2 text-xs font-bold text-slate-900 border-b border-slate-100 pb-2.5">
+            <i class="fa-brands fa-android text-lg text-emerald-600"></i>
+            <span>សម្រាប់ Android (Google Chrome)</span>
+          </div>
+          <ol class="space-y-2.5 text-xs text-slate-600">
+            <li class="flex items-start gap-2">
+              <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">1</span>
+              <span>បើក Google Chrome ចូល <strong class="text-blue-600">sala-portal.vercel.app</strong></span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">2</span>
+              <span>ចុចសញ្ញាចុច ៣ (⋮) នៅជ្រុងខាងស្តាំលើនៃ Chrome</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">3</span>
+              <span>ជ្រើសរើស <strong>"Install app"</strong> ឬ <strong>"Add to Home screen"</strong></span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">4</span>
+              <span>ចុច <strong>"Install" (ដំឡើង)</strong> ជាការស្រេច!</span>
+            </li>
+          </ol>
+        </div>
+
+        <!-- Scan to Install on Mobile QR Code -->
+        <div class="p-5 rounded-2xl border border-slate-200/90 bg-white space-y-3 text-center flex flex-col items-center justify-between">
+          <div class="w-full flex items-center justify-center gap-2 text-xs font-bold text-slate-900 border-b border-slate-100 pb-2.5">
+            <i class="fa-solid fa-qrcode text-base text-blue-600"></i>
+            <span>ស្កេនដើម្បីបើកលើទូរស័ព្ទ</span>
+          </div>
+          <div class="w-36 h-36 p-2 bg-slate-50 border border-slate-200/80 rounded-2xl shadow-2xs flex items-center justify-center">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://sala-portal.vercel.app" alt="App QR Code" class="w-full h-full object-contain" />
+          </div>
+          <p class="text-[11px] text-slate-500">
+            ស្កេនដោយកាមេរ៉ាទូរស័ព្ទដៃ ដើម្បីបើកគេហទំព័រ និងដំឡើង App លើទូរស័ព្ទភ្លាមៗ។
+          </p>
+        </div>
+      </div>
+    </div>
+
     <!-- Save Settings Action Footer Bar -->
     <div class="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs flex items-center justify-between">
       <span class="text-xs text-slate-500">
@@ -560,6 +727,13 @@ const activeTab = ref('general');
 const isSaving = ref(false);
 
 const academicYears = ref([]);
+
+const openPwaModal = () => {
+  localStorage.removeItem('pwa_dismissed_until');
+  if (typeof window !== 'undefined' && typeof window.pwaOpenModal === 'function') {
+    window.pwaOpenModal();
+  }
+};
 
 const form = ref({
   // Demo Mode Switch
