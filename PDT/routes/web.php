@@ -53,6 +53,7 @@ Route::get('/health-db', function () {
         ], 500);
     }
 });
+Route::get('/debug-students', [ApiController::class, 'students']);
 
 // Public Student Registration via Link & QR Code
 use App\Http\Controllers\PublicRegistrationController;
