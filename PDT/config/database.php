@@ -67,7 +67,9 @@ return [
                     if (file_exists(storage_path('certs/ca.pem'))) return realpath(storage_path('certs/ca.pem'));
                     if (file_exists('C:\\xampp\\apache\\bin\\curl-ca-bundle.crt')) return 'C:\\xampp\\apache\\bin\\curl-ca-bundle.crt';
                     if (file_exists('/etc/ssl/certs/ca-certificates.crt')) return '/etc/ssl/certs/ca-certificates.crt';
-                    return env('DB_SSL', false) ? true : null;
+                    $host = env('DB_HOST', '');
+                    if (str_contains($host, 'tidbcloud.com') || env('DB_SSL', false)) return true;
+                    return null;
                 })(),
                 PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT', false),
             ], fn($v) => !is_null($v)) : [],
@@ -97,7 +99,9 @@ return [
                     if (file_exists(storage_path('certs/ca.pem'))) return realpath(storage_path('certs/ca.pem'));
                     if (file_exists('C:\\xampp\\apache\\bin\\curl-ca-bundle.crt')) return 'C:\\xampp\\apache\\bin\\curl-ca-bundle.crt';
                     if (file_exists('/etc/ssl/certs/ca-certificates.crt')) return '/etc/ssl/certs/ca-certificates.crt';
-                    return env('DB_SSL', false) ? true : null;
+                    $host = env('DB_HOST', '');
+                    if (str_contains($host, 'tidbcloud.com') || env('DB_SSL', false)) return true;
+                    return null;
                 })(),
                 PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT', false),
             ], fn($v) => !is_null($v)) : [],

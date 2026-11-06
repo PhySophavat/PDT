@@ -25,6 +25,35 @@ Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Public Database Health Check
+Route::get('/health-db', function () {
+    try {
+        $db = \Illuminate\Support\Facades\DB::connection();
+        $pdo = $db->getPdo();
+        $tables = $db->select('SHOW TABLES');
+        $driver = $db->getDriverName();
+        $students = \App\Models\Student::count();
+        $teachers = \App\Models\Teacher::count();
+        $scores = \App\Models\ExaminationScore::count();
+        return response()->json([
+            'status' => 'connected',
+            'driver' => $driver,
+            'database' => $db->getDatabaseName(),
+            'tables_count' => count($tables),
+            'students_count' => $students,
+            'teachers_count' => $teachers,
+            'scores_count' => $scores,
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'driver' => config('database.default'),
+            'host' => config('database.connections.mysql.host'),
+        ], 500);
+    }
+});
+
 // Public Student Registration via Link & QR Code
 use App\Http\Controllers\PublicRegistrationController;
 Route::get('/register-student', [PublicRegistrationController::class, 'show'])->name('public.register-student');
