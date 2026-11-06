@@ -14,10 +14,12 @@ use App\Models\Payment;
 use App\Models\SchoolExpense;
 use App\Models\Book;
 use App\Models\BookBorrow;
+use App\Models\BookCategory;
 use App\Models\Announcement;
 use App\Models\SchoolParent;
 use App\Models\SystemSetting;
 use App\Models\Role;
+use App\Models\Permission;
 use App\Models\AcademicYear;
 use App\Models\Timetable;
 use App\Models\FeeCategory;
@@ -3800,7 +3802,7 @@ class ApiController extends Controller
             \App\Models\Teacher::query()->delete();
 
             // Retain admin user account
-            $adminUserIds = \App\Models\User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))
+            $adminUserIds = \App\Models\User::whereHas('roles', fn ($q) => $q->where('roles.name', 'admin'))
                 ->orWhere('email', 'admin@example.com')
                 ->pluck('id')
                 ->toArray();
@@ -3841,14 +3843,14 @@ class ApiController extends Controller
             'id' => $r->id,
             'name' => $r->name,
             'displayName' => $r->display_name ?? ucfirst($r->name),
-            'userCount' => \App\Models\User::whereHas('roles', fn ($q) => $q->where('id', $r->id))->count(),
+            'userCount' => $r->users()->count(),
         ]);
 
         if ($roles->isEmpty()) {
             $roles = collect([
-                ['id' => 1, 'name' => 'admin', 'displayName' => 'អ្នកគ្រប់គ្រងប្រព័ន្ធ (Admin)', 'userCount' => User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->count() ?: 1],
+                ['id' => 1, 'name' => 'admin', 'displayName' => 'អ្នកគ្រប់គ្រងប្រព័ន្ធ (Admin)', 'userCount' => User::whereHas('roles', fn ($q) => $q->where('roles.name', 'admin'))->count() ?: 1],
                 ['id' => 2, 'name' => 'teacher', 'displayName' => 'លោកគ្រូ-អ្នកគ្រូ (Teacher)', 'userCount' => Teacher::count()],
-                ['id' => 3, 'name' => 'accountant', 'displayName' => 'គណនេយ្យករ (Accountant)', 'userCount' => User::whereHas('roles', fn ($q) => $q->where('name', 'accountant'))->count()],
+                ['id' => 3, 'name' => 'accountant', 'displayName' => 'គណនេយ្យករ (Accountant)', 'userCount' => User::whereHas('roles', fn ($q) => $q->where('roles.name', 'accountant'))->count()],
                 ['id' => 4, 'name' => 'student', 'displayName' => 'សិស្សានុសិស្ស (Student)', 'userCount' => Student::count()],
                 ['id' => 5, 'name' => 'parent', 'displayName' => 'មាតាបិតា-អាណាព្យាបាល (Parent)', 'userCount' => SchoolParent::count()],
             ]);
