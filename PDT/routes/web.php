@@ -89,6 +89,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/students', [ApiController::class, 'storeStudent']);
         Route::post('/students/scan-ocr', [ApiController::class, 'scanStudentsOcr']);
         Route::post('/students/bulk-store', [ApiController::class, 'bulkStoreStudents']);
+        Route::post('/students/bulk-delete', [ApiController::class, 'bulkDeleteStudents']);
         Route::put('/students/{student}', [ApiController::class, 'updateStudent']);
         Route::delete('/students/{student}', [ApiController::class, 'destroyStudent']);
         Route::post('/students/{student}/approve', [ApiController::class, 'approveStudent']);
@@ -176,6 +177,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/students', [StudentController::class, 'store'])->name('students.store');
     Route::post('/students/scan-ocr', [ApiController::class, 'scanStudentsOcr'])->name('students.scan-ocr');
     Route::post('/students/bulk-store', [ApiController::class, 'bulkStoreStudents'])->name('students.bulk-store');
+    Route::post('/students/bulk-delete', [ApiController::class, 'bulkDeleteStudents'])->name('students.bulk-delete');
     Route::get('/students/{student}', $spa)->name('students.show');
     Route::get('/students/{student}/edit', $spa)->name('student.edit');
     Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');

@@ -9,6 +9,19 @@
     >
       <template #extraActions>
         <button 
+          v-if="students.length > 0"
+          @click="openDeleteAllModal" 
+          type="button"
+          class="inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white rounded-full px-4 py-2 text-xs font-semibold shadow-md shadow-rose-600/20 transition-all hover:shadow-lg hover:shadow-rose-600/30 active:scale-95 cursor-pointer"
+          title="លុបសិស្សទាំងអស់ចេញពីប្រព័ន្ធ"
+        >
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          <span>🗑️ លុបសិស្សទាំងអស់</span>
+        </button>
+
+        <button 
           @click="openBulkScanModal" 
           type="button"
           class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-4 py-2 text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all hover:shadow-lg hover:shadow-indigo-600/30 active:scale-95 cursor-pointer"
@@ -55,13 +68,26 @@
     <!-- Filter Bar -->
     <FilterBar>
       <template #left>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
           <input 
             v-model="searchQuery"
             type="text" 
             :placeholder="t('common.searchPlaceholder')" 
             class="px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs w-64 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-khmer"
           />
+
+          <!-- Action when students are checked -->
+          <button 
+            v-if="selectedStudentIds.length > 0"
+            @click="openDeleteSelectedModal"
+            type="button"
+            class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-xs animate-in fade-in"
+          >
+            <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            <span>លុបសិស្សដែលបានជ្រើស ({{ selectedStudentIds.length }} នាក់)</span>
+          </button>
         </div>
       </template>
 
@@ -95,9 +121,18 @@
     </FilterBar>
 
     <!-- Data Table -->
-    <DataTable :loading="isLoading" :empty="filteredStudents.length === 0" :colSpan="7" loadingText="កំពុងទាញយកទិន្នន័យសិស្សពី Server...">
+    <DataTable :loading="isLoading" :empty="filteredStudents.length === 0" :colSpan="8" loadingText="កំពុងទាញយកទិន្នន័យសិស្សពី Server...">
       <template #header>
         <tr>
+          <th class="py-3 px-3 text-center w-10">
+            <input 
+              type="checkbox" 
+              :checked="isAllSelected" 
+              @change="toggleSelectAll"
+              class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+              title="ជ្រើសរើសទាំងអស់"
+            >
+          </th>
           <th class="py-3 px-4 font-bold text-slate-700">{{ t('students.studentId') }}</th>
           <th class="py-3 px-4 font-bold text-slate-700">{{ t('students.studentName') }}</th>
           <th class="py-3 px-4 font-bold text-slate-700">{{ t('students.gender') }}</th>
@@ -111,7 +146,7 @@
       <template #body>
         <!-- Loading Spinner State while fetching -->
         <tr v-if="isLoading && filteredStudents.length === 0">
-          <td colspan="7" class="py-14 text-center text-slate-500 font-khmer">
+          <td colspan="8" class="py-14 text-center text-slate-500 font-khmer">
             <div class="flex flex-col items-center justify-center gap-2.5">
               <div class="w-7 h-7 rounded-full border-3 border-blue-600 border-t-transparent animate-spin"></div>
               <span class="text-xs font-semibold text-slate-600">កំពុងទាញយកទិន្នន័យសិស្សពី Server...</span>
@@ -120,14 +155,29 @@
         </tr>
         <!-- Real Empty State only when NOT loading -->
         <tr v-else-if="filteredStudents.length === 0">
-          <td colspan="7" class="py-12 text-center text-slate-400 font-khmer">
+          <td colspan="8" class="py-12 text-center text-slate-400 font-khmer">
             <div class="flex flex-col items-center justify-center gap-2">
               <i class="fa-solid fa-user-graduate text-3xl text-slate-300"></i>
               <span>{{ t('common.noData') }}</span>
             </div>
           </td>
         </tr>
-        <tr v-for="st in filteredStudents" :key="st.id" class="hover:bg-slate-50/70 transition-colors">
+        <tr 
+          v-for="st in filteredStudents" 
+          :key="st.id" 
+          :class="[
+            'hover:bg-slate-50/70 transition-colors',
+            selectedStudentIds.includes(st.id) ? 'bg-blue-50/40' : ''
+          ]"
+        >
+          <td class="py-3 px-3 text-center">
+            <input 
+              type="checkbox" 
+              :value="st.id" 
+              v-model="selectedStudentIds"
+              class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+            >
+          </td>
           <td class="py-3 px-4 font-mono font-bold text-blue-600">
             {{ st.student_id_card }}
           </td>
@@ -1115,6 +1165,62 @@
       </div>
     </div>
 
+    <!-- Modal 6: Confirmation to Delete All / Selected Students -->
+    <div 
+      v-if="showDeleteModal" 
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs font-khmer transition-opacity"
+      @click.self="showDeleteModal = false"
+    >
+      <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div class="p-6 text-center">
+          <div class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 mx-auto flex items-center justify-center text-2xl mb-4 border border-rose-100 shadow-sm">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </div>
+          
+          <h3 class="text-base font-bold text-slate-800 mb-1">
+            {{ deleteModalScope === 'selected' ? 'លុបសិស្សដែលបានជ្រើសរើស' : (deleteModalScope === 'class' ? 'លុបសិស្សក្នុងថ្នាក់ ' + gradeFilter : 'លុបទិន្នន័យសិស្សទាំងអស់') }}
+          </h3>
+          <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+            តើអ្នកពិតជាចង់លុបទិន្នន័យសិស្សចំនួន <span class="font-bold text-rose-600">{{ targetDeleteCount }} នាក់</span> នេះមែនទេ? រាល់ព័ត៌មានសិស្ស រួមទាំងពិន្ទុ និងវត្តមានដែលពាក់ព័ន្ធនឹងត្រូវលុបចេញទាំងអស់ ហើយមិនអាចត្រឡប់ក្រោយបានឡើយ!
+          </p>
+
+          <!-- Scope selector if calling from "Delete All" button -->
+          <div v-if="deleteModalScope !== 'selected'" class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 mb-5 text-left text-xs space-y-2.5">
+            <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+              <input type="radio" v-model="deleteModalScope" value="all" class="text-rose-600 focus:ring-0">
+              <span>លុបសិស្សទាំងអស់ក្នុងប្រព័ន្ធទាំងមូល ({{ students.length }} នាក់)</span>
+            </label>
+            <label v-if="gradeFilter" class="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+              <input type="radio" v-model="deleteModalScope" value="class" class="text-rose-600 focus:ring-0">
+              <span>លុបតែសិស្សក្នុងថ្នាក់ {{ gradeFilter }} ({{ filteredStudents.length }} នាក់)</span>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-center gap-2.5">
+            <button 
+              type="button" 
+              @click="showDeleteModal = false"
+              :disabled="isDeleting"
+              class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition cursor-pointer"
+            >
+              បោះបង់
+            </button>
+            <button 
+              type="button" 
+              @click="executeBulkDelete"
+              :disabled="isDeleting"
+              class="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-md shadow-rose-600/20 hover:shadow-lg hover:shadow-rose-600/30 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <div v-if="isDeleting" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>{{ isDeleting ? 'កំពុងលុប...' : `យល់ព្រមលុប (${targetDeleteCount} នាក់)` }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -1354,6 +1460,82 @@ const filteredStudents = computed(() => {
     return nameA.localeCompare(nameB, 'km');
   });
 });
+
+// Bulk Selection & Delete Modal States
+const selectedStudentIds = ref([]);
+const showDeleteModal = ref(false);
+const deleteModalScope = ref('all'); // 'all', 'class', or 'selected'
+const isDeleting = ref(false);
+
+const isAllSelected = computed(() => {
+  if (filteredStudents.value.length === 0) return false;
+  return filteredStudents.value.every(st => selectedStudentIds.value.includes(st.id));
+});
+
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    selectedStudentIds.value = [];
+  } else {
+    selectedStudentIds.value = filteredStudents.value.map(st => st.id);
+  }
+};
+
+const targetDeleteCount = computed(() => {
+  if (deleteModalScope.value === 'selected') {
+    return selectedStudentIds.value.length;
+  } else if (deleteModalScope.value === 'class') {
+    return filteredStudents.value.length;
+  }
+  return students.value.length;
+});
+
+const openDeleteAllModal = () => {
+  if (gradeFilter.value) {
+    deleteModalScope.value = 'class';
+  } else {
+    deleteModalScope.value = 'all';
+  }
+  showDeleteModal.value = true;
+};
+
+const openDeleteSelectedModal = () => {
+  if (selectedStudentIds.value.length === 0) return;
+  deleteModalScope.value = 'selected';
+  showDeleteModal.value = true;
+};
+
+const executeBulkDelete = async () => {
+  if (targetDeleteCount.value === 0) return;
+  isDeleting.value = true;
+
+  try {
+    const payload = {};
+    if (deleteModalScope.value === 'all') {
+      payload.all = true;
+    } else if (deleteModalScope.value === 'class') {
+      payload.grade = gradeFilter.value;
+    } else if (deleteModalScope.value === 'selected') {
+      payload.ids = selectedStudentIds.value;
+    }
+
+    const res = await axios.post('/api/students/bulk-delete', payload);
+    if (res.data && res.data.success) {
+      alert(res.data.message);
+      showDeleteModal.value = false;
+      selectedStudentIds.value = [];
+      localStorage.removeItem('pdt_cached_students');
+      notifyDataChanged();
+      await fetchStudents();
+    } else {
+      alert(res.data.message || 'មិនអាចលុបទិន្នន័យបានទេ។');
+    }
+  } catch (err) {
+    console.error('Bulk delete failed:', err);
+    alert(err.response?.data?.message || 'កំហុសក្នុងការលុបទិន្នន័យសិស្ស។');
+  } finally {
+    isDeleting.value = false;
+  }
+};
 
 // QR Code Operations
 const openQrModal = async () => {

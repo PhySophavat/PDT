@@ -723,6 +723,73 @@ class ApiController extends Controller
         ]);
     }
 
+    public function bulkDeleteStudents(Request $request)
+    {
+        $all = $request->boolean('all');
+        $grade = $request->input('grade');
+        $ids = $request->input('ids', []);
+
+        $query = Student::query();
+
+        if ($all) {
+            // Delete all students in system
+        } elseif (!empty($grade)) {
+            $query->where('grade', $grade);
+        } elseif (!empty($ids) && is_array($ids)) {
+            $query->whereIn('id', $ids);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'សូមជ្រើសរើសសិស្ស ឬជម្រើសដែលត្រូវលុប!',
+            ], 422);
+        }
+
+        $targetStudents = $query->get(['id', 'user_id']);
+        $count = $targetStudents->count();
+
+        if ($count === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'មិនមានទិន្នន័យសិស្សដែលត្រូវលុបឡើយ!',
+            ], 404);
+        }
+
+        $studentIds = $targetStudents->pluck('id')->toArray();
+        $userIds = $targetStudents->pluck('user_id')->filter()->toArray();
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($studentIds, $userIds) {
+            foreach (array_chunk($studentIds, 200) as $chunk) {
+                // Delete dependent financial records first
+                $invoiceIds = \App\Models\Invoice::whereIn('student_id', $chunk)->pluck('id')->toArray();
+                if (!empty($invoiceIds)) {
+                    \App\Models\Payment::whereIn('invoice_id', $invoiceIds)->delete();
+                    \App\Models\Invoice::whereIn('id', $invoiceIds)->delete();
+                }
+
+                \App\Models\ExaminationScore::whereIn('student_id', $chunk)->delete();
+                \App\Models\Attendance::whereIn('student_id', $chunk)->delete();
+                \App\Models\BookBorrow::whereIn('student_id', $chunk)->delete();
+                \App\Models\StudentLeaveRequest::whereIn('student_id', $chunk)->delete();
+                Student::whereIn('id', $chunk)->delete();
+            }
+
+            if (!empty($userIds)) {
+                foreach (array_chunk($userIds, 200) as $chunk) {
+                    \Illuminate\Support\Facades\DB::table('role_user')->whereIn('user_id', $chunk)->delete();
+                    \App\Models\User::whereIn('id', $chunk)->delete();
+                }
+            }
+        });
+
+        Cache::forget('portal_dashboard_payload');
+
+        return response()->json([
+            'success' => true,
+            'deleted_count' => $count,
+            'message' => "បានលុបទិន្នន័យសិស្សចំនួន {$count} នាក់ដោយជោគជ័យ!",
+        ]);
+    }
+
     public function scanStudentsOcr(Request $request)
     {
         $request->validate([
