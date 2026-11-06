@@ -43,6 +43,10 @@ Route::get('/leave-request', [AttendanceController::class, 'showPublicLeaveForm'
 Route::post('/leave-request', [AttendanceController::class, 'submitPublicLeaveForm'])->name('public.leave-request.post');
 Route::get('/api/public/students-by-class', [AttendanceController::class, 'getPublicStudentsByClass'])->name('public.students-by-class');
 
+// Public Teacher Leave Request via Link & QR Code
+Route::get('/teacher-leave-request', [TeacherController::class, 'showPublicLeaveForm'])->name('public.teacher-leave-request');
+Route::post('/teacher-leave-request', [TeacherController::class, 'submitPublicLeaveForm'])->name('public.teacher-leave-request.post');
+
 Route::middleware(['auth'])->group(function () {
     // Shared closure to render Vue 3 Single Page Application
     $spa = fn() => view('spa');
@@ -76,6 +80,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/leave-requests', [AttendanceController::class, 'getLeaveRequests']);
         Route::post('/leave-requests/{id}/approve', [AttendanceController::class, 'approveLeaveRequest']);
         Route::post('/leave-requests/{id}/reject', [AttendanceController::class, 'rejectLeaveRequest']);
+        Route::get('/teacher-leave-requests', [TeacherController::class, 'getLeaveRequests']);
+        Route::post('/teacher-leave-requests/{id}/approve', [TeacherController::class, 'approveLeaveRequest']);
+        Route::post('/teacher-leave-requests/{id}/reject', [TeacherController::class, 'rejectLeaveRequest']);
         Route::get('/academic-years', [ApiController::class, 'academicYears']);
         Route::post('/academic-years', [ApiController::class, 'storeAcademicYear']);
         Route::put('/academic-years/{academicYear}', [ApiController::class, 'updateAcademicYear']);

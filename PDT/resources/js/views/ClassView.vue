@@ -172,14 +172,14 @@
           🎓
         </div>
         <div>
-          <h3 class="font-bold text-slate-800 text-lg">ឡើងថ្នាក់សិស្សស្វ័យប្រវត្តិ (Promote Students)</h3>
+          <h3 class="font-bold text-slate-800 text-lg">ឡើងថ្នាក់សិស្សស្វ័យប្រវត្តិ</h3>
           <p class="text-xs text-slate-500">ផ្ទេរសិស្សទាំងអស់ពីថ្នាក់ចាស់ ទៅថ្នាក់ថ្មីក្នុងឆ្នាំសិក្សាថ្មី</p>
         </div>
       </div>
 
       <form @submit.prevent="submitPromote" class="space-y-5">
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1.5">ថ្នាក់បច្ចុប្បន្ន (Current Class) *</label>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">ថ្នាក់បច្ចុប្បន្ន *</label>
           <select v-model="promoteForm.current_class" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             <option value="">-- សូមជ្រើសរើសថ្នាក់បច្ចុប្បន្ន --</option>
             <option v-for="c in classesList" :key="c.id" :value="c.name">
@@ -189,7 +189,7 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1.5">ថ្នាក់បន្ទាប់ដែលត្រូវឡើង (Next Target Class) *</label>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">ថ្នាក់បន្ទាប់ដែលត្រូវឡើង *</label>
           <select v-model="promoteForm.next_class" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             <option value="">-- សូមជ្រើសរើសថ្នាក់គោលដៅ --</option>
             <option v-for="c in classesList" :key="c.id" :value="c.name">
@@ -222,7 +222,7 @@
           🔄
         </div>
         <div>
-          <h3 class="font-bold text-slate-800 text-lg">ផ្ទេរថ្នាក់សិស្សបុគ្គល (Transfer Student)</h3>
+          <h3 class="font-bold text-slate-800 text-lg">ផ្ទេរថ្នាក់សិស្សបុគ្គល</h3>
           <p class="text-xs text-slate-500">ប្តូរថ្នាក់រៀនសម្រាប់សិស្សម្នាក់ៗយ៉ាងឆាប់រហ័ស</p>
         </div>
       </div>
@@ -275,13 +275,13 @@
         <form @submit.prevent="submitCreateClass" class="p-6 space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">កម្រិតថ្នាក់ (Grade) *</label>
+              <label class="block text-xs font-bold text-slate-700 mb-1">កម្រិតថ្នាក់ *</label>
               <select v-model="createForm.grade" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                 <option v-for="g in [7, 8, 9, 10, 11, 12]" :key="g" :value="g.toString()">ថ្នាក់ទី {{ g }}</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">បន្ទប់/ផ្នែក (Section) *</label>
+              <label class="block text-xs font-bold text-slate-700 mb-1">បន្ទប់/ផ្នែក *</label>
               <select v-model="createForm.section" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                 <option v-for="sec in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']" :key="sec" :value="sec">បន្ទប់ {{ sec }}</option>
               </select>
@@ -300,7 +300,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">គ្រូបន្ទុកថ្នាក់ (Class Teacher)</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">គ្រូបន្ទុកថ្នាក់</label>
             <select v-model="createForm.teacher_id" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
               <option :value="null">-- មិនទាន់ចាត់តាំង --</option>
               <option v-for="t in teachersList" :key="t.id" :value="t.id">{{ t.name }}</option>
@@ -308,7 +308,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">ឆ្នាំសិក្សា (Academic Year)</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">ឆ្នាំសិក្សា</label>
             <select v-model="createForm.academic_year_id" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
               <option :value="null">-- ឆ្នាំសិក្សាបច្ចុប្បន្ន --</option>
               <option v-for="y in academicYearsList" :key="y.id" :value="y.id">{{ y.name }}</option>
@@ -357,7 +357,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">គ្រូបន្ទុកថ្នាក់ (Class Teacher)</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">គ្រូបន្ទុកថ្នាក់</label>
             <select v-model="editForm.teacher_id" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
               <option :value="null">-- មិនទាន់ចាត់តាំង --</option>
               <option v-for="t in teachersList" :key="t.id" :value="t.id">{{ t.name }}</option>
@@ -648,7 +648,7 @@ const handleExport = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `LMSTICK_Classes_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `Classes_${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
 };
 </script>

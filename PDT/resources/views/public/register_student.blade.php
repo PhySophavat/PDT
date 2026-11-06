@@ -4,7 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>ចុះឈ្មោះសិស្សថ្មី | LMSTICK School</title>
+  @php
+    $sysSettings = \App\Models\SystemSetting::allSettings();
+    $schoolName = $sysSettings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី';
+    $schoolNameEn = $sysSettings['school_name_en'] ?? 'New Generation School';
+  @endphp
+  <title>ចុះឈ្មោះសិស្សថ្មី | {{ $schoolName }}</title>
 
   <!-- Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,7 +57,7 @@
     <div class="text-center mb-6">
       <div class="inline-flex items-center gap-2.5 px-4 py-1.5 bg-white/80 backdrop-blur-md rounded-full shadow-xs border border-white mb-3">
         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span class="text-xs font-bold tracking-wider text-blue-700 uppercase">LMSTICK SCHOOL PORTAL</span>
+        <span class="text-xs font-bold tracking-wider text-blue-700 uppercase">{{ $schoolName }}</span>
       </div>
       <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
         ទម្រង់ចុះឈ្មោះចូលរៀនតាមអនឡាញ
@@ -86,7 +91,7 @@
             <span>ចំណាំសម្រាប់អាណាព្យាបាល និងសិស្ស៖</span>
           </div>
           <p class="text-slate-500 leading-normal">
-            បន្ទាប់ពីសាលាអនុម័តរួច សិស្សនឹងទទួលបានអត្តលេខសម្គាល់ផ្លូវការ (Student ID Card) និងកាលវិភាគសិក្សា។ សូមរក្សាទូរស័ព្ទរបស់លោកអ្នកឱ្យដំណើរការ។
+            បន្ទាប់ពីសាលាអនុម័តរួច សិស្សនឹងទទួលបានប័ណ្ណសម្គាល់ខ្លួនផ្លូវការ និងកាលវិភាគសិក្សា។ សូមរក្សាទូរស័ព្ទរបស់លោកអ្នកឱ្យដំណើរការ។
           </p>
         </div>
 
@@ -140,7 +145,7 @@
           <div>
             <div class="flex items-center gap-2.5 pb-3 border-b border-slate-200">
               <span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">១</span>
-              <h2 class="text-base font-bold text-slate-800">ព័ត៌មានសិស្ស (Student Info)</h2>
+              <h2 class="text-base font-bold text-slate-800">ព័ត៌មានសិស្ស</h2>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
@@ -167,7 +172,7 @@
               <!-- Latin Name -->
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-                  ឈ្មោះជាអក្សរឡាតាំង (Latin Name) <span class="text-red-500">*</span>
+                  ឈ្មោះជាអក្សរឡាតាំង <span class="text-red-500">*</span>
                 </label>
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
@@ -187,16 +192,16 @@
               <!-- Gender -->
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-                  ភេទ (Gender) <span class="text-red-500">*</span>
+                  ភេទ <span class="text-red-500">*</span>
                 </label>
                 <div class="grid grid-cols-2 gap-3">
                   <label class="flex items-center justify-center gap-2 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold cursor-pointer hover:bg-blue-50/50 has-checked:bg-blue-50 has-checked:border-blue-500 has-checked:text-blue-600 transition">
                     <input type="radio" name="gender" value="male" {{ old('gender', 'male') === 'male' ? 'checked' : '' }} class="text-blue-600 focus:ring-0">
-                    <span><i class="fa-solid fa-mars text-blue-500 mr-1"></i> ប្រុស (Male)</span>
+                    <span><i class="fa-solid fa-mars text-blue-500 mr-1"></i> ប្រុស</span>
                   </label>
                   <label class="flex items-center justify-center gap-2 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold cursor-pointer hover:bg-pink-50/50 has-checked:bg-pink-50 has-checked:border-pink-500 has-checked:text-pink-600 transition">
                     <input type="radio" name="gender" value="female" {{ old('gender') === 'female' ? 'checked' : '' }} class="text-pink-600 focus:ring-0">
-                    <span><i class="fa-solid fa-venus text-pink-500 mr-1"></i> ស្រី (Female)</span>
+                    <span><i class="fa-solid fa-venus text-pink-500 mr-1"></i> ស្រី</span>
                   </label>
                 </div>
               </div>
@@ -286,7 +291,7 @@
               <!-- Photo Upload (optional) -->
               <div class="sm:col-span-2">
                 <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-                  រូបថតសិស្ស (Student Photo) <span class="text-slate-400 font-normal">(មិនទាមទារជាចាំបាច់)</span>
+                  រូបថតសិស្ស <span class="text-slate-400 font-normal">(មិនទាមទារជាចាំបាច់)</span>
                 </label>
                 <div class="flex items-center gap-4 p-3.5 bg-slate-50 border border-dashed border-slate-300 rounded-2xl hover:border-blue-400 transition">
                   <div id="photo-preview-box" class="w-16 h-16 rounded-xl bg-slate-200 flex items-center justify-center text-slate-400 overflow-hidden flex-shrink-0">
@@ -311,7 +316,7 @@
           <div>
             <div class="flex items-center gap-2.5 pb-3 border-b border-slate-200">
               <span class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">២</span>
-              <h2 class="text-base font-bold text-slate-800">ព័ត៌មានអាណាព្យាបាល (Parent/Guardian Info)</h2>
+              <h2 class="text-base font-bold text-slate-800">ព័ត៌មានអាណាព្យាបាល</h2>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
@@ -349,9 +354,9 @@
                     required 
                     class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
                   >
-                    <option value="ឪពុក" {{ old('parent_relationship', 'ឪពុក') === 'ឪពុក' ? 'selected' : '' }}>ឪពុក (Father)</option>
-                    <option value="ម្តាយ" {{ old('parent_relationship') === 'ម្តាយ' ? 'selected' : '' }}>ម្តាយ (Mother)</option>
-                    <option value="អាណាព្យាបាល" {{ old('parent_relationship') === 'អាណាព្យាបាល' ? 'selected' : '' }}>អាណាព្យាបាល (Guardian)</option>
+                    <option value="ឪពុក" {{ old('parent_relationship', 'ឪពុក') === 'ឪពុក' ? 'selected' : '' }}>ឪពុក</option>
+                    <option value="ម្តាយ" {{ old('parent_relationship') === 'ម្តាយ' ? 'selected' : '' }}>ម្តាយ</option>
+                    <option value="អាណាព្យាបាល" {{ old('parent_relationship') === 'អាណាព្យាបាល' ? 'selected' : '' }}>អាណាព្យាបាល</option>
                   </select>
                 </div>
               </div>
@@ -359,7 +364,7 @@
               <!-- Guardian Occupation -->
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-                  មុខរបរ (Occupation)
+                  មុខរបរ
                 </label>
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
@@ -404,7 +409,7 @@
               class="w-full py-3.5 px-6 bg-[#1a44e8] hover:bg-[#1538c2] text-white text-sm font-bold rounded-2xl shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40 active:scale-[0.99] transition flex items-center justify-center gap-2"
             >
               <i class="fa-solid fa-paper-plane"></i>
-              <span>បញ្ជូនពាក្យចុះឈ្មោះ (Submit Registration)</span>
+              <span>បញ្ជូនពាក្យចុះឈ្មោះ</span>
             </button>
             <p class="text-[11px] text-center text-slate-400 mt-2.5">
               ព័ត៌មានដែលបានបញ្ជូននឹងត្រូវបានរក្សាទុកដោយសុវត្ថិភាព សម្រាប់តែគោលបំណងរដ្ឋបាលសាលាប៉ុណ្ណោះ។
@@ -418,7 +423,7 @@
 
     <!-- Footer -->
     <div class="text-center mt-6 text-xs text-slate-500">
-      <p>&copy; {{ date('Y') }} LMSTICK School Management System. រក្សាសិទ្ធិគ្រប់យ៉ាង។</p>
+      <p>&copy; {{ date('Y') }} {{ $schoolName }}. រក្សាសិទ្ធិគ្រប់យ៉ាង។</p>
     </div>
 
   </div>

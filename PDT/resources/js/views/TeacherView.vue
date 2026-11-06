@@ -144,7 +144,7 @@
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                 </svg>
-                <span>អនុម័ត (Approve)</span>
+                <span>អនុម័ត</span>
               </button>
             </template>
             <!-- Normal Active Teacher Action buttons -->
@@ -199,7 +199,7 @@
           <!-- QR Code Display -->
           <div class="p-6 bg-slate-50 border border-slate-200/80 rounded-2xl inline-block mx-auto shadow-inner text-center">
             <div class="text-xs font-bold text-slate-800 mb-2 uppercase tracking-wide">
-              LMSTICK FACULTY - ស្កេនដើម្បីចុះឈ្មោះ
+              សាលារៀន ជំនាន់ថ្មី - ស្កេនដើម្បីចុះឈ្មោះ
             </div>
             <div class="w-48 h-48 mx-auto bg-white p-2 rounded-xl border border-slate-200 shadow-xs flex items-center justify-center">
               <img v-if="qrDataUrl" :src="qrDataUrl" alt="QR Code Registration" class="w-full h-full object-contain" />
@@ -210,7 +210,7 @@
 
           <!-- Shareable URL Input with Copy Button -->
           <div class="text-left space-y-1.5">
-            <label class="text-xs font-semibold text-slate-700">តំណភ្ជាប់ទម្រង់ចុះឈ្មោះគ្រូ (Teacher Registration Link):</label>
+            <label class="text-xs font-semibold text-slate-700">តំណភ្ជាប់ទម្រង់ចុះឈ្មោះគ្រូ:</label>
             <div class="flex items-center gap-2">
               <input 
                 type="text" 
@@ -279,7 +279,7 @@
               <i class="fa-solid fa-user-plus"></i>
             </div>
             <div>
-              <h3 class="font-bold text-base">បន្ថែមគ្រូបង្រៀនថ្មី (Add New Teacher)</h3>
+              <h3 class="font-bold text-base">បន្ថែមគ្រូបង្រៀនថ្មី</h3>
               <p class="text-xs text-blue-100">បញ្ចូលព័ត៌មានគ្រូផ្ទាល់ និងបង្កើតគណនីស្វ័យប្រវត្តិ</p>
             </div>
           </div>
@@ -293,14 +293,14 @@
               <input type="text" v-model="createForm.name_khmer" required placeholder="ឧ. សុខ ចាន់ដារ៉ា" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
-              <label class="block font-semibold mb-1">ឈ្មោះជាអក្សរឡាតាំង (Latin Name)</label>
+              <label class="block font-semibold mb-1">ឈ្មោះជាអក្សរឡាតាំង</label>
               <input type="text" v-model="createForm.name_latin" placeholder="e.g. SOK CHANDARA" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl uppercase focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
               <label class="block font-semibold mb-1">ភេទ <span class="text-red-500">*</span></label>
               <select v-model="createForm.gender" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                <option value="male">ប្រុស (Male)</option>
-                <option value="female">ស្រី (Female)</option>
+                <option value="male">ប្រុស</option>
+                <option value="female">ស្រី</option>
               </select>
             </div>
             <div>
@@ -318,15 +318,15 @@
                 <option value="ភាសាអង់គ្លេស">ភាសាអង់គ្លេស</option>
                 <option value="ប្រវត្តិវិទ្យា">ប្រវត្តិវិទ្យា</option>
                 <option value="ភូមិវិទ្យា">ភូមិវិទ្យា</option>
-                <option value="ព័ត៌មានវិទ្យា (ICT)">ព័ត៌មានវិទ្យា (ICT)</option>
+                <option value="ព័ត៌មានវិទ្យា">ព័ត៌មានវិទ្យា</option>
               </select>
             </div>
             <div>
               <label class="block font-semibold mb-1">កម្រិតវប្បធម៌</label>
               <select v-model="createForm.qualification" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                <option value="បរិញ្ញាបត្រ">បរិញ្ញាបត្រ (Bachelor)</option>
-                <option value="បរិញ្ញាបត្រជាន់ខ្ពស់">បរិញ្ញាបត្រជាន់ខ្ពស់ (Master)</option>
-                <option value="បណ្ឌិត">បណ្ឌិត (PhD)</option>
+                <option value="បរិញ្ញាបត្រ">បរិញ្ញាបត្រ</option>
+                <option value="បរិញ្ញាបត្រជាន់ខ្ពស់">បរិញ្ញាបត្រជាន់ខ្ពស់</option>
+                <option value="បណ្ឌិត">បណ្ឌិត</option>
                 <option value="គរុកោសល្យមធ្យម">គរុកោសល្យមធ្យម</option>
               </select>
             </div>
@@ -403,7 +403,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block font-semibold mb-1">អត្តលេខគ្រូស្វ័យប្រវត្តិ (Teacher ID) <span class="text-red-500">*</span></label>
+                <label class="block font-semibold mb-1">អត្តលេខគ្រូស្វ័យប្រវត្តិ <span class="text-red-500">*</span></label>
                 <input type="text" v-model="approveForm.teacher_id_card" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl font-mono font-bold text-emerald-700 focus:outline-none">
               </div>
               <div>
@@ -430,7 +430,7 @@
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
             </svg>
             <i v-else class="fa-solid fa-check"></i>
-            <span>{{ isSubmittingApproval ? 'កំពុងអនុម័ត...' : 'យល់ព្រមអនុម័ត (Approve & Enroll)' }}</span>
+            <span>{{ isSubmittingApproval ? 'កំពុងអនុម័ត...' : 'យល់ព្រមអនុម័ត' }}</span>
           </button>
         </div>
       </div>
@@ -449,7 +449,7 @@
               <i class="fa-solid fa-chalkboard-user"></i>
             </div>
             <div>
-              <h3 class="font-bold text-base">ប្រវត្តិរូបគ្រូបង្រៀន (Teacher Profile)</h3>
+              <h3 class="font-bold text-base">ប្រវត្តិរូបគ្រូបង្រៀន</h3>
               <p class="text-xs text-blue-100">ព័ត៌មានលម្អិត និងកាលវិភាគបង្រៀន</p>
             </div>
           </div>
@@ -477,7 +477,7 @@
           <div class="grid grid-cols-2 gap-3 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
             <div>
               <span class="text-slate-400 block text-[11px]">ភេទ:</span>
-              <span class="font-semibold text-slate-800">{{ selectedTeacher.gender === 'male' || selectedTeacher.gender === 'ប្រុស' ? 'ប្រុស (Male)' : 'ស្រី (Female)' }}</span>
+              <span class="font-semibold text-slate-800">{{ selectedTeacher.gender === 'male' || selectedTeacher.gender === 'ប្រុស' ? 'ប្រុស' : 'ស្រី' }}</span>
             </div>
             <div>
               <span class="text-slate-400 block text-[11px]">ថ្ងៃខែឆ្នាំកំណើត:</span>
@@ -534,7 +534,7 @@
               <i class="fa-solid fa-user-pen"></i>
             </div>
             <div>
-              <h3 class="font-bold text-base">កែប្រែព័ត៌មានគ្រូបង្រៀន (Edit Teacher)</h3>
+              <h3 class="font-bold text-base">កែប្រែព័ត៌មានគ្រូបង្រៀន</h3>
               <p class="text-xs text-blue-100">{{ selectedTeacher.name }} ({{ selectedTeacher.idCard }})</p>
             </div>
           </div>
@@ -548,14 +548,14 @@
               <input type="text" v-model="editForm.name_khmer" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
-              <label class="block font-semibold mb-1">ឈ្មោះជាអក្សរឡាតាំង (Latin Name)</label>
+              <label class="block font-semibold mb-1">ឈ្មោះជាអក្សរឡាតាំង</label>
               <input type="text" v-model="editForm.name_latin" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl uppercase focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
               <label class="block font-semibold mb-1">ភេទ <span class="text-red-500">*</span></label>
               <select v-model="editForm.gender" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                <option value="male">ប្រុស (Male)</option>
-                <option value="female">ស្រី (Female)</option>
+                <option value="male">ប្រុស</option>
+                <option value="female">ស្រី</option>
               </select>
             </div>
             <div>
@@ -569,19 +569,19 @@
             <div>
               <label class="block font-semibold mb-1">កម្រិតវប្បធម៌</label>
               <select v-model="editForm.qualification" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
-                <option value="បរិញ្ញាបត្រ">បរិញ្ញាបត្រ (Bachelor)</option>
-                <option value="បរិញ្ញាបត្រជាន់ខ្ពស់">បរិញ្ញាបត្រជាន់ខ្ពស់ (Master)</option>
-                <option value="បណ្ឌិត">បណ្ឌិត (PhD)</option>
+                <option value="បរិញ្ញាបត្រ">បរិញ្ញាបត្រ</option>
+                <option value="បរិញ្ញាបត្រជាន់ខ្ពស់">បរិញ្ញាបត្រជាន់ខ្ពស់</option>
+                <option value="បណ្ឌិត">បណ្ឌិត</option>
                 <option value="គរុកោសល្យមធ្យម">គរុកោសល្យមធ្យម</option>
               </select>
             </div>
             <div>
               <label class="block font-semibold mb-1">ស្ថានភាព</label>
               <select v-model="editForm.status" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
-                <option value="active">សកម្ម (Active)</option>
-                <option value="fulltime">ពេញម៉ោង (Full-Time)</option>
-                <option value="parttime">ក្រៅម៉ោង (Part-Time)</option>
-                <option value="leave">ច្បាប់ឈប់សម្រាក (On Leave)</option>
+                <option value="active">សកម្ម</option>
+                <option value="fulltime">ពេញម៉ោង</option>
+                <option value="parttime">ក្រៅម៉ោង</option>
+                <option value="leave">ច្បាប់ឈប់សម្រាក</option>
               </select>
             </div>
             <div>
@@ -818,7 +818,7 @@ const printQrSheet = () => {
     <html lang="km">
     <head>
       <meta charset="UTF-8">
-      <title>បោះពុម្ព QR Code ចុះឈ្មោះគ្រូបង្រៀន - LMSTICK</title>
+      <title>បោះពុម្ព QR Code ចុះឈ្មោះគ្រូបង្រៀន</title>
       <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;600;700&display=swap" rel="stylesheet">
       <style>
         body { font-family: 'Kantumruy Pro', sans-serif; text-align: center; padding: 40px 20px; color: #1e293b; }
@@ -834,8 +834,8 @@ const printQrSheet = () => {
     </head>
     <body>
       <div class="poster">
-        <div class="school-title">LMSTICK SCHOOL</div>
-        <div class="subtitle">ទម្រង់ចុះឈ្មោះគ្រូបង្រៀនតាមអនឡាញ (Faculty Recruitment)</div>
+        <div class="school-title">សាលារៀន ជំនាន់ថ្មី</div>
+        <div class="subtitle">ទម្រង់ចុះឈ្មោះគ្រូបង្រៀនតាមអនឡាញ</div>
         <div class="qr-box"><img src="${qrDataUrl.value}" alt="QR Code" /></div>
         <div class="instructions">សូមស្កេន QR Code ដើម្បីបំពេញព័ត៌មានចុះឈ្មោះចូលបម្រើការងារបង្រៀន</div>
         <div class="url-text">${publicRegistrationUrl.value}</div>

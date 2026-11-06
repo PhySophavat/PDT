@@ -1,28 +1,47 @@
 <template>
   <div class="space-y-6 font-khmer">
-    <!-- Header -->
+    <!-- Header with Extra Action Slot for Teacher Link / Leave Request Link -->
     <PageHeader 
-      title="វត្តមានលោកគ្រូ-អ្នកគ្រូ (Teacher Attendance)" 
+      title="វត្តមានលោកគ្រូ-អ្នកគ្រូ" 
       breadcrumb="វត្តមាន / វត្តមានគ្រូបង្រៀន" 
       actionLabel="កត់ត្រាវត្តមានគ្រូប្រចាំថ្ងៃ"
       @action="activeTab = 'daily'"
-    />
+    >
+      <template #extraActions>
+        <button 
+          @click="openTeacherLinkModal" 
+          type="button"
+          class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-semibold rounded-full shadow-md shadow-emerald-600/20 transition-all hover:shadow-lg hover:shadow-emerald-600/30 active:scale-95 cursor-pointer"
+        >
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+          </svg>
+          <span>🔗 តំណភ្ជាប់សុំច្បាប់គ្រូ</span>
+        </button>
+      </template>
+    </PageHeader>
 
-    <!-- Sub Tabs -->
+    <!-- Sub Tabs with Badge for Pending Teacher Leaves -->
     <TabNav 
       v-model="activeTab" 
       :tabs="[
-        { id: 'matrix', label: 'តារាងវត្តមានគ្រូប្រចាំខែ (Monthly Matrix)' },
-        { id: 'daily', label: 'ស្រង់វត្តមានគ្រូប្រចាំថ្ងៃ (Daily Sheet)' }
+        { id: 'matrix', label: 'តារាងវត្តមានគ្រូប្រចាំខែ' },
+        { id: 'daily', label: 'ស្រង់វត្តមានគ្រូប្រចាំថ្ងៃ' },
+        { 
+          id: 'leaves', 
+          label: 'សំណើសុំច្បាប់គ្រូ', 
+          badge: pendingLeavesCount, 
+          badgeColor: 'bg-teal-100 text-teal-800' 
+        }
       ]"
     />
 
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard title="វត្តមានគ្រូសរុប (Present)" :value="stats.present" />
-      <StatCard title="មកយឺត (Late)" :value="stats.late" />
-      <StatCard title="អវត្តមាន (Absent)" :value="stats.absent" />
-      <StatCard title="ច្បាប់/សម្រាកសរុប (Leave)" :value="stats.holiday" />
+      <StatCard title="វត្តមានគ្រូសរុប" :value="stats.present" />
+      <StatCard title="មកយឺត" :value="stats.late" />
+      <StatCard title="អវត្តមាន" :value="stats.absent" />
+      <StatCard title="ច្បាប់/សម្រាកសរុប" :value="stats.holiday" />
     </div>
 
     <!-- TAB 1: Monthly Teacher Attendance Sheet (Days 1 to 28/29/30/31) -->
@@ -32,10 +51,10 @@
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs">
           <!-- Legend -->
           <div class="flex flex-wrap items-center gap-3">
-            <span class="font-medium text-slate-700">វត្តមាន (Present): <span class="font-bold text-emerald-600 text-sm">✓</span></span>
-            <span class="font-medium text-slate-700">ច្បាប់ (Leave): <span class="font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">H</span></span>
-            <span class="font-medium text-slate-700">អវត្តមាន (Absent): <span class="font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded">A</span></span>
-            <span class="font-medium text-slate-700">មកយឺត (Late): <span class="font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">L</span></span>
+            <span class="font-medium text-slate-700">វត្តមាន: <span class="font-bold text-emerald-600 text-sm">✓</span></span>
+            <span class="font-medium text-slate-700">ច្បាប់: <span class="font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">H</span></span>
+            <span class="font-medium text-slate-700">អវត្តមាន: <span class="font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded">A</span></span>
+            <span class="font-medium text-slate-700">មកយឺត: <span class="font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">L</span></span>
             <span class="font-medium text-slate-400">ថ្ងៃអាទិត្យ: <span class="font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">-</span></span>
           </div>
 
@@ -45,6 +64,16 @@
               <input type="checkbox" v-model="onlyShowAbsentTeachers" class="rounded text-indigo-600 focus:ring-0">
               <span>បង្ហាញតែអ្នកមានឈប់/ច្បាប់</span>
             </label>
+
+            <button 
+              @click="activeTab = 'leaves'"
+              type="button" 
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 rounded-xl text-xs font-bold transition cursor-pointer"
+              title="ពិនិត្យសំណើសុំច្បាប់គ្រូ"
+            >
+              <span class="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
+              <span>សំណើសុំច្បាប់គ្រូ ({{ pendingLeavesCount }})</span>
+            </button>
           </div>
         </div>
 
@@ -63,7 +92,7 @@
 
           <!-- 2. Academic Year Dropdown -->
           <div>
-            <label class="block font-bold text-slate-600 mb-1">ឆ្នាំសិក្សា (Academic Year):</label>
+            <label class="block font-bold text-slate-600 mb-1">ឆ្នាំសិក្សា:</label>
             <select 
               v-model="selectedAcademicYear" 
               class="w-full px-3 py-2 bg-slate-50 border border-slate-200 text-slate-700 font-semibold rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
@@ -75,7 +104,7 @@
           <!-- 3. Month Dropdown (Determines 28, 29, 30, or 31 days) -->
           <div>
             <label class="block font-bold text-slate-600 mb-1">
-              ខែសិក្សា (Month - {{ daysInActiveMonth }} ថ្ងៃ):
+              ខែសិក្សា ({{ daysInActiveMonth }} ថ្ងៃ):
             </label>
             <select 
               v-model="selectedMonth" 
@@ -98,7 +127,7 @@
               </span>
             </h4>
             <p class="text-[11px] text-slate-500 mt-0.5">
-              គណនាពីថ្ងៃទី ១ ដល់ថ្ងៃទី {{ daysInActiveMonth }} • បើអត់ឈប់គូស «✓» • បើឈប់គូស «H» (ច្បាប់), «A» (អវត្តមាន), «L» (យឺត)
+              គណនាពីថ្ងៃទី ១ ដល់ថ្ងៃទី {{ daysInActiveMonth }} • វត្តមាន «✓» • ច្បាប់ «H» • អវត្តមាន «A» • យឺត «L»
             </p>
           </div>
 
@@ -227,7 +256,7 @@
     <div v-else-if="activeTab === 'daily'" class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
-          <h3 class="font-bold text-slate-800 text-base">បញ្ជីវត្តមានលោកគ្រូ-អ្នកគ្រូប្រចាំថ្ងៃ (Daily Teacher Sheet)</h3>
+          <h3 class="font-bold text-slate-800 text-base">បញ្ជីវត្តមានលោកគ្រូ-អ្នកគ្រូប្រចាំថ្ងៃ</h3>
           <p class="text-xs text-slate-500">ស្រង់វត្តមានជាក់ស្តែងប្រចាំថ្ងៃទី {{ selectedDate }}</p>
         </div>
         <div class="flex items-center gap-2">
@@ -243,7 +272,7 @@
 
       <!-- Date selector row -->
       <div class="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200/70 text-xs">
-        <label class="font-bold text-slate-700">កាលបរិច្ឆេទ (Date):</label>
+        <label class="font-bold text-slate-700">កាលបរិច្ឆេទ:</label>
         <input 
           type="date" 
           v-model="selectedDate" 
@@ -263,7 +292,7 @@
               <th class="py-3 px-4 min-w-[130px]">ឯកទេស</th>
               <th class="py-3 px-3 w-28">ទូរស័ព្ទ</th>
               <th class="py-3 px-4 min-w-[280px]">ស្ថានភាពវត្តមាន</th>
-              <th class="py-3 px-4 min-w-[200px]">សម្គាល់ (Remark)</th>
+              <th class="py-3 px-4 min-w-[200px]">សម្គាល់</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
@@ -339,12 +368,284 @@
         </table>
       </div>
     </div>
+
+    <!-- TAB 3: Teacher Leave Requests Management -->
+    <div v-else-if="activeTab === 'leaves'" class="space-y-4">
+      <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+            <span>បញ្ជីសំណើសុំច្បាប់របស់លោកគ្រូ-អ្នកគ្រូ</span>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
+              រង់ចាំអនុម័ត {{ pendingLeavesCount }} នាក់
+            </span>
+          </h3>
+          <p class="text-xs text-slate-500 mt-1">
+            ពិនិត្យ និងអនុម័តសំណើសុំច្បាប់ឈប់សម្រាកដែលគ្រូបានស្នើតាមទម្រង់អនឡាញ
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button 
+            @click="openTeacherLinkModal" 
+            type="button" 
+            class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <i class="fa-solid fa-qrcode"></i>
+            <span>យក Link / QR Code សុំច្បាប់គ្រូ</span>
+          </button>
+          <button 
+            @click="fetchTeacherLeaves" 
+            type="button" 
+            class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+            title="ទាញយកទិន្នន័យថ្មី"
+          >
+            <i class="fa-solid fa-rotate-right" :class="{ 'animate-spin': isLoadingLeaves }"></i>
+            <span>ផ្ទុកឡើងវិញ</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters Bar for Leaves -->
+      <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-slate-600">ស្ថានភាពសំណើ:</span>
+          <select 
+            v-model="leaveFilterStatus" 
+            @change="fetchTeacherLeaves" 
+            class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+          >
+            <option value="all">ទាំងអស់</option>
+            <option value="pending">រង់ចាំអនុម័ត</option>
+            <option value="approved">បានអនុម័ត</option>
+            <option value="rejected">បានបដិសេធ</option>
+          </select>
+        </div>
+
+        <div class="text-xs text-slate-500">
+          បង្ហាញសំណើសរុប {{ teacherLeavesList.length }} កំណត់ត្រា
+        </div>
+      </div>
+
+      <!-- Leaves Table -->
+      <div class="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">
+        <div v-if="isLoadingLeaves" class="py-12 text-center text-slate-400 text-xs">
+          កំពុងទាញយកទិន្នន័យសំណើសុំច្បាប់...
+        </div>
+        <div v-else-if="teacherLeavesList.length === 0" class="py-16 text-center text-slate-400 text-xs">
+          <div class="flex flex-col items-center justify-center gap-2">
+            <span class="text-3xl">📋</span>
+            <span class="font-medium text-slate-600">ពុំមានសំណើសុំច្បាប់របស់លោកគ្រូ-អ្នកគ្រូនៅក្នុងបញ្ជីនេះទេ</span>
+          </div>
+        </div>
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-3 w-12 text-center">#</th>
+                <th class="py-3 px-4 min-w-[170px]">ឈ្មោះលោកគ្រូ-អ្នកគ្រូ</th>
+                <th class="py-3 px-3 min-w-[120px]">ឯកទេស</th>
+                <th class="py-3 px-3 min-w-[130px]">ប្រភេទច្បាប់</th>
+                <th class="py-3 px-3 min-w-[150px]">កាលបរិច្ឆេទ & ចំនួនថ្ងៃ</th>
+                <th class="py-3 px-4 min-w-[180px]">មូលហេតុ</th>
+                <th class="py-3 px-3 min-w-[110px]">ទូរស័ព្ទ</th>
+                <th class="py-3 px-3 min-w-[100px] text-center">ឯកសារភ្ជាប់</th>
+                <th class="py-3 px-3 min-w-[110px] text-center">ស្ថានភាព</th>
+                <th class="py-3 px-4 min-w-[150px] text-center">សកម្មភាព</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr v-for="(req, idx) in teacherLeavesList" :key="req.id" class="hover:bg-slate-50 transition-colors">
+                <td class="py-3 px-3 text-center font-mono font-bold text-slate-400">{{ idx + 1 }}</td>
+                <td class="py-3 px-4">
+                  <div class="font-bold text-slate-800">{{ req.teacher_name }}</div>
+                  <div class="text-[11px] font-mono text-slate-400">{{ req.teacher_code || 'គ្មានអត្តលេខ' }}</div>
+                </td>
+                <td class="py-3 px-3 text-slate-700">
+                  <span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-700">
+                    {{ req.specialization || 'ទូទៅ' }}
+                  </span>
+                </td>
+                <td class="py-3 px-3">
+                  <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700">
+                    {{ req.leave_type }}
+                  </span>
+                </td>
+                <td class="py-3 px-3">
+                  <div class="font-medium text-slate-800">
+                    {{ formatDateKm(req.start_date) }} <span class="text-slate-400">→</span> {{ formatDateKm(req.end_date) }}
+                  </div>
+                  <div class="text-[11px] text-teal-700 font-bold mt-0.5">
+                    សរុប {{ req.days_count }} ថ្ងៃ
+                  </div>
+                </td>
+                <td class="py-3 px-4 text-slate-700 max-w-xs">
+                  <p class="truncate" :title="req.reason">{{ req.reason }}</p>
+                </td>
+                <td class="py-3 px-3 font-mono text-slate-600">
+                  <a v-if="req.phone" :href="'tel:' + req.phone" class="text-indigo-600 hover:underline">
+                    {{ req.phone }}
+                  </a>
+                  <span v-else class="text-slate-400">-</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <a 
+                    v-if="req.attachment_url" 
+                    :href="req.attachment_url" 
+                    target="_blank" 
+                    class="inline-flex items-center gap-1 text-[11px] font-bold text-teal-600 hover:text-teal-800 hover:underline"
+                  >
+                    <i class="fa-solid fa-paperclip"></i>
+                    <span>បើកមើល</span>
+                  </a>
+                  <span v-else class="text-slate-300">-</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <span 
+                    v-if="req.status === 'pending'" 
+                    class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 inline-flex items-center gap-1.5"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                    រង់ចាំអនុម័ត
+                  </span>
+                  <span 
+                    v-else-if="req.status === 'approved'" 
+                    class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 inline-flex items-center gap-1"
+                  >
+                    <i class="fa-solid fa-check text-[10px]"></i>
+                    បានអនុម័ត
+                  </span>
+                  <span 
+                    v-else-if="req.status === 'rejected'" 
+                    class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 inline-flex items-center gap-1"
+                  >
+                    <i class="fa-solid fa-xmark text-[10px]"></i>
+                    បានបដិសេធ
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-center">
+                  <div v-if="req.status === 'pending'" class="flex items-center justify-center gap-1.5">
+                    <button 
+                      @click="approveTeacherLeave(req)" 
+                      type="button" 
+                      class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold shadow-xs transition cursor-pointer"
+                      title="អនុម័ត និងកត់ត្រាវត្តមាន H"
+                    >
+                      ✓ អនុម័ត
+                    </button>
+                    <button 
+                      @click="rejectTeacherLeave(req)" 
+                      type="button" 
+                      class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[11px] font-bold transition cursor-pointer"
+                      title="បដិសេធ"
+                    >
+                      ✕ បដិសេធ
+                    </button>
+                  </div>
+                  <div v-else class="text-[11px] text-slate-400">
+                    {{ req.status === 'approved' ? '✓ កត់ត្រារួច' : '✕ បដិសេធរួច' }}
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Shareable Teacher Link & QR Code Modal -->
+    <div 
+      v-if="showTeacherLinkModal" 
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs font-khmer transition-opacity"
+      @click.self="showTeacherLinkModal = false"
+    >
+      <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden transform transition-all">
+        
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 text-white flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-xl shadow-inner">
+              <i class="fa-solid fa-qrcode text-white"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-base">Link / QR Code សុំច្បាប់លោកគ្រូ-អ្នកគ្រូ</h3>
+              <p class="text-xs text-teal-100">សម្រាប់ចែករំលែកទៅកាន់គ្រូបង្រៀនតាម Telegram ឬបោះពុម្ពបិទនៅបន្ទប់គ្រូ</p>
+            </div>
+          </div>
+          <button 
+            @click="showTeacherLinkModal = false" 
+            class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 text-center space-y-5">
+          <!-- QR Code Display Box -->
+          <div class="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl inline-block mx-auto shadow-inner text-center">
+            <div class="text-xs font-bold text-slate-800 mb-2 uppercase tracking-wide">
+              ទម្រង់សុំច្បាប់លោកគ្រូ-អ្នកគ្រូ
+            </div>
+            <div class="w-48 h-48 mx-auto bg-white p-2 rounded-xl border border-slate-200 shadow-xs flex items-center justify-center">
+              <img v-if="qrDataUrl" :src="qrDataUrl" alt="Teacher QR Code" class="w-full h-full object-contain" />
+              <div v-else class="text-xs text-slate-400">កំពុងបង្កើត QR Code...</div>
+            </div>
+            <div class="text-[11px] text-slate-500 mt-2">
+              ស្កេនតាមទូរស័ព្ទដៃដើម្បីបើកទម្រង់សុំច្បាប់ភ្លាមៗ
+            </div>
+          </div>
+
+          <!-- URL and Copy Action -->
+          <div class="space-y-2 text-left">
+            <label class="block text-xs font-bold text-slate-700">តំណភ្ជាប់ផ្ទាល់ (Direct Link):</label>
+            <div class="flex items-center gap-2">
+              <input 
+                type="text" 
+                readonly 
+                :value="publicTeacherUrl" 
+                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 select-all focus:outline-none"
+              />
+              <button 
+                @click="copyShareLink" 
+                type="button" 
+                class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap shadow-xs cursor-pointer active:scale-95"
+              >
+                <i v-if="isCopied" class="fa-solid fa-check text-emerald-200"></i>
+                <i v-else class="fa-regular fa-copy"></i>
+                <span>{{ isCopied ? 'ចម្លងរួច!' : 'ចម្លង Link' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="grid grid-cols-2 gap-3 pt-2">
+            <a 
+              :href="publicTeacherUrl" 
+              target="_blank" 
+              class="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2"
+            >
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              <span>បើកមើលទម្រង់</span>
+            </a>
+            <button 
+              @click="printQrCode" 
+              type="button" 
+              class="py-2.5 px-4 bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <i class="fa-solid fa-print"></i>
+              <span>បោះពុម្ព QR Code</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
+import QRCode from 'qrcode';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
 import StatCard from '../components/StatCard.vue';
@@ -361,6 +662,17 @@ const searchQuery = ref('');
 const onlyShowAbsentTeachers = ref(false);
 const isSaving = ref(false);
 
+// Teacher Leave & Link Modal State
+const showTeacherLinkModal = ref(false);
+const qrDataUrl = ref('');
+const publicTeacherUrl = ref('');
+const isCopied = ref(false);
+
+const teacherLeavesList = ref([]);
+const pendingLeavesCount = ref(0);
+const isLoadingLeaves = ref(false);
+const leaveFilterStatus = ref('all');
+
 const academicYearsList = ref(['2025-2026', '2024-2025']);
 const teachersList = ref([]);
 const attendanceMap = ref({});
@@ -375,18 +687,18 @@ const stats = ref({
 });
 
 const monthOptions = [
-  { key: 'january', label: 'មករា (January)' },
-  { key: 'february', label: 'កុម្ភៈ (February)' },
-  { key: 'march', label: 'មីនា (March)' },
-  { key: 'april', label: 'មេសា (April)' },
-  { key: 'may', label: 'ឧសភា (May)' },
-  { key: 'june', label: 'មិថុនា (June)' },
-  { key: 'july', label: 'កក្កដា (July)' },
-  { key: 'august', label: 'សីហា (August)' },
-  { key: 'september', label: 'កញ្ញា (September)' },
-  { key: 'october', label: 'តុលា (October)' },
-  { key: 'november', label: 'វិច្ឆិកា (November)' },
-  { key: 'december', label: 'ធ្នូ (December)' },
+  { key: 'january', label: 'មករា' },
+  { key: 'february', label: 'កុម្ភៈ' },
+  { key: 'march', label: 'មីនា' },
+  { key: 'april', label: 'មេសា' },
+  { key: 'may', label: 'ឧសភា' },
+  { key: 'june', label: 'មិថុនា' },
+  { key: 'july', label: 'កក្កដា' },
+  { key: 'august', label: 'សីហា' },
+  { key: 'september', label: 'កញ្ញា' },
+  { key: 'october', label: 'តុលា' },
+  { key: 'november', label: 'វិច្ឆិកា' },
+  { key: 'december', label: 'ធ្នូ' },
 ];
 
 const monthIndexMap = {
@@ -574,12 +886,138 @@ const handleExport = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `LMSTICK_Teacher_Attendance_${selectedDate.value}.csv`;
+  a.download = `Teacher_Attendance_${selectedDate.value}.csv`;
   a.click();
+};
+
+// Leave Link & QR Generator for Teachers
+const openTeacherLinkModal = async () => {
+  await generateQrCode();
+  showTeacherLinkModal.value = true;
+};
+
+const generateQrCode = async () => {
+  const origin = window.location.origin;
+  publicTeacherUrl.value = `${origin}/teacher-leave-request`;
+  isCopied.value = false;
+
+  try {
+    qrDataUrl.value = await QRCode.toDataURL(publicTeacherUrl.value, {
+      width: 260,
+      margin: 2,
+      color: {
+        dark: '#0d9488',
+        light: '#ffffff'
+      }
+    });
+  } catch (err) {
+    console.error('Failed to generate teacher QR:', err);
+  }
+};
+
+const copyShareLink = async () => {
+  try {
+    await navigator.clipboard.writeText(publicTeacherUrl.value);
+    isCopied.value = true;
+    setTimeout(() => {
+      isCopied.value = false;
+    }, 2500);
+  } catch (e) {
+    alert('មិនអាចចម្លងតំណភ្ជាប់បានទេ។ សូមជ្រើសរើសចម្លងដោយដៃ។');
+  }
+};
+
+const printQrCode = () => {
+  const win = window.open('', '_blank');
+  const title = 'ទម្រង់សុំច្បាប់លោកគ្រូ-អ្នកគ្រូ';
+  win.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>${title}</title>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Kantumruy Pro', sans-serif; text-align: center; padding: 40px; margin: 0; }
+        .box { border: 2px dashed #0d9488; border-radius: 20px; padding: 30px; max-width: 420px; margin: 0 auto; }
+        h2 { color: #0f766e; margin-bottom: 8px; font-size: 20px; }
+        p { color: #475569; font-size: 13px; margin-top: 0; margin-bottom: 20px; }
+        img { width: 260px; height: 260px; }
+        .url { font-family: monospace; font-size: 11px; color: #64748b; margin-top: 15px; word-break: break-all; }
+      </style>
+    </head>
+    <body>
+      <div class="box">
+        <h2>${title}</h2>
+        <p>សូមស្កេន QR Code ដើម្បីបើកបំពេញទម្រង់សុំច្បាប់ឈប់សម្រាក</p>
+        <img src="${qrDataUrl.value}" />
+        <div class="url">${publicTeacherUrl.value}</div>
+      </div>
+      <script>
+        window.onload = function() { window.print(); }
+      <\/script>
+    </body>
+    </html>
+  `);
+  win.document.close();
+};
+
+// Teacher Leaves Fetch & Actions
+const fetchTeacherLeaves = async () => {
+  isLoadingLeaves.value = true;
+  try {
+    const res = await axios.get('/api/teacher-leave-requests', {
+      params: {
+        status: leaveFilterStatus.value,
+      }
+    });
+    if (res.data) {
+      teacherLeavesList.value = res.data.requests || [];
+      pendingLeavesCount.value = res.data.pending_count || 0;
+    }
+  } catch (err) {
+    console.error('Failed to fetch teacher leaves:', err);
+  } finally {
+    isLoadingLeaves.value = false;
+  }
+};
+
+const approveTeacherLeave = async (req) => {
+  if (!confirm(`តើអ្នកពិតជាចង់អនុម័តសំណើសុំច្បាប់របស់លោកគ្រូ-អ្នកគ្រូ ${req.teacher_name} (${req.days_count} ថ្ងៃ) មែនទេ?`)) {
+    return;
+  }
+
+  try {
+    const res = await axios.post(`/api/teacher-leave-requests/${req.id}/approve`);
+    alert(res.data.message || 'បានអនុម័តសំណើសុំច្បាប់ដោយជោគជ័យ!');
+    await fetchTeacherLeaves();
+    await fetchTeacherAttendance();
+  } catch (err) {
+    alert(err.response?.data?.message || 'មានបញ្ហាក្នុងការអនុម័តសំណើ!');
+  }
+};
+
+const rejectTeacherLeave = async (req) => {
+  const reason = prompt('សូមបញ្ចូលមូលហេតុនៃការបដិសេធ:', 'ពុំមានមូលហេតុសមរម្យ');
+  if (reason === null) return;
+
+  try {
+    const res = await axios.post(`/api/teacher-leave-requests/${req.id}/reject`, { reason });
+    alert(res.data.message || 'បានបដិសេធសំណើសុំច្បាប់!');
+    await fetchTeacherLeaves();
+  } catch (err) {
+    alert(err.response?.data?.message || 'មានបញ្ហាក្នុងការបដិសេធ!');
+  }
+};
+
+const formatDateKm = (dStr) => {
+  if (!dStr) return '';
+  const d = new Date(dStr);
+  return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
 };
 
 onMounted(() => {
   fetchTeacherAttendance();
+  fetchTeacherLeaves();
 });
 </script>
 

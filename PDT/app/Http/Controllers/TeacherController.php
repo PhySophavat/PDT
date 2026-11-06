@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\SchoolClass;
 use App\Models\CourseSubject;
+use App\Models\TeacherLeaveRequest;
+use App\Models\TeacherAttendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -118,6 +120,190 @@ class TeacherController extends Controller
         }
 
         return redirect()->route('public.register-teacher')->with('registration_success', true);
+    }
+
+    /**
+     * Show public teacher leave request form.
+     */
+    public function showPublicLeaveForm(Request $request)
+    {
+        $teachers = Teacher::with('user')
+            ->where('status', 'active')
+            ->get()
+            ->sortBy(fn($t) => $t->name_khmer ?: ($t->user->name ?? ''))
+            ->values();
+
+        return view('public.teacher_leave_request', compact('teachers'));
+    }
+
+    /**
+     * Submit public teacher leave request.
+     */
+    public function submitPublicLeaveForm(Request $request)
+    {
+        $validated = $request->validate([
+            'teacher_id' => 'required|exists:teachers,id',
+            'teacher_name' => 'required|string|max:255',
+            'teacher_code' => 'nullable|string|max:50',
+            'specialization' => 'nullable|string|max:255',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'leave_type' => 'required|string|max:100',
+            'reason' => 'required|string|max:1000',
+            'phone' => 'required|string|max:50',
+            'attachment' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
+        ], [
+            'teacher_id.required' => 'សូមជ្រើសរើសលោកគ្រូ-អ្នកគ្រូ',
+            'start_date.required' => 'សូមជ្រើសរើសកាលបរិច្ឆេទចាប់ផ្ដើម',
+            'end_date.required' => 'សូមជ្រើសរើសកាលបរិច្ឆេទបញ្ចប់',
+            'end_date.after_or_equal' => 'កាលបរិច្ឆេទបញ្ចប់ត្រូវតែស្មើ ឬក្រោយកាលបរិច្ឆេទចាប់ផ្ដើម',
+            'leave_type.required' => 'សូមជ្រើសរើសប្រភេទច្បាប់',
+            'reason.required' => 'សូមបញ្ចូលមូលហេតុនៃការសុំច្បាប់',
+            'phone.required' => 'សូមបញ្ចូលលេខទូរស័ព្ទទំនាក់ទំនង',
+        ]);
+
+        $start = Carbon::parse($validated['start_date']);
+        $end = Carbon::parse($validated['end_date']);
+        $daysCount = $start->diffInDays($end) + 1;
+
+        $attachmentPath = null;
+        if ($request->hasFile('attachment')) {
+            $attachmentPath = $request->file('attachment')->store('teacher_leaves/attachments', 'public');
+        }
+
+        $leave = TeacherLeaveRequest::create([
+            'teacher_id' => $validated['teacher_id'],
+            'teacher_name' => $validated['teacher_name'],
+            'teacher_code' => $validated['teacher_code'] ?? null,
+            'specialization' => $validated['specialization'] ?? null,
+            'start_date' => $start->toDateString(),
+            'end_date' => $end->toDateString(),
+            'days_count' => $daysCount,
+            'leave_type' => $validated['leave_type'],
+            'reason' => $validated['reason'],
+            'phone' => $validated['phone'],
+            'attachment_path' => $attachmentPath,
+            'status' => 'pending',
+        ]);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'សំណើសុំច្បាប់ត្រូវបានបញ្ជូនដោយជោគជ័យ! សូមរង់ចាំការអនុម័តពីគណៈគ្រប់គ្រងសាលា។',
+                'leave_id' => $leave->id,
+            ]);
+        }
+
+        return redirect()->route('public.teacher-leave-request')->with('leave_success', [
+            'teacher_name' => $leave->teacher_name,
+            'specialization' => $leave->specialization,
+            'start_date' => $leave->start_date->format('d/m/Y'),
+            'end_date' => $leave->end_date->format('d/m/Y'),
+            'days_count' => $leave->days_count,
+            'leave_type' => $leave->leave_type,
+        ]);
+    }
+
+    /**
+     * API: Get Teacher Leave Requests.
+     */
+    public function getLeaveRequests(Request $request)
+    {
+        $status = $request->input('status', 'all');
+        $date = $request->input('date');
+
+        $query = TeacherLeaveRequest::query()->latest();
+
+        if ($status && $status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        if ($date) {
+            $query->where(function ($q) use ($date) {
+                $q->where('start_date', '<=', $date)
+                  ->where('end_date', '>=', $date);
+            });
+        }
+
+        $requests = $query->get()->map(function ($l) {
+            return [
+                'id' => $l->id,
+                'teacher_id' => $l->teacher_id,
+                'teacher_name' => $l->teacher_name,
+                'teacher_code' => $l->teacher_code,
+                'specialization' => $l->specialization,
+                'start_date' => $l->start_date ? $l->start_date->toDateString() : '',
+                'end_date' => $l->end_date ? $l->end_date->toDateString() : '',
+                'days_count' => $l->days_count,
+                'leave_type' => $l->leave_type,
+                'reason' => $l->reason,
+                'phone' => $l->phone,
+                'attachment_url' => $l->attachment_path ? asset('storage/' . $l->attachment_path) : null,
+                'status' => $l->status,
+                'created_at' => $l->created_at ? $l->created_at->format('Y-m-d H:i') : '',
+            ];
+        });
+
+        $pendingCount = TeacherLeaveRequest::where('status', 'pending')->count();
+
+        return response()->json([
+            'requests' => $requests,
+            'pending_count' => $pendingCount,
+        ]);
+    }
+
+    /**
+     * API: Approve Teacher Leave Request.
+     */
+    public function approveLeaveRequest(Request $request, $id)
+    {
+        $leave = TeacherLeaveRequest::findOrFail($id);
+        $leave->status = 'approved';
+        $leave->approved_by = auth()->id();
+        $leave->save();
+
+        // Automatically mark teacher attendance as 'leave' (H) for each day of approved leave
+        if ($leave->teacher_id) {
+            $start = Carbon::parse($leave->start_date);
+            $end = Carbon::parse($leave->end_date);
+
+            for ($curr = $start->copy(); $curr->lte($end); $curr->addDay()) {
+                if ($curr->isSunday()) continue;
+
+                TeacherAttendance::updateOrCreate(
+                    [
+                        'teacher_id' => $leave->teacher_id,
+                        'date' => $curr->toDateString(),
+                    ],
+                    [
+                        'status' => 'leave', // leave = ច្បាប់ (H)
+                        'remark' => "សុំច្បាប់: {$leave->leave_type} - {$leave->reason}",
+                    ]
+                );
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "បានអនុម័តសំណើសុំច្បាប់របស់លោកគ្រូ-អ្នកគ្រូ {$leave->teacher_name} និងកត់ត្រាវត្តមានជា «មានច្បាប់» ដោយជោគជ័យ!",
+        ]);
+    }
+
+    /**
+     * API: Reject Teacher Leave Request.
+     */
+    public function rejectLeaveRequest(Request $request, $id)
+    {
+        $leave = TeacherLeaveRequest::findOrFail($id);
+        $leave->status = 'rejected';
+        $leave->rejection_reason = $request->input('reason', 'ពុំមានមូលហេតុសមរម្យ');
+        $leave->approved_by = auth()->id();
+        $leave->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => "បានបដិសេធសំណើសុំច្បាប់របស់លោកគ្រូ-អ្នកគ្រូ {$leave->teacher_name}!",
+        ]);
     }
 
     /**

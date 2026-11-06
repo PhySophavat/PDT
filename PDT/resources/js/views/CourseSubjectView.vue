@@ -163,7 +163,7 @@
         <form @submit.prevent="submitCreateSubject" class="p-6 space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">កូដមុខវិជ្ជា (Code) *</label>
+              <label class="block text-xs font-bold text-slate-700 mb-1">កូដមុខវិជ្ជា *</label>
               <input v-model="createForm.code" type="text" required placeholder="ឧ. MTH-01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 uppercase">
             </div>
             <div>
@@ -184,28 +184,65 @@
 
           <!-- Max Score and Credit Divisor (New) -->
           <div class="p-3.5 bg-blue-50/50 border border-blue-100 rounded-xl space-y-3">
-            <div class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
-              <span>🎯 ពិន្ទុអតិប្បរមា និងក្រេឌីត (សម្រាប់គណនាមធ្យមភាគ)</span>
+            <div class="text-xs font-bold text-blue-900 flex items-center justify-between">
+              <span>🎯 ពិន្ទុអតិប្បរមា និងក្រេឌីត (ស្តង់ដារក្រសួង MoEYS)</span>
+              <span class="text-[11px] font-semibold text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded-md">១ ក្រេឌីត = ៥០ ពិន្ទុ</span>
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-1">ពិន្ទុអតិប្បរមាទូទៅ *</label>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">ពិន្ទុអតិប្បរមាទូទៅ (Max Score) *</label>
                 <div class="flex items-center gap-1">
-                  <input v-model.number="createForm.max_score" type="number" min="1" max="1000" step="1" required placeholder="50 ឬ 100" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                  <span class="text-xs text-slate-500">pt</span>
+                  <input 
+                    v-model.number="createForm.max_score" 
+                    @input="onMaxScoreChange(createForm)"
+                    type="number" 
+                    min="1" 
+                    max="1000" 
+                    step="1" 
+                    required 
+                    placeholder="50, 75 ឬ 100" 
+                    class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  >
+                  <span class="text-xs text-slate-500 font-bold">pt</span>
                 </div>
               </div>
               <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-1">ក្រេឌីតសម្រាប់ចែក *</label>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">ក្រេឌីត / មេគុណ (Credit) *</label>
                 <div class="flex items-center gap-1">
-                  <input v-model.number="createForm.credit" type="number" min="0.1" max="20" step="0.5" required placeholder="1 ឬ 2" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                  <span class="text-xs text-slate-500">cr</span>
+                  <input 
+                    v-model.number="createForm.credit" 
+                    @input="onCreditChange(createForm)"
+                    type="number" 
+                    min="0.1" 
+                    max="20" 
+                    step="0.5" 
+                    required 
+                    placeholder="1, 1.5 ឬ 2" 
+                    class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  >
+                  <span class="text-xs text-slate-500 font-bold">cr</span>
                 </div>
               </div>
             </div>
-            <p class="text-[11px] text-slate-500">
-              * ពិន្ទុអតិប្បរមានេះអាចកំណត់ខុសគ្នាទៅតាមថ្នាក់នីមួយៗបន្ថែមទៀតក្រោយពេលបង្កើត។
-            </p>
+            <!-- Quick Presets -->
+            <div class="flex items-center gap-2 pt-1 border-t border-blue-100/60">
+              <span class="text-[10px] font-bold text-slate-500">គំរូស្តង់ដារក្រសួង:</span>
+              <button 
+                type="button" 
+                @click="createForm.credit = 1; createForm.max_score = 50"
+                class="px-2 py-0.5 rounded text-[11px] font-semibold bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition"
+              >១ ក្រេឌីត (៥០ pt)</button>
+              <button 
+                type="button" 
+                @click="createForm.credit = 1.5; createForm.max_score = 75"
+                class="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 border border-amber-200 hover:bg-amber-100 text-amber-800 transition"
+              >១.៥ ក្រេឌីត (៧៥ pt)</button>
+              <button 
+                type="button" 
+                @click="createForm.credit = 2; createForm.max_score = 100"
+                class="px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-800 transition"
+              >២ ក្រេឌីត (១០០ pt)</button>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
@@ -213,11 +250,11 @@
               <label class="block text-xs font-bold text-slate-700 mb-1">ប្រភេទមុខវិជ្ជា *</label>
               <select v-model="createForm.subject_type" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                 <option value="core">⭐ មុខវិជ្ជាគោល / ស្នូល</option>
-                <option value="science">🔬 វិទ្យាសាស្ត្រពិត (Science)</option>
-                <option value="social">🌍 វិទ្យាសាស្ត្រសង្គម (Social Science)</option>
+                <option value="science">🔬 វិទ្យាសាស្ត្រពិត</option>
+                <option value="social">🌍 វិទ្យាសាស្ត្រសង្គម</option>
                 <option value="languages">🗣️ ភាសាបរទេស / ភាសា</option>
                 <option value="elective">🎨 មុខវិជ្ជាជ្រើសរើស / បំណិន</option>
-                <option value="general">📚 ទូទៅ (General)</option>
+                <option value="general">📚 ទូទៅ</option>
               </select>
             </div>
 
@@ -258,7 +295,7 @@
         <form @submit.prevent="submitUpdateSubject" class="p-6 space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">កូដមុខវិជ្ជា (Code) *</label>
+              <label class="block text-xs font-bold text-slate-700 mb-1">កូដមុខវិជ្ជា *</label>
               <input v-model="editForm.code" type="text" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 uppercase">
             </div>
             <div>
@@ -291,19 +328,56 @@
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-1">ពិន្ទុអតិប្បរមាទូទៅ *</label>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">ពិន្ទុអតិប្បរមាទូទៅ (Max Score) *</label>
                 <div class="flex items-center gap-1">
-                  <input v-model.number="editForm.max_score" type="number" min="1" max="1000" step="1" required class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                  <span class="text-xs text-slate-500">pt</span>
+                  <input 
+                    v-model.number="editForm.max_score" 
+                    @input="onMaxScoreChange(editForm)"
+                    type="number" 
+                    min="1" 
+                    max="1000" 
+                    step="1" 
+                    required 
+                    class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  >
+                  <span class="text-xs text-slate-500 font-bold">pt</span>
                 </div>
               </div>
               <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-1">ក្រេឌីតសម្រាប់ចែក *</label>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">ក្រេឌីត / មេគុណ (Credit) *</label>
                 <div class="flex items-center gap-1">
-                  <input v-model.number="editForm.credit" type="number" min="0.1" max="20" step="0.5" required class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                  <span class="text-xs text-slate-500">cr</span>
+                  <input 
+                    v-model.number="editForm.credit" 
+                    @input="onCreditChange(editForm)"
+                    type="number" 
+                    min="0.1" 
+                    max="20" 
+                    step="0.5" 
+                    required 
+                    class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  >
+                  <span class="text-xs text-slate-500 font-bold">cr</span>
                 </div>
               </div>
+            </div>
+            <!-- Quick Presets -->
+            <div class="flex items-center gap-2 pt-1 border-t border-amber-100/60">
+              <span class="text-[10px] font-bold text-slate-500">គំរូស្តង់ដារក្រសួង:</span>
+              <button 
+                type="button" 
+                @click="editForm.credit = 1; editForm.max_score = 50"
+                class="px-2 py-0.5 rounded text-[11px] font-semibold bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition"
+              >១ ក្រេឌីត (៥០ pt)</button>
+              <button 
+                type="button" 
+                @click="editForm.credit = 1.5; editForm.max_score = 75"
+                class="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100/80 border border-amber-200 hover:bg-amber-200 text-amber-800 transition"
+              >១.៥ ក្រេឌីត (៧៥ pt)</button>
+              <button 
+                type="button" 
+                @click="editForm.credit = 2; editForm.max_score = 100"
+                class="px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-800 transition"
+              >២ ក្រេឌីត (១០០ pt)</button>
             </div>
           </div>
 
@@ -312,11 +386,11 @@
               <label class="block text-xs font-bold text-slate-700 mb-1">ប្រភេទមុខវិជ្ជា *</label>
               <select v-model="editForm.subject_type" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                 <option value="core">⭐ មុខវិជ្ជាគោល / ស្នូល</option>
-                <option value="science">🔬 វិទ្យាសាស្ត្រពិត (Science)</option>
-                <option value="social">🌍 វិទ្យាសាស្ត្រសង្គម (Social Science)</option>
+                <option value="science">🔬 វិទ្យាសាស្ត្រពិត</option>
+                <option value="social">🌍 វិទ្យាសាស្ត្រសង្គម</option>
                 <option value="languages">🗣️ ភាសាបរទេស / ភាសា</option>
                 <option value="elective">🎨 មុខវិជ្ជាជ្រើសរើស / បំណិន</option>
-                <option value="general">📚 ទូទៅ (General)</option>
+                <option value="general">📚 ទូទៅ</option>
               </select>
             </div>
 
@@ -363,7 +437,7 @@
         <!-- Presets Bar -->
         <div class="px-6 py-3 bg-amber-50/50 border-b border-amber-100 flex flex-wrap items-center justify-between gap-2 flex-shrink-0">
           <div class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
-            <span>⚡ កំណត់រហ័សលើគ្រប់ថ្នាក់ (Presets):</span>
+            <span>⚡ កំណត់រហ័សលើគ្រប់ថ្នាក់:</span>
           </div>
           <div class="flex flex-wrap items-center gap-1.5">
             <button 
@@ -418,8 +492,8 @@
               <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
                 <tr>
                   <th class="py-2.5 px-4 w-44">កម្រិតថ្នាក់ / បន្ទប់រៀន</th>
-                  <th class="py-2.5 px-4">ពិន្ទុអតិប្បរមា (Max Score)</th>
-                  <th class="py-2.5 px-4">ក្រេឌីតចែក (Divisor)</th>
+                  <th class="py-2.5 px-4">ពិន្ទុអតិប្បរមា</th>
+                  <th class="py-2.5 px-4">ក្រេឌីតចែក</th>
                   <th class="py-2.5 px-4 text-center">ជ្រើសរើសរហ័ស</th>
                 </tr>
               </thead>
@@ -435,6 +509,7 @@
                     <div class="flex items-center gap-1.5">
                       <input 
                         v-model.number="classConfigForm[item.key].max_score" 
+                        @input="onMaxScoreChange(classConfigForm[item.key])"
                         type="number" 
                         min="1" 
                         max="1000" 
@@ -449,6 +524,7 @@
                     <div class="flex items-center gap-1.5">
                       <input 
                         v-model.number="classConfigForm[item.key].credit" 
+                        @input="onCreditChange(classConfigForm[item.key])"
                         type="number" 
                         min="0.1" 
                         max="20" 
@@ -578,6 +654,23 @@ const editForm = ref({
   credit_hours: 3,
   grade_level: '7-12',
 });
+
+// Cambodian MoEYS Standard: 1 Credit = 50 Maximum Points
+const onCreditChange = (targetObj) => {
+  if (!targetObj) return;
+  const cr = Number(targetObj.credit);
+  if (!isNaN(cr) && cr > 0) {
+    targetObj.max_score = Math.round(cr * 50 * 100) / 100;
+  }
+};
+
+const onMaxScoreChange = (targetObj) => {
+  if (!targetObj) return;
+  const max = Number(targetObj.max_score);
+  if (!isNaN(max) && max > 0) {
+    targetObj.credit = Math.round((max / 50) * 100) / 100;
+  }
+};
 
 const fetchSubjects = async () => {
   if (subjectsList.value.length === 0) {
@@ -798,7 +891,7 @@ const handleExport = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `LMSTICK_Subjects_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `Subjects_${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
 };
 </script>

@@ -23,6 +23,7 @@ use App\Models\Timetable;
 use App\Models\FeeCategory;
 use App\Models\User;
 use App\Models\StudentLeaveRequest;
+use App\Models\TeacherLeaveRequest;
 use App\Models\TeacherAttendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -273,7 +274,15 @@ class ApiController extends Controller
                 ->latest('id')
                 ->take(20)
                 ->get();
-            $leaveCount = StudentLeaveRequest::where('status', 'pending')->count();
+            $studentLeaveCount = StudentLeaveRequest::where('status', 'pending')->count();
+
+            // 4. Pending Teacher Leave Requests (សុំច្បាប់គ្រូ)
+            $pendingTeacherLeaves = TeacherLeaveRequest::where('status', 'pending')
+                ->latest('id')
+                ->take(20)
+                ->get();
+            $teacherLeaveCount = TeacherLeaveRequest::where('status', 'pending')->count();
+            $leaveCount = $studentLeaveCount + $teacherLeaveCount;
 
             $notifications = collect();
 
@@ -318,7 +327,7 @@ class ApiController extends Controller
                 $notifications->push([
                     'id' => 'leave-' . $lv->id,
                     'type' => 'leave',
-                    'type_label' => 'សំណើសុំច្បាប់',
+                    'type_label' => 'សុំច្បាប់សិស្ស',
                     'name' => $name,
                     'title' => "សិស្ស {$name} សុំច្បាប់ឈប់សម្រាក",
                     'subtitle' => 'ថ្នាក់ ' . ($lv->class_name ?: 'N/A') . ' • រយៈពេល ' . ($lv->days_count ?: 1) . ' ថ្ងៃ (' . ($lv->reason ?: 'មានធុរៈផ្ទាល់ខ្លួន') . ')',
@@ -328,6 +337,24 @@ class ApiController extends Controller
                     'icon' => 'fa-solid fa-calendar-minus',
                     'badge_color' => 'bg-amber-500',
                     'bg_color' => 'bg-amber-50 text-amber-700 border-amber-100',
+                ]);
+            }
+
+            foreach ($pendingTeacherLeaves as $tlv) {
+                $name = $tlv->teacher_name ?: 'គ្រូបង្រៀន';
+                $notifications->push([
+                    'id' => 'teacher-leave-' . $tlv->id,
+                    'type' => 'leave',
+                    'type_label' => 'សុំច្បាប់គ្រូ',
+                    'name' => $name,
+                    'title' => "លោកគ្រូ/អ្នកគ្រូ {$name} សុំច្បាប់ឈប់សម្រាក",
+                    'subtitle' => 'ឯកទេស ' . ($tlv->specialization ?: 'ទូទៅ') . ' • រយៈពេល ' . ($tlv->days_count ?: 1) . ' ថ្ងៃ (' . ($tlv->reason ?: $tlv->leave_type) . ')',
+                    'time' => $tlv->created_at ? $tlv->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                    'timestamp' => $tlv->created_at ? $tlv->created_at->timestamp : 0,
+                    'link' => '/teacher-attendance?tab=leaves',
+                    'icon' => 'fa-solid fa-calendar-minus',
+                    'badge_color' => 'bg-teal-500',
+                    'bg_color' => 'bg-teal-50 text-teal-700 border-teal-100',
                 ]);
             }
 
@@ -357,7 +384,13 @@ class ApiController extends Controller
             return $students->sort(function ($a, $b) use ($collator, $nameKey) {
                 $nameA = is_array($a) ? ($a[$nameKey] ?? ($a['name_khmer'] ?? '')) : ($a->name_khmer ?: ($a->display_name ?? ($a->{$nameKey} ?? '')));
                 $nameB = is_array($b) ? ($b[$nameKey] ?? ($b['name_khmer'] ?? '')) : ($b->name_khmer ?: ($b->display_name ?? ($b->{$nameKey} ?? '')));
-                return $collator->compare((string) $nameA, (string) $nameB);
+                $cmp = $collator->compare((string) $nameA, (string) $nameB);
+                if ($cmp !== 0) {
+                    return $cmp;
+                }
+                $cardA = is_array($a) ? ($a['student_id_card'] ?? '') : ($a->student_id_card ?? '');
+                $cardB = is_array($b) ? ($b['student_id_card'] ?? '') : ($b->student_id_card ?? '');
+                return strnatcmp((string) $cardA, (string) $cardB);
             })->values();
         }
 
@@ -2505,6 +2538,10 @@ class ApiController extends Controller
         $subjectId = $request->input('subject_id');
         $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '0'));
 
+        $currentSubject = $subjectId ? CourseSubject::find($subjectId) : null;
+        $subjectMaxScore = $currentSubject ? $currentSubject->getMaxScoreForClass($className) : 100.0;
+        $subjectCredit = $currentSubject ? $currentSubject->getCreditForClass($className) : 1.0;
+
         $rawStudents = Student::with('user')
             ->where('grade', $className)
             ->get();
@@ -2523,7 +2560,7 @@ class ApiController extends Controller
             $scores = $scoreQuery->get()->keyBy('student_id');
         }
 
-        $students = $rawStudents->map(function ($s) use ($scores) {
+        $students = $rawStudents->map(function ($s) use ($scores, $subjectMaxScore) {
             $score = $scores->get($s->id);
 
             return [
@@ -2532,8 +2569,8 @@ class ApiController extends Controller
                 'student_id_card' => $s->student_id_card,
                 'gender' => $s->gender,
                 'score' => $score?->score,
-                'max_score' => $score?->max_score ?? 100,
-                'grade_letter' => $score?->grade_letter,
+                'max_score' => $score?->max_score ?? $subjectMaxScore,
+                'grade_letter' => $score ? ExaminationScore::calculateSubjectGrade($score->score, $score->max_score ?: $subjectMaxScore) : null,
             ];
         });
 
@@ -2544,21 +2581,27 @@ class ApiController extends Controller
                 $filtered = array_slice($demoStudents, 0, 6);
             }
             $sampleScores = [88.5, 92.0, 75.5, 68.0, 95.0, 81.5, 79.0, 85.0, 90.5, 74.0];
-            $students = collect($filtered)->map(function ($s, $idx) use ($sampleScores) {
+            $students = collect($filtered)->map(function ($s, $idx) use ($sampleScores, $subjectMaxScore) {
                 $sc = $sampleScores[$idx % count($sampleScores)];
+                $scaledScore = round(($sc / 100.0) * $subjectMaxScore, 1);
                 return [
                     'student_id' => $s['id'],
                     'name' => $s['name'],
                     'student_id_card' => $s['student_id_card'],
                     'gender' => $s['gender'],
-                    'score' => $sc,
-                    'max_score' => 100,
-                    'grade_letter' => ExaminationScore::calculateGradeLetter($sc, 100),
+                    'score' => $scaledScore,
+                    'max_score' => $subjectMaxScore,
+                    'grade_letter' => ExaminationScore::calculateSubjectGrade($scaledScore, $subjectMaxScore),
                 ];
             });
         }
 
         return response()->json([
+            'className' => $className,
+            'subject_id' => $subjectId,
+            'subject_name' => $currentSubject?->name,
+            'max_score' => $subjectMaxScore,
+            'credit' => $subjectCredit,
             'students' => $students,
             'examination' => $exam ?: [
                 'id' => is_numeric($examination) ? (int)$examination : 1,
@@ -2579,14 +2622,14 @@ class ApiController extends Controller
 
         $className = $validated['class_name'];
         $subject = CourseSubject::findOrFail($validated['course_subject_id']);
-        $maxScore = $validated['max_score'] ?? 100;
+        $maxScore = $validated['max_score'] ?? $subject->getMaxScoreForClass($className);
         $now = now();
 
         $records = [];
         foreach ($validated['scores'] as $studentId => $scoreVal) {
             if ($scoreVal !== null && $scoreVal !== '') {
                 $scoreFloat = (float) $scoreVal;
-                $gradeLetter = ExaminationScore::calculateGradeLetter($scoreFloat, $maxScore);
+                $gradeLetter = ExaminationScore::calculateSubjectGrade($scoreFloat, $maxScore);
 
                 $records[] = [
                     'examination_id' => $examination->id,
@@ -2669,20 +2712,22 @@ class ApiController extends Controller
             foreach ($subjects as $sub) {
                 $sc = $studentScores->get($sub['id']);
                 if ($sc !== null && $sc->score !== null) {
-                    $val = (float) $sc->score;
-                    $scoresMap[$sub['id']] = $val;
-                    $totalScore += $val;
+                    $raw = (float) $sc->score;
+                    $scoresMap[$sub['id']] = $raw;
+                    $cr = (float) ($sub['credit'] ?: 1.0);
+                    // MoEYS standard: 1 Credit = 50 Max Points.
+                    // Total score is the direct sum of raw scores (Max 750 for 15 total credits)
+                    $totalScore += $raw;
                     $enteredCount++;
-                    $totalCredits += (float) ($sub['credit'] ?: 1.0);
+                    $totalCredits += $cr;
                 } else {
                     $scoresMap[$sub['id']] = null;
                 }
             }
 
-            // In Cambodian education system: average = total score divided by total credits/coefficients
-            $divisor = $totalCredits > 0 ? $totalCredits : ($enteredCount > 0 ? $enteredCount : 1);
-            $average = $enteredCount > 0 ? round($totalScore / $divisor, 2) : 0;
-            $gradeLetter = ExaminationScore::calculateGradeLetter($average, 100);
+            // MoEYS standard: average_score = total_score / total_credits (scale 50.00)
+            $average = $totalCredits > 0 ? round($totalScore / $totalCredits, 2) : 0;
+            $gradeLetter = ExaminationScore::calculateAverageGrade($average);
 
             return [
                 'student_id' => $st->id,
@@ -2720,13 +2765,15 @@ class ApiController extends Controller
                 $totalScore = 0;
                 $totalCredits = 0;
                 foreach ($subjects as $sIdx => $sub) {
-                    $val = (float) ($subScores[$sIdx % count($subScores)] ?? 80);
-                    $scoresMap[$sub['id']] = $val;
-                    $totalScore += $val;
-                    $totalCredits += (float) ($sub['credit'] ?: 1.0);
+                    $raw = (float) ($subScores[$sIdx % count($subScores)] ?? 80);
+                    $scoresMap[$sub['id']] = $raw;
+                    $cr = (float) ($sub['credit'] ?: 1.0);
+                    $weighted = ($raw / 2.0) * $cr;
+                    $totalScore += $weighted;
+                    $totalCredits += $cr;
                 }
-                $average = round($totalScore / ($totalCredits > 0 ? $totalCredits : count($subjects)), 2);
-                $gradeLetter = ExaminationScore::calculateGradeLetter($average, 100);
+                $average = $totalCredits > 0 ? round($totalScore / $totalCredits, 2) : 0;
+                $gradeLetter = ExaminationScore::calculateAverageGrade($average);
 
                 return [
                     'student_id' => $st['id'],
@@ -2757,7 +2804,8 @@ class ApiController extends Controller
         $finalRows = $rows->map(function ($item) use ($rankMap) {
             $item['rank'] = $rankMap[$item['student_id']] ?? '-';
             return $item;
-        })->sortBy('student_id_card')->values();
+        });
+        $finalRows = $this->sortStudentsByKhmerAlphabet($finalRows, 'name');
 
         // Statistics
         $evaluatedStudents = $finalRows->filter(fn ($r) => $r['entered_count'] > 0);
@@ -2766,9 +2814,9 @@ class ApiController extends Controller
         $highestAverage = $evaluatedStudents->count() > 0 ? $evaluatedStudents->max('average') : 0;
         $lowestAverage = $evaluatedStudents->count() > 0 ? $evaluatedStudents->min('average') : 0;
         
-        // Auto-detect Cambodian 50-scale vs 100-scale
-        $scaleMax = ($highestAverage <= 50.0 && $highestAverage > 0) ? 50 : 100;
-        $passingScore = $scaleMax === 50 ? 25.0 : 50.0;
+        // MoEYS Standard: Scale Max is strictly 50.00, passing score is 25.00
+        $scaleMax = 50;
+        $passingScore = 25.0;
         $passedCount = $evaluatedStudents->filter(fn ($r) => $r['average'] >= $passingScore)->count();
         $failedCount = $evaluatedStudents->filter(fn ($r) => $r['average'] < $passingScore)->count();
         $passRate = $evaluatedStudents->count() > 0 ? round(($passedCount / $evaluatedStudents->count()) * 100, 1) : 0;
@@ -2822,7 +2870,8 @@ class ApiController extends Controller
                 $scoreFloat = (float) $scoreVal;
                 $subject = $subjects->get($subjectId);
                 $subjectName = $subject ? $subject->name : 'N/A';
-                $gradeLetter = ExaminationScore::calculateGradeLetter($scoreFloat, 100);
+                $subMax = $subject ? $subject->getMaxScoreForClass($className) : 100.0;
+                $gradeLetter = ExaminationScore::calculateSubjectGrade($scoreFloat, $subMax);
 
                 $records[] = [
                     'examination_id' => $examination->id,
@@ -2831,7 +2880,7 @@ class ApiController extends Controller
                     'class_name' => $className,
                     'subject_name' => $subjectName,
                     'score' => $scoreFloat,
-                    'max_score' => 100,
+                    'max_score' => $subMax,
                     'grade_letter' => $gradeLetter,
                     'created_at' => $now,
                     'updated_at' => $now,
@@ -3376,12 +3425,12 @@ class ApiController extends Controller
             $raw = SystemSetting::pluck('value', 'key')->toArray();
 
             $defaults = [
-                'school_name' => 'សាលារៀន ជំនាន់ថ្មី PDT',
-                'school_name_en' => 'PDT New Generation School',
+                'school_name' => 'សាលារៀន ជំនាន់ថ្មី',
+                'school_name_en' => 'New Generation School',
                 'principal_name' => 'លោក ឈុន វណ្ណា',
                 'school_phone' => '023 880 880 / 012 345 678',
-                'school_email' => 'contact@pdt-school.edu.kh',
-                'school_website' => 'https://pdt-school.edu.kh',
+                'school_email' => 'contact@school.edu.kh',
+                'school_website' => 'https://school.edu.kh',
                 'school_address' => 'មហាវិថីសហព័ន្ធរុស្ស៊ី សង្កាត់ទឹកល្អក់១ ខណ្ឌទួលគោក រាជធានីភ្នំពេញ',
                 'school_logo' => null,
                 'school_stamp' => null,
@@ -3398,7 +3447,7 @@ class ApiController extends Controller
                 'exchange_rate' => '4100',
                 'invoice_prefix' => 'INV-2026-',
                 'bank_name' => 'ABA Bank',
-                'bank_account_name' => 'PDT SCHOOL CO., LTD',
+                'bank_account_name' => 'SCHOOL ACCOUNT',
                 'bank_account_number' => '001 234 567',
                 'khqr_image' => null,
                 'demo_mode' => '0',
@@ -3506,8 +3555,8 @@ class ApiController extends Controller
             'success' => true,
             'message' => 'បានរក្សាទុកការកំណត់ប្រព័ន្ធដោយជោគជ័យ!',
             'school_logo_url' => $logoUrl,
-            'school_name' => SystemSetting::get('school_name', 'សាលារៀន ជំនាន់ថ្មី PDT'),
-            'school_name_en' => SystemSetting::get('school_name_en', 'PDT New Generation School'),
+            'school_name' => SystemSetting::get('school_name', 'សាលារៀន ជំនាន់ថ្មី'),
+            'school_name_en' => SystemSetting::get('school_name_en', 'New Generation School'),
             'current_academic_year' => SystemSetting::get('current_academic_year', '2025-2026'),
         ]);
     }
@@ -3515,7 +3564,7 @@ class ApiController extends Controller
     public function backupDatabase()
     {
         $isSqlite = \DB::connection()->getDriverName() === 'sqlite';
-        $dump = "-- LMSTICK School Management System Database Backup\n";
+        $dump = "-- School Management System Database Backup\n";
         $dump .= "-- Generated on: " . date('Y-m-d H:i:s') . "\n";
         $dump .= "-- Driver: " . ($isSqlite ? 'SQLite' : 'MySQL') . "\n\n";
 
@@ -3570,7 +3619,7 @@ class ApiController extends Controller
             $dump .= "SET FOREIGN_KEY_CHECKS=1;\n";
         }
 
-        $filename = 'lmstick_backup_' . date('Y_m_d_His') . '.sql';
+        $filename = 'school_backup_' . date('Y_m_d_His') . '.sql';
 
         return response($dump, 200, [
             'Content-Type' => 'application/sql',
@@ -3695,21 +3744,21 @@ class ApiController extends Controller
 
         $settings = SystemSetting::pluck('value', 'key')->toArray();
         $settingsList = [
-            ['ឈ្មោះកំណត់' => 'ឈ្មោះសាលារៀន (ខ្មែរ)', 'តម្លៃ' => $settings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី PDT'],
-            ['ឈ្មោះកំណត់' => 'ឈ្មោះសាលារៀន (English)', 'តម្លៃ' => $settings['school_name_en'] ?? 'PDT New Generation School'],
+            ['ឈ្មោះកំណត់' => 'ឈ្មោះសាលារៀន (ខ្មែរ)', 'តម្លៃ' => $settings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី'],
+            ['ឈ្មោះកំណត់' => 'ឈ្មោះសាលារៀន (English)', 'តម្លៃ' => $settings['school_name_en'] ?? 'New Generation School'],
             ['ឈ្មោះកំណត់' => 'ឈ្មោះនាយកសាលា', 'តម្លៃ' => $settings['principal_name'] ?? 'លោក ឈុន វណ្ណា'],
             ['ឈ្មោះកំណត់' => 'ឆ្នាំសិក្សាបច្ចុប្បន្ន', 'តម្លៃ' => $settings['current_academic_year'] ?? '2025-2026'],
             ['ឈ្មោះកំណត់' => 'ឆមាសសកម្ម', 'តម្លៃ' => 'ឆមាសទី ' . ($settings['current_semester'] ?? '1')],
             ['ឈ្មោះកំណត់' => 'រូបិយប័ណ្ណគោល', 'តម្លៃ' => $settings['currency'] ?? 'USD'],
             ['ឈ្មោះកំណត់' => 'អត្រាប្តូរប្រាក់ (1 USD)', 'តម្លៃ' => ($settings['exchange_rate'] ?? '4100') . ' KHR'],
             ['ឈ្មោះកំណត់' => 'លេខទូរស័ព្ទ', 'តម្លៃ' => $settings['school_phone'] ?? '023 880 880 / 012 345 678'],
-            ['ឈ្មោះកំណត់' => 'អ៊ីមែល', 'តម្លៃ' => $settings['school_email'] ?? 'contact@pdt-school.edu.kh'],
+            ['ឈ្មោះកំណត់' => 'អ៊ីមែល', 'តម្លៃ' => $settings['school_email'] ?? 'contact@school.edu.kh'],
             ['ឈ្មោះកំណត់' => 'អាសយដ្ឋាន', 'តម្លៃ' => $settings['school_address'] ?? ''],
         ];
 
         return response()->json([
             'success' => true,
-            'filename' => 'PDT_School_Backup_' . date('Y_m_d_His') . '.xlsx',
+            'filename' => 'School_Backup_' . date('Y_m_d_His') . '.xlsx',
             'data' => [
                 'សិស្ស (Students)' => $students,
                 'គ្រូបង្រៀន (Teachers)' => $teachers,

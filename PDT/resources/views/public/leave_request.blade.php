@@ -4,7 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>ទម្រង់សុំច្បាប់សិស្ស | LMSTICK School</title>
+  @php
+    $sysSettings = \App\Models\SystemSetting::allSettings();
+    $schoolName = $sysSettings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី';
+    $schoolNameEn = $sysSettings['school_name_en'] ?? 'New Generation School';
+  @endphp
+  <title>ទម្រង់សុំច្បាប់សិស្ស | {{ $schoolName }}</title>
 
   <!-- Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,7 +57,7 @@
     <div class="text-center mb-6">
       <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-white/80 backdrop-blur-md rounded-full shadow-xs border border-white mb-3">
         <span class="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-pulse"></span>
-        <span class="text-xs font-bold tracking-wider text-indigo-700 uppercase">LMSTICK SCHOOL • ប្រព័ន្ធសុំច្បាប់អនឡាញ</span>
+        <span class="text-xs font-bold tracking-wider text-indigo-700 uppercase">{{ $schoolName }} • ប្រព័ន្ធសុំច្បាប់អនឡាញ</span>
       </div>
       <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
         ទម្រង់សុំច្បាប់ឈប់សម្រាករបស់សិស្ស
@@ -142,7 +147,7 @@
           <!-- Class Selection -->
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1.5">
-              ១. ជ្រើសរើសថ្នាក់រៀន (Class) <span class="text-rose-500">*</span>
+              ១. ជ្រើសរើសថ្នាក់រៀន <span class="text-rose-500">*</span>
             </label>
             <select 
               id="class_select" 
@@ -163,7 +168,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
             <div class="sm:col-span-7">
               <label class="block text-xs font-bold text-slate-700 mb-1.5">
-                ២. ឈ្មោះសិស្ស (Student Name) <span class="text-rose-500">*</span>
+                ២. ឈ្មោះសិស្ស <span class="text-rose-500">*</span>
               </label>
               <div class="relative">
                 <select 
@@ -191,7 +196,7 @@
 
             <div class="sm:col-span-5">
               <label class="block text-xs font-bold text-slate-700 mb-1.5">
-                អត្តលេខសិស្ស (Student ID)
+                អត្តលេខសិស្ស
               </label>
               <input 
                 type="text" 
@@ -249,9 +254,9 @@
                 required 
                 class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 focus:bg-white rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
               >
-                <option value="ឈឺ (Sick)" {{ old('leave_type') == 'ឈឺ (Sick)' ? 'selected' : '' }}>🤒 ឈឺ (Sick Leave)</option>
-                <option value="ធុរៈចាំបាច់ (Personal)" {{ old('leave_type') == 'ធុរៈចាំបាច់ (Personal)' ? 'selected' : '' }}>🏠 ធុរៈចាំបាច់ក្នុងគ្រួសារ (Personal)</option>
-                <option value="ផ្សេងៗ (Other)" {{ old('leave_type') == 'ផ្សេងៗ (Other)' ? 'selected' : '' }}>📝 ផ្សេងៗ (Other)</option>
+                <option value="ឈឺ (Sick)" {{ old('leave_type') == 'ឈឺ (Sick)' ? 'selected' : '' }}>🤒 ឈឺ</option>
+                <option value="ធុរៈចាំបាច់ (Personal)" {{ old('leave_type') == 'ធុរៈចាំបាច់ (Personal)' ? 'selected' : '' }}>🏠 ធុរៈចាំបាច់ក្នុងគ្រួសារ</option>
+                <option value="ផ្សេងៗ (Other)" {{ old('leave_type') == 'ផ្សេងៗ (Other)' ? 'selected' : '' }}>📝 ផ្សេងៗ</option>
               </select>
             </div>
             <div>
@@ -311,7 +316,7 @@
               class="w-full py-3.5 px-6 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
             >
               <i class="fa-solid fa-paper-plane"></i>
-              <span>បញ្ជូនសំណើសុំច្បាប់ (Submit Leave Request)</span>
+              <span>បញ្ជូនសំណើសុំច្បាប់</span>
             </button>
           </div>
 
@@ -320,7 +325,7 @@
     @endif
 
     <div class="text-center mt-6 text-xs text-slate-400">
-      &copy; {{ date('Y') }} LMSTICK School Management System. រក្សាសិទ្ធិគ្រប់យ៉ាង។
+      &copy; {{ date('Y') }} {{ $schoolName }}. រក្សាសិទ្ធិគ្រប់យ៉ាង។
     </div>
 
   </div>

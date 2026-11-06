@@ -2,7 +2,7 @@
   <div class="space-y-6 font-khmer">
     <!-- Header -->
     <PageHeader 
-      title="តួនាទី និងសិទ្ធិប្រើប្រាស់ប្រព័ន្ធ (Roles & Permissions)" 
+      title="តួនាទី និងសិទ្ធិប្រើប្រាស់ប្រព័ន្ធ" 
       breadcrumb="សន្តិសុខ និងការកំណត់សិទ្ធិ" 
       actionLabel="💾 រក្សាទុកការផ្លាស់ប្តូរ"
       @action="handleSave"
@@ -12,16 +12,16 @@
     <TabNav 
       v-model="activeTab" 
       :tabs="[
-        { id: 'matrix', label: 'តារាងបែងចែកសិទ្ធិ (Permissions Matrix)' },
-        { id: 'controls', label: 'ការគ្រប់គ្រងសុវត្ថិភាពប្រព័ន្ធ (Security Controls)' },
-        { id: 'roles', label: 'បញ្ជីតួនាទី និងអ្នកប្រើប្រាស់ (Roles Directory)' }
+        { id: 'matrix', label: 'តារាងបែងចែកសិទ្ធិ' },
+        { id: 'controls', label: 'ការគ្រប់គ្រងសុវត្ថិភាពប្រព័ន្ធ' },
+        { id: 'roles', label: 'បញ្ជីតួនាទី និងអ្នកប្រើប្រាស់' }
       ]"
     />
 
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard title="តួនាទីសរុប (Roles)" :value="rolesList.length" />
-      <StatCard title="មុខងារប្រព័ន្ធ (Modules)" :value="systemModules.length" />
+      <StatCard title="តួនាទីសរុប" :value="rolesList.length" />
+      <StatCard title="មុខងារប្រព័ន្ធ" :value="systemModules.length" />
       <StatCard title="អ្នកប្រើប្រាស់សកម្ម" :value="totalActiveUsers" />
       <StatCard title="កម្រិតសុវត្ថិភាព" value="RBAC Protected" />
     </div>
@@ -43,7 +43,7 @@
             <i class="fa-solid fa-shield-halved"></i>
           </span>
           <div>
-            <h2 class="text-sm font-bold text-slate-900">តារាងបែងចែកសិទ្ធិប្រើប្រាស់តាមតួនាទី (Role Permissions Matrix)</h2>
+            <h2 class="text-sm font-bold text-slate-900">តារាងបែងចែកសិទ្ធិប្រើប្រាស់តាមតួនាទី</h2>
             <p class="text-[11px] text-slate-500">កំណត់សិទ្ធិមើល បន្ថែម និងកែប្រែទិន្នន័យសម្រាប់គ្រូបង្រៀន គណនេយ្យករ និងសិស្ស/អាណាព្យាបាល</p>
           </div>
         </div>
@@ -74,23 +74,23 @@
         <table class="w-full text-left text-xs border-collapse">
           <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
             <tr>
-              <th class="py-3.5 px-4 font-bold text-slate-800">មុខងារប្រព័ន្ធ (System Module)</th>
+              <th class="py-3.5 px-4 font-bold text-slate-800">មុខងារប្រព័ន្ធ</th>
               <th class="py-3.5 px-3 text-center w-36">
                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-bold text-[11px]">
                   <i class="fa-solid fa-crown text-[10px]"></i>
-                  អ្នកគ្រប់គ្រង (Admin)
+                  អ្នកគ្រប់គ្រង
                 </span>
               </th>
               <th class="py-3.5 px-3 text-center w-36">
                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-bold text-[11px]">
                   <i class="fa-solid fa-chalkboard-user text-[10px]"></i>
-                  គ្រូបង្រៀន (Teacher)
+                  គ្រូបង្រៀន
                 </span>
               </th>
               <th class="py-3.5 px-3 text-center w-36">
                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-[11px]">
                   <i class="fa-solid fa-calculator text-[10px]"></i>
-                  គណនេយ្យករ (Accountant)
+                  គណនេយ្យករ
                 </span>
               </th>
               <th class="py-3.5 px-3 text-center w-36">
@@ -179,7 +179,7 @@
           <i class="fa-solid fa-sliders"></i>
         </span>
         <div>
-          <h2 class="text-sm font-bold text-slate-900">ការគ្រប់គ្រងសុវត្ថិភាព និងការអនុញ្ញាតប្រព័ន្ធ (System Controls)</h2>
+          <h2 class="text-sm font-bold text-slate-900">ការគ្រប់គ្រងសុវត្ថិភាព និងការអនុញ្ញាតប្រព័ន្ធ</h2>
           <p class="text-[11px] text-slate-500">បើក ឬបិទមុខងារចុះឈ្មោះសាធារណៈ សិទ្ធិកែប្រែពិន្ទុ និងការស្នើសុំច្បាប់</p>
         </div>
       </div>
@@ -415,11 +415,11 @@ const controls = ref({
 
 // Roles List
 const rolesList = ref([
-  { id: 1, name: 'admin', displayName: 'អ្នកគ្រប់គ្រងប្រព័ន្ធ (Admin)', userCount: 2 },
-  { id: 2, name: 'teacher', displayName: 'លោកគ្រូ-អ្នកគ្រូ (Teacher)', userCount: 15 },
-  { id: 3, name: 'accountant', displayName: 'គណនេយ្យករ (Accountant)', userCount: 2 },
-  { id: 4, name: 'student', displayName: 'សិស្សានុសិស្ស (Student)', userCount: 87 },
-  { id: 5, name: 'parent', displayName: 'មាតាបិតា-អាណាព្យាបាល (Parent)', userCount: 35 },
+  { id: 1, name: 'admin', displayName: 'អ្នកគ្រប់គ្រងប្រព័ន្ធ', userCount: 2 },
+  { id: 2, name: 'teacher', displayName: 'លោកគ្រូ-អ្នកគ្រូ', userCount: 15 },
+  { id: 3, name: 'accountant', displayName: 'គណនេយ្យករ', userCount: 2 },
+  { id: 4, name: 'student', displayName: 'សិស្សានុសិស្ស', userCount: 87 },
+  { id: 5, name: 'parent', displayName: 'មាតាបិតា-អាណាព្យាបាល', userCount: 35 },
 ]);
 
 const totalActiveUsers = computed(() => {

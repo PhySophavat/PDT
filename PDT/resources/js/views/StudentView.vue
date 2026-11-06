@@ -190,7 +190,7 @@
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                 </svg>
-                <span>អនុម័ត (Approve)</span>
+                <span>អនុម័ត</span>
               </button>
             </template>
             <!-- Normal Active Students Action buttons -->
@@ -245,7 +245,7 @@
           <!-- QR Code Display Box -->
           <div class="p-6 bg-slate-50 border border-slate-200/80 rounded-2xl inline-block mx-auto shadow-inner text-center">
             <div class="text-xs font-bold text-slate-800 mb-2 uppercase tracking-wide">
-              LMSTICK SCHOOL - ស្កេនដើម្បីចុះឈ្មោះ
+              ស្កេនដើម្បីចុះឈ្មោះ
             </div>
             <div class="w-48 h-48 mx-auto bg-white p-2 rounded-xl border border-slate-200 shadow-xs flex items-center justify-center">
               <img v-if="qrDataUrl" :src="qrDataUrl" alt="QR Code Registration" class="w-full h-full object-contain" />
@@ -256,7 +256,7 @@
 
           <!-- Shareable URL Input with Copy Button -->
           <div class="text-left space-y-1.5">
-            <label class="text-xs font-semibold text-slate-700">តំណភ្ជាប់ទម្រង់ចុះឈ្មោះ (Registration Link):</label>
+            <label class="text-xs font-semibold text-slate-700">តំណភ្ជាប់ទម្រង់ចុះឈ្មោះ</label>
             <div class="flex items-center gap-2">
               <input 
                 type="text" 
@@ -325,7 +325,7 @@
               <i class="fa-solid fa-user-plus"></i>
             </div>
             <div>
-              <h3 class="font-bold text-base">បន្ថែមសិស្សថ្មី (Add New Student)</h3>
+              <h3 class="font-bold text-base">បន្ថែមសិស្សថ្មី</h3>
               <p class="text-xs text-blue-100">បញ្ចូលព័ត៌មានផ្ទាល់ និងបង្កើតគណនីស្វ័យប្រវត្តិ</p>
             </div>
           </div>
@@ -339,14 +339,14 @@
               <input type="text" v-model="createForm.name_khmer" required placeholder="ឧ. សុខ សុភក្ត្រ" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
-              <label class="block font-semibold mb-1">ឈ្មោះជាអក្សរឡាតាំង (Latin Name)</label>
+              <label class="block font-semibold mb-1">ឈ្មោះជាអក្សរឡាតាំង</label>
               <input type="text" v-model="createForm.name_latin" placeholder="e.g. SOK SOPHAK" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl uppercase focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
               <label class="block font-semibold mb-1">ភេទ <span class="text-red-500">*</span></label>
               <select v-model="createForm.gender" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                <option value="male">ប្រុស (Male)</option>
-                <option value="female">ស្រី (Female)</option>
+                <option value="male">ប្រុស</option>
+                <option value="female">ស្រី</option>
               </select>
             </div>
             <div>
@@ -404,7 +404,7 @@
               </svg>
             </div>
             <div>
-              <h3 class="font-bold text-base">ត្រួតពិនិត្យ និងអនុម័តសិស្ស (Approve & Enroll)</h3>
+              <h3 class="font-bold text-base">ត្រួតពិនិត្យ និងអនុម័តសិស្ស</h3>
               <p class="text-xs text-emerald-100">ពិនិត្យព័ត៌មាន ចាត់ថ្នាក់ និងផ្ដល់អត្តលេខផ្លូវការ</p>
             </div>
           </div>
@@ -430,7 +430,7 @@
 
           <div class="grid grid-cols-2 gap-3 pt-2">
             <div>
-              <label class="block font-semibold mb-1">អត្តលេខសិស្សផ្លូវការ (Student ID) <span class="text-red-500">*</span></label>
+              <label class="block font-semibold mb-1">អត្តលេខសិស្សផ្លូវការ <span class="text-red-500">*</span></label>
               <input type="text" v-model="approveForm.student_id_card" class="w-full px-3.5 py-2.5 bg-emerald-50/50 border border-emerald-300 rounded-xl font-mono font-bold text-emerald-800">
             </div>
             <div>
@@ -465,7 +465,7 @@
               <i class="fa-solid fa-id-card"></i>
             </div>
             <div>
-              <h3 class="font-bold text-base">ប្រវត្តិរូបសិស្ស (Student Profile)</h3>
+              <h3 class="font-bold text-base">ប្រវត្តិរូបសិស្ស</h3>
               <p class="text-xs text-blue-100">ព័ត៌មានលម្អិត និងកាតសម្គាល់ខ្លួនសិស្ស</p>
             </div>
           </div>
@@ -495,7 +495,7 @@
           <div class="grid grid-cols-2 gap-3 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
             <div>
               <span class="text-slate-400 block text-[11px]">ភេទ:</span>
-              <span class="font-semibold text-slate-800">{{ selectedStudent.gender === 'male' || selectedStudent.gender === 'ប្រុស' ? 'ប្រុស (Male)' : 'ស្រី (Female)' }}</span>
+              <span class="font-semibold text-slate-800">{{ selectedStudent.gender === 'male' || selectedStudent.gender === 'ប្រុស' ? 'ប្រុស' : 'ស្រី' }}</span>
             </div>
             <div>
               <span class="text-slate-400 block text-[11px]">ថ្ងៃខែឆ្នាំកំណើត:</span>
@@ -531,7 +531,7 @@
               class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md shadow-blue-600/20 transition inline-flex items-center gap-2"
             >
               <i class="fa-solid fa-print"></i>
-              <span>បោះពុម្ពកាតសិស្ស (Print ID Card)</span>
+              <span>បោះពុម្ពកាតសិស្ស</span>
             </a>
             <div class="flex items-center gap-2">
               <button 
@@ -567,7 +567,7 @@
               <i class="fa-solid fa-user-pen"></i>
             </div>
             <div>
-              <h3 class="font-bold text-base">កែប្រែព័ត៌មានសិស្ស (Edit Student)</h3>
+              <h3 class="font-bold text-base">កែប្រែព័ត៌មានសិស្ស</h3>
               <p class="text-xs text-blue-100">{{ selectedStudent.name }} ({{ selectedStudent.student_id_card }})</p>
             </div>
           </div>
@@ -581,14 +581,14 @@
               <input type="text" v-model="editForm.name_khmer" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
-              <label class="block font-semibold mb-1">ឈ្មោះជាអក្សរឡាតាំង (Latin Name)</label>
+              <label class="block font-semibold mb-1">ឈ្មោះជាអក្សរឡាតាំង</label>
               <input type="text" v-model="editForm.name_latin" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl uppercase focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
               <label class="block font-semibold mb-1">ភេទ <span class="text-red-500">*</span></label>
               <select v-model="editForm.gender" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                <option value="male">ប្រុស (Male)</option>
-                <option value="female">ស្រី (Female)</option>
+                <option value="male">ប្រុស</option>
+                <option value="female">ស្រី</option>
               </select>
             </div>
             <div>
@@ -608,10 +608,10 @@
             <div>
               <label class="block font-semibold mb-1">ស្ថានភាព</label>
               <select v-model="editForm.status" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
-                <option value="enrolled">កំពុងរៀន (Enrolled)</option>
-                <option value="active">សកម្ម (Active)</option>
-                <option value="graduated">បានបញ្ចប់ការសិក្សា (Graduated)</option>
-                <option value="transferred">ផ្ទេរការសិក្សា (Transferred)</option>
+                <option value="enrolled">កំពុងរៀន</option>
+                <option value="active">សកម្ម</option>
+                <option value="graduated">បានបញ្ចប់ការសិក្សា</option>
+                <option value="transferred">ផ្ទេរការសិក្សា</option>
               </select>
             </div>
             <div>
@@ -652,7 +652,7 @@
               </svg>
             </div>
             <div>
-              <h3 class="font-bold text-base leading-tight">បញ្ចូលសិស្សជាក្រុម (Bulk Import)</h3>
+              <h3 class="font-bold text-base leading-tight">បញ្ចូលសិស្សជាក្រុម</h3>
               <p class="text-xs text-indigo-100">Excel/CSV ឬវាយបញ្ចូលឈ្មោះសិស្សច្រើននាក់ក្នុងពេលតែមួយ</p>
             </div>
           </div>
@@ -867,7 +867,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                 </svg>
-                <span>ទាញយកបញ្ជីឈ្មោះ (Extract)</span>
+                <span>ទាញយកបញ្ជីឈ្មោះ</span>
               </button>
             </div>
           </div>
@@ -914,7 +914,7 @@
               <div class="flex items-center justify-between bg-amber-50 p-3 rounded-xl border border-amber-200">
                 <div class="flex items-center gap-2">
                   <span class="text-lg">📷</span>
-                  <span class="text-xs font-bold text-amber-800">ឯកសារយោង (Reference Image)</span>
+                  <span class="text-xs font-bold text-amber-800">ឯកសារយោង</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <button 

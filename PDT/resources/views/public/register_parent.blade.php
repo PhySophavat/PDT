@@ -4,7 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>ចុះឈ្មោះអាណាព្យាបាលសិស្ស | LMSTICK School</title>
+  @php
+    $sysSettings = \App\Models\SystemSetting::allSettings();
+    $schoolName = $sysSettings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី';
+    $schoolNameEn = $sysSettings['school_name_en'] ?? 'New Generation School';
+  @endphp
+  <title>ចុះឈ្មោះអាណាព្យាបាលសិស្ស | {{ $schoolName }}</title>
 
   <!-- Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,7 +57,7 @@
     <div class="text-center mb-6">
       <div class="inline-flex items-center gap-2.5 px-4 py-1.5 bg-white/80 backdrop-blur-md rounded-full shadow-xs border border-white mb-3">
         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span class="text-xs font-bold tracking-wider text-emerald-700 uppercase">LMSTICK PARENT PORTAL REGISTRATION</span>
+        <span class="text-xs font-bold tracking-wider text-emerald-700 uppercase">{{ $schoolName }} • អាណាព្យាបាលសិស្ស</span>
       </div>
       <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
         ទម្រង់ចុះឈ្មោះអាណាព្យាបាលសិស្សតាមអនឡាញ
@@ -124,7 +129,7 @@
           <div>
             <div class="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
               <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">1</span>
-              <h2 class="text-sm font-bold text-slate-800">ព័ត៌មានផ្ទាល់ខ្លួនអាណាព្យាបាល (Parent Information)</h2>
+              <h2 class="text-sm font-bold text-slate-800">ព័ត៌មានផ្ទាល់ខ្លួនអាណាព្យាបាល</h2>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -147,7 +152,7 @@
               <!-- Latin Name -->
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">
-                  ឈ្មោះជាអក្សរឡាតាំង (Latin Name)
+                  ឈ្មោះជាអក្សរឡាតាំង
                 </label>
                 <input 
                   type="text" 
@@ -161,7 +166,7 @@
               <!-- Gender -->
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">
-                  ភេទ (Gender) <span class="text-red-500">*</span>
+                  ភេទ <span class="text-red-500">*</span>
                 </label>
                 <select 
                   name="gender" 
@@ -169,25 +174,25 @@
                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition"
                 >
                   <option value="">-- ជ្រើសរើសភេទ --</option>
-                  <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>ប្រុស (Male)</option>
-                  <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>ស្រី (Female)</option>
+                  <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>ប្រុស</option>
+                  <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>ស្រី</option>
                 </select>
               </div>
 
               <!-- Relationship -->
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">
-                  ទំនាក់ទំនងត្រូវជា (Relationship) <span class="text-red-500">*</span>
+                  ទំនាក់ទំនងត្រូវជា <span class="text-red-500">*</span>
                 </label>
                 <select 
                   name="relationship" 
                   required 
                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition font-medium"
                 >
-                  <option value="ឪពុក" {{ old('relationship') == 'ឪពុក' ? 'selected' : '' }}>ឪពុក (Father)</option>
-                  <option value="ម្តាយ" {{ old('relationship') == 'ម្តាយ' ? 'selected' : '' }}>ម្តាយ (Mother)</option>
-                  <option value="អាណាព្យាបាល" {{ old('relationship') == 'អាណាព្យាបាល' ? 'selected' : '' }}>អាណាព្យាបាល (Guardian)</option>
-                  <option value="បងប្អូនបង្កើត" {{ old('relationship') == 'បងប្អូនបង្កើត' ? 'selected' : '' }}>បងប្អូនបង្កើត (Sibling)</option>
+                  <option value="ឪពុក" {{ old('relationship') == 'ឪពុក' ? 'selected' : '' }}>ឪពុក</option>
+                  <option value="ម្តាយ" {{ old('relationship') == 'ម្តាយ' ? 'selected' : '' }}>ម្តាយ</option>
+                  <option value="អាណាព្យាបាល" {{ old('relationship') == 'អាណាព្យាបាល' ? 'selected' : '' }}>អាណាព្យាបាល</option>
+                  <option value="បងប្អូនបង្កើត" {{ old('relationship') == 'បងប្អូនបង្កើត' ? 'selected' : '' }}>បងប្អូនបង្កើត</option>
                 </select>
               </div>
 
@@ -209,7 +214,7 @@
               <!-- Email -->
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">
-                  អ៊ីមែល (Email)
+                  អ៊ីមែល
                 </label>
                 <input 
                   type="email" 
@@ -223,7 +228,7 @@
               <!-- Occupation -->
               <div class="sm:col-span-2">
                 <label class="block font-semibold text-slate-700 mb-1">
-                  មុខរបរ / អាជីព (Occupation)
+                  មុខរបរ / អាជីព
                 </label>
                 <input 
                   type="text" 
@@ -255,7 +260,7 @@
           <div>
             <div class="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
               <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">2</span>
-              <h2 class="text-sm font-bold text-slate-800">ព័ត៌មានសិស្សដែលត្រូវភ្ជាប់ (Child / Student Details)</h2>
+              <h2 class="text-sm font-bold text-slate-800">ព័ត៌មានសិស្សដែលត្រូវភ្ជាប់</h2>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -278,7 +283,7 @@
               <!-- Child Grade / Class -->
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">
-                  ថ្នាក់រៀនបច្ចុប្បន្ន (Grade / Class)
+                  ថ្នាក់រៀនបច្ចុប្បន្ន
                 </label>
                 <input 
                   type="text" 
@@ -296,7 +301,7 @@
           <div>
             <div class="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
               <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">3</span>
-              <h2 class="text-sm font-bold text-slate-800">រូបថតអាណាព្យាបាល (Parent Photo - ស្រេចចិត្ត)</h2>
+              <h2 class="text-sm font-bold text-slate-800">រូបថតអាណាព្យាបាល (ស្រេចចិត្ត)</h2>
             </div>
 
             <div class="text-xs">
@@ -338,7 +343,7 @@
 
     <!-- Footer -->
     <div class="text-center text-xs text-slate-400 mt-6 space-y-1">
-      <p>© {{ date('Y') }} LMSTICK School Management System. រក្សាសិទ្ធិគ្រប់យ៉ាង។</p>
+      <p>© {{ date('Y') }} {{ $schoolName }}. រក្សាសិទ្ធិគ្រប់យ៉ាង។</p>
     </div>
 
   </div>

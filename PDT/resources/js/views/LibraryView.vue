@@ -204,7 +204,7 @@
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-            + កត់ត្រាការខ្ចីសៀវភៅ (Borrow Book)
+            + កត់ត្រាការខ្ចីសៀវភៅ
           </h3>
           <button @click="showBorrowModal = false" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
         </div>
@@ -425,9 +425,9 @@
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">ស្ថានភាព *</label>
             <select v-model="editBorrowForm.status" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-              <option value="borrowed">កំពុងខ្ចី (Borrowed)</option>
-              <option value="returned">បានសងរួច (Returned)</option>
-              <option value="overdue">ហួសកំណត់ (Overdue)</option>
+              <option value="borrowed">កំពុងខ្ចី</option>
+              <option value="returned">បានសងរួច</option>
+              <option value="overdue">ហួសកំណត់</option>
             </select>
           </div>
 
@@ -799,7 +799,7 @@ const handleExport = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `LMSTICK_Library_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `Library_${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
 };
 </script>

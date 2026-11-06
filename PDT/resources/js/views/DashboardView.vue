@@ -14,7 +14,7 @@
       :tabs="[
         { id: 'overview', label: 'ទិដ្ឋភាពទូទៅ' },
         { id: 'academic', label: 'ថ្នាក់រៀន និងកាលវិភាគ' },
-        { id: 'stem_lab', label: 'សម្ភារៈ និងបន្ទប់ពិសោធន៍ (STEM & Lab)' },
+        { id: 'stem_lab', label: 'សម្ភារៈ និងបន្ទប់ពិសោធន៍' },
         { id: 'attendance', label: 'វត្តមានសិស្ស-គ្រូ' }
       ]"
     />
@@ -95,7 +95,7 @@
               <span class="text-xs font-medium text-slate-400">ថ្នាក់រៀន</span>
             </div>
             <p class="text-[11px] text-purple-700 mt-2 font-medium">
-              បន្ទប់ធម្មតា និង STEM Lab
+              បន្ទប់ធម្មតា និងបន្ទប់ពិសោធន៍
             </p>
           </div>
         </div>
@@ -110,7 +110,7 @@
               </svg>
             </div>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 ring-1 ring-amber-500/20">
-              NGS Curriculum
+              កម្មវិធីសិក្សាជំនាន់ថ្មី
             </span>
           </div>
           <div class="mt-4">
@@ -179,7 +179,7 @@
                 <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
                 </svg>
-                ចរន្តវត្តមានសិស្សប្រចាំសប្តាហ៍ (Weekly Student Attendance Trend)
+                ចរន្តវត្តមានសិស្សប្រចាំសប្តាហ៍
               </h2>
               <p class="text-xs text-slate-400 mt-0.5">ការប្រៀបធៀបសិស្សមានវត្តមាន និងអវត្តមាន ចាប់ពីថ្ងៃច័ន្ទ ដល់ ថ្ងៃសៅរ៍</p>
             </div>
@@ -324,7 +324,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
               </svg>
-              សមាមាត្រសិស្សប្រុស-ស្រី (Gender Ratio)
+              សមាមាត្រសិស្សប្រុស-ស្រី
             </h2>
             <p class="text-xs text-slate-400 mt-0.5">ការបែងចែកយេនឌ័រក្នុងចំណោមសិស្សសរុប</p>
           </div>
@@ -423,7 +423,7 @@
                   <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                   </svg>
-                  តារាងថ្នាក់រៀន និងស្ថិតិវត្តមាន (Classrooms & Attendance)
+                  តារាងថ្នាក់រៀន និងស្ថិតិវត្តមាន
                 </h2>
                 <p class="text-xs text-slate-400 mt-0.5">បង្ហាញ {{ filteredClasses.length }} ថ្នាក់រៀនក្នុងកម្រិតថ្នាក់</p>
               </div>
@@ -583,7 +583,7 @@
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
               <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <span class="text-base">🏆</span>
-                ថ្នាក់គំរូប្រចាំសប្តាហ៍ (Top Classes)
+                ថ្នាក់គំរូប្រចាំសប្តាហ៍
               </h3>
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200">
                 វត្តមានខ្ពស់បំផុត
@@ -634,7 +634,7 @@
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
               <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                សកម្មភាពថ្មីៗ (Live Activity)
+                សកម្មភាពថ្មីៗ
               </h3>
               <span class="text-[10px] text-slate-400 font-medium">Real-time</span>
             </div>
@@ -680,7 +680,7 @@
     <!-- Tab 2: Academic & Classes Tab -->
     <div v-show="activeTab === 'academic'" class="space-y-6">
       <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs">
-        <h2 class="text-base font-bold text-slate-900 mb-2">កម្មវិធីសិក្សា និងកាលវិភាគបង្រៀន (Academic Curriculum)</h2>
+        <h2 class="text-base font-bold text-slate-900 mb-2">កម្មវិធីសិក្សា និងកាលវិភាគបង្រៀន</h2>
         <p class="text-xs text-slate-500 mb-6">គ្រប់គ្រងបន្ទប់សិក្សា គ្រូបង្រៀន និងកាលវិភាគប្រចាំសប្តាហ៍</p>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -706,11 +706,11 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <span class="inline-block px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold border border-blue-400/30 mb-3">
-              NGS STEM Innovation Center
+              មជ្ឈមណ្ឌលនវានុវត្តន៍វិទ្យាសាស្ត្រ និងបច្ចេកវិទ្យា
             </span>
-            <h2 class="text-xl sm:text-2xl font-black tracking-tight">សម្ភារៈ និងបន្ទប់ពិសោធន៍វិទ្យាសាស្ត្រ (STEM & Lab)</h2>
+            <h2 class="text-xl sm:text-2xl font-black tracking-tight">សម្ភារៈ និងបន្ទប់ពិសោធន៍វិទ្យាសាស្ត្រ</h2>
             <p class="text-sm text-slate-300 mt-1 max-w-2xl font-light">
-              សាលារៀនជំនាន់ថ្មី PDT ផ្តោតសំខាន់លើការពិសោធន៍ជាក់ស្តែង បច្ចេកវិទ្យា Coding, AI, Robotics និងវិទ្យាសាស្ត្រទំនើប ដោយមិនគិតថ្លៃសិក្សាដល់សិស្សានុសិស្ស។
+              សាលារៀន ជំនាន់ថ្មី ផ្តោតសំខាន់លើការពិសោធន៍ជាក់ស្តែង បច្ចេកវិទ្យា Coding, AI, Robotics និងវិទ្យាសាស្ត្រទំនើប ដោយមិនគិតថ្លៃសិក្សាដល់សិស្សានុសិស្ស។
             </p>
           </div>
 
@@ -733,11 +733,11 @@
           <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xl mb-4">
             🔬
           </div>
-          <h3 class="font-bold text-slate-900 text-sm">STEM Science Lab</h3>
+          <h3 class="font-bold text-slate-900 text-sm">បន្ទប់ពិសោធន៍វិទ្យាសាស្ត្រ STEM</h3>
           <p class="text-xs text-slate-500 mt-1">ឧបករណ៍ពិសោធន៍គីមី-រូបវិទ្យាទំនើប សមត្ថភាពផ្ទុក ៤៥ នាក់</p>
           <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
             <span class="text-emerald-600 font-bold">● បើកដំណើរការ</span>
-            <span class="text-slate-400">បន្ទប់ Lab 01</span>
+            <span class="text-slate-400">បន្ទប់ 01</span>
           </div>
         </div>
 
@@ -745,11 +745,11 @@
           <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xl mb-4">
             💻
           </div>
-          <h3 class="font-bold text-slate-900 text-sm">Coding & ICT Lab</h3>
-          <p class="text-xs text-slate-500 mt-1">កុំព្យូទ័រ High-Spec ចំនួន ៤៥ គ្រឿង សម្រាប់កម្មវិធីសិក្សាកូដ</p>
+          <h3 class="font-bold text-slate-900 text-sm">បន្ទប់កុំព្យូទ័រ និងព័ត៌មានវិទ្យា</h3>
+          <p class="text-xs text-slate-500 mt-1">កុំព្យូទ័រសមត្ថភាពខ្ពស់ចំនួន ៤៥ គ្រឿង សម្រាប់កម្មវិធីសិក្សាកូដ</p>
           <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
             <span class="text-emerald-600 font-bold">● បើកដំណើរការ</span>
-            <span class="text-slate-400">បន្ទប់ Lab 02</span>
+            <span class="text-slate-400">បន្ទប់ 02</span>
           </div>
         </div>
 
@@ -757,11 +757,11 @@
           <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-xl mb-4">
             🤖
           </div>
-          <h3 class="font-bold text-slate-900 text-sm">Robotics & AI Innovation</h3>
+          <h3 class="font-bold text-slate-900 text-sm">បន្ទប់ពិសោធន៍រ៉ូបូត និង AI</h3>
           <p class="text-xs text-slate-500 mt-1">ឧបករណ៍ Lego Mindstorms, Arduino, 3D Printers សម្រាប់ក្លឹប</p>
           <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
             <span class="text-emerald-600 font-bold">● បើកដំណើរការ</span>
-            <span class="text-slate-400">បន្ទប់ Lab 03</span>
+            <span class="text-slate-400">បន្ទប់ 03</span>
           </div>
         </div>
 
@@ -769,7 +769,7 @@
           <div class="w-12 h-12 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center font-bold text-xl mb-4">
             📺
           </div>
-          <h3 class="font-bold text-slate-900 text-sm">Smart Interactive Room</h3>
+          <h3 class="font-bold text-slate-900 text-sm">បន្ទប់សិក្សាឆ្លាតវៃអន្តរកម្ម</h3>
           <p class="text-xs text-slate-500 mt-1">Smart TV 86" Touchscreen និងប្រព័ន្ធសំឡេងសន្និសីទវីដេអូ</p>
           <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
             <span class="text-emerald-600 font-bold">● បើកដំណើរការ</span>
@@ -782,7 +782,7 @@
     <!-- Tab 4: Attendance Tab -->
     <div v-show="activeTab === 'attendance'" class="space-y-6">
       <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs">
-        <h2 class="text-base font-bold text-slate-900 mb-2">ប្រព័ន្ធតាមដានវត្តមានឌីជីថល (Digital Attendance)</h2>
+        <h2 class="text-base font-bold text-slate-900 mb-2">ប្រព័ន្ធតាមដានវត្តមានឌីជីថល</h2>
         <p class="text-xs text-slate-500 mb-6">វត្តមានសិស្ស និងវត្តមានគ្រូបង្រៀនប្រចាំថ្ងៃ</p>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

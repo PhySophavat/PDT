@@ -99,7 +99,7 @@
         <form @submit.prevent="submitCreateTimetable" class="p-6 space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">ថ្នាក់រៀន (Class) *</label>
+              <label class="block text-xs font-bold text-slate-700 mb-1">ថ្នាក់រៀន *</label>
               <select v-model="createForm.class_name" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                 <option value="">-- ជ្រើសរើសថ្នាក់ --</option>
                 <option v-for="c in classesList" :key="c" :value="c">ថ្នាក់ {{ c }}</option>
@@ -119,7 +119,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">មុខវិជ្ជា (Subject) *</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">មុខវិជ្ជា *</label>
             <select v-model="createForm.course_subject_id" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
               <option value="">-- ជ្រើសរើសមុខវិជ្ជា --</option>
               <option v-for="s in subjectsList" :key="s.id" :value="s.id">{{ s.name }} ({{ s.code }})</option>
@@ -127,7 +127,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">គ្រូបង្រៀន (Teacher) *</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">គ្រូបង្រៀន *</label>
             <select v-model="createForm.teacher_id" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
               <option value="">-- ជ្រើសរើសគ្រូបង្រៀន --</option>
               <option v-for="t in teachersList" :key="t.id" :value="t.id">{{ t.name }}</option>
@@ -280,7 +280,7 @@ const handleExport = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `LMSTICK_Timetable_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `Timetable_${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
 };
 </script>

@@ -79,16 +79,19 @@ class ComprehensiveSchoolSeeder extends Seeder
             SystemSetting::set($key, $val);
         }
 
-        // 3. SUBJECTS & CURRICULUM (8 Core MoEYS Subjects)
+        // 3. SUBJECTS & CURRICULUM (11 Core MoEYS Subjects: 1 Credit = 50 Max Points, Total Credits = 15, Total Max Score = 750)
         $subjectsData = [
             ['code' => 'KHM-01', 'name' => 'អក្សរសាស្ត្រខ្មែរ', 'credit' => 2.0, 'max_score' => 100.0, 'credit_hours' => 5],
             ['code' => 'MTH-01', 'name' => 'គណិតវិទ្យា', 'credit' => 2.0, 'max_score' => 100.0, 'credit_hours' => 5],
-            ['code' => 'PHY-01', 'name' => 'រូបវិទ្យា', 'credit' => 1.5, 'max_score' => 100.0, 'credit_hours' => 3],
-            ['code' => 'CHM-01', 'name' => 'គីមីវិទ្យា', 'credit' => 1.5, 'max_score' => 100.0, 'credit_hours' => 3],
-            ['code' => 'BIO-01', 'name' => 'ជីវវិទ្យា', 'credit' => 1.5, 'max_score' => 100.0, 'credit_hours' => 3],
-            ['code' => 'HIS-01', 'name' => 'ប្រវត្តិវិទ្យា', 'credit' => 1.0, 'max_score' => 100.0, 'credit_hours' => 2],
-            ['code' => 'ETH-01', 'name' => 'សីលធម៌-ពលរដ្ឋ', 'credit' => 1.0, 'max_score' => 100.0, 'credit_hours' => 2],
-            ['code' => 'ENG-01', 'name' => 'ភាសាអង់គ្លេស', 'credit' => 1.0, 'max_score' => 100.0, 'credit_hours' => 3],
+            ['code' => 'PHY-01', 'name' => 'រូបវិទ្យា', 'credit' => 1.5, 'max_score' => 75.0, 'credit_hours' => 3],
+            ['code' => 'CHM-01', 'name' => 'គីមីវិទ្យា', 'credit' => 1.5, 'max_score' => 75.0, 'credit_hours' => 3],
+            ['code' => 'BIO-01', 'name' => 'ជីវវិទ្យា', 'credit' => 1.5, 'max_score' => 75.0, 'credit_hours' => 3],
+            ['code' => 'ICT-01', 'name' => 'ព័ត៌មានវិទ្យា (ICT & Coding)', 'credit' => 1.5, 'max_score' => 75.0, 'credit_hours' => 3],
+            ['code' => 'HIS-01', 'name' => 'ប្រវត្តិវិទ្យា', 'credit' => 1.0, 'max_score' => 50.0, 'credit_hours' => 2],
+            ['code' => 'ETH-01', 'name' => 'សីលធម៌-ពលរដ្ឋ', 'credit' => 1.0, 'max_score' => 50.0, 'credit_hours' => 2],
+            ['code' => 'ENG-01', 'name' => 'ភាសាអង់គ្លេស', 'credit' => 1.0, 'max_score' => 50.0, 'credit_hours' => 3],
+            ['code' => 'GEO-01', 'name' => 'ភូមិវិទ្យា', 'credit' => 1.0, 'max_score' => 50.0, 'credit_hours' => 2],
+            ['code' => 'SPO-01', 'name' => 'អប់រំកាយ និងកីឡា', 'credit' => 1.0, 'max_score' => 50.0, 'credit_hours' => 2],
         ];
 
         $subjectModels = [];

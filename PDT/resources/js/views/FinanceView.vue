@@ -111,7 +111,7 @@
       <DataTable>
         <template #header>
           <tr>
-            <th class="py-3 px-4 font-bold text-slate-700">លេខបង្កាន់ដៃ (Receipt No.)</th>
+            <th class="py-3 px-4 font-bold text-slate-700">លេខបង្កាន់ដៃ</th>
             <th class="py-3 px-4 font-bold text-slate-700">លេខវិក្កយបត្រ</th>
             <th class="py-3 px-4 font-bold text-slate-700">{{ $t('students.studentName') }}</th>
             <th class="py-3 px-4 font-bold text-slate-700">វិធីសាស្ត្រទូទាត់</th>
@@ -193,7 +193,7 @@
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-            + បង្កើតវិក្កយបត្រថ្មី (New Invoice)
+            + បង្កើតវិក្កយបត្រថ្មី
           </h3>
           <button @click="showInvoiceModal = false" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
         </div>
@@ -252,7 +252,7 @@
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-            កត់ត្រាការបង់ប្រាក់ (Record Payment)
+            កត់ត្រាការបង់ប្រាក់
           </h3>
           <button @click="showPaymentModal = false" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
         </div>
@@ -272,7 +272,7 @@
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">វិធីសាស្ត្រទូទាត់ *</label>
               <select v-model="paymentForm.payment_method" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                <option value="cash">សាច់ប្រាក់ (Cash)</option>
+                <option value="cash">សាច់ប្រាក់</option>
                 <option value="qr_code">KHQR / Bakong</option>
                 <option value="bank_transfer">ផ្ទេរតាមធនាគារ</option>
                 <option value="other">ផ្សេងៗ</option>
@@ -286,7 +286,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">កំណត់សម្គាល់ (Note)</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">កំណត់សម្គាល់</label>
             <input v-model="paymentForm.note" type="text" placeholder="កំណត់សម្គាល់បន្ថែម..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
           </div>
 
@@ -309,7 +309,7 @@
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-rose-600"></span>
-            + កត់ត្រាចំណាយសាលា (Record Expense)
+            + កត់ត្រាចំណាយសាលា
           </h3>
           <button @click="showExpenseModal = false" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
         </div>
@@ -324,7 +324,7 @@
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">ប្រភេទចំណាយ *</label>
               <select v-model="expenseForm.category" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                <option value="ទឹក-ភ្លើង">ទឹក-ភ្លើង (Utilities)</option>
+                <option value="ទឹក-ភ្លើង">ទឹក-ភ្លើង</option>
                 <option value="សម្ភារៈការិយាល័យ">សម្ភារៈការិយាល័យ</option>
                 <option value="ជួសជុល-ថែទាំ">ជួសជុល-ថែទាំ</option>
                 <option value="សកម្មភាពសាលា">សកម្មភាពសាលា</option>
@@ -532,7 +532,7 @@ const handleExport = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `LMSTICK_Finance_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `Finance_${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
 };
 </script>

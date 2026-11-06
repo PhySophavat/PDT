@@ -100,7 +100,7 @@
             </div>
             <div>
               <h3 class="font-bold text-base">
-                {{ isEditMode ? 'កែប្រែឆ្នាំសិក្សា (Edit Academic Year)' : 'បន្ថែមឆ្នាំសិក្សាថ្មី (Add Academic Year)' }}
+                {{ isEditMode ? 'កែប្រែឆ្នាំសិក្សា' : 'បន្ថែមឆ្នាំសិក្សាថ្មី' }}
               </h3>
               <p class="text-xs text-blue-100">កំណត់ឈ្មោះឆ្នាំសិក្សា កាលបរិច្ឆេទ និងឆមាស</p>
             </div>
@@ -119,7 +119,7 @@
           <!-- Year Name -->
           <div>
             <label class="block font-semibold text-slate-800 mb-1.5">
-              ឈ្មោះឆ្នាំសិក្សា (Academic Year) <span class="text-red-500">*</span>
+              ឈ្មោះឆ្នាំសិក្សា <span class="text-red-500">*</span>
             </label>
             <div class="relative">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
@@ -166,7 +166,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block font-semibold text-slate-800 mb-1.5">
-                ឆមាសទី ១ (Semester 1)
+                ឆមាសទី ១
               </label>
               <input 
                 type="text" 
@@ -177,7 +177,7 @@
             </div>
             <div>
               <label class="block font-semibold text-slate-800 mb-1.5">
-                ឆមាសទី ២ (Semester 2)
+                ឆមាសទី ២
               </label>
               <input 
                 type="text" 
@@ -210,7 +210,7 @@
               type="button" 
               class="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-xl font-semibold transition"
             >
-              បោះបង់ (Cancel)
+              បោះបង់
             </button>
             <button 
               :disabled="isSubmitting" 
@@ -252,7 +252,7 @@ const stats = ref({
   total: 0,
   currentYear: localStorage.getItem('pdt_current_academic_year') || window.__INITIAL_SETTINGS__?.current_academic_year || '2026-2027',
   currentSemester: 'ឆមាសទី ១',
-  status: 'សកម្ម (Active)'
+  status: 'សកម្ម'
 });
 
 // Hydrate from localStorage

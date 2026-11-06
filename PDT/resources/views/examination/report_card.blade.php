@@ -22,7 +22,7 @@
     <div class="no-print mb-6 flex items-center gap-3">
         <button onclick="window.print()" class="px-5 py-2.5 rounded-2xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-sm shadow-md transition flex items-center gap-2">
             <i class="fa-solid fa-print"></i>
-            <span>បោះពុម្ពសៀវភៅតាមដាន (Print Report Card)</span>
+            <span>បោះពុម្ពសៀវភៅតាមដាន</span>
         </button>
         <button onclick="window.close()" class="px-4 py-2.5 rounded-2xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-sm transition">
             បិទ
@@ -81,7 +81,7 @@
                 <thead class="bg-slate-100 text-xs uppercase font-bold text-slate-700 border-b border-slate-300">
                     <tr>
                         <th class="border border-slate-300 px-4 py-2.5 w-12 text-center">ល.រ</th>
-                        <th class="border border-slate-300 px-4 py-2.5">មុខវិជ្ជា (Subject)</th>
+                        <th class="border border-slate-300 px-4 py-2.5">មុខវិជ្ជា</th>
                         <th class="border border-slate-300 px-4 py-2.5 text-center">ពិន្ទុអតិបរមា</th>
                         <th class="border border-slate-300 px-4 py-2.5 text-center">ពិន្ទុទទួលបាន</th>
                         <th class="border border-slate-300 px-4 py-2.5 text-center">និទ្ទេស</th>
@@ -104,27 +104,33 @@
                 </tbody>
                 <tfoot class="bg-slate-50 font-bold border-t-2 border-slate-400">
                     <tr>
-                        <td colspan="2" class="border border-slate-300 px-4 py-2 text-right">ពិន្ទុសរុប (Total Score):</td>
+                        <td colspan="2" class="border border-slate-300 px-4 py-2 text-right">ពិន្ទុសរុប៖</td>
                         <td colspan="3" class="border border-slate-300 px-4 py-2 text-center font-mono font-black text-cyan-800 text-base">
                             {{ number_format($totalScore, 1) }}
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="2" class="border border-slate-300 px-4 py-2 text-right">មធ្យមភាគ (Average Score):</td>
+                        <td colspan="2" class="border border-slate-300 px-4 py-2 text-right">មធ្យមភាគ៖</td>
                         <td colspan="3" class="border border-slate-300 px-4 py-2 text-center font-mono font-black text-emerald-700 text-base">
                             {{ number_format($average, 2) }}
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="2" class="border border-slate-300 px-4 py-2 text-right">ចំណាត់ថ្នាក់ក្នុងថ្នាក់ (Class Ranking):</td>
+                        <td colspan="2" class="border border-slate-300 px-4 py-2 text-right">ចំណាត់ថ្នាក់ក្នុងថ្នាក់៖</td>
                         <td colspan="3" class="border border-slate-300 px-4 py-2 text-center font-black text-purple-700 text-base">
                             លេខ {{ $rank }}
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="2" class="border border-slate-300 px-4 py-2 text-right">និទ្ទេសរួម (Overall Grade):</td>
+                        <td colspan="2" class="border border-slate-300 px-4 py-2 text-right">និទ្ទេសរួម៖</td>
                         <td colspan="3" class="border border-slate-300 px-4 py-2 text-center font-black text-cyan-900 text-lg">
                             {{ $overallGrade }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="border border-slate-300 px-4 py-2 text-right">លទ្ធផល៖</td>
+                        <td colspan="3" class="border border-slate-300 px-4 py-2 text-center font-black {{ $average >= 25.0 ? 'text-emerald-700' : 'text-rose-700' }} text-base">
+                            {{ $average >= 25.0 ? 'ជាប់' : 'ធ្លាក់' }}
                         </td>
                     </tr>
                 </tfoot>
@@ -133,7 +139,7 @@
 
         <!-- Teacher Remarks & Observations -->
         <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
-            <p class="font-bold text-slate-800">មតិយោបល់ និងការវាយតម្លៃរបស់គ្រូបន្ទុកថ្នាក់ (Teacher Comments):</p>
+            <p class="font-bold text-slate-800">មតិយោបល់ និងការវាយតម្លៃរបស់គ្រូបន្ទុកថ្នាក់៖</p>
             <p class="italic text-slate-600">
                 សិស្សានុសិស្សមានការខិតខំប្រឹងប្រែងរៀនសូត្របានល្អ មានវិន័យ និងគោរពបទបញ្ជាផ្ទៃក្នុងរបស់សាលាបានយ៉ាងខ្ជាប់ខ្ជួន។ សូមបន្តការខិតខំប្រឹងប្រែងបន្ថែមទៀតដើម្បីទទួលបានលទ្ធផលកាន់តែប្រសើរ។
             </p>

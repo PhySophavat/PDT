@@ -15,14 +15,14 @@
         { id: 'general', label: 'ព័ត៌មានគ្រឹះស្ថានសិក្សា' },
         { id: 'academic', label: 'ឆ្នាំសិក្សា និងឆមាសសកម្ម' },
         { id: 'currency', label: 'រូបិយប័ណ្ណគោល' },
-        { id: 'backup', label: 'ទិន្នន័យបម្រុង (Database Backup)' }
+        { id: 'backup', label: 'ទិន្នន័យបម្រុង' }
       ]"
     />
 
     <!-- 4 Statistics Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="$t('common.active') + ' Modules'" :value="18" />
-      <StatCard :title="$t('settings.systemVersion')" :value="'v2.4.0 (NGS PDT)'" />
+      <StatCard :title="$t('settings.systemVersion')" :value="'v2.4.0'" />
       <StatCard :title="$t('settings.databaseStatus')" :value="'Connected'" />
       <StatCard title="ឆ្នាំសិក្សាបច្ចុប្បន្ន" :value="form.current_academic_year" />
     </div>
@@ -34,7 +34,7 @@
           <i class="fa-solid fa-school"></i>
         </span>
         <div>
-          <h2 class="text-sm font-bold text-slate-900">ព័ត៌មានគ្រឹះស្ថានសិក្សា (School Information)</h2>
+          <h2 class="text-sm font-bold text-slate-900">ព័ត៌មានគ្រឹះស្ថានសិក្សា</h2>
           <p class="text-[11px] text-slate-500">កំណត់អត្តសញ្ញាណ ព័ត៌មានទំនាក់ទំនង ឡូហ្គោ និងត្រារបស់សាលា</p>
         </div>
       </div>
@@ -48,7 +48,7 @@
           <input 
             type="text" 
             v-model="form.school_name" 
-            placeholder="ឧ. សាលារៀន ជំនាន់ថ្មី PDT" 
+            placeholder="ឧ. សាលារៀន ជំនាន់ថ្មី" 
             class="w-full px-3.5 py-2.5 bg-[#f8faff] border border-slate-200 rounded-xl text-xs font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           >
         </div>
@@ -56,12 +56,12 @@
         <!-- School Name English -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            ឈ្មោះសាលារៀន (English) <span class="text-red-500">*</span>
+            ឈ្មោះសាលារៀន <span class="text-red-500">*</span>
           </label>
           <input 
             type="text" 
             v-model="form.school_name_en" 
-            placeholder="e.g. PDT New Generation School" 
+            placeholder="e.g. New Generation School" 
             class="w-full px-3.5 py-2.5 bg-[#f8faff] border border-slate-200 rounded-xl text-xs font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           >
         </div>
@@ -69,7 +69,7 @@
         <!-- Principal Name -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            ឈ្មោះនាយកសាលា (Principal Name)
+            ឈ្មោះនាយកសាលា
           </label>
           <input 
             type="text" 
@@ -82,12 +82,12 @@
         <!-- Website -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            គេហទំព័រ (Website)
+            គេហទំព័រ
           </label>
           <input 
             type="text" 
             v-model="form.school_website" 
-            placeholder="https://school.pdt.edu.kh" 
+            placeholder="https://school.edu.kh" 
             class="w-full px-3.5 py-2.5 bg-[#f8faff] border border-slate-200 rounded-xl text-xs font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           >
         </div>
@@ -95,7 +95,7 @@
         <!-- Phone -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            លេខទូរស័ព្ទ (Phone)
+            លេខទូរស័ព្ទ
           </label>
           <input 
             type="text" 
@@ -108,12 +108,12 @@
         <!-- Email -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            អ៊ីមែល (Email)
+            អ៊ីមែល
           </label>
           <input 
             type="email" 
             v-model="form.school_email" 
-            placeholder="contact@pdt-school.edu.kh" 
+            placeholder="contact@school.edu.kh" 
             class="w-full px-3.5 py-2.5 bg-[#f8faff] border border-slate-200 rounded-xl text-xs font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           >
         </div>
@@ -121,7 +121,7 @@
         <!-- Address -->
         <div class="md:col-span-2">
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            អាសយដ្ឋានសាលា (Address)
+            អាសយដ្ឋានសាលា
           </label>
           <input 
             type="text" 
@@ -134,7 +134,7 @@
         <!-- School Logo Upload -->
         <div class="p-4 bg-slate-50 border border-dashed border-slate-300 rounded-2xl">
           <label class="block text-xs font-semibold text-slate-700 mb-2">
-            ឡូហ្គោសាលា (School Logo)
+            ឡូហ្គោសាលា
           </label>
           <div class="flex items-center gap-4">
             <div class="w-16 h-16 rounded-xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-2xs">
@@ -155,7 +155,7 @@
         <!-- School Stamp / Signature Upload -->
         <div class="p-4 bg-slate-50 border border-dashed border-slate-300 rounded-2xl">
           <label class="block text-xs font-semibold text-slate-700 mb-2">
-            ត្រាសាលា និងហត្ថលេខា (Stamp & Signature)
+            ត្រាសាលា និងហត្ថលេខា
           </label>
           <div class="flex items-center gap-4">
             <div class="w-16 h-16 rounded-xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-2xs">
@@ -183,7 +183,7 @@
           <i class="fa-solid fa-calendar-days"></i>
         </span>
         <div>
-          <h2 class="text-sm font-bold text-slate-900">ឆ្នាំសិក្សា និងឆមាសសកម្ម (Active Academic Year & Semester)</h2>
+          <h2 class="text-sm font-bold text-slate-900">ឆ្នាំសិក្សា និងឆមាសសកម្ម</h2>
           <p class="text-[11px] text-slate-500">កំណត់ឆ្នាំសិក្សាបច្ចុប្បន្ន ឆមាស ម៉ោងសិក្សា និងលក្ខខណ្ឌវត្តមាន</p>
         </div>
       </div>
@@ -192,7 +192,7 @@
         <!-- Current Academic Year Dropdown -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            ឆ្នាំសិក្សាបច្ចុប្បន្ន (Active Academic Year) <span class="text-red-500">*</span>
+            ឆ្នាំសិក្សាបច្ចុប្បន្ន <span class="text-red-500">*</span>
           </label>
           <select 
             v-model="form.current_academic_year" 
@@ -209,16 +209,16 @@
         <!-- Current Semester -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            ឆមាសសកម្ម (Active Semester) <span class="text-red-500">*</span>
+            ឆមាសសកម្ម <span class="text-red-500">*</span>
           </label>
           <div class="grid grid-cols-2 gap-3">
             <label class="flex items-center justify-center gap-2 p-2 bg-[#f8faff] border border-slate-200 rounded-xl text-xs font-semibold cursor-pointer has-checked:bg-blue-50 has-checked:border-blue-500 has-checked:text-blue-600 transition">
               <input type="radio" v-model="form.current_semester" value="1" class="text-blue-600 focus:ring-0">
-              <span>ឆមាសទី ១ (Semester 1)</span>
+              <span>ឆមាសទី ១</span>
             </label>
             <label class="flex items-center justify-center gap-2 p-2 bg-[#f8faff] border border-slate-200 rounded-xl text-xs font-semibold cursor-pointer has-checked:bg-blue-50 has-checked:border-blue-500 has-checked:text-blue-600 transition">
               <input type="radio" v-model="form.current_semester" value="2" class="text-blue-600 focus:ring-0">
-              <span>ឆមាសទី ២ (Semester 2)</span>
+              <span>ឆមាសទី ២</span>
             </label>
           </div>
         </div>
@@ -269,7 +269,7 @@
         <!-- Late Threshold in minutes -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            រយៈពេលអនុគ្រោះមុនគិតថាមកយឺត (Late Threshold)
+            រយៈពេលអនុគ្រោះមុនគិតថាមកយឺត
           </label>
           <div class="relative">
             <input 
@@ -287,7 +287,7 @@
         <!-- Morning Shift Time -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            ម៉ោងចូលរៀនវេនព្រឹក (Morning Shift)
+            ម៉ោងចូលរៀនវេនព្រឹក
           </label>
           <input 
             type="text" 
@@ -300,7 +300,7 @@
         <!-- Afternoon Shift Time -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            ម៉ោងចូលរៀនវេនរសៀល (Afternoon Shift)
+            ម៉ោងចូលរៀនវេនរសៀល
           </label>
           <input 
             type="text" 
@@ -319,7 +319,7 @@
           <i class="fa-solid fa-coins"></i>
         </span>
         <div>
-          <h2 class="text-sm font-bold text-slate-900">រូបិយប័ណ្ណគោល និងហិរញ្ញវត្ថុ (Currency & Finance Setup)</h2>
+          <h2 class="text-sm font-bold text-slate-900">រូបិយប័ណ្ណគោល និងហិរញ្ញវត្ថុ</h2>
           <p class="text-[11px] text-slate-500">កំណត់រូបិយប័ណ្ណ អត្រាប្តូរប្រាក់ ទម្រង់វិក្កយបត្រ និងគណនី KHQR</p>
         </div>
       </div>
@@ -328,7 +328,7 @@
         <!-- Base Currency -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            រូបិយប័ណ្ណគោល (Base Currency) <span class="text-red-500">*</span>
+            រូបិយប័ណ្ណគោល <span class="text-red-500">*</span>
           </label>
           <select 
             v-model="form.currency" 
@@ -343,7 +343,7 @@
         <!-- Currency Symbol -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            និមិត្តសញ្ញារូបិយប័ណ្ណ (Currency Symbol)
+            និមិត្តសញ្ញារូបិយប័ណ្ណ
           </label>
           <input 
             type="text" 
@@ -373,7 +373,7 @@
         <!-- Invoice Prefix -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            ទម្រង់លេខវិក្កយបត្រ (Invoice Prefix)
+            ទម្រង់លេខវិក្កយបត្រ
           </label>
           <input 
             type="text" 
@@ -387,7 +387,7 @@
         <!-- Bank Name -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            ឈ្មោះធនាគារសាលា (Bank Name)
+            ឈ្មោះធនាគារសាលា
           </label>
           <input 
             type="text" 
@@ -400,12 +400,12 @@
         <!-- Account Name -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            ឈ្មោះគណនីធនាគារ (Account Name)
+            ឈ្មោះគណនីធនាគារ
           </label>
           <input 
             type="text" 
             v-model="form.bank_account_name" 
-            placeholder="PDT SCHOOL CO., LTD" 
+            placeholder="SCHOOL ACCOUNT" 
             class="w-full px-3.5 py-2.5 bg-[#f8faff] border border-slate-200 rounded-xl text-xs font-medium uppercase focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           >
         </div>
@@ -413,7 +413,7 @@
         <!-- Account Number -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-            លេខគណនីធនាគារ (Account Number)
+            លេខគណនីធនាគារ
           </label>
           <input 
             type="text" 
@@ -426,7 +426,7 @@
         <!-- KHQR Upload -->
         <div class="p-4 bg-slate-50 border border-dashed border-slate-300 rounded-2xl">
           <label class="block text-xs font-semibold text-slate-700 mb-2">
-            រូបភាព Bakong KHQR សាលា (School KHQR Code)
+            រូបភាព Bakong KHQR សាលា
           </label>
           <div class="flex items-center gap-4">
             <div class="w-16 h-16 rounded-xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-2xs">
@@ -454,7 +454,7 @@
           <i class="fa-solid fa-database"></i>
         </span>
         <div>
-          <h2 class="text-sm font-bold text-slate-900">ទិន្នន័យបម្រុង និងសុវត្ថិភាពមូលដ្ឋានទិន្នន័យ (Database Backup & Security)</h2>
+          <h2 class="text-sm font-bold text-slate-900">ទិន្នន័យបម្រុង និងសុវត្ថិភាពមូលដ្ឋានទិន្នន័យ</h2>
           <p class="text-[11px] text-slate-500">ទាញយកទិន្នន័យប្រព័ន្ធបម្រុងទុកការពារហានិភ័យ និងតំណភ្ជាប់ទៅកាន់ការកំណត់សិទ្ធិ</p>
         </div>
       </div>
@@ -468,7 +468,7 @@
             </span>
             <div>
               <h4 class="text-xs font-bold text-slate-900 flex items-center gap-2">
-                <span>ទាញយកទិន្នន័យបម្រុងមូលដ្ឋានទិន្នន័យ (Backup Database)</span>
+                <span>ទាញយកទិន្នន័យបម្រុងមូលដ្ឋានទិន្នន័យ</span>
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">Backup</span>
               </h4>
               <p class="text-[11px] text-slate-500 mt-0.5">
@@ -566,12 +566,12 @@ const form = ref({
   demo_mode: localStorage.getItem('pdt_demo_mode') || '0',
 
   // Tab 1: School Info
-  school_name: 'សាលារៀន ជំនាន់ថ្មី PDT',
-  school_name_en: 'PDT New Generation School',
+  school_name: 'សាលារៀន ជំនាន់ថ្មី',
+  school_name_en: 'New Generation School',
   principal_name: 'លោក ឈុន វណ្ណា',
-  school_website: 'https://pdt-school.edu.kh',
+  school_website: 'https://school.edu.kh',
   school_phone: '023 880 880 / 012 345 678',
-  school_email: 'contact@pdt-school.edu.kh',
+  school_email: 'contact@school.edu.kh',
   school_address: 'មហាវិថីសហព័ន្ធរុស្ស៊ី សង្កាត់ទឹកល្អក់១ ខណ្ឌទួលគោក រាជធានីភ្នំពេញ',
   school_logo_url: '/images/logo.png',
   school_stamp_url: '',
@@ -592,7 +592,7 @@ const form = ref({
   exchange_rate: '4100',
   invoice_prefix: 'INV-2026-',
   bank_name: 'ABA Bank',
-  bank_account_name: 'PDT SCHOOL CO., LTD',
+  bank_account_name: 'SCHOOL ACCOUNT',
   bank_account_number: '001 234 567',
   khqr_image_url: '',
 
@@ -616,7 +616,7 @@ const isSeeding = ref(false);
 
 const isPurging = ref(false);
 const handlePurgeDemoData = async () => {
-  const confirmText = prompt('តើអ្នកពិតជាចង់លុបទិន្នន័យគំរូ (Demo Data) ទាំងអស់មែនទេ?\nសកម្មភាពនេះនឹងលុបសិស្ស គ្រូ ពិន្ទុ វត្តមាន កាលវិភាគ និងវិក្កយបត្រទាំងអស់ពី Database ដើម្បីឱ្យប្រព័ន្ធស្អាតសម្រាប់ Production។\n\nសូមវាយពាក្យ "DELETE" ដើម្បីបញ្ជាក់ការលុប៖');
+  const confirmText = prompt('តើអ្នកពិតជាចង់លុបទិន្នន័យគំរូ ទាំងអស់មែនទេ?\nសកម្មភាពនេះនឹងលុបសិស្ស គ្រូ ពិន្ទុ វត្តមាន កាលវិភាគ និងវិក្កយបត្រទាំងអស់ពី Database ដើម្បីឱ្យប្រព័ន្ធស្អាតសម្រាប់ Production។\n\nសូមវាយពាក្យ "DELETE" ដើម្បីបញ្ជាក់ការលុប៖');
   if (confirmText !== 'DELETE') {
     if (confirmText !== null) alert('ពាក្យបញ្ជាក់មិនត្រឹមត្រូវ! ការលុបទិន្នន័យត្រូវបានបោះបង់។');
     return;
@@ -859,7 +859,7 @@ const handleBackupExcel = async () => {
       });
 
       if (sheetCount === 0) {
-        const ws = XLSX.utils.aoa_to_sheet([['ទិន្នន័យទទេ (Database is Empty)']]);
+        const ws = XLSX.utils.aoa_to_sheet([['ទិន្នន័យទទេ']]);
         XLSX.utils.book_append_sheet(wb, ws, 'Info');
       }
 

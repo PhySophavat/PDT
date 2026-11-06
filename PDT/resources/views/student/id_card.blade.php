@@ -19,7 +19,7 @@
     <div class="no-print mb-6 flex items-center gap-3">
         <button onclick="window.print()" class="px-5 py-2.5 rounded-2xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-sm shadow-md transition flex items-center gap-2">
             <i class="fa-solid fa-print"></i>
-            <span>បោះពុម្ពកាតសិស្ស (Print ID Card)</span>
+            <span>បោះពុម្ពកាតសិស្ស</span>
         </button>
         <button onclick="window.close()" class="px-4 py-2.5 rounded-2xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-sm transition">
             បិទ
@@ -38,7 +38,7 @@
             <div class="text-center relative z-10">
                 <div class="flex items-center justify-center gap-2 mb-1">
                     <div class="w-8 h-8 rounded-lg bg-white text-cyan-600 flex items-center justify-center font-black text-sm shadow">
-                        PDT
+                        <i class="fa-solid fa-graduation-cap"></i>
                     </div>
                     <div class="text-left">
                         <h2 class="text-xs font-extrabold uppercase tracking-wider leading-none">សាលារៀន ជំនាន់ថ្មី</h2>
@@ -46,7 +46,7 @@
                     </div>
                 </div>
                 <div class="h-0.5 w-full bg-gradient-to-r from-transparent via-cyan-300 to-transparent my-2"></div>
-                <p class="text-[11px] font-bold tracking-wider text-cyan-100 uppercase">ប័ណ្ណសម្គាល់ខ្លួនសិស្ស (STUDENT ID CARD)</p>
+                <p class="text-[11px] font-bold tracking-wider text-cyan-100 uppercase">ប័ណ្ណសម្គាល់ខ្លួនសិស្ស</p>
             </div>
 
             <!-- Photo & Name -->
@@ -70,19 +70,19 @@
             <!-- Details Grid -->
             <div class="bg-black/25 backdrop-blur-md rounded-2xl p-3 border border-white/10 text-xs space-y-1 relative z-10">
                 <div class="flex justify-between">
-                    <span class="text-slate-300">ថ្នាក់ (Grade):</span>
+                    <span class="text-slate-300">ថ្នាក់៖</span>
                     <span class="font-bold text-white">{{ $student->grade ?? '-' }}</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-slate-300">ភេទ (Gender):</span>
+                    <span class="text-slate-300">ភេទ៖</span>
                     <span class="font-bold text-white">{{ $student->gender ?? '-' }}</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-slate-300">ថ្ងៃខែឆ្នាំកំណើត (DOB):</span>
+                    <span class="text-slate-300">ថ្ងៃខែឆ្នាំកំណើត៖</span>
                     <span class="font-bold text-white">{{ $student->date_of_birth ? $student->date_of_birth->format('d-M-Y') : '-' }}</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-slate-300">ឆ្នាំសិក្សា (Academic Year):</span>
+                    <span class="text-slate-300">ឆ្នាំសិក្សា៖</span>
                     <span class="font-bold text-cyan-300">{{ $student->academicYear->name ?? '២០២៥-២០២៦' }}</span>
                 </div>
             </div>
@@ -104,7 +104,7 @@
                 </div>
 
                 <div class="mt-4 text-[11px] text-slate-600 space-y-2 leading-relaxed">
-                    <p>១. ប័ណ្ណនេះជាកម្មសិទ្ធិរបស់សាលារៀន PDT។</p>
+                    <p>១. ប័ណ្ណនេះជាកម្មសិទ្ធិរបស់សាលារៀន។</p>
                     <p>២. សិស្សានុសិស្សត្រូវពាក់ប័ណ្ណនេះជានិច្ចពេលនៅក្នុងបរិវេណសាលា។</p>
                     <p>៣. ប័ណ្ណនេះមិនអាចផ្ទេរទៅឲ្យអ្នកដទៃប្រើប្រាស់បានឡើយ។</p>
                     <p>៤. បើបាត់បង់ សូមទាក់ទងមកការិយាល័យរដ្ឋបាលសាលាជាបន្ទាន់។</p>

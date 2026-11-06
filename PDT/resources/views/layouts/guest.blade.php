@@ -76,7 +76,7 @@
             @endif
             <div>
                 <span class="text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-blue-700 transition">portal sala</span>
-                <span class="block text-[11px] font-semibold text-slate-400 leading-tight">សាលារៀន ជំនាន់ថ្មី PDT</span>
+                <span class="block text-[11px] font-semibold text-slate-400 leading-tight">សាលារៀន ជំនាន់ថ្មី</span>
             </div>
         </a>
 
@@ -96,7 +96,7 @@
 
     <!-- Footer -->
     <footer class="w-full text-center py-6 text-xs text-slate-400 z-10 space-y-1">
-        <p>© {{ date('Y') }} portal sala • សាលារៀន ជំនាន់ថ្មី PDT. រក្សាសិទ្ធិគ្រប់យ៉ាង។</p>
+        <p>© {{ date('Y') }} portal sala • សាលារៀន ជំនាន់ថ្មី. រក្សាសិទ្ធិគ្រប់យ៉ាង។</p>
         <p class="text-[11px] text-slate-500 font-medium">Developed by <span class="font-bold text-slate-700">Phy Sophavat</span></p>
     </footer>
 

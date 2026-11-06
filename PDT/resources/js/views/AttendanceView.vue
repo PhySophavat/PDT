@@ -16,7 +16,7 @@
           <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
           </svg>
-          <span>🔗 តំណភ្ជាប់សុំច្បាប់ (Leave Link)</span>
+          <span>🔗 តំណភ្ជាប់សុំច្បាប់</span>
         </button>
       </template>
     </PageHeader>
@@ -25,11 +25,11 @@
     <TabNav 
       v-model="activeTab" 
       :tabs="[
-        { id: 'matrix', label: 'តារាងវត្តមានប្រចាំឆ្នាំ (Annual Matrix)' },
-        { id: 'daily', label: 'ស្រង់វត្តមានតាមថ្នាក់ (Daily Sheet)' },
+        { id: 'matrix', label: 'តារាងវត្តមានប្រចាំឆ្នាំ' },
+        { id: 'daily', label: 'ស្រង់វត្តមានតាមថ្នាក់' },
         { 
           id: 'leaves', 
-          label: 'សំណើសុំច្បាប់ (Pending Leaves)', 
+          label: 'សំណើសុំច្បាប់', 
           badge: pendingLeavesCount, 
           badgeColor: 'bg-rose-100 text-rose-800' 
         }
@@ -41,7 +41,7 @@
       <StatCard :title="t('attendance.totalPresent')" :value="stats.present" />
       <StatCard :title="t('attendance.totalLate')" :value="stats.late" />
       <StatCard :title="t('attendance.totalAbsent')" :value="stats.absent" />
-      <StatCard :title="'ច្បាប់/សម្រាកសរុប (Leave/Holiday)'" :value="stats.holiday" />
+      <StatCard :title="'ច្បាប់/សម្រាកសរុប'" :value="stats.holiday" />
     </div>
 
     <!-- TAB 1: Monthly Student Attendance Sheet (All students by days 1 to 28/29/30/31) -->
@@ -52,10 +52,10 @@
           
           <!-- Left: Legend -->
           <div class="flex flex-wrap items-center gap-3">
-            <span class="font-medium text-slate-700">វត្តមាន (Present): <span class="font-bold text-emerald-600 text-sm">✓</span></span>
-            <span class="font-medium text-slate-700">ច្បាប់ (Leave): <span class="font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">H</span></span>
-            <span class="font-medium text-slate-700">អវត្តមាន (Absent): <span class="font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded">A</span></span>
-            <span class="font-medium text-slate-700">មកយឺត (Late): <span class="font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">L</span></span>
+            <span class="font-medium text-slate-700">វត្តមាន: <span class="font-bold text-emerald-600 text-sm">✓</span></span>
+            <span class="font-medium text-slate-700">ច្បាប់: <span class="font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">H</span></span>
+            <span class="font-medium text-slate-700">អវត្តមាន: <span class="font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded">A</span></span>
+            <span class="font-medium text-slate-700">មកយឺត: <span class="font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">L</span></span>
             <span class="font-medium text-slate-400">ថ្ងៃអាទិត្យ: <span class="font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">-</span></span>
           </div>
 
@@ -82,7 +82,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100 text-xs">
           <!-- 1. Class Dropdown -->
           <div>
-            <label class="block font-bold text-slate-600 mb-1">ថ្នាក់រៀន (Class):</label>
+            <label class="block font-bold text-slate-600 mb-1">ថ្នាក់រៀន:</label>
             <select 
               v-model="selectedClass" 
               @change="fetchAttendanceData" 
@@ -94,7 +94,7 @@
 
           <!-- 2. Academic Year Dropdown -->
           <div>
-            <label class="block font-bold text-slate-600 mb-1">ឆ្នាំសិក្សា (Academic Year):</label>
+            <label class="block font-bold text-slate-600 mb-1">ឆ្នាំសិក្សា:</label>
             <select 
               v-model="selectedAcademicYear" 
               class="w-full px-3 py-2 bg-slate-50 border border-slate-200 text-slate-700 font-semibold rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
@@ -106,7 +106,7 @@
           <!-- 3. Month Dropdown (Determines 28, 29, 30, or 31 days) -->
           <div>
             <label class="block font-bold text-slate-600 mb-1">
-              ខែសិក្សា (Month - {{ daysInActiveMonth }} ថ្ងៃ):
+              ខែសិក្សា ({{ daysInActiveMonth }} ថ្ងៃ):
             </label>
             <select 
               v-model="selectedMonth" 
@@ -264,7 +264,7 @@
     <div v-else-if="activeTab === 'daily'" class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
-          <h3 class="font-bold text-slate-800 text-base">បញ្ជីវត្តមានសិស្សប្រចាំថ្ងៃ (Daily Attendance Sheet)</h3>
+          <h3 class="font-bold text-slate-800 text-base">បញ្ជីវត្តមានសិស្សប្រចាំថ្ងៃ</h3>
           <p class="text-xs text-slate-500">ស្រង់វត្តមានសិស្សជាក់ស្តែងក្នុងថ្នាក់ {{ selectedClass }}</p>
         </div>
         <div class="flex items-center gap-2">
@@ -281,26 +281,26 @@
       <!-- Advanced Filters Row for Daily Sheet -->
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200/70 text-xs">
         <div>
-          <label class="block font-bold text-slate-700 mb-1">ថ្នាក់រៀន (Class)</label>
+          <label class="block font-bold text-slate-700 mb-1">ថ្នាក់រៀន</label>
           <select v-model="selectedClass" @change="fetchAttendanceData" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl font-bold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
             <option v-for="c in classesList" :key="c" :value="c">ថ្នាក់ {{ c }}</option>
           </select>
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">ឆ្នាំសិក្សា (Year)</label>
+          <label class="block font-bold text-slate-700 mb-1">ឆ្នាំសិក្សា</label>
           <select v-model="selectedAcademicYear" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
             <option v-for="y in academicYearsList" :key="y" :value="y">{{ y }}</option>
           </select>
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">ខែ (Month)</label>
+          <label class="block font-bold text-slate-700 mb-1">ខែ</label>
           <select v-model="selectedMonth" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
-            <option value="all">គ្រប់ខែ (All)</option>
+            <option value="all">គ្រប់ខែ</option>
             <option v-for="m in monthOptions" :key="m.key" :value="m.key">{{ m.label }}</option>
           </select>
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">កាលបរិច្ឆេទ (Date)</label>
+          <label class="block font-bold text-slate-700 mb-1">កាលបរិច្ឆេទ</label>
           <input v-model="selectedDate" @change="fetchAttendanceData" type="date" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
         </div>
       </div>
@@ -402,7 +402,7 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
           <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-            <span>សំណើសុំច្បាប់ឈប់សម្រាក (Student Leave Requests)</span>
+            <span>សំណើសុំច្បាប់ឈប់សម្រាក</span>
             <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800">
               រង់ចាំអនុម័ត: {{ pendingLeavesCount }}
             </span>
@@ -624,7 +624,7 @@
               @change="generateQrCode" 
               class="px-3 py-1.5 bg-white border border-slate-300 rounded-xl font-bold text-indigo-700 focus:outline-none"
             >
-              <option value="">-- គ្រប់ថ្នាក់ (General) --</option>
+              <option value="">-- គ្រប់ថ្នាក់ --</option>
               <option v-for="c in classesList" :key="c" :value="c">ថ្នាក់ {{ c }}</option>
             </select>
           </div>
@@ -632,7 +632,7 @@
           <!-- QR Code Display Box -->
           <div class="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl inline-block mx-auto shadow-inner text-center">
             <div class="text-xs font-bold text-slate-800 mb-2 uppercase tracking-wide">
-              LMSTICK SCHOOL - ស្កេនដើម្បីសុំច្បាប់
+              សាលារៀន ជំនាន់ថ្មី - ស្កេនដើម្បីសុំច្បាប់
             </div>
             <div class="w-48 h-48 mx-auto bg-white p-2 rounded-xl border border-slate-200 shadow-xs flex items-center justify-center">
               <img v-if="qrDataUrl" :src="qrDataUrl" alt="QR Code" class="w-full h-full object-contain" />
@@ -777,18 +777,18 @@ const leaveFilterClass = ref('all');
 const isLoadingLeaves = ref(false);
 
 const monthOptions = [
-  { key: 'january', label: 'មករា (January)' },
-  { key: 'february', label: 'កុម្ភៈ (February)' },
-  { key: 'march', label: 'មីនា (March)' },
-  { key: 'april', label: 'មេសា (April)' },
-  { key: 'may', label: 'ឧសភា (May)' },
-  { key: 'june', label: 'មិថុនា (June)' },
-  { key: 'july', label: 'កក្កដា (July)' },
-  { key: 'august', label: 'សីហា (August)' },
-  { key: 'september', label: 'កញ្ញា (September)' },
-  { key: 'october', label: 'តុលា (October)' },
-  { key: 'november', label: 'វិច្ឆិកា (November)' },
-  { key: 'december', label: 'ធ្នូ (December)' },
+  { key: 'january', label: 'មករា' },
+  { key: 'february', label: 'កុម្ភៈ' },
+  { key: 'march', label: 'មីនា' },
+  { key: 'april', label: 'មេសា' },
+  { key: 'may', label: 'ឧសភា' },
+  { key: 'june', label: 'មិថុនា' },
+  { key: 'july', label: 'កក្កដា' },
+  { key: 'august', label: 'សីហា' },
+  { key: 'september', label: 'កញ្ញា' },
+  { key: 'october', label: 'តុលា' },
+  { key: 'november', label: 'វិច្ឆិកា' },
+  { key: 'december', label: 'ធ្នូ' },
 ];
 
 const allMonthKeys = [
@@ -1073,7 +1073,7 @@ const approveLeave = async (req) => {
 
 // Reject Leave Request
 const rejectLeave = async (req) => {
-  const reason = prompt('សូមបញ្ចូលមូលហេតុនៃការបដិសេធ (Reason for rejection):', 'ពុំមានមូលហេតុសមរម្យ');
+  const reason = prompt('សូមបញ្ចូលមូលហេតុនៃការបដិសេធ:', 'ពុំមានមូលហេតុសមរម្យ');
   if (reason === null) return;
 
   try {
@@ -1144,7 +1144,7 @@ const handleExport = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `LMSTICK_Attendance_${selectedClass.value}_${selectedDate.value}.csv`;
+  a.download = `Attendance_${selectedClass.value}_${selectedDate.value}.csv`;
   a.click();
 };
 </script>

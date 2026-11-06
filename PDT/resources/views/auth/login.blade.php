@@ -48,7 +48,7 @@
         <!-- Email Field -->
         <div class="space-y-1.5">
             <label for="email" class="block text-xs font-bold text-slate-700">
-                <span>អាសយដ្ឋានអ៊ីមែល (Email)</span>
+                <span>អាសយដ្ឋានអ៊ីមែល</span>
                 <span class="text-rose-500">*</span>
             </label>
             <div class="relative">
@@ -60,7 +60,7 @@
                     type="email" 
                     name="email" 
                     value="{{ old('email') }}" 
-                    placeholder="name@pdt-school.edu.kh" 
+                    placeholder="name@school.edu.kh" 
                     required
                     autofocus
                     class="w-full pl-10 pr-4 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition"
@@ -72,7 +72,7 @@
         <div class="space-y-1.5">
             <div class="flex items-center justify-between">
                 <label for="password" class="block text-xs font-bold text-slate-700">
-                    <span>ពាក្យសម្ងាត់ (Password)</span>
+                    <span>ពាក្យសម្ងាត់</span>
                     <span class="text-rose-500">*</span>
                 </label>
             </div>
@@ -104,7 +104,7 @@
         <div class="flex items-center justify-between pt-1 text-xs">
             <label class="inline-flex items-center gap-2 cursor-pointer text-slate-600 select-none">
                 <input type="checkbox" name="remember" checked class="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-0 cursor-pointer">
-                <span>ចងចាំគណនីខ្ញុំ (Remember me)</span>
+                <span>ចងចាំគណនីខ្ញុំ</span>
             </label>
         </div>
 
@@ -114,7 +114,7 @@
             class="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-md shadow-blue-500/25 transition-all hover:shadow-lg hover:shadow-blue-500/35 active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
         >
             <i class="fa-solid fa-arrow-right-to-bracket text-sm"></i>
-            <span>ចូលប្រើប្រព័ន្ធ (Sign In)</span>
+            <span>ចូលប្រើប្រព័ន្ធ</span>
         </button>
     </form>
 

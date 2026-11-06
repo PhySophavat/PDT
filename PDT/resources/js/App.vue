@@ -11,7 +11,7 @@
         class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition inline-flex items-center gap-2 cursor-pointer shadow-md shadow-blue-500/20"
       >
         <i class="fa-solid fa-arrow-rotate-right"></i>
-        <span>ផ្ទុកទំព័រឡើងវិញ (Reload)</span>
+        <span>ផ្ទុកទំព័រឡើងវិញ</span>
       </button>
     </div>
     <router-view v-else v-slot="{ Component }">

@@ -14,7 +14,7 @@
       :tabs="[
         { id: 'exams', label: $t('examinations.examList') },
         { id: 'scores', label: $t('examinations.enterScores') },
-        { id: 'matrix', label: '📊 តារាងពិន្ទុរួម (Matrix Sheet)' },
+        { id: 'matrix', label: '📊 តារាងពិន្ទុរួម' },
         { id: 'report_cards', label: $t('examinations.reportCard') }
       ]"
     />
@@ -107,7 +107,7 @@
     <div v-else-if="activeTab === 'scores'" class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
-          <h3 class="font-bold text-slate-800 text-base">បញ្ចូលពិន្ទុប្រឡងសិស្ស (Enter Student Scores)</h3>
+          <h3 class="font-bold text-slate-800 text-base">បញ្ចូលពិន្ទុប្រឡងសិស្ស</h3>
           <p class="text-xs text-slate-500">ជ្រើសរើសសម័យប្រឡង ថ្នាក់រៀន និងមុខវិជ្ជាដើម្បីកត់ត្រាពិន្ទុ</p>
         </div>
         <div v-if="scoreSheetStudents.length > 0" class="flex items-center gap-2">
@@ -170,15 +170,17 @@
         <table class="w-full text-left text-xs">
           <thead>
             <tr class="bg-slate-100/80 text-slate-700 uppercase font-bold border-b border-slate-200">
+              <th class="py-3 px-3 text-center w-12">ល.រ</th>
               <th class="py-3 px-4">អត្តលេខ</th>
               <th class="py-3 px-4">ឈ្មោះសិស្ស</th>
               <th class="py-3 px-4">ភេទ</th>
-              <th class="py-3 px-4 w-36">ពិន្ទុទទួលបាន (Max: 100)</th>
+              <th class="py-3 px-4 w-36">ពិន្ទុទទួលបាន (Max: {{ currentSubjectMaxScore }})</th>
               <th class="py-3 px-4 text-center">និទ្ទេស</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            <tr v-for="st in scoreSheetStudents" :key="st.student_id" class="hover:bg-slate-50">
+            <tr v-for="(st, idx) in scoreSheetStudents" :key="st.student_id" class="hover:bg-slate-50">
+              <td class="py-3 px-3 text-center font-bold text-slate-500">{{ idx + 1 }}</td>
               <td class="py-3 px-4 font-mono font-bold text-slate-600">{{ st.student_id_card || 'STU-00' }}</td>
               <td class="py-3 px-4 font-bold text-slate-800">{{ st.name }}</td>
               <td class="py-3 px-4 text-slate-600">{{ st.gender === 'female' ? 'ស្រី' : 'ប្រុស' }}</td>
@@ -186,23 +188,25 @@
                 <input 
                   type="number" 
                   min="0" 
-                  max="100" 
+                  :max="currentSubjectMaxScore" 
                   step="0.5"
                   v-model="scoresMap[st.student_id]"
-                  placeholder="0 - 100" 
+                  :placeholder="'0 - ' + currentSubjectMaxScore" 
                   class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </td>
               <td class="py-3 px-4 text-center">
                 <span :class="[
                   'px-2 py-0.5 rounded font-bold text-xs',
-                  gradeLetterFor(scoresMap[st.student_id]) === 'A' ? 'bg-emerald-100 text-emerald-700' :
-                  gradeLetterFor(scoresMap[st.student_id]) === 'B' ? 'bg-blue-100 text-blue-700' :
-                  gradeLetterFor(scoresMap[st.student_id]) === 'C' ? 'bg-cyan-100 text-cyan-700' :
-                  gradeLetterFor(scoresMap[st.student_id]) === 'D' ? 'bg-amber-100 text-amber-700' :
-                  'bg-rose-100 text-rose-700'
+                  gradeLetterForSubject(scoresMap[st.student_id]) === 'A' ? 'bg-emerald-100 text-emerald-700' :
+                  gradeLetterForSubject(scoresMap[st.student_id]) === 'B' ? 'bg-blue-100 text-blue-700' :
+                  gradeLetterForSubject(scoresMap[st.student_id]) === 'C' ? 'bg-cyan-100 text-cyan-700' :
+                  gradeLetterForSubject(scoresMap[st.student_id]) === 'D' ? 'bg-amber-100 text-amber-700' :
+                  gradeLetterForSubject(scoresMap[st.student_id]) === 'E' ? 'bg-orange-100 text-orange-700' :
+                  gradeLetterForSubject(scoresMap[st.student_id]) === 'F' ? 'bg-rose-100 text-rose-700' :
+                  'text-slate-400'
                 ]">
-                  {{ gradeLetterFor(scoresMap[st.student_id]) }}
+                  {{ gradeLetterForSubject(scoresMap[st.student_id]) }}
                 </span>
               </td>
             </tr>
@@ -218,7 +222,7 @@
         <div>
           <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
             <span>📊</span>
-            តារាងពិន្ទុរួមប្រចាំថ្នាក់ (Class Master Score Sheet)
+            តារាងពិន្ទុរួមប្រចាំថ្នាក់
           </h3>
           <p class="text-xs text-slate-500">
             សម្រាប់គ្រូបន្ទុកថ្នាក់ និងរដ្ឋបាល - បង្ហាញគ្រប់មុខវិជ្ជា សរុប មធ្យមភាគ និទ្ទេស និងចំណាត់ថ្នាក់
@@ -365,7 +369,7 @@
           </div>
         </div>
         <div class="p-3 bg-emerald-50/60 border border-emerald-100 rounded-xl">
-          <span class="text-[11px] font-bold text-emerald-700">អត្រាជាប់ (Pass Rate)</span>
+          <span class="text-[11px] font-bold text-emerald-700">អត្រាជាប់</span>
           <div class="text-base font-extrabold text-emerald-900 mt-0.5">
             {{ matrixStats.pass_rate }}% ({{ matrixStats.passed_count }} នាក់)
           </div>
@@ -449,15 +453,15 @@
                 <input 
                   type="number"
                   min="0"
-                  :max="sub.max_score || 100"
+                  :max="sub.max_score || (sub.credit * 50) || 50"
                   step="0.5"
                   v-model.number="matrixData[st.student_id][sub.id]"
                   placeholder="-"
                   :class="[
                     'w-16 px-1.5 py-1 text-center font-bold text-xs rounded-lg border transition focus:outline-none focus:ring-2 focus:ring-blue-500/20',
-                    matrixData[st.student_id]?.[sub.id] >= 80 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                    matrixData[st.student_id]?.[sub.id] >= 65 ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                    matrixData[st.student_id]?.[sub.id] >= 50 ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                    (matrixData[st.student_id]?.[sub.id] / (sub.max_score || 50)) >= 0.8 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                    (matrixData[st.student_id]?.[sub.id] / (sub.max_score || 50)) >= 0.65 ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                    (matrixData[st.student_id]?.[sub.id] / (sub.max_score || 50)) >= 0.5 ? 'bg-amber-50 text-amber-700 border-amber-200' :
                     matrixData[st.student_id]?.[sub.id] !== undefined && matrixData[st.student_id]?.[sub.id] !== null && matrixData[st.student_id]?.[sub.id] !== '' ? 'bg-rose-50 text-rose-700 border-rose-200' :
                     'bg-slate-50 text-slate-500 border-slate-200'
                   ]"
@@ -474,19 +478,19 @@
                 {{ calculateStudentAverage(st.student_id) }}
               </td>
 
-              <!-- Grade -->
+              <!-- Grade for Average (out of 50) -->
               <td class="py-2 px-3 text-center border-l border-slate-100 bg-purple-50/20">
                 <span :class="[
                   'px-2 py-0.5 rounded font-bold text-xs inline-block',
-                  gradeLetterFor(calculateStudentAverage(st.student_id)) === 'A' ? 'bg-emerald-100 text-emerald-800' :
-                  gradeLetterFor(calculateStudentAverage(st.student_id)) === 'B' ? 'bg-blue-100 text-blue-800' :
-                  gradeLetterFor(calculateStudentAverage(st.student_id)) === 'C' ? 'bg-cyan-100 text-cyan-800' :
-                  gradeLetterFor(calculateStudentAverage(st.student_id)) === 'D' ? 'bg-amber-100 text-amber-800' :
-                  gradeLetterFor(calculateStudentAverage(st.student_id)) === 'E' ? 'bg-orange-100 text-orange-800' :
+                  gradeLetterForAverage(calculateStudentAverage(st.student_id)) === 'A' ? 'bg-emerald-100 text-emerald-800' :
+                  gradeLetterForAverage(calculateStudentAverage(st.student_id)) === 'B' ? 'bg-blue-100 text-blue-800' :
+                  gradeLetterForAverage(calculateStudentAverage(st.student_id)) === 'C' ? 'bg-cyan-100 text-cyan-800' :
+                  gradeLetterForAverage(calculateStudentAverage(st.student_id)) === 'D' ? 'bg-amber-100 text-amber-800' :
+                  gradeLetterForAverage(calculateStudentAverage(st.student_id)) === 'E' ? 'bg-orange-100 text-orange-800' :
                   calculateStudentAverage(st.student_id) === '-' ? 'text-slate-400' :
                   'bg-rose-100 text-rose-800'
                 ]">
-                  {{ gradeLetterFor(calculateStudentAverage(st.student_id)) }}
+                  {{ gradeLetterForAverage(calculateStudentAverage(st.student_id)) }}
                 </span>
               </td>
 
@@ -506,7 +510,7 @@
     <div v-else-if="activeTab === 'report_cards'" class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-4">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
         <div>
-          <h3 class="font-bold text-slate-800 text-base">ព្រឹត្តិបត្រពិន្ទុ និងចំណាត់ថ្នាក់សិស្ស (Report Cards)</h3>
+          <h3 class="font-bold text-slate-800 text-base">ព្រឹត្តិបត្រពិន្ទុ និងចំណាត់ថ្នាក់សិស្ស</h3>
           <p class="text-xs text-slate-500">បោះពុម្ពសៀវភៅតាមដានការសិក្សា និងព្រឹត្តិបត្រពិន្ទុផ្លូវការ</p>
         </div>
       </div>
@@ -535,7 +539,7 @@
         <div>
           <h4 class="font-bold text-xs text-indigo-950 flex items-center gap-1.5">
             <span>📜</span>
-            <span>តារាងចំណាត់ថ្នាក់ប្រចាំខែផ្លូវការ (Official Class Monthly Ranking Sheet)</span>
+            <span>តារាងចំណាត់ថ្នាក់ប្រចាំខែផ្លូវការ</span>
           </h4>
           <p class="text-[11px] text-indigo-700">បោះពុម្ពតារាងចំណាត់ថ្នាក់សិស្សទាំងអស់ក្នុងថ្នាក់ {{ selectedClassForScores }} ជាទម្រង់ ២ ជួរឈរ (A4 Portrait ដូចទម្រង់ក្រសួង)</p>
         </div>
@@ -595,13 +599,13 @@
 
         <form @submit.prevent="submitCreateExam" class="p-6 space-y-4">
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">ចំណងជើងការប្រឡង (Title) *</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">ចំណងជើងការប្រឡង *</label>
             <input v-model="createForm.title" type="text" required placeholder="ឧ. ការប្រឡងឆមាសទី ១ ឆ្នាំ២០២៥-២០២៦" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">ប្រភេទប្រឡង (Exam Type) *</label>
+              <label class="block text-xs font-bold text-slate-700 mb-1">ប្រភេទប្រឡង *</label>
               <select v-model="createForm.exam_type" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                 <option value="ឆមាស">ប្រឡងឆមាស</option>
                 <option value="ប្រចាំខែ">ប្រឡងប្រចាំខែ</option>
@@ -609,7 +613,7 @@
               </select>
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">ឆមាស (Semester) *</label>
+              <label class="block text-xs font-bold text-slate-700 mb-1">ឆមាស *</label>
               <select v-model.number="createForm.semester" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                 <option :value="1">ឆមាសទី ១</option>
                 <option :value="2">ឆមាសទី ២</option>
@@ -618,7 +622,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">ឆ្នាំសិក្សា (Academic Year)</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">ឆ្នាំសិក្សា</label>
             <select v-model="createForm.academic_year_id" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
               <option :value="null">-- ជ្រើសរើសឆ្នាំសិក្សា --</option>
               <option v-for="y in academicYearsList" :key="y.id" :value="y.id">{{ y.name }}</option>
@@ -639,7 +643,7 @@
           <div class="pt-2">
             <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700">
               <input type="checkbox" v-model="createForm.is_published" class="w-4 h-4 text-blue-600 rounded">
-              <span>ផ្សាយលទ្ធផលជាសាធារណៈ (Publish Scores)</span>
+              <span>ផ្សាយលទ្ធផលជាសាធារណៈ</span>
             </label>
           </div>
 
@@ -803,7 +807,7 @@
               class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition disabled:opacity-50"
             >
               <span v-if="isImporting">កំពុងបញ្ចូល...</span>
-              <span v-else>អនុវត្ត & រក្សាទុក (Import Now)</span>
+              <span v-else>អនុវត្ត & រក្សាទុក</span>
             </button>
           </div>
         </div>
@@ -999,26 +1003,61 @@ const computedPassRate = computed(() => {
   return matrixStats.value ? '0% ជាប់' : '-';
 });
 
-const gradeLetterFor = (score) => {
+const currentSubjectMaxScore = computed(() => {
+  const sub = subjectsList.value.find(s => s.id == selectedSubjectForScores.value);
+  if (!sub) return 100;
+  // If class-specific override exists
+  if (sub.class_configs && selectedClassForScores.value) {
+    const cls = selectedClassForScores.value;
+    const grade = cls.replace(/[A-Za-z]/g, '');
+    if (sub.class_configs[cls]?.max_score) return Number(sub.class_configs[cls].max_score);
+    if (sub.class_configs[cls]?.credit) return Number(sub.class_configs[cls].credit) * 50;
+    if (sub.class_configs[grade]?.max_score) return Number(sub.class_configs[grade].max_score);
+    if (sub.class_configs[grade]?.credit) return Number(sub.class_configs[grade].credit) * 50;
+  }
+  return sub.max_score ? Number(sub.max_score) : (sub.credit ? Number(sub.credit) * 50 : 50);
+});
+
+// 1. និទ្ទេសតាមមុខវិជ្ជា (Subject Score Grade based on % of max_score)
+// MoEYS Standard: A: 90-100%, B: 80-89.99%, C: 70-79.99%, D: 60-69.99%, E: 50-59.99%, F: <50%
+const gradeLetterForSubject = (score, max = null) => {
   if (score === undefined || score === null || score === '' || isNaN(Number(score))) return '-';
   const num = Number(score);
-  // Auto-detect Cambodian 50-point vs 100-point scale
-  const is50Scale = (matrixStats.value?.scale_max === 50) || (num <= 50.0);
-  if (is50Scale) {
-    if (num >= 45.0) return 'A';
-    if (num >= 40.0) return 'B';
-    if (num >= 35.0) return 'C';
-    if (num >= 30.0) return 'D';
-    if (num >= 25.0) return 'E';
-    return 'F';
-  } else {
-    if (num >= 90.0) return 'A';
-    if (num >= 80.0) return 'B';
-    if (num >= 70.0) return 'C';
-    if (num >= 60.0) return 'D';
-    if (num >= 50.0) return 'E';
-    return 'F';
+  const scaleMax = (max !== null && Number(max) > 0) ? Number(max) : (currentSubjectMaxScore.value || 100);
+  const pct = (num / scaleMax) * 100.0;
+  if (pct >= 90.0) return 'A';
+  if (pct >= 80.0) return 'B';
+  if (pct >= 70.0) return 'C';
+  if (pct >= 60.0) return 'D';
+  if (pct >= 50.0) return 'E';
+  return 'F';
+};
+
+// 2. និទ្ទេសតាមមធ្យមភាគសរុប (Overall Average Grade, Max: 50.0)
+// មធ្យមភាគ = ពិន្ទុសរុប / ក្រេឌីតសរុប (កម្រិតអតិបរមា 50 ពិន្ទុ)
+// 45.0 - 50.0 => A (ល្អប្រសើរ)
+// 40.0 - 44.9 => B (ល្អណាស់)
+// 35.0 - 39.9 => C (ល្អ)
+// 30.0 - 34.9 => D (ល្អបង្គួរ)
+// 25.0 - 29.9 => E (មធ្យម / ជាប់)
+// < 25.0      => F (ធ្លាក់)
+const gradeLetterForAverage = (avg) => {
+  if (avg === undefined || avg === null || avg === '' || avg === '-' || isNaN(Number(avg))) return '-';
+  const num = Number(avg);
+  if (num >= 45.0) return 'A';
+  if (num >= 40.0) return 'B';
+  if (num >= 35.0) return 'C';
+  if (num >= 30.0) return 'D';
+  if (num >= 25.0) return 'E';
+  return 'F';
+};
+
+// General helper
+const gradeLetterFor = (score, max = null) => {
+  if (activeTab.value === 'matrix') {
+    return gradeLetterForAverage(score);
   }
+  return gradeLetterForSubject(score, max);
 };
 
 const openScoresForExam = (ex) => {
@@ -1053,7 +1092,9 @@ const loadScoreSheet = async () => {
     scoreSheetStudents.value = [...list].sort((a, b) => {
       const nameA = a.name || a.name_khmer || '';
       const nameB = b.name || b.name_khmer || '';
-      return nameA.localeCompare(nameB, 'km');
+      const cmp = nameA.localeCompare(nameB, 'km');
+      if (cmp !== 0) return cmp;
+      return (a.student_id_card || '').localeCompare(b.student_id_card || '', undefined, { numeric: true, sensitivity: 'base' });
     });
     scoresMap.value = {};
     scoreSheetStudents.value.forEach(st => {
@@ -1103,7 +1144,7 @@ const exportSingleSubjectExcel = () => {
     let result = '-';
     if (scoreVal !== undefined && scoreVal !== null && scoreVal !== '') {
       const num = Number(scoreVal);
-      grade = gradeLetterFor(num);
+      grade = gradeLetterForSubject(num, maxScore);
       result = (num >= (maxScore * 0.5)) ? 'ជាប់' : 'ធ្លាក់';
     }
     return [
@@ -1164,7 +1205,9 @@ const loadMatrixSheet = async () => {
     matrixStudents.value = [...rawList].sort((a, b) => {
       const nameA = a.name || a.name_khmer || '';
       const nameB = b.name || b.name_khmer || '';
-      return nameA.localeCompare(nameB, 'km');
+      const cmp = nameA.localeCompare(nameB, 'km');
+      if (cmp !== 0) return cmp;
+      return (a.student_id_card || '').localeCompare(b.student_id_card || '', undefined, { numeric: true, sensitivity: 'base' });
     });
     matrixStats.value = res.data.stats || null;
 
@@ -1183,38 +1226,43 @@ const loadMatrixSheet = async () => {
   }
 };
 
+// MoEYS Standard: 1 Credit = 50 Max Points.
+// Total score is the direct sum of raw scores (Max: 750 points for 15 total credits)
 const calculateStudentTotal = (studentId) => {
   const scoresObj = matrixData.value[studentId];
   if (!scoresObj) return '-';
-  let total = 0;
+  let totalScore = 0;
   let count = 0;
   matrixSubjects.value.forEach(sub => {
     const val = scoresObj[sub.id];
     if (val !== undefined && val !== null && val !== '') {
-      total += Number(val);
+      totalScore += Number(val);
       count++;
     }
   });
-  return count > 0 ? Number(total.toFixed(2)) : '-';
+  return count > 0 ? Number(totalScore.toFixed(2)) : '-';
 };
 
+// MoEYS Standard: average_score = total_score / total_credits (Max: 50.00 scale)
 const calculateStudentAverage = (studentId) => {
   const scoresObj = matrixData.value[studentId];
   if (!scoresObj) return '-';
-  let total = 0;
-  let count = 0;
+  let totalScore = 0;
   let totalCredits = 0;
+  let count = 0;
   matrixSubjects.value.forEach(sub => {
     const val = scoresObj[sub.id];
     if (val !== undefined && val !== null && val !== '') {
-      total += Number(val);
+      const raw = Number(val);
+      const cr = Number(sub.credit || 1);
+      totalScore += raw;
+      totalCredits += cr;
       count++;
-      totalCredits += Number(sub.credit || 1);
     }
   });
-  if (count === 0) return '-';
-  const divisor = totalCredits > 0 ? totalCredits : count;
-  return Number((total / divisor).toFixed(2));
+  if (count === 0 || totalCredits === 0) return '-';
+  const avg = totalScore / totalCredits;
+  return Number(avg.toFixed(2));
 };
 
 const liveRankMap = computed(() => {
@@ -1256,6 +1304,10 @@ const filteredMatrixStudents = computed(() => {
     });
   }
   return [...list].sort((a, b) => {
+    const nameA = a.name || a.name_khmer || '';
+    const nameB = b.name || b.name_khmer || '';
+    const cmp = nameA.localeCompare(nameB, 'km');
+    if (cmp !== 0) return cmp;
     return (a.student_id_card || '').localeCompare(b.student_id_card || '', undefined, { numeric: true, sensitivity: 'base' });
   });
 });
@@ -1311,7 +1363,7 @@ const exportMatrixToExcel = () => {
     });
     const total = calculateStudentTotal(st.student_id);
     const avg = calculateStudentAverage(st.student_id);
-    const grade = gradeLetterFor(avg);
+    const grade = gradeLetterForAverage(avg);
     const rank = calculateStudentRank(st.student_id);
 
     return [
@@ -1369,7 +1421,7 @@ const exportMatrixToExcel = () => {
       let result = '-';
       if (scoreVal !== undefined && scoreVal !== null && scoreVal !== '') {
         const num = Number(scoreVal);
-        grade = gradeLetterFor(num);
+        grade = gradeLetterForSubject(num, maxScore);
         result = (num >= (maxScore * 0.5)) ? 'ជាប់' : 'ធ្លាក់';
       }
 
@@ -1660,6 +1712,6 @@ const handleExport = () => {
   ];
   XLSX.utils.book_append_sheet(wb, ws, 'បញ្ជីសម័យប្រឡង');
   const today = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `LMSTICK_Exams_${today}.xlsx`);
+  XLSX.writeFile(wb, `Exams_${today}.xlsx`);
 };
 </script>

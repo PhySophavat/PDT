@@ -22,7 +22,7 @@
         class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-full shadow-md shadow-indigo-600/20 transition-all hover:shadow-lg hover:shadow-indigo-600/30"
       >
         <i class="fa-solid fa-link"></i>
-        <span>🔗 តំណភ្ជាប់សុំច្បាប់ (Leave Link)</span>
+        <span>🔗 តំណភ្ជាប់សុំច្បាប់</span>
       </a>
 
       <button 
@@ -47,19 +47,19 @@
   <!-- 4 Stat Cards -->
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
     <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-      <div class="text-xs font-bold text-slate-500">វត្តមានសរុប (Present)</div>
+      <div class="text-xs font-bold text-slate-500">វត្តមានសរុប</div>
       <div class="text-2xl font-extrabold text-indigo-600 mt-1">{{ $presentCount }}</div>
     </div>
     <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-      <div class="text-xs font-bold text-slate-500">យឺតសរុប (Late)</div>
+      <div class="text-xs font-bold text-slate-500">យឺតសរុប</div>
       <div class="text-2xl font-extrabold text-amber-500 mt-1">{{ $lateCount }}</div>
     </div>
     <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-      <div class="text-xs font-bold text-slate-500">អវត្តមានសរុប (Absent)</div>
+      <div class="text-xs font-bold text-slate-500">អវត្តមានសរុប</div>
       <div class="text-2xl font-extrabold text-rose-600 mt-1">{{ $absentCount }}</div>
     </div>
     <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-      <div class="text-xs font-bold text-slate-500">ច្បាប់សរុប (Excused/Leave)</div>
+      <div class="text-xs font-bold text-slate-500">ច្បាប់សរុប</div>
       <div class="text-2xl font-extrabold text-emerald-600 mt-1">{{ $excusedCount }}</div>
     </div>
   </div>
@@ -68,7 +68,7 @@
   <form method="GET" action="{{ route('attendance.index') }}" class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs">
     <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
       <div>
-        <label class="block font-bold text-slate-700 mb-1">ថ្នាក់រៀន (Class):</label>
+        <label class="block font-bold text-slate-700 mb-1">ថ្នាក់រៀន:</label>
         <select name="class" onchange="this.form.submit()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 text-indigo-700 font-bold rounded-xl focus:bg-white focus:outline-none">
           @foreach ($classes as $c)
             <option value="{{ $c }}" {{ $selectedClass == $c ? 'selected' : '' }}>ថ្នាក់ {{ $c }}</option>
@@ -77,7 +77,7 @@
       </div>
 
       <div>
-        <label class="block font-bold text-slate-700 mb-1">ឆ្នាំសិក្សា (Academic Year):</label>
+        <label class="block font-bold text-slate-700 mb-1">ឆ្នាំសិក្សា:</label>
         <select name="academic_year_id" onchange="this.form.submit()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 text-slate-700 font-semibold rounded-xl focus:bg-white focus:outline-none">
           @foreach ($academicYears as $y)
             <option value="{{ $y->id }}">{{ $y->name }}</option>
@@ -86,26 +86,26 @@
       </div>
 
       <div>
-        <label class="block font-bold text-slate-700 mb-1">ខែ (Month):</label>
+        <label class="block font-bold text-slate-700 mb-1">ខែ:</label>
         <select name="month" onchange="this.form.submit()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 text-slate-700 font-semibold rounded-xl focus:bg-white focus:outline-none">
           <option value="">-- គ្រប់ខែ --</option>
-          <option value="1">មករា (January)</option>
-          <option value="2">កុម្ភៈ (February)</option>
-          <option value="3">មីនា (March)</option>
-          <option value="4">មេសា (April)</option>
-          <option value="5">ឧសភា (May)</option>
-          <option value="6">មិថុនា (June)</option>
-          <option value="7">កក្កដា (July)</option>
-          <option value="8">សីហា (August)</option>
-          <option value="9">កញ្ញា (September)</option>
-          <option value="10">តុលា (October)</option>
-          <option value="11">វិច្ឆិកា (November)</option>
-          <option value="12">ធ្នូ (December)</option>
+          <option value="1">មករា</option>
+          <option value="2">កុម្ភៈ</option>
+          <option value="3">មីនា</option>
+          <option value="4">មេសា</option>
+          <option value="5">ឧសភា</option>
+          <option value="6">មិថុនា</option>
+          <option value="7">កក្កដា</option>
+          <option value="8">សីហា</option>
+          <option value="9">កញ្ញា</option>
+          <option value="10">តុលា</option>
+          <option value="11">វិច្ឆិកា</option>
+          <option value="12">ធ្នូ</option>
         </select>
       </div>
 
       <div>
-        <label class="block font-bold text-slate-700 mb-1">កាលបរិច្ឆេទ (Date):</label>
+        <label class="block font-bold text-slate-700 mb-1">កាលបរិច្ឆេទ:</label>
         <input type="date" name="date" value="{{ $selectedDate }}" onchange="this.form.submit()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 text-slate-700 font-semibold rounded-xl focus:bg-white focus:outline-none" />
       </div>
     </div>

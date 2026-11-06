@@ -31,10 +31,10 @@
 
             <div v-if="sidebarOpen" class="flex flex-col truncate">
               <span class="text-base font-extrabold tracking-tight text-[#1e293b] leading-tight truncate">
-                {{ schoolName || 'សាលារៀន ជំនាន់ថ្មី PDT' }}
+                {{ schoolName || 'សាលារៀន ជំនាន់ថ្មី' }}
               </span>
               <span class="text-[10px] text-slate-400 font-medium truncate leading-none mt-0.5">
-                {{ schoolNameEn || 'PDT New Generation School' }}
+                {{ schoolNameEn || 'New Generation School' }}
               </span>
             </div>
           </router-link>
@@ -44,7 +44,7 @@
             v-if="sidebarOpen"
             @click="sidebarOpen = false"
             class="md:hidden w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition flex-shrink-0 ml-2 cursor-pointer"
-            title="បិទម៉ឺនុយ (Close Sidebar)"
+            title="បិទម៉ឺនុយ"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
@@ -179,14 +179,14 @@
 
       <!-- 2. MAIN CONTENT AREA -->
       <main class="flex-1 flex flex-col min-w-0 bg-[#fbfcff] overflow-hidden">
-        <!-- Top Navbar -->
-        <header class="h-16 sm:h-20 px-3 sm:px-6 md:px-8 flex items-center justify-between border-b border-slate-100 bg-white/80 backdrop-blur-md flex-shrink-0">
+        <!-- Top Navbar (relative z-40 ensures dropdowns float above all view content) -->
+        <header class="relative z-40 h-16 sm:h-20 px-3 sm:px-6 md:px-8 flex items-center justify-between border-b border-slate-100 bg-white/80 backdrop-blur-md flex-shrink-0">
           <div class="flex items-center gap-2 sm:gap-3 min-w-0">
             <!-- Toggle Sidebar Button in Navbar -->
             <button 
               @click="sidebarOpen = !sidebarOpen" 
               class="text-slate-500 hover:text-slate-800 p-2 rounded-xl hover:bg-slate-100 transition flex items-center justify-center cursor-pointer shrink-0" 
-              title="បង្រួម / ពង្រីកម៉ឺនុយ (Toggle Sidebar)"
+              title="បង្រួម / ពង្រីកម៉ឺនុយ"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
@@ -214,7 +214,7 @@
             <button 
               @click="toggleFullscreen" 
               class="hidden lg:flex w-8 h-8 rounded-full bg-slate-100 text-slate-600 hover:text-blue-600 hover:bg-blue-50 items-center justify-center transition" 
-              :title="isFullscreen ? 'ចាកចេញពីពេញអេក្រង់ (Exit Fullscreen)' : 'ពង្រីកពេញអេក្រង់ (Fullscreen)'"
+              :title="isFullscreen ? 'ចាកចេញពីពេញអេក្រង់' : 'ពង្រីកពេញអេក្រង់'"
             >
               <svg v-if="!isFullscreen" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
@@ -275,17 +275,17 @@
               </div>
               <div class="text-right hidden md:block">
                 <h4 class="text-xs font-bold text-slate-900 leading-tight">{{ user.name || 'portal sala' }}</h4>
-                <p class="text-[10px] text-slate-400 leading-tight">{{ currentLocale === 'km' ? 'អ្នកគ្រប់គ្រង (Admin)' : 'Admin' }}</p>
+                <p class="text-[10px] text-slate-400 leading-tight">{{ currentLocale === 'km' ? 'អ្នកគ្រប់គ្រង' : 'Admin' }}</p>
               </div>
             </div>
 
             <!-- Dynamic Notification Bell & Dropdown for New Students, Teachers & Leave Requests -->
-            <div class="relative" ref="notificationDropdownRef">
+            <div class="relative z-50" ref="notificationDropdownRef">
               <button 
                 type="button"
                 @click.stop="toggleNotificationDropdown"
                 class="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#fef2f2] text-[#ef4444] flex items-center justify-center hover:bg-[#fee2e2] transition shadow-xs cursor-pointer"
-                title="ការជូនដំណឹង (Notifications)"
+                title="ការជូនដំណឹង"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
@@ -309,7 +309,7 @@
               >
                 <div 
                   v-if="showNotificationDropdown" 
-                  class="absolute right-0 top-11 sm:top-12 z-50 w-80 sm:w-96 rounded-2xl bg-white shadow-2xl border border-slate-200/90 overflow-hidden font-khmer animate-in fade-in"
+                  class="absolute right-0 top-11 sm:top-12 z-[999] w-80 sm:w-96 rounded-2xl bg-white shadow-2xl border border-slate-200/90 overflow-hidden font-khmer animate-in fade-in"
                   @click.stop
                 >
                   <!-- Header -->
@@ -319,7 +319,7 @@
                         <i class="fa-solid fa-bell"></i>
                       </div>
                       <div>
-                        <h4 class="text-xs font-bold text-slate-800 leading-tight">ការជូនដំណឹង (Notifications)</h4>
+                        <h4 class="text-xs font-bold text-slate-800 leading-tight">ការជូនដំណឹង</h4>
                         <p class="text-[10px] text-slate-400">សំណើរង់ចាំការអនុម័ត</p>
                       </div>
                     </div>
@@ -502,7 +502,7 @@
             :disabled="isLoggingOut"
             class="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
           >
-            បោះបង់ (Cancel)
+            បោះបង់
           </button>
           <button
             type="button"
@@ -511,7 +511,7 @@
             class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-md shadow-rose-600/20 cursor-pointer disabled:opacity-50"
           >
             <i v-if="isLoggingOut" class="fa-solid fa-circle-notch fa-spin"></i>
-            <span>{{ isLoggingOut ? 'កំពុងចាកចេញ...' : 'ចាកចេញ (Logout)' }}</span>
+            <span>{{ isLoggingOut ? 'កំពុងចាកចេញ...' : 'ចាកចេញ' }}</span>
           </button>
         </div>
       </div>
@@ -658,12 +658,12 @@ const schoolLogo = ref(
 const schoolName = ref(
   localStorage.getItem('pdt_school_name') || 
   window.__INITIAL_SETTINGS__?.school_name || 
-  'សាលារៀន ជំនាន់ថ្មី PDT'
+  'សាលារៀន ជំនាន់ថ្មី'
 );
 const schoolNameEn = ref(
   localStorage.getItem('pdt_school_name_en') || 
   window.__INITIAL_SETTINGS__?.school_name_en || 
-  'PDT New Generation School'
+  'New Generation School'
 );
 
 const loadSchoolSettings = async () => {

@@ -20,8 +20,8 @@
         $activeYear = $sysSettings['current_academic_year'] ?? (\App\Models\AcademicYear::where('is_current', true)->value('name') ?: '2025-2026');
         return [
             'logoUrl' => $logoUrl,
-            'school_name' => $sysSettings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី PDT',
-            'school_name_en' => $sysSettings['school_name_en'] ?? 'PDT New Generation School',
+            'school_name' => $sysSettings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី',
+            'school_name_en' => $sysSettings['school_name_en'] ?? 'New Generation School',
             'activeYear' => $activeYear,
         ];
     });
@@ -29,7 +29,7 @@
     $initialUserJson = json_encode([
         'name' => Auth::user()?->name ?? 'portal sala',
         'role' => Auth::user()?->roles?->first()?->name ?? 'Admin',
-        'email' => Auth::user()?->email ?? 'admin@pdt-school.edu.kh',
+        'email' => Auth::user()?->email ?? 'admin@school.edu.kh',
         'avatar' => Auth::user()?->avatar ?? ''
     ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
     $initialSettingsJson = json_encode([

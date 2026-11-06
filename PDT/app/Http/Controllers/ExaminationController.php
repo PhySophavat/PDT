@@ -51,7 +51,18 @@ class ExaminationController extends Controller
 
         $classes = SchoolClass::orderBy('name')->pluck('name');
         $subjects = CourseSubject::orderBy('name')->get();
-        $students = Student::with('user')->where('grade', $selectedClass)->get();
+        $rawStudents = Student::with('user')->where('grade', $selectedClass)->get();
+        if (class_exists('Collator')) {
+            $collator = new \Collator('km');
+            $students = $rawStudents->sort(function ($a, $b) use ($collator) {
+                $nameA = $a->name_khmer ?: ($a->display_name ?? '');
+                $nameB = $b->name_khmer ?: ($b->display_name ?? '');
+                $cmp = $collator->compare((string) $nameA, (string) $nameB);
+                return $cmp !== 0 ? $cmp : strnatcmp((string) $a->student_id_card, (string) $b->student_id_card);
+            })->values();
+        } else {
+            $students = $rawStudents->sortBy(fn ($s) => $s->name_khmer ?: $s->display_name)->values();
+        }
 
         $scores = ExaminationScore::where('examination_id', $examination->id)
             ->where('class_name', $selectedClass)
@@ -82,7 +93,7 @@ class ExaminationController extends Controller
         foreach ($validated['scores'] as $studentId => $scoreVal) {
             if ($scoreVal !== null && $scoreVal !== '') {
                 $scoreFloat = (float) $scoreVal;
-                $gradeLetter = ExaminationScore::calculateGradeLetter($scoreFloat, $maxScore);
+                $gradeLetter = ExaminationScore::calculateSubjectGrade($scoreFloat, $maxScore);
 
                 $records[] = [
                     'examination_id' => $examination->id,
@@ -122,10 +133,23 @@ class ExaminationController extends Controller
             ->where('student_id', $student->id)
             ->get();
 
-        $totalScore = $scores->sum('score');
+        $totalRawScore = 0;
+        $totalCredits = 0;
         $subjectCount = $scores->count();
-        $average = $subjectCount > 0 ? round($totalScore / $subjectCount, 2) : 0;
-        $overallGrade = ExaminationScore::calculateGradeLetter($average, 100);
+        foreach ($scores as $sc) {
+            $subMax = (float)($sc->courseSubject?->getMaxScoreForClass($student->grade) ?: ($sc->max_score ?: 100));
+            $sc->max_score = $subMax;
+            $sc->grade_letter = ExaminationScore::calculateSubjectGrade($sc->score, $subMax);
+
+            $cr = (float)($sc->courseSubject?->getCreditForClass($student->grade) ?: ($sc->courseSubject?->credit ?: 1.0));
+            // MoEYS standard: 1 Credit = 50 Max Points. Total score is the direct sum of raw scores
+            $totalRawScore += (float)$sc->score;
+            $totalCredits += $cr;
+        }
+
+        $totalScore = round($totalRawScore, 2);
+        $average = $totalCredits > 0 ? round($totalRawScore / $totalCredits, 2) : 0;
+        $overallGrade = ExaminationScore::calculateAverageGrade($average);
 
         // Calculate student rank within class
         $allClassScores = ExaminationScore::where('examination_id', $examination->id)
@@ -141,7 +165,7 @@ class ExaminationController extends Controller
         });
         $rank = $studentRank !== false ? $studentRank + 1 : 1;
 
-        $schoolName = SystemSetting::get('school_name', 'សាលារៀន ជំនាន់ថ្មី PDT');
+        $schoolName = SystemSetting::get('school_name', 'សាលារៀន ជំនាន់ថ្មី');
         $schoolAddress = SystemSetting::get('school_address', 'រាជធានីភ្នំពេញ');
         $schoolPhone = SystemSetting::get('school_phone', '012 345 678');
 
@@ -179,18 +203,20 @@ class ExaminationController extends Controller
 
         $rows = $students->map(function ($st) use ($allScores, $subjects, $className) {
             $scores = $allScores->get($st->id) ?? collect();
-            $totalScore = (float) $scores->sum('score');
             $subjectCount = $scores->count();
             
+            $totalRawScore = 0;
             $totalCredits = 0;
             foreach ($scores as $sc) {
                 $sub = $subjects->get($sc->course_subject_id);
-                $cr = $sub ? $sub->getCreditForClass($className) : 1.0;
+                $cr = (float)($sub ? $sub->getCreditForClass($className) : 1.0);
+                // MoEYS standard: 1 Credit = 50 Max Points. Total score is the direct sum of raw scores
+                $totalRawScore += (float)$sc->score;
                 $totalCredits += $cr;
             }
-            $divisor = $totalCredits > 0 ? $totalCredits : ($subjectCount > 0 ? $subjectCount : 1);
-            $average = $subjectCount > 0 ? round($totalScore / $divisor, 2) : 0;
-            $gradeLetter = ExaminationScore::calculateGradeLetter($average, 100);
+            $totalScore = round($totalRawScore, 2);
+            $average = $totalCredits > 0 ? round($totalRawScore / $totalCredits, 2) : 0;
+            $gradeLetter = ExaminationScore::calculateAverageGrade($average);
 
             // Separate surname and firstname
             $rawName = trim($st->name_khmer ?: ($st->user?->name ?: $st->display_name));

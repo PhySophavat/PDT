@@ -39,7 +39,7 @@
         </a>
         <button onclick="window.print()" class="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-sm font-semibold flex items-center gap-2 shadow-lg shadow-cyan-600/20 transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-            បោះពុម្ពប័ណ្ណទទួលប្រាក់ (Print)
+            បោះពុម្ពប័ណ្ណទទួលប្រាក់
         </button>
     </div>
 
@@ -57,27 +57,27 @@
                 </div>
             </div>
             <div class="mt-4 inline-block px-4 py-1.5 bg-cyan-50 border border-cyan-200 rounded-full">
-                <h2 class="text-lg font-bold text-cyan-800 tracking-wide">ប័ណ្ណទទួលប្រាក់ (RECEIPT)</h2>
+                <h2 class="text-lg font-bold text-cyan-800 tracking-wide">ប័ណ្ណទទួលប្រាក់</h2>
             </div>
         </div>
 
         <!-- Receipt Meta Information -->
         <div class="grid grid-cols-2 gap-4 text-sm mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
             <div>
-                <p class="text-xs text-slate-500">លេខប័ណ្ណ (Receipt No):</p>
+                <p class="text-xs text-slate-500">លេខប័ណ្ណ៖</p>
                 <p class="font-bold text-cyan-700 text-base">{{ $payment->receipt_number }}</p>
             </div>
             <div class="text-right">
-                <p class="text-xs text-slate-500">កាលបរិច្ឆេទ (Payment Date):</p>
+                <p class="text-xs text-slate-500">កាលបរិច្ឆេទ៖</p>
                 <p class="font-semibold text-slate-700">{{ \Carbon\Carbon::parse($payment->payment_date)->format('d-M-Y') }}</p>
             </div>
             <div>
-                <p class="text-xs text-slate-500">សិស្ស (Student):</p>
+                <p class="text-xs text-slate-500">សិស្ស៖</p>
                 <p class="font-bold text-slate-800">{{ $payment->invoice?->student?->user?->name ?? 'N/A' }} ({{ $payment->invoice?->student?->student_id_card ?? 'N/A' }})</p>
                 <p class="text-xs text-slate-500">ថ្នាក់៖ {{ $payment->invoice?->student?->grade ?? 'N/A' }}</p>
             </div>
             <div class="text-right">
-                <p class="text-xs text-slate-500">លេខវិក្កយបត្រ (Invoice Ref):</p>
+                <p class="text-xs text-slate-500">លេខវិក្កយបត្រ៖</p>
                 <p class="font-semibold text-slate-700">{{ $payment->invoice?->invoice_number ?? 'N/A' }}</p>
                 <p class="text-xs text-slate-500">វិធីបង់ប្រាក់៖ <span class="capitalize font-semibold text-slate-700">{{ $payment->payment_method }}</span></p>
             </div>
@@ -87,7 +87,7 @@
         <table class="w-full text-sm mb-6 border-collapse">
             <thead>
                 <tr class="border-b-2 border-slate-200 text-left text-slate-500 text-xs">
-                    <th class="py-2">បរិយាយ / កាតព្វកិច្ច (Description)</th>
+                    <th class="py-2">បរិយាយ / កាតព្វកិច្ច</th>
                     <th class="py-2 text-right">តម្លៃសរុប</th>
                     <th class="py-2 text-right">ចំនួនបានបង់</th>
                 </tr>
@@ -118,11 +118,11 @@
                     <span class="font-bold text-cyan-700 text-base">${{ number_format($payment->amount, 2) }}</span>
                 </div>
                 <div class="flex justify-between text-slate-500 text-xs">
-                    <span>បានបង់សរុប (Total Paid):</span>
+                    <span>បានបង់សរុប៖</span>
                     <span>${{ number_format($payment->invoice?->paid_amount ?? 0, 2) }}</span>
                 </div>
                 <div class="flex justify-between text-slate-500 text-xs border-t border-slate-200 pt-1">
-                    <span>នៅសល់ (Remaining Balance):</span>
+                    <span>នៅសល់៖</span>
                     <span class="font-semibold text-rose-600">
                         ${{ number_format(max(0, ($payment->invoice?->total_amount ?? 0) - ($payment->invoice?->paid_amount ?? 0)), 2) }}
                     </span>
@@ -139,13 +139,13 @@
         <!-- Signatures -->
         <div class="grid grid-cols-2 gap-8 text-center text-xs text-slate-500 pt-8 border-t border-dashed border-slate-300">
             <div>
-                <p class="font-medium text-slate-700 mb-16">ហត្ថលេខាអ្នកបង់ប្រាក់ (Payer)</p>
+                <p class="font-medium text-slate-700 mb-16">ហត្ថលេខាអ្នកបង់ប្រាក់</p>
                 <div class="border-t border-slate-300 w-36 mx-auto pt-1">
                     កាលបរិច្ឆេទ
                 </div>
             </div>
             <div>
-                <p class="font-medium text-slate-700 mb-16">ហត្ថលេខា និងត្រាគណនេយ្យករ (Cashier / Accountant)</p>
+                <p class="font-medium text-slate-700 mb-16">ហត្ថលេខា និងត្រាគណនេយ្យករ</p>
                 <div class="border-t border-slate-300 w-36 mx-auto pt-1">
                     {{ auth()->user()->name ?? 'ហត្ថលេខា' }}
                 </div>

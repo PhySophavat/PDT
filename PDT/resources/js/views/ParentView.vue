@@ -81,7 +81,7 @@
           <th class="py-3 px-4 font-bold text-slate-700">ទំនាក់ទំនង</th>
           <th class="py-3 px-4 font-bold text-slate-700">{{ t('students.phone') }}</th>
           <th class="py-3 px-4 font-bold text-slate-700">{{ t('parents.occupation') }}</th>
-          <th class="py-3 px-4 font-bold text-slate-700">ព័ត៌មានកូនៗ (Children)</th>
+          <th class="py-3 px-4 font-bold text-slate-700">ព័ត៌មានកូនៗ</th>
           <th class="py-3 px-4 font-bold text-slate-700 text-center">{{ t('common.status') }}</th>
           <th class="py-3 px-4 font-bold text-slate-700 text-right">{{ t('common.actions') }}</th>
         </tr>
@@ -221,7 +221,7 @@
           <!-- QR Code Display -->
           <div class="p-6 bg-slate-50 border border-slate-200/80 rounded-2xl inline-block mx-auto shadow-inner text-center">
             <div class="text-xs font-bold text-slate-800 mb-2 uppercase tracking-wide">
-              LMSTICK PARENT - ស្កេនដើម្បីចុះឈ្មោះ
+              សាលារៀន ជំនាន់ថ្មី - ស្កេនដើម្បីចុះឈ្មោះ
             </div>
             <div class="w-48 h-48 mx-auto bg-white p-2 rounded-xl border border-slate-200 shadow-xs flex items-center justify-center">
               <img v-if="qrDataUrl" :src="qrDataUrl" alt="QR Code Parent Registration" class="w-full h-full object-contain" />
@@ -232,7 +232,7 @@
 
           <!-- Shareable URL Input with Copy Button -->
           <div class="text-left space-y-1.5">
-            <label class="text-xs font-semibold text-slate-700">តំណភ្ជាប់ទម្រង់ចុះឈ្មោះ (Parent Registration Link):</label>
+            <label class="text-xs font-semibold text-slate-700">តំណភ្ជាប់ទម្រង់ចុះឈ្មោះ:</label>
             <div class="flex items-center gap-2">
               <input 
                 type="text" 
@@ -301,7 +301,7 @@
               <i class="fa-solid fa-user-plus"></i>
             </div>
             <div>
-              <h3 class="font-bold text-base">បន្ថែមអាណាព្យាបាលថ្មី (Add New Parent)</h3>
+              <h3 class="font-bold text-base">បន្ថែមអាណាព្យាបាលថ្មី</h3>
               <p class="text-xs text-emerald-100">បញ្ចូលព័ត៌មានមាតាបិតាផ្ទាល់ និងភ្ជាប់ជាមួយសិស្ស</p>
             </div>
           </div>
@@ -315,23 +315,23 @@
               <input type="text" v-model="createForm.name_khmer" required placeholder="ឧ. សុខ វិបុល" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
             </div>
             <div>
-              <label class="block font-semibold mb-1">ឈ្មោះជាអក្សរឡាតាំង (Latin Name)</label>
+              <label class="block font-semibold mb-1">ឈ្មោះជាអក្សរឡាតាំង</label>
               <input type="text" v-model="createForm.name_latin" placeholder="e.g. SOK VIBOL" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl uppercase focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
             </div>
             <div>
               <label class="block font-semibold mb-1">ភេទ <span class="text-red-500">*</span></label>
               <select v-model="createForm.gender" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
-                <option value="male">ប្រុស (Male)</option>
-                <option value="female">ស្រី (Female)</option>
+                <option value="male">ប្រុស</option>
+                <option value="female">ស្រី</option>
               </select>
             </div>
             <div>
               <label class="block font-semibold mb-1">ទំនាក់ទំនងត្រូវជា <span class="text-red-500">*</span></label>
               <select v-model="createForm.relationship" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-medium">
-                <option value="ឪពុក">ឪពុក (Father)</option>
-                <option value="ម្តាយ">ម្តាយ (Mother)</option>
-                <option value="អាណាព្យាបាល">អាណាព្យាបាល (Guardian)</option>
-                <option value="បងប្អូនបង្កើត">បងប្អូនបង្កើត (Sibling)</option>
+                <option value="ឪពុក">ឪពុក</option>
+                <option value="ម្តាយ">ម្តាយ</option>
+                <option value="អាណាព្យាបាល">អាណាព្យាបាល</option>
+                <option value="បងប្អូនបង្កើត">បងប្អូនបង្កើត</option>
               </select>
             </div>
             <div>
@@ -339,11 +339,11 @@
               <input type="tel" v-model="createForm.phone" required placeholder="012 345 678" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
             </div>
             <div>
-              <label class="block font-semibold mb-1">អ៊ីមែល (Email)</label>
+              <label class="block font-semibold mb-1">អ៊ីមែល</label>
               <input type="email" v-model="createForm.email" placeholder="parent@example.com" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
             </div>
             <div>
-              <label class="block font-semibold mb-1">មុខរបរ (Occupation)</label>
+              <label class="block font-semibold mb-1">មុខរបរ</label>
               <input type="text" v-model="createForm.occupation" placeholder="ឧ. អាជីវករ, មន្ត្រីរាជការ..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
             </div>
             <div>
@@ -434,7 +434,7 @@
           <div class="space-y-3 pt-2">
             <div>
               <label class="block font-semibold mb-1 text-slate-800">
-                អត្តលេខអាណាព្យាបាលផ្លូវការ (Parent ID Card) <span class="text-red-500">*</span>
+                អត្តលេខអាណាព្យាបាលផ្លូវការ <span class="text-red-500">*</span>
               </label>
               <input 
                 type="text" 
@@ -495,7 +495,7 @@
               <i class="fa-solid fa-user-shield"></i>
             </div>
             <div>
-              <h3 class="font-bold text-base">ប្រវត្តិរូបអាណាព្យាបាល (Parent Profile)</h3>
+              <h3 class="font-bold text-base">ប្រវត្តិរូបអាណាព្យាបាល</h3>
               <p class="text-xs text-emerald-100">ព័ត៌មានលម្អិត និងកូនៗដែលបានភ្ជាប់</p>
             </div>
           </div>
@@ -523,7 +523,7 @@
           <div class="grid grid-cols-2 gap-3 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
             <div>
               <span class="text-slate-400 block text-[11px]">ភេទ:</span>
-              <span class="font-semibold text-slate-800">{{ selectedParent.gender === 'male' || selectedParent.gender === 'ប្រុស' ? 'ប្រុស (Male)' : 'ស្រី (Female)' }}</span>
+              <span class="font-semibold text-slate-800">{{ selectedParent.gender === 'male' || selectedParent.gender === 'ប្រុស' ? 'ប្រុស' : 'ស្រី' }}</span>
             </div>
             <div>
               <span class="text-slate-400 block text-[11px]">លេខទូរស័ព្ទ:</span>
@@ -580,7 +580,7 @@
               <i class="fa-solid fa-user-pen"></i>
             </div>
             <div>
-              <h3 class="font-bold text-base">កែប្រែព័ត៌មានអាណាព្យាបាល (Edit Parent)</h3>
+              <h3 class="font-bold text-base">កែប្រែព័ត៌មានអាណាព្យាបាល</h3>
               <p class="text-xs text-emerald-100">{{ selectedParent.name }} ({{ selectedParent.idCard }})</p>
             </div>
           </div>
@@ -594,14 +594,14 @@
               <input type="text" v-model="editForm.name_khmer" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
             </div>
             <div>
-              <label class="block font-semibold mb-1">ឈ្មោះជាអក្សរឡាតាំង (Latin Name)</label>
+              <label class="block font-semibold mb-1">ឈ្មោះជាអក្សរឡាតាំង</label>
               <input type="text" v-model="editForm.name_latin" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl uppercase focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
             </div>
             <div>
               <label class="block font-semibold mb-1">ភេទ <span class="text-red-500">*</span></label>
               <select v-model="editForm.gender" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
-                <option value="male">ប្រុស (Male)</option>
-                <option value="female">ស្រី (Female)</option>
+                <option value="male">ប្រុស</option>
+                <option value="female">ស្រី</option>
               </select>
             </div>
             <div>
@@ -618,19 +618,19 @@
               <input type="tel" v-model="editForm.phone" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
             </div>
             <div>
-              <label class="block font-semibold mb-1">អ៊ីមែល (Email)</label>
+              <label class="block font-semibold mb-1">អ៊ីមែល</label>
               <input type="email" v-model="editForm.email" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
             </div>
             <div>
-              <label class="block font-semibold mb-1">មុខរបរ (Occupation)</label>
+              <label class="block font-semibold mb-1">មុខរបរ</label>
               <input type="text" v-model="editForm.occupation" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
             </div>
             <div>
               <label class="block font-semibold mb-1">ស្ថានភាព</label>
               <select v-model="editForm.status" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
-                <option value="active">សកម្ម (Active)</option>
-                <option value="pending">រង់ចាំអនុម័ត (Pending)</option>
-                <option value="inactive">អសកម្ម (Inactive)</option>
+                <option value="active">សកម្ម</option>
+                <option value="pending">រង់ចាំអនុម័ត</option>
+                <option value="inactive">អសកម្ម</option>
               </select>
             </div>
             <div>

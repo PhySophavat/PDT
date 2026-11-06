@@ -147,7 +147,7 @@ class FinanceController extends Controller
     public function printReceipt(Payment $payment)
     {
         $payment->load('invoice.student.user', 'invoice.feeCategory');
-        $schoolName = SystemSetting::get('school_name', 'សាលារៀន ជំនាន់ថ្មី PDT');
+        $schoolName = SystemSetting::get('school_name', 'សាលារៀន ជំនាន់ថ្មី');
         $schoolAddress = SystemSetting::get('school_address', 'រាជធានីភ្នំពេញ');
         $schoolPhone = SystemSetting::get('school_phone', '012 345 678');
 

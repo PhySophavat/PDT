@@ -115,21 +115,21 @@
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">ប្រភេទដំណឹង</label>
               <select v-model="newNotice.category" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                <option value="ទូទៅ">ទូទៅ (General)</option>
-                <option value="ការប្រឡង">ការប្រឡង (Exams)</option>
-                <option value="កិច្ចប្រជុំ">កិច្ចប្រជុំ (Meeting)</option>
-                <option value="កីឡា">កីឡា (Sports)</option>
-                <option value="ហិរញ្ញវត្ថុ">ហិរញ្ញវត្ថុ (Finance)</option>
-                <option value="ថ្ងៃឈប់សម្រាក">ថ្ងៃឈប់សម្រាក (Holiday)</option>
+                <option value="ទូទៅ">ទូទៅ</option>
+                <option value="ការប្រឡង">ការប្រឡង</option>
+                <option value="កិច្ចប្រជុំ">កិច្ចប្រជុំ</option>
+                <option value="កីឡា">កីឡា</option>
+                <option value="ហិរញ្ញវត្ថុ">ហិរញ្ញវត្ថុ</option>
+                <option value="ថ្ងៃឈប់សម្រាក">ថ្ងៃឈប់សម្រាក</option>
               </select>
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">គោលដៅអ្នកទទួល *</label>
               <select v-model="newNotice.target_audience" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                <option value="all">ទាំងអស់គ្នា (All)</option>
-                <option value="teachers">លោកគ្រូ-អ្នកគ្រូ (Teachers)</option>
-                <option value="students">សិស្សានុសិស្ស (Students)</option>
-                <option value="parents">អាណាព្យាបាល (Parents)</option>
+                <option value="all">ទាំងអស់គ្នា</option>
+                <option value="teachers">លោកគ្រូ-អ្នកគ្រូ</option>
+                <option value="students">សិស្សានុសិស្ស</option>
+                <option value="parents">អាណាព្យាបាល</option>
               </select>
             </div>
           </div>
@@ -321,7 +321,7 @@ const handleExport = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `LMSTICK_Announcements_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `Announcements_${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
 };
 </script>

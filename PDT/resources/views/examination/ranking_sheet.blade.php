@@ -100,7 +100,7 @@
             <div class="flex items-center gap-2">
                 <button type="button" onclick="toggleEditPanel()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center gap-1.5">
                     <i class="fa-solid fa-sliders text-blue-600"></i>
-                    <span>កំណត់ព័ត៌មាន (Settings)</span>
+                    <span>កំណត់ព័ត៌មាន</span>
                 </button>
                 <button type="button" onclick="window.print()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition flex items-center gap-2">
                     <i class="fa-solid fa-print"></i>
