@@ -1352,11 +1352,35 @@ const normalizeGrade = (g) => {
 
 const countForGrade = (grade) => {
   const target = normalizeGrade(grade);
+  if (selectedSubjectId.value && !isLiteratureSubject(selectedSubjectId.value)) {
+    return eLibraryBooks.value.filter(b => 
+      normalizeGrade(b.grade) === target && 
+      (String(b.course_subject_id) === String(selectedSubjectId.value) || b.subject_name === getSubjectName(selectedSubjectId.value))
+    ).length;
+  }
   return eLibraryBooks.value.filter(b => normalizeGrade(b.grade) === target).length;
 };
 
+const getSubjectName = (subjectId) => {
+  const s = subjectsList.value.find(sub => String(sub.id) === String(subjectId));
+  return s ? s.name : '';
+};
+
 const countForSubject = (subjectId) => {
-  return eLibraryBooks.value.filter(b => b.course_subject_id === subjectId).length;
+  if (isLiteratureSubject(subjectId)) {
+    return eLibraryBooks.value.filter(b => isLitBook(b)).length;
+  }
+  const subName = getSubjectName(subjectId);
+  if (selectedGrade.value) {
+    const target = normalizeGrade(selectedGrade.value);
+    return eLibraryBooks.value.filter(b => 
+      normalizeGrade(b.grade) === target && 
+      (String(b.course_subject_id) === String(subjectId) || (subName && b.subject_name === subName))
+    ).length;
+  }
+  return eLibraryBooks.value.filter(b => 
+    String(b.course_subject_id) === String(subjectId) || (subName && b.subject_name === subName)
+  ).length;
 };
 
 // Sort subjects so "អក្សរសិល្ប៍" is ALWAYS the very first subject right after "ទាំងអស់"
@@ -1380,7 +1404,7 @@ const sortedSubjectsList = computed(() => {
 
 const isLiteratureSubject = (subjId) => {
   if (!subjId) return false;
-  const s = subjectsList.value.find(sub => sub.id === subjId);
+  const s = subjectsList.value.find(sub => String(sub.id) === String(subjId));
   return s ? (s.name === 'អក្សរសិល្ប៍' || s.code === 'LIT-01') : false;
 };
 
@@ -1391,24 +1415,46 @@ const isLitBook = (b) => {
 
 const selectSubject = (subId) => {
   selectedSubjectId.value = subId;
+  if (!subId) return;
+
   // Grade-independent: when user clicks [អក្សរសិល្ប៍ (8)], display all 8 books by clearing grade filter
-  if (isLiteratureSubject(subId) && selectedGrade.value) {
+  if (isLiteratureSubject(subId)) {
     selectedGrade.value = '';
+    return;
+  }
+
+  // If currently selected grade has no books for this subject, auto-clear grade so subject books display
+  if (selectedGrade.value) {
+    const target = normalizeGrade(selectedGrade.value);
+    const subName = getSubjectName(subId);
+    const hasBooks = eLibraryBooks.value.some(b => 
+      normalizeGrade(b.grade) === target && 
+      (String(b.course_subject_id) === String(subId) || (subName && b.subject_name === subName))
+    );
+    if (!hasBooks) {
+      selectedGrade.value = '';
+    }
   }
 };
 
 const selectGrade = (grade) => {
   selectedGrade.value = grade;
   if (!grade) return;
+
   // If user picks a specific grade while viewing literature, reset subject so grade textbooks show
   if (isLiteratureSubject(selectedSubjectId.value)) {
     selectedSubjectId.value = '';
     return;
   }
+
   // If currently selected subject has no books for this grade, auto-reset subject to 'ទាំងអស់'
   if (selectedSubjectId.value) {
     const target = normalizeGrade(grade);
-    const hasBooks = eLibraryBooks.value.some(b => normalizeGrade(b.grade) === target && b.course_subject_id === selectedSubjectId.value);
+    const subName = getSubjectName(selectedSubjectId.value);
+    const hasBooks = eLibraryBooks.value.some(b => 
+      normalizeGrade(b.grade) === target && 
+      (String(b.course_subject_id) === String(selectedSubjectId.value) || (subName && b.subject_name === subName))
+    );
     if (!hasBooks) {
       selectedSubjectId.value = '';
     }
@@ -1440,7 +1486,15 @@ const filteredELibraryBooks = computed(() => {
 
   // Subject filter
   if (selectedSubjectId.value) {
-    list = list.filter(b => b.course_subject_id === selectedSubjectId.value);
+    if (isLiteratureSubject(selectedSubjectId.value)) {
+      list = list.filter(b => isLitBook(b));
+    } else {
+      const subName = getSubjectName(selectedSubjectId.value);
+      list = list.filter(b => 
+        String(b.course_subject_id) === String(selectedSubjectId.value) || 
+        (subName && b.subject_name === subName)
+      );
+    }
   }
 
   // Grade filter (handles both Khmer digits and standard digits; grade-independent for literature)
