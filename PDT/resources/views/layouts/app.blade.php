@@ -26,11 +26,21 @@
         ];
     });
     $logoUrl = $cachedSettings['logoUrl'];
+    $authUser = Auth::user();
+    $roleName = 'Student';
+    if ($authUser) {
+        if ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1) {
+            $roleName = 'Admin';
+        } elseif ($authUser->hasRole('teacher') || strtolower($authUser->role ?? '') === 'teacher') {
+            $roleName = 'Teacher';
+        }
+    }
     $initialUserJson = json_encode([
-        'name' => Auth::user()?->name ?? 'portal sala',
-        'role' => Auth::user()?->roles?->first()?->name ?? 'Admin',
-        'email' => Auth::user()?->email ?? 'admin@school.edu.kh',
-        'avatar' => Auth::user()?->avatar ?? ''
+        'id' => $authUser?->id,
+        'name' => $authUser?->name ?? 'portal sala',
+        'role' => $roleName,
+        'email' => $authUser?->email ?? 'admin@school.edu.kh',
+        'avatar' => $authUser?->avatar ?? ''
     ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
     $initialSettingsJson = json_encode([
         'school_logo_url' => $cachedSettings['logoUrl'],

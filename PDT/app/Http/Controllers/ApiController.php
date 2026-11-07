@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class ApiController extends Controller
 {
@@ -1459,16 +1460,64 @@ class ApiController extends Controller
             ->where('due_date', '<', Carbon::today())
             ->count();
 
-        $books = Book::with('category')->latest()->take(100)->get()->map(fn ($b) => [
-            'id' => $b->id,
-            'isbn' => $b->isbn,
-            'title' => $b->title,
-            'author' => $b->author,
-            'category' => $b->category?->name ?? 'ទូទៅ',
-            'category_id' => $b->book_category_id,
-            'publisher' => $b->publisher,
-            'quantity' => $b->quantity,
-            'available' => $b->available_copies
+        // Digital Library Enhanced Stats
+        $digitalBooksCount = Book::whereNotNull('external_pdf_url')->where('external_pdf_url', '!=', '')->count();
+        $totalSubjectsCount = CourseSubject::count();
+        $brokenLinksCount = Book::where('is_broken_link', true)->count();
+
+        $khmerToArabic = ['៧' => '7', '៨' => '8', '៩' => '9', '១០' => '10', '១១' => '11', '១២' => '12'];
+        $booksByGrade = [
+            '7' => Book::whereIn('grade', ['7', '៧'])->count(),
+            '8' => Book::whereIn('grade', ['8', '៨'])->count(),
+            '9' => Book::whereIn('grade', ['9', '៩'])->count(),
+            '10' => Book::whereIn('grade', ['10', '១០'])->count(),
+            '11' => Book::whereIn('grade', ['11', '១១'])->count(),
+            '12' => Book::whereIn('grade', ['12', '១២'])->count(),
+        ];
+
+        $books = Book::with(['category', 'subject'])->latest()->get()->map(function ($b) use ($khmerToArabic) {
+            $rawGrade = trim((string) ($b->grade ?? ''));
+            if ($rawGrade === '' || $rawGrade === 'ទូទៅ' || $rawGrade === 'general' || $b->subject?->name === 'អក្សរសិល្ប៍' || $b->level === 'អក្សរសិល្ប៍') {
+                $grade = 'ទូទៅ';
+            } else {
+                $grade = $khmerToArabic[$rawGrade] ?? $rawGrade;
+            }
+            return [
+                'id' => $b->id,
+                'isbn' => $b->isbn,
+                'title' => $b->title,
+                'author' => $b->author,
+                'grade' => (string) $grade,
+                'course_subject_id' => $b->course_subject_id,
+                'subject_name' => $b->subject?->name ?? 'ទូទៅ',
+                'subject_code' => $b->subject?->code ?? '',
+                'level' => $b->level ?: 'basic', // basic, advanced, general
+                'edition' => $b->edition ?: 'បោះពុម្ពផ្លូវការ ក្រសួងអប់រំ',
+                'publication_year' => $b->publication_year ?: 2024,
+                'cover_image' => $b->cover_image,
+                'category' => $b->category?->name ?? 'សៀវភៅពុម្ព',
+                'category_id' => $b->book_category_id,
+                'publisher' => $b->publisher,
+                'external_pdf_url' => $b->external_pdf_url,
+                'views_count' => (int) $b->views_count,
+                'allow_download' => (bool) $b->allow_download,
+                'is_broken_link' => (bool) $b->is_broken_link,
+                'quantity' => $b->quantity,
+                'available' => $b->available_copies
+            ];
+        });
+
+        $subjects = CourseSubject::all()->sortBy(function ($s) {
+            if ($s->name === 'អក្សរសិល្ប៍' || $s->code === 'LIT-01') return 0;
+            if ($s->name === 'អក្សរសាស្ត្រខ្មែរ' || $s->code === 'KHM-01') return 1;
+            if ($s->name === 'គណិតវិទ្យា' || $s->code === 'MTH-01') return 2;
+            return 10 + $s->id;
+        })->values()->map(fn ($s) => [
+            'id' => $s->id,
+            'code' => $s->code,
+            'name' => $s->name,
+            'grade_level' => $s->grade_level,
+            'description' => $s->description,
         ]);
 
         $borrows = BookBorrow::with('book', 'student.user')->latest()->take(100)->get()->map(fn ($br) => [
@@ -1492,14 +1541,41 @@ class ApiController extends Controller
         ]);
         $students = $this->sortStudentsByKhmerAlphabet($students, 'name');
 
+        $authUser = Auth::user();
+        $userRole = 'student';
+        if ($authUser) {
+            if ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1) {
+                $userRole = 'admin';
+            } elseif ($authUser->hasRole('teacher') || strtolower($authUser->role ?? '') === 'teacher') {
+                $userRole = 'teacher';
+            }
+        }
+
         return response()->json([
+            'user' => [
+                'id' => $authUser?->id,
+                'name' => $authUser?->name,
+                'role' => $userRole,
+                'is_admin' => $userRole === 'admin',
+                'is_teacher' => $userRole === 'teacher',
+                'is_student' => $userRole === 'student',
+                'can_manage_library' => $userRole === 'admin',
+                'can_edit_books' => $userRole === 'admin',
+                'can_manage_subjects' => $userRole === 'admin',
+                'can_borrow' => in_array($userRole, ['admin', 'teacher']),
+            ],
             'stats' => [
                 'total' => $totalBooks,
                 'available' => $availableCopies,
                 'borrows' => $activeBorrows,
                 'overdue' => $overdueBorrows,
+                'digital_books' => $digitalBooksCount,
+                'total_subjects' => $totalSubjectsCount,
+                'broken_links' => $brokenLinksCount,
+                'books_by_grade' => $booksByGrade,
             ],
             'books' => $books,
+            'subjects' => $subjects,
             'borrows' => $borrows,
             'categories' => $categories,
             'students' => $students,
@@ -1508,28 +1584,180 @@ class ApiController extends Controller
 
     public function storeBook(Request $request)
     {
+        $authUser = Auth::user();
+        $isAdmin = $authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1);
+        if (!$isAdmin) {
+            return response()->json(['message' => 'អ្នកមិនមានសិទ្ធិបន្ថែម ឬកែប្រែសៀវភៅទេ (Admin only)'], 403);
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
+            'grade' => 'nullable|string|max:10',
+            'course_subject_id' => 'nullable|exists:course_subjects,id',
+            'level' => 'nullable|string|in:basic,advanced,general',
+            'edition' => 'nullable|string|max:255',
+            'publication_year' => 'nullable|integer',
+            'cover_image' => 'nullable|string|max:500',
             'book_category_id' => 'nullable|exists:book_categories,id',
             'isbn' => 'nullable|string|max:50',
             'publisher' => 'nullable|string|max:255',
-            'quantity' => 'required|integer|min:1',
+            'external_pdf_url' => 'nullable|string',
+            'allow_download' => 'nullable|boolean',
+            'is_broken_link' => 'nullable|boolean',
+            'quantity' => 'nullable|integer|min:1',
         ]);
 
+        if (!isset($validated['quantity'])) {
+            $validated['quantity'] = 10;
+        }
         $validated['available_copies'] = $validated['quantity'];
+
+        $id = $request->input('id');
+        if ($id) {
+            $book = Book::find($id);
+            if ($book) {
+                $book->update($validated);
+                return response()->json([
+                    'success' => true,
+                    'message' => "បានកែសម្រួលសៀវភៅ {$book->title} ដោយជោគជ័យ!",
+                    'book' => $book->load(['category', 'subject']),
+                ]);
+            }
+        }
 
         $book = Book::create($validated);
 
         return response()->json([
             'success' => true,
             'message' => "បានបន្ថែមសៀវភៅ {$book->title} ដោយជោគជ័យ!",
-            'book' => $book,
+            'book' => $book->load(['category', 'subject']),
         ]);
+    }
+
+    public function deleteBook($id)
+    {
+        $authUser = Auth::user();
+        $isAdmin = $authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1);
+        if (!$isAdmin) {
+            return response()->json(['message' => 'អ្នកមិនមានសិទ្ធិលុបសៀវភៅទេ (Admin only)'], 403);
+        }
+
+        $book = Book::findOrFail($id);
+        $title = $book->title;
+        $book->borrows()->delete();
+        $book->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "បានលុបសៀវភៅ {$title} ដោយជោគជ័យ!",
+        ]);
+    }
+
+    public function recordBookView($id)
+    {
+        $book = Book::find($id);
+        if ($book) {
+            $book->increment('views_count');
+        }
+        return response()->json([
+            'success' => true,
+            'views_count' => $book?->views_count ?? 0,
+        ]);
+    }
+
+    public function toggleBrokenLink(Request $request, $id)
+    {
+        $book = Book::findOrFail($id);
+        $isBroken = $request->has('is_broken') ? $request->boolean('is_broken') : !$book->is_broken_link;
+        $book->update(['is_broken_link' => $isBroken]);
+
+        return response()->json([
+            'success' => true,
+            'is_broken_link' => $isBroken,
+            'message' => $isBroken ? 'បានរាយការណ៍តំណភ្ជាប់ PDF ខូច' : 'បានដោះស្រាយ និងដាក់ឱ្យដំណើរការវិញ',
+        ]);
+    }
+
+    public function storeSubject(Request $request)
+    {
+        $authUser = Auth::user();
+        $isAdmin = $authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1);
+        if (!$isAdmin) {
+            return response()->json(['message' => 'អ្នកមិនមានសិទ្ធិគ្រប់គ្រងមុខវិជ្ជាទេ (Admin only)'], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50|unique:course_subjects,code',
+            'grade_level' => 'nullable|string|max:50',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        $subject = CourseSubject::create($validated);
+        return response()->json([
+            'success' => true,
+            'message' => "បានបន្ថែមមុខវិជ្ជា {$subject->name} ដោយជោគជ័យ!",
+            'subject' => $subject,
+        ]);
+    }
+
+    public function updateSubject(Request $request, $id)
+    {
+        $authUser = Auth::user();
+        $isAdmin = $authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1);
+        if (!$isAdmin) {
+            return response()->json(['message' => 'អ្នកមិនមានសិទ្ធិគ្រប់គ្រងមុខវិជ្ជាទេ (Admin only)'], 403);
+        }
+
+        $subject = CourseSubject::findOrFail($id);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50|unique:course_subjects,code,' . $id,
+            'grade_level' => 'nullable|string|max:50',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        $subject->update($validated);
+        return response()->json([
+            'success' => true,
+            'message' => "បានកែសម្រួលមុខវិជ្ជា {$subject->name} ដោយជោគជ័យ!",
+            'subject' => $subject,
+        ]);
+    }
+
+    public function deleteSubject($id)
+    {
+        $authUser = Auth::user();
+        $isAdmin = $authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1);
+        if (!$isAdmin) {
+            return response()->json(['message' => 'អ្នកមិនមានសិទ្ធិគ្រប់គ្រងមុខវិជ្ជាទេ (Admin only)'], 403);
+        }
+
+        $subject = CourseSubject::findOrFail($id);
+        $name = $subject->name;
+        Book::where('course_subject_id', $id)->update(['course_subject_id' => null]);
+        $subject->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "បានលុបមុខវិជ្ជា {$name} ដោយជោគជ័យ!",
+        ]);
+    }
+
+    public function extractPdf(Request $request)
+    {
+        return app(LibraryController::class)->extractPdf($request);
     }
 
     public function borrowBook(Request $request)
     {
+        $authUser = Auth::user();
+        $canBorrow = $authUser && ($authUser->hasRole('admin') || $authUser->hasRole('teacher') || strtolower($authUser->role ?? '') === 'admin' || strtolower($authUser->role ?? '') === 'teacher' || $authUser->id === 1);
+        if (!$canBorrow) {
+            return response()->json(['message' => 'អ្នកមិនមានសិទ្ធិកត់ត្រាការខ្ចីសៀវភៅទេ (Admin & Teachers only)'], 403);
+        }
+
         $validated = $request->validate([
             'book_id' => 'required|exists:books,id',
             'student_id' => 'required|exists:students,id',

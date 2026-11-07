@@ -125,6 +125,9 @@ class ProductionSetupSeeder extends Seeder
                 );
             }
         }
+
+        // 6. Seed MoEYS Digital E-Library for Grades 7 - 12
+        $this->call(DigitalLibrarySeeder::class);
     }
 }
 

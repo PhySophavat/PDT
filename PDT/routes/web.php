@@ -156,7 +156,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/finance/payments', [ApiController::class, 'storePayment']);
         Route::post('/finance/expenses', [ApiController::class, 'storeExpense']);
         Route::get('/library', [ApiController::class, 'library']);
+        Route::post('/library/extract-pdf', [ApiController::class, 'extractPdf']);
         Route::post('/library/books', [ApiController::class, 'storeBook']);
+        Route::delete('/library/books/{id}', [ApiController::class, 'deleteBook']);
+        Route::post('/library/books/{id}/view', [ApiController::class, 'recordBookView']);
+        Route::post('/library/books/{id}/broken-link', [ApiController::class, 'toggleBrokenLink']);
+        Route::post('/library/subjects', [ApiController::class, 'storeSubject']);
+        Route::put('/library/subjects/{id}', [ApiController::class, 'updateSubject']);
+        Route::delete('/library/subjects/{id}', [ApiController::class, 'deleteSubject']);
         Route::post('/library/borrow', [ApiController::class, 'borrowBook']);
         Route::put('/library/borrow/{borrow}', [ApiController::class, 'updateBorrow']);
         Route::delete('/library/borrow/{borrow}', [ApiController::class, 'deleteBorrow']);
@@ -276,6 +283,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/library', $spa)->name('library.index');
     Route::post('/library/books', [LibraryController::class, 'storeBook'])->name('library.books.store');
     Route::post('/library/store-book', [LibraryController::class, 'storeBook'])->name('library.store_book');
+    Route::post('/library/extract-pdf', [LibraryController::class, 'extractPdf'])->name('library.extract_pdf');
     Route::post('/library/borrow', [LibraryController::class, 'borrowBook'])->name('library.borrow');
     Route::post('/library/borrow-book', [LibraryController::class, 'borrowBook'])->name('library.borrow_book');
     Route::post('/library/return/{borrow}', [LibraryController::class, 'returnBook'])->name('library.return');
