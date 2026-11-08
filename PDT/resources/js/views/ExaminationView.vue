@@ -261,7 +261,7 @@
 
           <!-- Official Ranking Sheet Button -->
           <a 
-            :href="`/examinations/${selectedMatrixExamId}/ranking-sheet?class=${selectedMatrixClass}`" 
+            :href="`/examinations/${selectedMatrixExamId || (examsList[0]?.id || 1)}/ranking-sheet?class=${selectedMatrixClass || '7A'}`" 
             target="_blank"
             :class="[
               'inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition shadow-sm',
@@ -554,7 +554,7 @@
           <p class="text-[11px] text-indigo-700">បោះពុម្ពតារាងចំណាត់ថ្នាក់សិស្សទាំងអស់ក្នុងថ្នាក់ {{ selectedClassForScores }} ជាទម្រង់ ២ ជួរឈរ (A4 Portrait ដូចទម្រង់ក្រសួង)</p>
         </div>
         <a 
-          :href="`/examinations/${selectedExamId}/ranking-sheet?class=${selectedClassForScores}`" 
+          :href="`/examinations/${selectedExamId || (examsList[0]?.id || 1)}/ranking-sheet?class=${selectedClassForScores || '7A'}`" 
           target="_blank"
           class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition inline-flex items-center gap-1.5 whitespace-nowrap"
         >

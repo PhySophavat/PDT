@@ -272,7 +272,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/examinations/{examination}/scores', $spa)->name('examinations.scores');
     Route::post('/examinations/{examination}/scores', [ExaminationController::class, 'storeScores'])->name('examinations.scores.store');
     Route::get('/examinations/{examination}/report-card/{student}', [ExaminationController::class, 'reportCard'])->name('examinations.report-card');
-    Route::get('/examinations/{examination}/ranking-sheet', [ExaminationController::class, 'rankingSheet'])->name('examinations.ranking-sheet');
+    Route::get('/examinations/ranking-sheet', [ExaminationController::class, 'rankingSheet'])->name('examinations.ranking-sheet.default');
+    Route::get('/examinations/{examination}/ranking-sheet', [ExaminationController::class, 'rankingSheet'])->where('examination', '.*')->name('examinations.ranking-sheet');
     Route::post('/examinations/ranking-sheet/settings', [ExaminationController::class, 'saveRankingSettings'])->name('examinations.ranking-sheet.settings');
 
     // 10. Parent & Guardian Management

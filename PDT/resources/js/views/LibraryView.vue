@@ -1802,6 +1802,10 @@ const readerIframeUrl = computed(() => {
   if (url.match(/\.pdf(\?.*)?$/i)) {
     return `https://drive.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(url)}`;
   }
+  // Embeddable HTML5 Flipbooks (FlipHTML5, eLibrary Cambodia)
+  if (url.includes('fliphtml5.com') || url.includes('elibraryofcambodia.org')) {
+    return url;
+  }
   // Non-embeddable URLs (webpages, SPAs) — return empty so we show external link UI
   return '';
 });
