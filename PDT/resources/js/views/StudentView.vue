@@ -1753,18 +1753,43 @@ const openApproveModal = (student) => {
 
 const submitApproval = async () => {
   if (!selectedStudent.value) return;
+  const targetStudent = selectedStudent.value;
+  const targetId = targetStudent.id;
+  const originalStatus = targetStudent.status;
+
+  // 1. Optimistic UI: Close modal immediately and update state in 0 seconds
+  showApproveModal.value = false;
+
+  const idx = students.value.findIndex(s => s.id === targetId);
+  if (idx !== -1) {
+    students.value[idx].status = 'active';
+    students.value[idx].grade = approveForm.value.grade;
+    students.value[idx].student_id_card = approveForm.value.student_id_card;
+  }
+  pendingCount.value = Math.max(0, pendingCount.value - 1);
+  activeCount.value += 1;
+
   isSubmittingApproval.value = true;
   try {
-    const res = await axios.post(`/api/students/${selectedStudent.value.id}/approve`, approveForm.value);
+    const res = await axios.post(`/api/students/${targetId}/approve`, approveForm.value);
     if (res.data && res.data.success) {
-      alert(res.data.message);
-      showApproveModal.value = false;
       notifyDataChanged();
-      await fetchStudents();
+      // Silently refresh in background
+      fetchStudents(true);
+    } else {
+      // Revert if backend failed
+      if (idx !== -1) students.value[idx].status = originalStatus;
+      pendingCount.value += 1;
+      activeCount.value = Math.max(0, activeCount.value - 1);
+      alert(res.data?.message || 'ការអនុម័តបានបរាជ័យ។');
     }
   } catch (err) {
     console.error('Approval failed:', err);
-    alert('ការអនុម័តបានបរាជ័យ សូមព្យាយាមម្តងទៀត។');
+    // Revert optimistic update
+    if (idx !== -1) students.value[idx].status = originalStatus;
+    pendingCount.value += 1;
+    activeCount.value = Math.max(0, activeCount.value - 1);
+    alert(err.response?.data?.message || 'ការអនុម័តបានបរាជ័យ សូមព្យាយាមម្តងទៀត។');
   } finally {
     isSubmittingApproval.value = false;
   }
@@ -1772,25 +1797,59 @@ const submitApproval = async () => {
 
 const rejectStudent = async (st) => {
   if (!confirm(`តើអ្នកពិតជាចង់បដិសេធពាក្យសុំចុះឈ្មោះរបស់សិស្ស ${st.name} មែនទេ?`)) return;
+  const targetId = st.id;
+  const originalStatus = st.status;
+
+  // Optimistic UI: Mark rejected instantly
+  const idx = students.value.findIndex(s => s.id === targetId);
+  if (idx !== -1) {
+    students.value[idx].status = 'rejected';
+  }
+  pendingCount.value = Math.max(0, pendingCount.value - 1);
+
   try {
-    const res = await axios.post(`/api/students/${st.id}/reject`);
-    alert(res.data.message || 'បានបដិសេធសិស្សជោគជ័យ!');
-    notifyDataChanged();
-    await fetchStudents();
+    const res = await axios.post(`/api/students/${targetId}/reject`);
+    if (res.data && res.data.success) {
+      notifyDataChanged();
+      fetchStudents(true);
+    } else {
+      if (idx !== -1) students.value[idx].status = originalStatus;
+      pendingCount.value += 1;
+      alert(res.data?.message || 'មិនអាចបដិសេធបានទេ។');
+    }
   } catch (err) {
-    alert('មិនអាចបដិសេធបានទេ សូមព្យាយាមម្តងទៀត!');
+    if (idx !== -1) students.value[idx].status = originalStatus;
+    pendingCount.value += 1;
+    alert(err.response?.data?.message || 'មិនអាចបដិសេធបានទេ សូមព្យាយាមម្តងទៀត!');
   }
 };
 
 const restoreStudent = async (st) => {
   if (!confirm(`តើអ្នកចង់ស្ដារសិស្ស ${st.name} មកកាន់បញ្ជី «រង់ចាំអនុម័ត» វិញមែនទេ?`)) return;
+  const targetId = st.id;
+  const originalStatus = st.status;
+
+  // Optimistic UI: Mark pending instantly
+  const idx = students.value.findIndex(s => s.id === targetId);
+  if (idx !== -1) {
+    students.value[idx].status = 'pending';
+  }
+  pendingCount.value += 1;
+
   try {
-    const res = await axios.post(`/api/students/${st.id}/restore`);
-    alert(res.data.message || 'បានស្ដារសិស្សជោគជ័យ!');
-    notifyDataChanged();
-    await fetchStudents();
+    const res = await axios.post(`/api/students/${targetId}/restore`);
+    if (res.data && res.data.success) {
+      notifyDataChanged();
+      fetchStudents(true);
+    } else {
+      if (idx !== -1) students.value[idx].status = originalStatus;
+      pendingCount.value = Math.max(0, pendingCount.value - 1);
+      alert(res.data?.message || 'មិនអាចស្ដារសិស្សបានទេ។');
+    }
   } catch (err) {
-    alert('មិនអាចស្ដារសិស្សបានទេ សូមព្យាយាមម្តងទៀត!');
+    if (idx !== -1) students.value[idx].status = originalStatus;
+    pendingCount.value = Math.max(0, pendingCount.value - 1);
+    alert(err.response?.data?.message || 'មិនអាចស្ដារសិស្សបានទេ សូមព្យាយាមម្តងទៀត!');
   }
 };
 
