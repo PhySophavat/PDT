@@ -9,6 +9,16 @@
     >
       <template #extraActions>
         <button 
+          @click="fetchStudents(true)" 
+          type="button"
+          class="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-full border border-slate-200/90 shadow-xs transition-all active:scale-95 cursor-pointer"
+          title="ផ្ទុកទិន្នន័យឡើងវិញ"
+        >
+          <i class="fa-solid fa-arrows-rotate text-xs text-blue-600" :class="{ 'fa-spin': isFetchingStudents }"></i>
+          <span>ផ្ទុកឡើងវិញ</span>
+        </button>
+
+        <button 
           @click="openBulkScanModal" 
           type="button"
           class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-4 py-2 text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all hover:shadow-lg hover:shadow-indigo-600/30 active:scale-95 cursor-pointer"
@@ -1267,7 +1277,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onActivated, watch } from 'vue';
+import { ref, computed, onMounted, onActivated, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
@@ -1287,7 +1297,13 @@ const route = useRoute();
 
 const activeTab = ref(route.query?.tab || 'all');
 watch(() => route.query?.tab, (tab) => {
-  if (tab) activeTab.value = tab;
+  if (tab) {
+    activeTab.value = tab;
+    fetchStudents(true);
+  }
+});
+watch(activeTab, () => {
+  fetchStudents(true);
 });
 const searchQuery = ref('');
 const genderFilter = ref('all');
@@ -1404,15 +1420,15 @@ const editForm = ref({
   status: 'enrolled',
 });
 
-let isFetchingStudents = false;
+const isFetchingStudents = ref(false);
 let lastStudentFetchTime = 0;
 
 const fetchStudents = async (force = false) => {
   const now = Date.now();
-  if (isFetchingStudents || (!force && now - lastStudentFetchTime < 1500 && students.value.length > 0)) {
+  if (isFetchingStudents.value || (!force && now - lastStudentFetchTime < 1500 && students.value.length > 0)) {
     return;
   }
-  isFetchingStudents = true;
+  isFetchingStudents.value = true;
   lastStudentFetchTime = now;
   if (students.value.length === 0) {
     isLoading.value = true;
@@ -1447,7 +1463,7 @@ const fetchStudents = async (force = false) => {
   } catch (e) {
     console.error('Failed to load students:', e);
   } finally {
-    isFetchingStudents = false;
+    isFetchingStudents.value = false;
     isLoading.value = false;
   }
 };
@@ -1460,14 +1476,40 @@ const notifyDataChanged = () => {
   } catch (e) {}
 };
 
+let pollTimer = null;
+
+const onDataUpdated = () => {
+  fetchStudents(true);
+};
+
+const onVisibilityChange = () => {
+  if (document.visibilityState === 'visible') {
+    fetchStudents(true);
+  }
+};
+
 onMounted(() => {
-  fetchStudents();
+  fetchStudents(true);
   publicRegistrationUrl.value = window.location.origin + '/register-student';
+  window.addEventListener('pdt-data-updated', onDataUpdated);
+  document.addEventListener('visibilitychange', onVisibilityChange);
+
+  // Auto-poll every 12 seconds in background so newly registered students pop up automatically!
+  pollTimer = setInterval(() => {
+    if (document.visibilityState === 'visible') {
+      fetchStudents(true);
+    }
+  }, 12000);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('pdt-data-updated', onDataUpdated);
+  document.removeEventListener('visibilitychange', onVisibilityChange);
+  if (pollTimer) clearInterval(pollTimer);
 });
 
 onActivated(() => {
-  // onActivated only refetches if data wasn't just fetched in onMounted
-  fetchStudents();
+  fetchStudents(true);
 });
 
 const filteredStudents = computed(() => {

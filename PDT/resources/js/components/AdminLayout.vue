@@ -669,9 +669,11 @@ const toggleNotificationDropdown = () => {
 const goToNotificationLink = (link) => {
   showNotificationDropdown.value = false;
   router.push(link);
+  window.dispatchEvent(new CustomEvent('pdt-data-updated'));
 };
 
 let isFetchingPendingNotifs = false;
+let lastPendingCount = -1;
 
 const fetchPendingNotifications = async () => {
   if (isFetchingPendingNotifs) return;
@@ -680,9 +682,16 @@ const fetchPendingNotifications = async () => {
   try {
     const res = await axios.get('/api/notifications/pending');
     if (res.data) {
-      pendingTotalCount.value = res.data.total_count || 0;
+      const newTotal = res.data.total_count || 0;
+      pendingTotalCount.value = newTotal;
       pendingCounts.value = res.data.counts || { students: 0, teachers: 0, leaves: 0 };
       pendingNotificationItems.value = res.data.notifications || [];
+
+      // If pending count changed (e.g. new student registered), alert active views to refresh
+      if (lastPendingCount !== -1 && newTotal !== lastPendingCount) {
+        window.dispatchEvent(new CustomEvent('pdt-data-updated'));
+      }
+      lastPendingCount = newTotal;
     }
   } catch (err) {
     console.error('Failed to fetch pending notifications:', err);
