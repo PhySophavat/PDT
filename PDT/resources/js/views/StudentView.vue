@@ -109,7 +109,7 @@
     </FilterBar>
 
     <!-- Data Table -->
-    <DataTable :loading="isLoading" :empty="filteredStudents.length === 0" :colSpan="8" loadingText="កំពុងទាញយកទិន្នន័យសិស្សពី Server...">
+    <DataTable :loading="isLoading" :empty="filteredStudents.length === 0" :colSpan="9" loadingText="កំពុងទាញយកទិន្នន័យសិស្សពី Server...">
       <template #header>
         <tr>
           <th class="py-3 px-3 text-center w-10">
@@ -126,6 +126,7 @@
           <th class="py-3 px-4 font-bold text-slate-700">{{ t('students.gender') }}</th>
           <th class="py-3 px-4 font-bold text-slate-700">{{ t('students.class') }}</th>
           <th class="py-3 px-4 font-bold text-slate-700">{{ t('students.phone') }}</th>
+          <th class="py-3 px-4 font-bold text-slate-700">អ៊ីមែល (Email)</th>
           <th class="py-3 px-4 font-bold text-slate-700 text-center">{{ t('common.status') }}</th>
           <th class="py-3 px-4 font-bold text-slate-700 text-right">{{ t('common.actions') }}</th>
         </tr>
@@ -134,7 +135,7 @@
       <template #body>
         <!-- Loading Spinner State while fetching -->
         <tr v-if="isLoading && filteredStudents.length === 0">
-          <td colspan="8" class="py-14 text-center text-slate-500 font-khmer">
+          <td colspan="9" class="py-14 text-center text-slate-500 font-khmer">
             <div class="flex flex-col items-center justify-center gap-2.5">
               <div class="w-7 h-7 rounded-full border-3 border-blue-600 border-t-transparent animate-spin"></div>
               <span class="text-xs font-semibold text-slate-600">កំពុងទាញយកទិន្នន័យសិស្សពី Server...</span>
@@ -143,7 +144,7 @@
         </tr>
         <!-- Real Empty State only when NOT loading -->
         <tr v-else-if="filteredStudents.length === 0">
-          <td colspan="8" class="py-12 text-center text-slate-400 font-khmer">
+          <td colspan="9" class="py-12 text-center text-slate-400 font-khmer">
             <div class="flex flex-col items-center justify-center gap-2">
               <i class="fa-solid fa-user-graduate text-3xl text-slate-300"></i>
               <span>{{ t('common.noData') }}</span>
@@ -191,8 +192,15 @@
               {{ st.grade || 'មិនទាន់ចាត់តាំង' }}
             </span>
           </td>
-          <td class="py-3 px-4 font-mono text-slate-600">
+          <td class="py-3 px-4 font-mono text-slate-600 text-xs">
             {{ st.phone || '-' }}
+          </td>
+          <td class="py-3 px-4 font-mono text-xs">
+            <span v-if="st.email" class="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center gap-1.5 transition">
+              <i class="fa-regular fa-envelope text-slate-400 text-[11px]"></i>
+              <a :href="'mailto:' + st.email" class="hover:underline">{{ st.email }}</a>
+            </span>
+            <span v-else class="text-slate-300">-</span>
           </td>
           <td class="py-3 px-4 text-center">
             <!-- Pending Status Badge -->
@@ -429,6 +437,10 @@
               <input type="tel" v-model="createForm.phone" placeholder="012 111 222" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
+              <label class="block font-semibold mb-1">អ៊ីមែលសិស្ស (Email)</label>
+              <input type="email" v-model="createForm.email" placeholder="student@example.com" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            </div>
+            <div>
               <label class="block font-semibold mb-1">ឈ្មោះអាណាព្យាបាល</label>
               <input type="text" v-model="createForm.parent_name" placeholder="ឧ. សុខ វិបុល" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
@@ -578,6 +590,10 @@
               <span class="font-semibold text-slate-800 font-mono">{{ selectedStudent.phone || '-' }}</span>
             </div>
             <div>
+              <span class="text-slate-400 block text-[11px]">អ៊ីមែល (Email):</span>
+              <span class="font-semibold text-blue-600 font-mono text-[11px] break-all">{{ selectedStudent.email || '-' }}</span>
+            </div>
+            <div>
               <span class="text-slate-400 block text-[11px]">ស្ថានភាព:</span>
               <span class="font-bold text-emerald-600">{{ selectedStudent.status }}</span>
             </div>
@@ -676,6 +692,10 @@
             <div>
               <label class="block font-semibold mb-1">លេខទូរស័ព្ទសិស្ស</label>
               <input type="tel" v-model="editForm.phone" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">អ៊ីមែលសិស្ស (Email)</label>
+              <input type="email" v-model="editForm.email" placeholder="student@example.com" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
               <label class="block font-semibold mb-1">ស្ថានភាព</label>
@@ -1348,6 +1368,7 @@ const createForm = ref({
   name_latin: '',
   gender: 'male',
   grade: '7A',
+  email: '',
   date_of_birth: '',
   phone: '',
   address: '',
@@ -1373,6 +1394,7 @@ const editForm = ref({
   name_latin: '',
   gender: 'male',
   grade: '',
+  email: '',
   date_of_birth: '',
   phone: '',
   address: '',
@@ -1644,6 +1666,7 @@ const openCreateModal = () => {
     name_latin: '',
     gender: 'male',
     grade: availableClasses.value[0] || '7A',
+    email: '',
     date_of_birth: '',
     phone: '',
     address: '',
@@ -1743,6 +1766,7 @@ const openEditModal = (st) => {
     name_latin: st.name_latin || '',
     gender: st.gender === 'female' || st.gender === 'ស្រី' ? 'female' : 'male',
     grade: st.grade || '7A',
+    email: st.email || '',
     date_of_birth: st.date_of_birth || '',
     phone: st.phone !== '-' ? st.phone : '',
     address: st.address !== '-' ? st.address : '',

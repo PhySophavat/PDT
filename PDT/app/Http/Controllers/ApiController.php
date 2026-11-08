@@ -415,11 +415,12 @@ class ApiController extends Controller
         if ($request->search) {
             $s = $request->search;
             $query->where(function ($q) use ($s) {
-                $q->whereHas('user', fn ($u) => $u->where('name', 'like', "%{$s}%"))
+                $q->whereHas('user', fn ($u) => $u->where('name', 'like', "%{$s}%")->orWhere('email', 'like', "%{$s}%"))
                     ->orWhere('name_khmer', 'like', "%{$s}%")
                     ->orWhere('name_latin', 'like', "%{$s}%")
                     ->orWhere('student_id_card', 'like', "%{$s}%")
-                    ->orWhere('phone', 'like', "%{$s}%");
+                    ->orWhere('phone', 'like', "%{$s}%")
+                    ->orWhere('email', 'like', "%{$s}%");
             });
         }
         if ($request->grade) {
@@ -442,6 +443,7 @@ class ApiController extends Controller
             'gender' => $st->gender,
             'grade' => $st->grade,
             'phone' => $st->phone,
+            'email' => $st->email ?: ($st->user?->email ?: null),
             'date_of_birth' => $st->date_of_birth ? Carbon::parse($st->date_of_birth)->format('Y-m-d') : null,
             'address' => $st->address ?: $st->province,
             'photo' => $st->photo ? asset('storage/' . $st->photo) : null,
@@ -645,6 +647,7 @@ class ApiController extends Controller
             'name_latin' => 'nullable|string|max:255',
             'gender' => 'required|in:male,female',
             'grade' => 'required|string|max:50',
+            'email' => 'nullable|email|max:255',
             'date_of_birth' => 'nullable|date',
             'phone' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:500',
@@ -668,8 +671,8 @@ class ApiController extends Controller
         $studentIdCard = sprintf('STU-%s-%03d', $year, $nextNum);
 
         $baseName = $validated['name_khmer'] ?: ($validated['name_latin'] ?? 'Student');
-        $email = strtolower(str_replace([' ', '-'], '', $studentIdCard)) . '@school.edu.kh';
-        if (\App\Models\User::where('email', $email)->exists()) {
+        $email = !empty($validated['email']) ? strtolower(trim($validated['email'])) : (strtolower(str_replace([' ', '-'], '', $studentIdCard)) . '@school.edu.kh');
+        if (\App\Models\User::where('email', $email)->exists() && empty($validated['email'])) {
             $email = strtolower(str_replace([' ', '-'], '', $studentIdCard)) . '_' . time() . '@school.edu.kh';
         }
 
@@ -686,6 +689,7 @@ class ApiController extends Controller
 
         $student = Student::create([
             'user_id' => $user->id,
+            'email' => !empty($validated['email']) ? strtolower(trim($validated['email'])) : null,
             'student_id_card' => $studentIdCard,
             'name_khmer' => $validated['name_khmer'],
             'name_latin' => $validated['name_latin'] ?? null,
@@ -732,6 +736,7 @@ class ApiController extends Controller
             'name_latin' => 'nullable|string|max:255',
             'gender' => 'required|in:male,female',
             'grade' => 'required|string|max:50',
+            'email' => 'nullable|email|max:255',
             'date_of_birth' => 'nullable|date',
             'phone' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:500',
@@ -742,6 +747,15 @@ class ApiController extends Controller
         ]);
 
         $student->update($validated);
+
+        if (array_key_exists('email', $validated)) {
+            $student->email = $validated['email'] ? strtolower(trim($validated['email'])) : null;
+            $student->save();
+            if ($student->user && $student->email) {
+                $student->user->email = $student->email;
+                $student->user->save();
+            }
+        }
 
         if ($student->user) {
             $student->user->update([
