@@ -20,6 +20,47 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
+    /**
+     * Direct 1-Click Magic Login from Email Link
+     */
+    public function directLogin(Request $request)
+    {
+        $token = trim((string) $request->query('token'));
+        if (empty($token)) {
+            return redirect()->route('login');
+        }
+
+        // 1. Look up user by cache token or remember_token in database
+        $userId = \Illuminate\Support\Facades\Cache::get('direct_login_' . $token);
+        $user = null;
+        if ($userId) {
+            $user = User::find($userId);
+        }
+
+        if (!$user) {
+            $user = User::where('remember_token', $token)->first();
+        }
+
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'តំណភ្ជាប់ចូលប្រព័ន្ធស្វ័យប្រវត្តិនេះបានផុតកំណត់ហើយ សូមបញ្ចូលពាក្យសម្ងាត់ដើម្បីចូល។');
+        }
+
+        // 2. Perform instant login & regenerate session
+        Auth::login($user, true);
+        $request->session()->regenerate();
+
+        ActivityLogger::log(
+            action: 'LOGIN',
+            module: 'ចូលប្រើប្រព័ន្ធ',
+            targetId: $user->id,
+            description: "បានចូលប្រើប្រព័ន្ធស្វ័យប្រវត្តិតាមរយៈ Magic Login Link ({$user->email})",
+            user: $user
+        );
+
+        return redirect()->to($this->defaultRedirectPath($user))
+            ->with('success', "សូមស្វាគមន៍ប្អូន {$user->name}! អ្នកបានចូលប្រើប្រព័ន្ធដោយជោគជ័យ។");
+    }
+
     public function login(Request $request)
     {
         $request->validate([

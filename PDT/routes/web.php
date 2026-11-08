@@ -22,6 +22,7 @@ use App\Http\Controllers\SubjectController;
 
 // Authentication
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
+Route::get('/auth/quick-login', [AuthController::class, 'directLogin'])->name('auth.quick-login');
 Route::get('/csrf-token', fn() => response()->json(['csrf_token' => csrf_token()]))->name('csrf-token');
 
 // PWA Fallbacks

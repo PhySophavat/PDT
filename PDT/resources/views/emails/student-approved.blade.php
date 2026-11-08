@@ -127,9 +127,12 @@
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 26px;">
                 <tr>
                   <td align="center">
-                    <a href="{{ $loginUrl }}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%); color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700; padding: 14px 32px; border-radius: 9999px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); text-align: center;">
-                      ចូលទៅកាន់ប្រព័ន្ធសាលារៀន (Login Now) &rarr;
+                    <a href="{{ $loginUrl }}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%); color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700; padding: 14px 34px; border-radius: 9999px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); text-align: center;">
+                      🚀 ចូលប្រើប្រព័ន្ធភ្លាមៗ (Login Now) &rarr;
                     </a>
+                    <p style="margin: 9px 0 0 0; font-size: 11px; color: #64748b; text-align: center;">
+                      ✨ ចុចប៊ូតុងខាងលើដើម្បីចូលប្រព័ន្ធដោយស្វ័យប្រវត្តិ (1-Click Direct Login) ដោយមិនបាច់វាយពាក្យសម្ងាត់ឡើយ
+                    </p>
                   </td>
                 </tr>
               </table>

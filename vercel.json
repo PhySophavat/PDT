@@ -44,6 +44,8 @@
     }
   ],
   "env": {
+    "APP_NAME": "portal sala",
+    "APP_URL": "https://sala-portal.vercel.app",
     "APP_ENV": "production",
     "APP_DEBUG": "true",
     "APP_KEY": "base64:9EvsufK6IKWmF5ATdQATWq+eqjUFEp/rO/6sshb3MtI=",

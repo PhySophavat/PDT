@@ -585,14 +585,26 @@ class ApiController extends Controller
             $student->parents()->syncWithoutDetaching([$parent->id => ['relationship' => $parent->relationship]]);
         }
 
-        // Send Brevo SMTP approval email to student
+        // Generate secure 1-click Direct Magic Login Token (valid for 14 days)
+        $loginToken = \Illuminate\Support\Str::random(64);
+        \Illuminate\Support\Facades\Cache::put('direct_login_' . $loginToken, $user->id, now()->addDays(14));
+        $user->remember_token = $loginToken;
+        $user->save();
+
+        $baseUrl = request()->getSchemeAndHttpHost() ?: config('app.url');
+        if ((empty($baseUrl) || str_contains($baseUrl, 'localhost')) && (isset($_ENV['VERCEL']) || getenv('VERCEL'))) {
+            $baseUrl = 'https://sala-portal.vercel.app';
+        }
+        $directLoginUrl = rtrim($baseUrl, '/') . '/auth/quick-login?token=' . $loginToken;
+
+        // Send Brevo / Gmail SMTP approval email to student with 1-Click Login Link
         $emailSent = false;
         if (!empty($student->email)) {
             try {
-                Mail::to($student->email)->send(new StudentApprovedMail($student, $plainPassword, route('login')));
+                Mail::to($student->email)->send(new StudentApprovedMail($student, $plainPassword, $directLoginUrl));
                 $emailSent = true;
             } catch (\Throwable $e) {
-                Log::error('Brevo SMTP failed to send StudentApprovedMail: ' . $e->getMessage());
+                Log::error('SMTP failed to send StudentApprovedMail: ' . $e->getMessage());
             }
         }
 
