@@ -1453,94 +1453,6 @@ class ApiController extends Controller
 
     public function library()
     {
-        $totalBooks = (int) Book::sum('quantity');
-        $availableCopies = (int) Book::sum('available_copies');
-        $activeBorrows = BookBorrow::where('status', 'borrowed')->count();
-        $overdueBorrows = BookBorrow::where('status', 'borrowed')
-            ->where('due_date', '<', Carbon::today())
-            ->count();
-
-        // Digital Library Enhanced Stats
-        $digitalBooksCount = Book::whereNotNull('external_pdf_url')->where('external_pdf_url', '!=', '')->count();
-        $totalSubjectsCount = CourseSubject::count();
-        $brokenLinksCount = Book::where('is_broken_link', true)->count();
-
-        $khmerToArabic = ['៧' => '7', '៨' => '8', '៩' => '9', '១០' => '10', '១១' => '11', '១២' => '12'];
-        $booksByGrade = [
-            '7' => Book::whereIn('grade', ['7', '៧'])->count(),
-            '8' => Book::whereIn('grade', ['8', '៨'])->count(),
-            '9' => Book::whereIn('grade', ['9', '៩'])->count(),
-            '10' => Book::whereIn('grade', ['10', '១០'])->count(),
-            '11' => Book::whereIn('grade', ['11', '១១'])->count(),
-            '12' => Book::whereIn('grade', ['12', '១២'])->count(),
-        ];
-
-        $books = Book::with(['category', 'subject'])->latest()->get()->map(function ($b) use ($khmerToArabic) {
-            $rawGrade = trim((string) ($b->grade ?? ''));
-            if ($rawGrade === '' || $rawGrade === 'ទូទៅ' || $rawGrade === 'general' || $b->subject?->name === 'អក្សរសិល្ប៍' || $b->level === 'អក្សរសិល្ប៍') {
-                $grade = 'ទូទៅ';
-            } else {
-                $grade = $khmerToArabic[$rawGrade] ?? $rawGrade;
-            }
-            return [
-                'id' => $b->id,
-                'isbn' => $b->isbn,
-                'title' => $b->title,
-                'author' => $b->author,
-                'grade' => (string) $grade,
-                'course_subject_id' => $b->course_subject_id,
-                'subject_name' => $b->subject?->name ?? 'ទូទៅ',
-                'subject_code' => $b->subject?->code ?? '',
-                'level' => $b->level ?: 'basic', // basic, advanced, general
-                'edition' => $b->edition ?: 'បោះពុម្ពផ្លូវការ ក្រសួងអប់រំ',
-                'publication_year' => $b->publication_year ?: 2024,
-                'cover_image' => $b->cover_image,
-                'category' => $b->category?->name ?? 'សៀវភៅពុម្ព',
-                'category_id' => $b->book_category_id,
-                'publisher' => $b->publisher,
-                'external_pdf_url' => $b->external_pdf_url,
-                'views_count' => (int) $b->views_count,
-                'allow_download' => (bool) $b->allow_download,
-                'is_broken_link' => (bool) $b->is_broken_link,
-                'quantity' => $b->quantity,
-                'available' => $b->available_copies
-            ];
-        });
-
-        $subjects = CourseSubject::all()->sortBy(function ($s) {
-            if ($s->name === 'អក្សរសិល្ប៍' || $s->code === 'LIT-01') return 0;
-            if ($s->name === 'អក្សរសាស្ត្រខ្មែរ' || $s->code === 'KHM-01') return 1;
-            if ($s->name === 'គណិតវិទ្យា' || $s->code === 'MTH-01') return 2;
-            return 10 + $s->id;
-        })->values()->map(fn ($s) => [
-            'id' => $s->id,
-            'code' => $s->code,
-            'name' => $s->name,
-            'grade_level' => $s->grade_level,
-            'description' => $s->description,
-        ]);
-
-        $borrows = BookBorrow::with('book', 'student.user')->latest()->take(100)->get()->map(fn ($br) => [
-            'id' => $br->id,
-            'book_id' => $br->book_id,
-            'book' => $br->book?->title ?? 'N/A',
-            'student_id' => $br->student_id,
-            'student' => ($br->student?->display_name ?? 'N/A') . ' (' . ($br->student?->student_id_card ?? '') . ')',
-            'borrow_date' => Carbon::parse($br->borrow_date)->format('Y-m-d'),
-            'due_date' => Carbon::parse($br->due_date)->format('Y-m-d'),
-            'status' => $br->status === 'returned' ? 'Returned' : (Carbon::parse($br->due_date)->isPast() ? 'Overdue' : 'Borrowed'),
-            'status_raw' => $br->status,
-        ]);
-
-        $categories = BookCategory::all();
-        $students = Student::with('user')->get()->map(fn ($s) => [
-            'id' => $s->id,
-            'name' => $s->display_name,
-            'student_id_card' => $s->student_id_card,
-            'grade' => $s->grade,
-        ]);
-        $students = $this->sortStudentsByKhmerAlphabet($students, 'name');
-
         $authUser = Auth::user();
         $userRole = 'student';
         if ($authUser) {
@@ -1550,6 +1462,123 @@ class ApiController extends Controller
                 $userRole = 'teacher';
             }
         }
+        $canManage = in_array($userRole, ['admin', 'teacher']);
+
+        // High-Performance Cached Catalog (Books, Subjects, Categories & Base Stats)
+        $cachedLibrary = Cache::remember('digital_library_catalog_v2', 3600, function () {
+            $khmerToArabic = ['៧' => '7', '៨' => '8', '៩' => '9', '១០' => '10', '១១' => '11', '១២' => '12'];
+
+            // Fetch only required relations and columns
+            $booksCollection = Book::with(['category:id,name', 'subject:id,name,code'])->latest()->get();
+            $subjectsCollection = CourseSubject::all();
+            $categories = BookCategory::all();
+
+            $totalBooks = (int) $booksCollection->sum('quantity');
+            $availableCopies = (int) $booksCollection->sum('available_copies');
+            $digitalBooksCount = $booksCollection->filter(fn ($b) => !empty($b->external_pdf_url))->count();
+            $totalSubjectsCount = $subjectsCollection->count();
+            $brokenLinksCount = $booksCollection->filter(fn ($b) => (bool) $b->is_broken_link)->count();
+
+            $booksByGrade = ['7' => 0, '8' => 0, '9' => 0, '10' => 0, '11' => 0, '12' => 0];
+            $books = $booksCollection->map(function ($b) use ($khmerToArabic, &$booksByGrade) {
+                $rawGrade = trim((string) ($b->grade ?? ''));
+                if ($rawGrade === '' || $rawGrade === 'ទូទៅ' || $rawGrade === 'general' || $b->subject?->name === 'អក្សរសិល្ប៍' || $b->level === 'អក្សរសិល្ប៍') {
+                    $grade = 'ទូទៅ';
+                } else {
+                    $grade = $khmerToArabic[$rawGrade] ?? $rawGrade;
+                    if (isset($booksByGrade[$grade])) {
+                        $booksByGrade[$grade]++;
+                    }
+                }
+                return [
+                    'id' => $b->id,
+                    'isbn' => $b->isbn,
+                    'title' => $b->title,
+                    'author' => $b->author,
+                    'grade' => (string) $grade,
+                    'course_subject_id' => $b->course_subject_id,
+                    'subject_name' => $b->subject?->name ?? 'ទូទៅ',
+                    'subject_code' => $b->subject?->code ?? '',
+                    'level' => $b->level ?: 'basic',
+                    'edition' => $b->edition ?: 'បោះពុម្ពផ្លូវការ ក្រសួងអប់រំ',
+                    'publication_year' => $b->publication_year ?: 2024,
+                    'cover_image' => $b->cover_image,
+                    'category' => $b->category?->name ?? 'សៀវភៅពុម្ព',
+                    'category_id' => $b->book_category_id,
+                    'publisher' => $b->publisher,
+                    'external_pdf_url' => $b->external_pdf_url,
+                    'views_count' => (int) $b->views_count,
+                    'allow_download' => (bool) $b->allow_download,
+                    'is_broken_link' => (bool) $b->is_broken_link,
+                    'quantity' => $b->quantity,
+                    'available' => $b->available_copies
+                ];
+            });
+
+            $subjects = $subjectsCollection->sortBy(function ($s) {
+                if ($s->name === 'អក្សរសិល្ប៍' || $s->code === 'LIT-01') return 0;
+                if ($s->name === 'អក្សរសាស្ត្រខ្មែរ' || $s->code === 'KHM-01') return 1;
+                if ($s->name === 'គណិតវិទ្យា' || $s->code === 'MTH-01') return 2;
+                return 10 + $s->id;
+            })->values()->map(fn ($s) => [
+                'id' => $s->id,
+                'code' => $s->code,
+                'name' => $s->name,
+                'grade_level' => $s->grade_level,
+                'description' => $s->description,
+            ]);
+
+            return [
+                'books' => $books,
+                'subjects' => $subjects,
+                'categories' => $categories,
+                'stats_base' => [
+                    'total' => $totalBooks,
+                    'available' => $availableCopies,
+                    'digital_books' => $digitalBooksCount,
+                    'total_subjects' => $totalSubjectsCount,
+                    'broken_links' => $brokenLinksCount,
+                    'books_by_grade' => $booksByGrade,
+                ]
+            ];
+        });
+
+        // Borrows & Students: Only loaded if user has permission to manage/borrow
+        $borrows = [];
+        $students = [];
+        $activeBorrows = 0;
+        $overdueBorrows = 0;
+
+        if ($canManage) {
+            $today = Carbon::today();
+            $borrowsData = BookBorrow::with(['book:id,title', 'student:id,user_id,display_name,student_id_card'])->latest()->take(50)->get();
+            $activeBorrows = $borrowsData->where('status', 'borrowed')->count();
+            $overdueBorrows = $borrowsData->where('status', 'borrowed')->filter(fn ($br) => $br->due_date && Carbon::parse($br->due_date)->lt($today))->count();
+            $borrows = $borrowsData->map(fn ($br) => [
+                'id' => $br->id,
+                'book_id' => $br->book_id,
+                'book' => $br->book?->title ?? 'N/A',
+                'student_id' => $br->student_id,
+                'student' => ($br->student?->display_name ?? 'N/A') . ' (' . ($br->student?->student_id_card ?? '') . ')',
+                'borrow_date' => Carbon::parse($br->borrow_date)->format('Y-m-d'),
+                'due_date' => Carbon::parse($br->due_date)->format('Y-m-d'),
+                'status' => $br->status === 'returned' ? 'Returned' : (Carbon::parse($br->due_date)->isPast() ? 'Overdue' : 'Borrowed'),
+                'status_raw' => $br->status,
+            ]);
+
+            $students = Student::select('id', 'display_name', 'student_id_card', 'grade')->get()->map(fn ($s) => [
+                'id' => $s->id,
+                'name' => $s->display_name,
+                'student_id_card' => $s->student_id_card,
+                'grade' => $s->grade,
+            ]);
+            $students = $this->sortStudentsByKhmerAlphabet($students, 'name');
+        }
+
+        $stats = array_merge($cachedLibrary['stats_base'], [
+            'borrows' => $activeBorrows,
+            'overdue' => $overdueBorrows,
+        ]);
 
         return response()->json([
             'user' => [
@@ -1562,22 +1591,13 @@ class ApiController extends Controller
                 'can_manage_library' => $userRole === 'admin',
                 'can_edit_books' => $userRole === 'admin',
                 'can_manage_subjects' => $userRole === 'admin',
-                'can_borrow' => in_array($userRole, ['admin', 'teacher']),
+                'can_borrow' => $canManage,
             ],
-            'stats' => [
-                'total' => $totalBooks,
-                'available' => $availableCopies,
-                'borrows' => $activeBorrows,
-                'overdue' => $overdueBorrows,
-                'digital_books' => $digitalBooksCount,
-                'total_subjects' => $totalSubjectsCount,
-                'broken_links' => $brokenLinksCount,
-                'books_by_grade' => $booksByGrade,
-            ],
-            'books' => $books,
-            'subjects' => $subjects,
+            'stats' => $stats,
+            'books' => $cachedLibrary['books'],
+            'subjects' => $cachedLibrary['subjects'],
             'borrows' => $borrows,
-            'categories' => $categories,
+            'categories' => $cachedLibrary['categories'],
             'students' => $students,
         ]);
     }
@@ -1618,6 +1638,7 @@ class ApiController extends Controller
             $book = Book::find($id);
             if ($book) {
                 $book->update($validated);
+                Cache::forget('digital_library_catalog_v2');
                 return response()->json([
                     'success' => true,
                     'message' => "បានកែសម្រួលសៀវភៅ {$book->title} ដោយជោគជ័យ!",
@@ -1627,6 +1648,7 @@ class ApiController extends Controller
         }
 
         $book = Book::create($validated);
+        Cache::forget('digital_library_catalog_v2');
 
         return response()->json([
             'success' => true,
@@ -1647,6 +1669,7 @@ class ApiController extends Controller
         $title = $book->title;
         $book->borrows()->delete();
         $book->delete();
+        Cache::forget('digital_library_catalog_v2');
 
         return response()->json([
             'success' => true,
@@ -1671,6 +1694,7 @@ class ApiController extends Controller
         $book = Book::findOrFail($id);
         $isBroken = $request->has('is_broken') ? $request->boolean('is_broken') : !$book->is_broken_link;
         $book->update(['is_broken_link' => $isBroken]);
+        Cache::forget('digital_library_catalog_v2');
 
         return response()->json([
             'success' => true,
@@ -1695,6 +1719,7 @@ class ApiController extends Controller
         ]);
 
         $subject = CourseSubject::create($validated);
+        Cache::forget('digital_library_catalog_v2');
         return response()->json([
             'success' => true,
             'message' => "បានបន្ថែមមុខវិជ្ជា {$subject->name} ដោយជោគជ័យ!",
@@ -1719,6 +1744,7 @@ class ApiController extends Controller
         ]);
 
         $subject->update($validated);
+        Cache::forget('digital_library_catalog_v2');
         return response()->json([
             'success' => true,
             'message' => "បានកែសម្រួលមុខវិជ្ជា {$subject->name} ដោយជោគជ័យ!",
@@ -1738,6 +1764,7 @@ class ApiController extends Controller
         $name = $subject->name;
         Book::where('course_subject_id', $id)->update(['course_subject_id' => null]);
         $subject->delete();
+        Cache::forget('digital_library_catalog_v2');
 
         return response()->json([
             'success' => true,

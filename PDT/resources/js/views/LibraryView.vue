@@ -1230,7 +1230,7 @@ const bookmarkedIds = ref([]);
 const recentlyViewedIds = ref([]);
 const readingPagesMap = ref({});
 
-// Load user bookmarks & reading progress from localStorage
+// Load user bookmarks & reading progress from localStorage + Instant SWR Cache
 const loadLocalStorageData = () => {
   try {
     const savedBookmarks = localStorage.getItem('pdt_library_bookmarks');
@@ -1241,6 +1241,19 @@ const loadLocalStorageData = () => {
 
     const savedPages = localStorage.getItem('pdt_library_pages');
     if (savedPages) readingPagesMap.value = JSON.parse(savedPages);
+
+    // Instant SWR Cache: Render books and subjects in 0.001s without any waiting!
+    const cachedLib = localStorage.getItem('pdt_library_cache_v2');
+    if (cachedLib) {
+      const parsed = JSON.parse(cachedLib);
+      if (parsed.books && parsed.books.length > 0) {
+        booksList.value = parsed.books;
+        if (parsed.subjects) subjectsList.value = parsed.subjects;
+        if (parsed.categories) categoriesList.value = parsed.categories;
+        if (parsed.stats) stats.value = { ...stats.value, ...parsed.stats };
+        isLoading.value = false; // Show immediately!
+      }
+    }
   } catch (e) {
     console.error('Failed to load localStorage data:', e);
   }
@@ -1638,13 +1651,13 @@ const onSubjectWheel = (e) => {
   }
 };
 
-// Fetch Library Data
+// Fetch Library Data (Stale-While-Revalidate)
 const fetchLibraryData = async () => {
   if (booksList.value.length === 0) {
     isLoading.value = true;
   }
   try {
-    const res = await axios.get('/api/library', { params: { _t: Date.now() } });
+    const res = await axios.get('/api/library');
     if (res.data) {
       if (res.data.user) {
         currentUser.value = { ...currentUser.value, ...res.data.user };
@@ -1655,6 +1668,17 @@ const fetchLibraryData = async () => {
       borrowsList.value = res.data.borrows || [];
       categoriesList.value = res.data.categories || [];
       studentsList.value = [...(res.data.students || [])].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
+
+      // Save to localStorage SWR cache so future page visits render instantly
+      try {
+        localStorage.setItem('pdt_library_cache_v2', JSON.stringify({
+          books: booksList.value,
+          subjects: subjectsList.value,
+          categories: categoriesList.value,
+          stats: stats.value,
+          _cachedAt: Date.now()
+        }));
+      } catch (e) {}
 
       // If current activeTab is not permitted for this role, default to elibrary
       if (!availableTabs.value.some(t => t.id === activeTab.value)) {
