@@ -1570,12 +1570,12 @@ const executeBulkDelete = async () => {
 
     const res = await axios.post('/api/students/bulk-delete', payload);
     if (res.data && res.data.success) {
-      alert(res.data.message);
       showDeleteModal.value = false;
       selectedStudentIds.value = [];
       localStorage.removeItem('pdt_cached_students');
       notifyDataChanged();
-      await fetchStudents();
+      await fetchStudents(true);
+      alert(res.data.message);
     } else {
       alert(res.data.message || 'មិនអាចលុបទិន្នន័យបានទេ។');
     }
@@ -1800,16 +1800,36 @@ const submitEditStudent = async () => {
 // Delete Student
 const confirmDeleteStudent = async (st) => {
   if (!confirm(`តើអ្នកពិតជាចង់លុបសិស្ស "${st.name}" (អត្តលេខ: ${st.student_id_card}) មែនទេ?`)) return;
+
+  // 1. Optimistic removal: Remove immediately so the row disappears in 0s
+  const targetId = st.id;
+  const originalIndex = students.value.findIndex(s => s.id === targetId);
+  const deletedStudent = originalIndex !== -1 ? students.value[originalIndex] : null;
+
+  if (originalIndex !== -1) {
+    students.value.splice(originalIndex, 1);
+  }
+
   try {
-    const res = await axios.delete(`/api/students/${st.id}`);
+    const res = await axios.delete(`/api/students/${targetId}`);
     if (res.data && res.data.success) {
-      alert(res.data.message);
       notifyDataChanged();
-      await fetchStudents();
+      // Silently refresh in background to sync counts
+      fetchStudents(true);
+    } else {
+      // Revert if backend didn't succeed
+      if (deletedStudent && originalIndex !== -1) {
+        students.value.splice(originalIndex, 0, deletedStudent);
+      }
+      alert(res.data?.message || 'មិនអាចលុបទិន្នន័យបានទេ។');
     }
   } catch (err) {
     console.error('Delete failed:', err);
-    alert('មិនអាចលុបទិន្នន័យបានទេ។');
+    // Revert optimistic removal on error
+    if (deletedStudent && originalIndex !== -1) {
+      students.value.splice(originalIndex, 0, deletedStudent);
+    }
+    alert(err.response?.data?.message || 'មិនអាចលុបទិន្នន័យបានទេ។');
   }
 };
 

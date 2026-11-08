@@ -785,15 +785,40 @@ class ApiController extends Controller
             ], 422);
         }
 
-        // 2. Clean up child records in transaction to preserve database integrity
+        // 2. Clean up child records and associated user account in transaction to preserve database integrity
         \Illuminate\Support\Facades\DB::transaction(function () use ($student) {
+            $userId = $student->user_id;
+            $email = $student->email;
+
+            $invoiceIds = \App\Models\Invoice::where('student_id', $student->id)->pluck('id')->toArray();
+            if (!empty($invoiceIds)) {
+                \App\Models\Payment::whereIn('invoice_id', $invoiceIds)->delete();
+                \App\Models\Invoice::whereIn('id', $invoiceIds)->delete();
+            }
+
             \App\Models\ExaminationScore::where('student_id', $student->id)->delete();
             \App\Models\Attendance::where('student_id', $student->id)->delete();
             \App\Models\BookBorrow::where('student_id', $student->id)->delete();
+            \App\Models\StudentLeaveRequest::where('student_id', $student->id)->delete();
+            \Illuminate\Support\Facades\DB::table('parent_student')->where('student_id', $student->id)->delete();
+            
             $student->delete();
+
+            // Release email by deleting linked student user account from users table
+            if ($userId) {
+                \Illuminate\Support\Facades\DB::table('role_user')->where('user_id', $userId)->delete();
+                \App\Models\User::where('id', $userId)->delete();
+            } elseif (!empty($email)) {
+                $user = \App\Models\User::where('email', $email)->first();
+                if ($user) {
+                    \Illuminate\Support\Facades\DB::table('role_user')->where('user_id', $user->id)->delete();
+                    $user->delete();
+                }
+            }
         });
 
         Cache::forget('portal_dashboard_payload');
+        Cache::forget('portal_students_list');
 
         return response()->json([
             'success' => true,
@@ -822,7 +847,7 @@ class ApiController extends Controller
             ], 422);
         }
 
-        $targetStudents = $query->get(['id', 'user_id']);
+        $targetStudents = $query->get(['id', 'user_id', 'email']);
         $count = $targetStudents->count();
 
         if ($count === 0) {
@@ -834,8 +859,9 @@ class ApiController extends Controller
 
         $studentIds = $targetStudents->pluck('id')->toArray();
         $userIds = $targetStudents->pluck('user_id')->filter()->toArray();
+        $emails = $targetStudents->pluck('email')->filter()->toArray();
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($studentIds, $userIds) {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($studentIds, $userIds, $emails) {
             foreach (array_chunk($studentIds, 200) as $chunk) {
                 // Delete dependent financial records first
                 $invoiceIds = \App\Models\Invoice::whereIn('student_id', $chunk)->pluck('id')->toArray();
@@ -848,6 +874,7 @@ class ApiController extends Controller
                 \App\Models\Attendance::whereIn('student_id', $chunk)->delete();
                 \App\Models\BookBorrow::whereIn('student_id', $chunk)->delete();
                 \App\Models\StudentLeaveRequest::whereIn('student_id', $chunk)->delete();
+                \Illuminate\Support\Facades\DB::table('parent_student')->whereIn('student_id', $chunk)->delete();
                 Student::whereIn('id', $chunk)->delete();
             }
 
@@ -857,9 +884,20 @@ class ApiController extends Controller
                     \App\Models\User::whereIn('id', $chunk)->delete();
                 }
             }
+
+            if (!empty($emails)) {
+                foreach (array_chunk($emails, 200) as $chunk) {
+                    $uIds = \App\Models\User::whereIn('email', $chunk)->pluck('id')->toArray();
+                    if (!empty($uIds)) {
+                        \Illuminate\Support\Facades\DB::table('role_user')->whereIn('user_id', $uIds)->delete();
+                        \App\Models\User::whereIn('id', $uIds)->delete();
+                    }
+                }
+            }
         });
 
         Cache::forget('portal_dashboard_payload');
+        Cache::forget('portal_students_list');
 
         return response()->json([
             'success' => true,
