@@ -32,7 +32,7 @@
   <meta name="description" content="@yield('meta_description', $defaultDesc)">
   <meta name="keywords" content="@yield('meta_keywords', 'សាលារៀនជំនាន់ថ្មី, ប្រព័ន្ធគ្រប់គ្រងសាលារៀន, បណ្ណាល័យឌីជីថល, New Generation School')">
   <meta name="author" content="{{ $schoolName }}">
-  <meta name="robots" content="noindex, nofollow">
+  <meta name="robots" content="index, follow">
 
   <!-- Open Graph / Telegram / Facebook -->
   <meta property="og:locale" content="km_KH">
@@ -42,6 +42,11 @@
   <meta property="og:description" content="@yield('og_description', View::getSection('meta_description', $defaultDesc))">
   <meta property="og:url" content="{{ $currentUrl }}">
   <meta property="og:image" content="@yield('og_image', $ogImage)">
+  <meta property="og:image:secure_url" content="@yield('og_image', $ogImage)">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="{{ $schoolName }}">
 
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -56,19 +61,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
   @php
-    $cachedSettings = \Illuminate\Support\Facades\Cache::remember('portal_app_layout_settings', 300, function () {
-        $sysSettings = \App\Models\SystemSetting::allSettings();
-        $logoPath = $sysSettings['school_logo'] ?? '';
-        $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : (str_starts_with($logoPath, 'images/') ? asset($logoPath) : asset('storage/' . ltrim($logoPath, '/')))) : asset('images/logo.png');
-        $activeYear = $sysSettings['current_academic_year'] ?? (\App\Models\AcademicYear::where('is_current', true)->value('name') ?: '2025-2026');
-        return [
-            'logoUrl' => $logoUrl,
-            'school_name' => $sysSettings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី',
-            'school_name_en' => $sysSettings['school_name_en'] ?? 'New Generation School',
-            'activeYear' => $activeYear,
-        ];
-    });
-    $logoUrl = $cachedSettings['logoUrl'];
     $authUser = Auth::user();
     $roleName = 'Student';
     $roleKhmer = 'សិស្សានុសិស្ស';

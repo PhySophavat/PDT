@@ -88,13 +88,18 @@ Route::get('/api/public/students-by-class', [AttendanceController::class, 'getPu
 Route::get('/teacher-leave-request', [TeacherController::class, 'showPublicLeaveForm'])->name('public.teacher-leave-request');
 Route::post('/teacher-leave-request', [TeacherController::class, 'submitPublicLeaveForm'])->name('public.teacher-leave-request.post');
 
+// Shared closure to render Vue 3 Single Page Application
+$spa = fn() => view('spa');
+
 // Public Examination Ranking Sheet View (Telegram / Facebook Sharing & Direct Parent/Student View)
 Route::get('/examinations/ranking-sheet', [ExaminationController::class, 'rankingSheet'])->name('examinations.ranking-sheet.default');
 Route::get('/examinations/{examination}/ranking-sheet', [ExaminationController::class, 'rankingSheet'])->where('examination', '.*')->name('examinations.ranking-sheet');
 
-Route::middleware(['auth'])->group(function () {
-    // Shared closure to render Vue 3 Single Page Application
-    $spa = fn() => view('spa');
+// Public Digital Library View (Telegram / Facebook Sharing & Direct Public Browsing)
+Route::get('/library', $spa)->name('library.index');
+Route::get('/api/library', [ApiController::class, 'library']);
+
+Route::middleware(['auth'])->group(function () use ($spa) {
 
     // JSON API Endpoints for Vue 3 frontend
     Route::prefix('api')->group(function () {
@@ -164,7 +169,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/finance/invoices', [ApiController::class, 'storeInvoice']);
         Route::post('/finance/payments', [ApiController::class, 'storePayment']);
         Route::post('/finance/expenses', [ApiController::class, 'storeExpense']);
-        Route::get('/library', [ApiController::class, 'library']);
         Route::post('/library/extract-pdf', [ApiController::class, 'extractPdf']);
         Route::post('/library/books', [ApiController::class, 'storeBook']);
         Route::delete('/library/books/{id}', [ApiController::class, 'deleteBook']);
@@ -295,7 +299,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/finance/payments/{payment}/receipt', [FinanceController::class, 'printReceipt'])->name('finance.receipt');
 
     // 12. Library Management
-    Route::get('/library', $spa)->name('library.index');
     Route::post('/library/books', [LibraryController::class, 'storeBook'])->name('library.books.store');
     Route::post('/library/store-book', [LibraryController::class, 'storeBook'])->name('library.store_book');
     Route::post('/library/extract-pdf', [LibraryController::class, 'extractPdf'])->name('library.extract_pdf');
