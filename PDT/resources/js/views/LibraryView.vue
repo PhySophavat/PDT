@@ -1093,14 +1093,149 @@
           </a>
         </div>
 
-        <!-- Reader Iframe Body -->
-        <div class="flex-1 bg-slate-950 w-full min-h-0 relative overflow-auto" style="-webkit-overflow-scrolling: touch;">
+        <!-- Reader Body: Interactive Seavphev 2026 Viewer OR Google Drive Iframe -->
+        <div class="flex-1 bg-slate-950 w-full min-h-0 relative overflow-hidden flex flex-col">
+          <!-- 1. Interactive 2026 New Curriculum Reader (for Seavphev Siksa Books) -->
+          <div v-if="isSeavphevBook" class="w-full h-full flex flex-col bg-slate-950 text-white select-none">
+            <!-- Dedicated Lesson Navigation & Zoom Control Bar -->
+            <div class="px-3 sm:px-4 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-2 flex-wrap shrink-0">
+              <!-- Lesson Dropdown -->
+              <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+                <button 
+                  type="button" 
+                  @click="prevLesson" 
+                  :disabled="selectedLessonIndex === 0"
+                  class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-xs text-slate-300 transition"
+                  title="មេរៀនមុន"
+                >
+                  <i class="fa-solid fa-chevron-left"></i>
+                </button>
+
+                <select 
+                  v-model.number="selectedLessonIndex" 
+                  class="flex-1 max-w-sm sm:max-w-md px-2.5 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs font-semibold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 truncate"
+                >
+                  <option 
+                    v-for="(les, idx) in math11Lessons" 
+                    :key="idx" 
+                    :value="idx"
+                  >
+                    {{ les.chapter }} » {{ les.title }} ({{ les.count }} ទំព័រ)
+                  </option>
+                </select>
+
+                <button 
+                  type="button" 
+                  @click="nextLesson" 
+                  :disabled="selectedLessonIndex >= math11Lessons.length - 1"
+                  class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-xs text-slate-300 transition"
+                  title="មេរៀនបន្ទាប់"
+                >
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+
+              <!-- Zoom Controls & Badge -->
+              <div class="flex items-center gap-2">
+                <span class="hidden md:inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] font-bold">
+                  <i class="fa-solid fa-sparkles text-[9px]"></i>
+                  <span>កម្មវិធីថ្មី ២០២៦</span>
+                </span>
+
+                <div class="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700">
+                  <button 
+                    type="button" 
+                    @click="seavphevZoom = Math.max(50, seavphevZoom - 15)" 
+                    class="w-6 h-6 rounded flex items-center justify-center text-xs text-slate-300 hover:bg-slate-700 cursor-pointer"
+                    title="Zoom Out"
+                  >
+                    <i class="fa-solid fa-minus"></i>
+                  </button>
+                  <span class="px-2 text-[11px] font-mono text-slate-300">{{ seavphevZoom }}%</span>
+                  <button 
+                    type="button" 
+                    @click="seavphevZoom = Math.min(150, seavphevZoom + 15)" 
+                    class="w-6 h-6 rounded flex items-center justify-center text-xs text-slate-300 hover:bg-slate-700 cursor-pointer"
+                    title="Zoom In"
+                  >
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Page Image List Scroll Area -->
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 flex flex-col items-center gap-6" style="-webkit-overflow-scrolling: touch;">
+              <div 
+                v-for="page in currentLessonPages" 
+                :key="page.num" 
+                class="transition-all duration-150 flex flex-col items-center"
+                :style="{ width: `${seavphevZoom}%`, maxWidth: '1000px' }"
+              >
+                <div class="w-full bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-800">
+                  <img 
+                    :src="page.src" 
+                    :alt="page.alt" 
+                    class="w-full h-auto block" 
+                    loading="lazy" 
+                  />
+                </div>
+                <div class="text-[11px] text-slate-400 font-medium py-1.5 flex items-center gap-1.5">
+                  <i class="fa-solid fa-book-open text-[10px] text-indigo-400"></i>
+                  <span>{{ currentLesson.title }} • ទំព័រ {{ page.num }} / {{ currentLesson.count }}</span>
+                </div>
+              </div>
+
+              <!-- End of Lesson Action Bar -->
+              <div class="w-full max-w-md py-6 text-center space-y-3">
+                <p class="text-xs text-slate-400">បានបញ្ចប់ {{ currentLesson.title }}</p>
+                <button 
+                  v-if="selectedLessonIndex < math11Lessons.length - 1"
+                  type="button" 
+                  @click="nextLesson" 
+                  class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/30 cursor-pointer"
+                >
+                  <span>បន្តទៅមេរៀនបន្ទាប់ ({{ math11Lessons[selectedLessonIndex + 1].title }})</span>
+                  <i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Standard Embeddable PDF/Google Drive viewer -->
           <iframe 
-            :src="readerIframeUrl || currentPdfUrl" 
+            v-else-if="readerIframeUrl"
+            :src="readerIframeUrl" 
             class="w-full h-full border-0 block" 
             allow="autoplay; fullscreen"
             style="-webkit-overflow-scrolling: touch; touch-action: auto;"
           ></iframe>
+
+          <!-- 3. External webpage / non-embeddable URL fallback -->
+          <div 
+            v-else-if="currentPdfUrl"
+            class="w-full h-full flex flex-col items-center justify-center gap-6 p-8 text-center"
+          >
+            <div class="w-20 h-20 bg-indigo-900/60 rounded-3xl flex items-center justify-center shadow-lg">
+              <i class="fa-solid fa-book-open text-4xl text-indigo-300"></i>
+            </div>
+            <div class="space-y-2">
+              <h3 class="text-white font-bold text-lg">{{ currentPdfTitle }}</h3>
+              <p class="text-slate-400 text-sm max-w-xs">
+                សៀវភៅនេះមានលក្ខណៈ Interactive Viewer។<br>ត្រូវបើកក្នុង Browser Tab ថ្មី ដើម្បីអាន។
+              </p>
+            </div>
+            <a 
+              :href="currentPdfUrl" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2.5 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-2xl font-bold text-sm transition shadow-lg shadow-indigo-900/40 cursor-pointer"
+            >
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              បើកអានក្នុង Browser ថ្មី
+            </a>
+            <p class="text-slate-600 text-xs break-all max-w-sm">{{ currentPdfUrl }}</p>
+          </div>
         </div>
 
         <!-- Mobile Bottom Action Bar (Fixed footer for phone users) -->
@@ -1566,7 +1701,94 @@ const selectStudent = (student) => {
   showStudentSuggestions.value = false;
 };
 
+// Interactive Digital Textbook (New 2026 Curriculum for Grade 11 Math Science)
+const math11Lessons = [
+  // ភាគ ១
+  { title: "១. ស្វ៊ីតចំនួនពិត", chapter: "ភាគ ១ - ជំពូកទី ១: ស្វ៊ីតចំនួនពិត", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ch1_les1", count: 7, ext: "avif" },
+  { title: "២. ស្វ៊ីតនព្វន្ត", chapter: "ភាគ ១ - ជំពូកទី ១: ស្វ៊ីតចំនួនពិត", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ch1_les2", count: 6, ext: "avif" },
+  { title: "៣. ស្វ៊ីតធរណីមាត្រ", chapter: "ភាគ ១ - ជំពូកទី ១: ស្វ៊ីតចំនួនពិត", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ch1_les3", count: 10, ext: "avif" },
+  { title: "៤. ផលបូកតួនៃស្វ៊ីតផ្សេងៗ", chapter: "ភាគ ១ - ជំពូកទី ១: ស្វ៊ីតចំនួនពិត", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ch1_les4", count: 12, ext: "avif" },
+  { title: "៥. ទំនាក់ទំនងតួនៃស្វ៊ីត", chapter: "ភាគ ១ - ជំពូកទី ១: ស្វ៊ីតចំនួនពិត", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ch1_les5", count: 8, ext: "avif" },
+  { title: "៦. វិធានអនុមានរួមគណិតវិទ្យា", chapter: "ភាគ ១ - ជំពូកទី ១: ស្វ៊ីតចំនួនពិត", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ch1_les6", count: 13, ext: "avif" },
+  { title: "១. អនុគមន៍អិចស្ប៉ូណង់ស្យែល", chapter: "ភាគ ១ - ជំពូកទី ២: អនុគមន៍អិចស្ប៉ូណង់ស្យែល និងឡូការីត", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ch2_les1", count: 15, ext: "avif" },
+  { title: "២. អនុគមន៍ឡូការីត", chapter: "ភាគ ១ - ជំពូកទី ២: អនុគមន៍អិចស្ប៉ូណង់ស្យែល និងឡូការីត", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ch2_les2", count: 17, ext: "avif" },
+  { title: "១. អនុគមន៍ត្រីកោណមាត្រ", chapter: "ភាគ ១ - ជំពូកទី ៣: អនុគមន៍ត្រីកោណមាត្រ", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ch3_les1", count: 21, ext: "avif" },
+  { title: "២. រូបមន្តត្រីកោណមាត្រ", chapter: "ភាគ ១ - ជំពូកទី ៣: អនុគមន៍ត្រីកោណមាត្រ", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ch3_les2", count: 10, ext: "avif" },
+  { title: "៣. អនុគមន៍ច្រាសនៃអនុគមន៍ត្រីកោណមាត្រ", chapter: "ភាគ ១ - ជំពូកទី ៣: អនុគមន៍ត្រីកោណមាត្រ", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ch3_les3", count: 8, ext: "avif" },
+  { title: "៤. សមីការនិងវិសមីការត្រីកោណមាត្រ", chapter: "ភាគ ១ - ជំពូកទី ៣: អនុគមន៍ត្រីកោណមាត្រ", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ch3_les4", count: 14, ext: "avif" },
+  { title: "៥. សមីការនិងវិសមីការត្រីកោណមាត្រផ្សេងទៀត", chapter: "ភាគ ១ - ជំពូកទី ៣: អនុគមន៍ត្រីកោណមាត្រ", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ch3_les5", count: 19, ext: "avif" },
+  { title: "១. ម៉ាទ្រីស", chapter: "ភាគ ១ - ជំពូកទី ៤: ម៉ាទ្រីស និងដេតែរមីណង់", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ch4_les1", count: 19, ext: "avif" },
+  { title: "២. ដេតែរមីណង់", chapter: "ភាគ ១ - ជំពូកទី ៤: ម៉ាទ្រីស និងដេតែរមីណង់", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ch4_les2", count: 8, ext: "avif" },
+  { title: "៣. មេរៀនបន្ថែម (ភាគ១ បញ្ចប់)", chapter: "ភាគ ១ - ជំពូកទី ៤: ម៉ាទ្រីស និងដេតែរមីណង់", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p1/11sc_p1_ending", count: 30, ext: "avif" },
+  // ភាគ ២
+  { title: "១. លីមីតនិងដេរីវេ", chapter: "ភាគ ២ - ជំពូកទី ៥: លីមីត និងដេរីវេ", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p2/11sc_p2_ch5_les1", count: 21, ext: "avif" },
+  { title: "២. អនុវត្តនៃដេរីវេ", chapter: "ភាគ ២ - ជំពូកទី ៥: លីមីត និងដេរីវេ", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p2/11sc_p2_ch5_les2", count: 14, ext: "avif" },
+  { title: "៣. អថេរភាពនិងក្រាបនៃអនុគមន៍", chapter: "ភាគ ២ - ជំពូកទី ៥: លីមីត និងដេរីវេ", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p2/11sc_p2_ch5_les3", count: 18, ext: "avif" },
+  { title: "៤. អនុវត្តន៍ដេរីវេចំពោះសមីការនិងវិសមីការ", chapter: "ភាគ ២ - ជំពូកទី ៥: លីមីត និងដេរីវេ", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p2/11sc_p2_ch5_les4", count: 23, ext: "avif" },
+  { title: "១. ចម្លាស់", chapter: "ភាគ ២ - ជំពូកទី ៦: ចម្លាស់ បន្សំ និងប្រូបាប", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p2/11sc_p2_ch6_les1", count: 15, ext: "avif" },
+  { title: "២. បន្សំ", chapter: "ភាគ ២ - ជំពូកទី ៦: ចម្លាស់ បន្សំ និងប្រូបាប", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p2/11sc_p2_ch6_les2", count: 10, ext: "avif" },
+  { title: "៣. ប្រូបាប", chapter: "ភាគ ២ - ជំពូកទី ៦: ចម្លាស់ បន្សំ និងប្រូបាប", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p2/11sc_p2_ch6_les3", count: 33, ext: "avif" },
+  { title: "១. រង្វាស់ទីតាំងនៃទិន្នន័យ", chapter: "ភាគ ២ - ជំពូកទី ៧: ស្ថិតិវិភាគ", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p2/11sc_p2_ch7_les1", count: 9, ext: "avif" },
+  { title: "២. រង្វាស់នៃការភាយ", chapter: "ភាគ ២ - ជំពូកទី ៧: ស្ថិតិវិភាគ", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p2/11sc_p2_ch7_les2", count: 15, ext: "avif" },
+  { title: "១. រូបធរណីមាត្រក្នុងលំហ", chapter: "ភាគ ២ - ជំពូកទី ៨: ធរណីមាត្រក្នុងលំហ", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p2/11sc_p2_ch8_les1", count: 11, ext: "avif" },
+  { title: "២. បន្ទាត់និងប្លង់នៅក្នុងលំហ", chapter: "ភាគ ២ - ជំពូកទី ៨: ធរណីមាត្រក្នុងលំហ", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p2/11sc_p2_ch8_les2", count: 8, ext: "avif" },
+  { title: "៣. ភាពអរតូកូណាល់ក្នុងលំហ", chapter: "ភាគ ២ - ជំពូកទី ៨: ធរណីមាត្រក្នុងលំហ", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p2/11sc_p2_ch8_les3", count: 23, ext: "avif" },
+  { title: "៤. វចនានុក្រម (Glossary)", chapter: "ភាគ ២ - ជំពូកទី ៨: ធរណីមាត្រក្នុងលំហ", folder: "https://cdn.seavphevsiksa.com/textbook/new2026/math11_sc_p2/11sc_p2_glossary", count: 4, ext: "avif" }
+];
+
+const selectedLessonIndex = ref(0);
+const seavphevZoom = ref(90); // percentage
+
+const isSeavphevBook = computed(() => {
+  if (!currentPdfUrl.value) return false;
+  return currentPdfUrl.value.includes('seavphevsiksa.com/grade-11/math-sc-new-textbook');
+});
+
+const currentLesson = computed(() => {
+  return math11Lessons[selectedLessonIndex.value] || math11Lessons[0];
+});
+
+const currentLessonPages = computed(() => {
+  const les = currentLesson.value;
+  if (!les) return [];
+  const pages = [];
+  const padLen = les.count >= 100 ? 3 : 2;
+  for (let i = 1; i <= les.count; i++) {
+    const pageNum = String(i).padStart(padLen, '0');
+    pages.push({
+      num: i,
+      src: `${les.folder}/temp_page-${pageNum}.${les.ext}`,
+      alt: `${les.title} - ទំព័រ ${i}`
+    });
+  }
+  return pages;
+});
+
+const nextLesson = () => {
+  if (selectedLessonIndex.value < math11Lessons.length - 1) {
+    selectedLessonIndex.value++;
+  }
+};
+
+const prevLesson = () => {
+  if (selectedLessonIndex.value > 0) {
+    selectedLessonIndex.value--;
+  }
+};
+
 // URL Helpers for Google Drive Preview & Download
+const isEmbeddableUrl = (url) => {
+  if (!url) return false;
+  // Google Drive links are always embeddable
+  if (url.includes('drive.google.com')) return true;
+  // Direct PDF files are embeddable
+  if (url.match(/\.pdf(\?.*)?$/i)) return true;
+  // Known embeddable PDF hosts
+  if (url.includes('saladigital') || url.includes('archive.org') || url.includes('scribd.com')) return true;
+  // Anything else (webpages, SPAs, etc.) — not embeddable
+  return false;
+};
+
 const readerIframeUrl = computed(() => {
   if (!currentPdfUrl.value) return '';
   const url = currentPdfUrl.value;
@@ -1576,8 +1798,12 @@ const readerIframeUrl = computed(() => {
     if (!url.includes('/preview')) return `${url.replace(/\/+$/, '')}/preview`;
     return url;
   }
-  // For external direct PDFs (e.g., SalaDigital), embed via Google Drive viewer
-  return `https://drive.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(url)}`;
+  // Direct PDF files: embed via Google Drive viewer
+  if (url.match(/\.pdf(\?.*)?$/i)) {
+    return `https://drive.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(url)}`;
+  }
+  // Non-embeddable URLs (webpages, SPAs) — return empty so we show external link UI
+  return '';
 });
 
 const currentPdfFileId = computed(() => {
