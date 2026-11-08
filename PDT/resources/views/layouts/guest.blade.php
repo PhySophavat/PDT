@@ -12,7 +12,7 @@
       $schoolNameEn = $sysSettings['school_name_en'] ?? 'New Generation School';
       $logoPath = $sysSettings['school_logo'] ?? '';
       $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : asset('storage/' . ltrim($logoPath, '/'))) : asset('images/logo.png');
-      $ogImage = asset('images/og-preview.png');
+      $ogImage = asset('images/og-preview.jpg');
       $currentUrl = url()->current();
       $defaultDesc = 'ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថលកម្ពុជា ' . $schoolName . ' ផ្តល់ជូនសៀវភៅសិក្សាគោល MoEYS ពីថ្នាក់ទី ៧ ដល់ទី ១២ ការគ្រប់គ្រងវត្តមាន ពិន្ទុ និងតារាងចំណាត់ថ្នាក់សិស្ស។';
     @endphp
@@ -35,8 +35,9 @@
     <meta property="og:url" content="{{ $currentUrl }}">
     <meta property="og:image" content="@yield('og_image', $ogImage)">
     <meta property="og:image:secure_url" content="@yield('og_image', $ogImage)">
-    <meta property="og:image:width" content="512">
-    <meta property="og:image:height" content="512">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="{{ $schoolName }}">
 
     <!-- Twitter / X Card -->
