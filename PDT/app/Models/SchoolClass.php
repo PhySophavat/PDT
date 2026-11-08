@@ -46,7 +46,17 @@ class SchoolClass extends Model
 
     public function scopeOrdered($query)
     {
-        return $query->orderByRaw('CAST(grade AS INTEGER) ASC, section ASC, name ASC');
+        $driver = $query->getConnection()->getDriverName();
+        if ($driver === 'sqlite') {
+            return $query->orderByRaw('CAST(grade AS INTEGER) ASC')
+                         ->orderBy('section', 'asc')
+                         ->orderBy('name', 'asc');
+        }
+
+        // MySQL / TiDB / MariaDB use CAST(... AS UNSIGNED)
+        return $query->orderByRaw('CAST(grade AS UNSIGNED) ASC')
+                     ->orderBy('section', 'asc')
+                     ->orderBy('name', 'asc');
     }
 
     public static function orderedList()
