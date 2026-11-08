@@ -68,6 +68,15 @@
     "DB_PASSWORD": "H5GamPQkivCPJqR9",
     "DB_SSL": "true",
     "MYSQL_ATTR_SSL_CA": "PDT/storage/certs/ca.pem",
-    "MYSQL_ATTR_SSL_VERIFY_SERVER_CERT": "false"
+    "MYSQL_ATTR_SSL_VERIFY_SERVER_CERT": "false",
+    "QUEUE_CONNECTION": "sync",
+    "MAIL_MAILER": "smtp",
+    "MAIL_HOST": "smtp.gmail.com",
+    "MAIL_PORT": "587",
+    "MAIL_USERNAME": "physophavat@gmail.com",
+    "MAIL_PASSWORD": "wblqwclgdcgeyyzu",
+    "MAIL_ENCRYPTION": "tls",
+    "MAIL_FROM_ADDRESS": "physophavat@gmail.com",
+    "MAIL_FROM_NAME": "សាលារៀន ជំនាន់ថ្មី PDT"
   }
 }
