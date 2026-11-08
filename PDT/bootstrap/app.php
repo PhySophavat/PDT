@@ -15,8 +15,16 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'api/*',
             'public/*',
-            'leave-request*',
-            'teacher-leave-request*',
+            'leave-request',
+            'leave-request/*',
+            'teacher-leave-request',
+            'teacher-leave-request/*',
+            'register-student',
+            'register-student/*',
+            'register-teacher',
+            'register-teacher/*',
+            'register-parent',
+            'register-parent/*',
             'register-*',
             'register/*',
         ]);
@@ -28,14 +36,25 @@ $app = Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {
-            if ($request->is('login') || $request->is('/')) {
-                return redirect()->route('login')->with('error', 'សម័យការរបស់អ្នកបានផុតកំណត់ សូមសាកល្បងចូលម្តងទៀត។');
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, \Illuminate\Http\Request $request) {
+            if ($e->getStatusCode() === 419) {
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => 'CSRF token mismatch. Please refresh.'], 419);
+                }
+                if ($request->is('login') || $request->is('/')) {
+                    return redirect()->route('login')->with('error', 'សម័យការរបស់អ្នកបានផុតកំណត់ សូមព្យាយាមចូលម្តងទៀត។');
+                }
+                return redirect()->back()->with('error', 'សម័យការរបស់អ្នកបានផុតកំណត់ សូមព្យាយាមម្តងទៀត។');
             }
+        });
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'CSRF token mismatch. Please refresh.'], 419);
             }
-            return redirect()->back()->with('error', 'សម័យការរបស់អ្នកបានផុតកំណត់ សូមសាកល្បងម្តងទៀត។');
+            if ($request->is('login') || $request->is('/')) {
+                return redirect()->route('login')->with('error', 'សម័យការរបស់អ្នកបានផុតកំណត់ សូមព្យាយាមចូលម្តងទៀត។');
+            }
+            return redirect()->back()->with('error', 'សម័យការរបស់អ្នកបានផុតកំណត់ សូមព្យាយាមម្តងទៀត។');
         });
     })->create();
 
