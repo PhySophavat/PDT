@@ -17,7 +17,7 @@
       }
     },
     {
-      "src": "/(favicon.ico|robots.txt)",
+      "src": "/(favicon.ico|robots.txt|sitemap.xml)",
       "dest": "/public/$1"
     },
     {

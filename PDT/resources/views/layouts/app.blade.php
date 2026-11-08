@@ -4,7 +4,50 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>@yield('title', 'sala-portal')</title>
+  @php
+    $cachedSettings = \Illuminate\Support\Facades\Cache::remember('portal_app_layout_settings', 300, function () {
+        $sysSettings = \App\Models\SystemSetting::allSettings();
+        $logoPath = $sysSettings['school_logo'] ?? '';
+        $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : (str_starts_with($logoPath, 'images/') ? asset($logoPath) : asset('storage/' . ltrim($logoPath, '/')))) : asset('images/logo.png');
+        $activeYear = $sysSettings['current_academic_year'] ?? (\App\Models\AcademicYear::where('is_current', true)->value('name') ?: '2025-2026');
+        return [
+            'logoUrl' => $logoUrl,
+            'school_name' => $sysSettings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី',
+            'school_name_en' => $sysSettings['school_name_en'] ?? 'New Generation School',
+            'activeYear' => $activeYear,
+        ];
+    });
+    $logoUrl = $cachedSettings['logoUrl'];
+    $schoolName = $cachedSettings['school_name'];
+    $schoolNameEn = $cachedSettings['school_name_en'];
+    $ogImage = asset('images/og-preview.png');
+    $currentUrl = url()->current();
+    $defaultDesc = 'ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថល ' . $schoolName . ' - វត្តមាន ពិន្ទុ កាលវិភាគ និងបណ្ណាល័យអេឡិចត្រូនិច។';
+  @endphp
+  <title>@yield('title', $schoolName . ' | ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថល')</title>
+  <link rel="icon" type="image/png" href="{{ $logoUrl }}">
+  <link rel="canonical" href="{{ $currentUrl }}">
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="@yield('meta_description', $defaultDesc)">
+  <meta name="keywords" content="@yield('meta_keywords', 'សាលារៀនជំនាន់ថ្មី, ប្រព័ន្ធគ្រប់គ្រងសាលារៀន, បណ្ណាល័យឌីជីថល, New Generation School')">
+  <meta name="author" content="{{ $schoolName }}">
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Open Graph / Telegram / Facebook -->
+  <meta property="og:locale" content="km_KH">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ $schoolName }}">
+  <meta property="og:title" content="@yield('og_title', View::getSection('title', $schoolName . ' | ប្រព័ន្ធគ្រប់គ្រងសាលារៀន'))">
+  <meta property="og:description" content="@yield('og_description', View::getSection('meta_description', $defaultDesc))">
+  <meta property="og:url" content="{{ $currentUrl }}">
+  <meta property="og:image" content="@yield('og_image', $ogImage)">
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="@yield('og_title', View::getSection('title', $schoolName))">
+  <meta name="twitter:description" content="@yield('og_description', View::getSection('meta_description', $defaultDesc))">
+  <meta name="twitter:image" content="@yield('og_image', $ogImage)">
   
   <!-- Typography matching Attendance Reference -->
   <link rel="preconnect" href="https://fonts.googleapis.com">

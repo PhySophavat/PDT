@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <!-- Main School Portal / Login -->
+  <url>
+    <loc>https://sala-portal.vercel.app/</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://sala-portal.vercel.app/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sala-portal.vercel.app/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://sala-portal.vercel.app/"/>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Examination Ranking Sheet -->
+  <url>
+    <loc>https://sala-portal.vercel.app/examinations/ranking-sheet</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Public Student Registration -->
+  <url>
+    <loc>https://sala-portal.vercel.app/register-student</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Public Teacher Registration -->
+  <url>
+    <loc>https://sala-portal.vercel.app/register-teacher</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Public Parent Registration -->
+  <url>
+    <loc>https://sala-portal.vercel.app/register-parent</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Public Student Leave Request -->
+  <url>
+    <loc>https://sala-portal.vercel.app/leave-request</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Public Teacher Leave Request -->
+  <url>
+    <loc>https://sala-portal.vercel.app/teacher-leave-request</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+</urlset>

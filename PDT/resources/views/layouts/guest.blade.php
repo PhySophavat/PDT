@@ -8,11 +8,59 @@
 
     @php
       $sysSettings = \App\Models\SystemSetting::allSettings();
+      $schoolName = $sysSettings['school_name'] ?? 'សាលារៀន ជំនាន់ថ្មី';
+      $schoolNameEn = $sysSettings['school_name_en'] ?? 'New Generation School';
       $logoPath = $sysSettings['school_logo'] ?? '';
       $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : asset('storage/' . ltrim($logoPath, '/'))) : asset('images/logo.png');
+      $ogImage = asset('images/og-preview.png');
+      $currentUrl = url()->current();
+      $defaultDesc = 'ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថលកម្ពុជា ' . $schoolName . ' ផ្តល់ជូនសៀវភៅសិក្សាគោល MoEYS ពីថ្នាក់ទី ៧ ដល់ទី ១២ ការគ្រប់គ្រងវត្តមាន ពិន្ទុ និងតារាងចំណាត់ថ្នាក់សិស្ស។';
     @endphp
-    <title>@yield('title', 'sala-portal')</title>
+    <title>@yield('title', $schoolName . ' | ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថល')</title>
     <link rel="icon" type="image/png" href="{{ $logoUrl }}">
+    <link rel="canonical" href="{{ $currentUrl }}">
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="@yield('meta_description', $defaultDesc)">
+    <meta name="keywords" content="@yield('meta_keywords', 'សាលារៀនជំនាន់ថ្មី, ប្រព័ន្ធគ្រប់គ្រងសាលារៀន, បណ្ណាល័យឌីជីថល, ពិន្ទុប្រឡង, តារាងចំណាត់ថ្នាក់, សៀវភៅពុម្ព MoEYS, New Generation School, Digital Library Cambodia')">
+    <meta name="author" content="{{ $schoolName }}">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+
+    <!-- Open Graph / Facebook / Telegram Sharing -->
+    <meta property="og:locale" content="km_KH">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ $schoolName }}">
+    <meta property="og:title" content="@yield('og_title', View::getSection('title', $schoolName . ' | ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថល'))">
+    <meta property="og:description" content="@yield('og_description', View::getSection('meta_description', $defaultDesc))">
+    <meta property="og:url" content="{{ $currentUrl }}">
+    <meta property="og:image" content="@yield('og_image', $ogImage)">
+    <meta property="og:image:secure_url" content="@yield('og_image', $ogImage)">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:alt" content="{{ $schoolName }}">
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('og_title', View::getSection('title', $schoolName . ' | ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថល'))">
+    <meta name="twitter:description" content="@yield('og_description', View::getSection('meta_description', $defaultDesc))">
+    <meta name="twitter:image" content="@yield('og_image', $ogImage)">
+
+    <!-- Schema.org JSON-LD Structured Data for Google Search -->
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "EducationalOrganization",
+      "name": "{{ $schoolName }}",
+      "alternateName": "{{ $schoolNameEn }}",
+      "url": "{{ url('/') }}",
+      "logo": "{{ $logoUrl }}",
+      "description": "{{ $defaultDesc }}",
+      "address": {
+        "@@type": "PostalAddress",
+        "addressCountry": "KH"
+      }
+    }
+    </script>
 
     <!-- Progressive Web App (PWA) Meta & Links -->
     <link rel="manifest" href="/manifest.json">

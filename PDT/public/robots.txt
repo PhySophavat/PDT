@@ -1,2 +1,17 @@
 User-agent: *
-Disallow:
+Allow: /
+Allow: /examinations/
+Allow: /leave-request
+Allow: /teacher-leave-request
+Allow: /register-student
+Allow: /register-teacher
+Allow: /register-parent
+
+# Block sensitive routes from indexing
+Disallow: /admin
+Disallow: /api/
+Disallow: /telescope
+Disallow: /csrf-token
+
+# Sitemap declaration
+Sitemap: https://sala-portal.vercel.app/sitemap.xml

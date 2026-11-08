@@ -3,7 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>តារាងចំណាត់ថ្នាក់ - ថ្នាក់ទី {{ $className }} - {{ $examination->title }}</title>
+    <title>តារាងចំណាត់ថ្នាក់ - ថ្នាក់ទី {{ $className }} - {{ $examination->title }} | {{ $schoolName }}</title>
+    
+    <!-- SEO & Canonical -->
+    <link rel="canonical" href="{{ url()->full() }}">
+    <meta name="description" content="តារាងចំណាត់ថ្នាក់សិស្សប្រឡងប្រចាំខែ ថ្នាក់ទី {{ $className }} - {{ $examination->title }} ឆ្នាំសិក្សា {{ $academicYearName ?? ($academicYear ?? '២០២៥ - ២០២៦') }} {{ $schoolName }}">
+    <meta name="author" content="{{ $schoolName }}">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph (Facebook / Telegram Sharing) -->
+    <meta property="og:locale" content="km_KH">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="{{ $schoolName }}">
+    <meta property="og:title" content="តារាងចំណាត់ថ្នាក់ - ថ្នាក់ទី {{ $className }} - {{ $examination->title }}">
+    <meta property="og:description" content="ពិនិត្យតារាងចំណាត់ថ្នាក់សិស្សប្រឡង ថ្នាក់ទី {{ $className }} ក្នុង {{ $examination->title }} ឆ្នាំសិក្សា {{ $academicYearName ?? ($academicYear ?? '២០២៥ - ២០២៦') }} នៃ{{ $schoolName }}។">
+    <meta property="og:url" content="{{ url()->full() }}">
+    <meta property="og:image" content="{{ asset('images/og-preview.png') }}">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:alt" content="{{ $schoolName }} - ថ្នាក់ទី {{ $className }}">
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="តារាងចំណាត់ថ្នាក់ - ថ្នាក់ទី {{ $className }} - {{ $examination->title }}">
+    <meta name="twitter:description" content="ពិនិត្យតារាងចំណាត់ថ្នាក់សិស្សប្រឡង ថ្នាក់ទី {{ $className }} ក្នុង {{ $examination->title }} ឆ្នាំសិក្សា {{ $academicYearName ?? ($academicYear ?? '២០២៥ - ២០២៦') }}។">
+    <meta name="twitter:image" content="{{ asset('images/og-preview.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700;800&family=Moul&display=swap" rel="stylesheet">

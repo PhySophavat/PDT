@@ -88,6 +88,10 @@ Route::get('/api/public/students-by-class', [AttendanceController::class, 'getPu
 Route::get('/teacher-leave-request', [TeacherController::class, 'showPublicLeaveForm'])->name('public.teacher-leave-request');
 Route::post('/teacher-leave-request', [TeacherController::class, 'submitPublicLeaveForm'])->name('public.teacher-leave-request.post');
 
+// Public Examination Ranking Sheet View (Telegram / Facebook Sharing & Direct Parent/Student View)
+Route::get('/examinations/ranking-sheet', [ExaminationController::class, 'rankingSheet'])->name('examinations.ranking-sheet.default');
+Route::get('/examinations/{examination}/ranking-sheet', [ExaminationController::class, 'rankingSheet'])->where('examination', '.*')->name('examinations.ranking-sheet');
+
 Route::middleware(['auth'])->group(function () {
     // Shared closure to render Vue 3 Single Page Application
     $spa = fn() => view('spa');
@@ -272,8 +276,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/examinations/{examination}/scores', $spa)->name('examinations.scores');
     Route::post('/examinations/{examination}/scores', [ExaminationController::class, 'storeScores'])->name('examinations.scores.store');
     Route::get('/examinations/{examination}/report-card/{student}', [ExaminationController::class, 'reportCard'])->name('examinations.report-card');
-    Route::get('/examinations/ranking-sheet', [ExaminationController::class, 'rankingSheet'])->name('examinations.ranking-sheet.default');
-    Route::get('/examinations/{examination}/ranking-sheet', [ExaminationController::class, 'rankingSheet'])->where('examination', '.*')->name('examinations.ranking-sheet');
     Route::post('/examinations/ranking-sheet/settings', [ExaminationController::class, 'saveRankingSettings'])->name('examinations.ranking-sheet.settings');
 
     // 10. Parent & Guardian Management
