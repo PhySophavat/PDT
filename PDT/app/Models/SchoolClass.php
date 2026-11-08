@@ -44,13 +44,18 @@ class SchoolClass extends Model
         return $this->hasMany(Attendance::class, 'class_name', 'name');
     }
 
+    public function scopeOrdered($query)
+    {
+        return $query->orderByRaw('CAST(grade AS INTEGER) ASC, section ASC, name ASC');
+    }
+
+    public static function orderedList()
+    {
+        return self::ordered()->get();
+    }
+
     public static function orderedNames()
     {
-        return self::all()->sortBy(function ($c) {
-            preg_match('/^(\d+)([a-zA-Z]*)/', $c->name, $matches);
-            $num = isset($matches[1]) ? (int)$matches[1] : 999;
-            $letter = $matches[2] ?? '';
-            return sprintf('%04d_%s', $num, $letter);
-        })->pluck('name')->values();
+        return self::ordered()->pluck('name')->values();
     }
 }

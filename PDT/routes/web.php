@@ -104,6 +104,8 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/students/{student}', [ApiController::class, 'updateStudent']);
         Route::delete('/students/{student}', [ApiController::class, 'destroyStudent']);
         Route::post('/students/{student}/approve', [ApiController::class, 'approveStudent']);
+        Route::post('/students/{student}/reject', [ApiController::class, 'rejectStudent']);
+        Route::post('/students/{student}/restore', [ApiController::class, 'restoreStudent']);
         Route::get('/teachers', [ApiController::class, 'teachers']);
         Route::post('/teachers', [ApiController::class, 'storeTeacher']);
         Route::put('/teachers/{teacher}', [ApiController::class, 'updateTeacher']);
@@ -122,9 +124,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/leave-requests', [AttendanceController::class, 'getLeaveRequests']);
         Route::post('/leave-requests/{id}/approve', [AttendanceController::class, 'approveLeaveRequest']);
         Route::post('/leave-requests/{id}/reject', [AttendanceController::class, 'rejectLeaveRequest']);
+        Route::post('/leave-requests/{id}/restore', [AttendanceController::class, 'restoreLeaveRequest']);
         Route::get('/teacher-leave-requests', [TeacherController::class, 'getLeaveRequests']);
         Route::post('/teacher-leave-requests/{id}/approve', [TeacherController::class, 'approveLeaveRequest']);
         Route::post('/teacher-leave-requests/{id}/reject', [TeacherController::class, 'rejectLeaveRequest']);
+        Route::post('/teacher-leave-requests/{id}/restore', [TeacherController::class, 'restoreLeaveRequest']);
         Route::get('/academic-years', [ApiController::class, 'academicYears']);
         Route::post('/academic-years', [ApiController::class, 'storeAcademicYear']);
         Route::put('/academic-years/{academicYear}', [ApiController::class, 'updateAcademicYear']);
@@ -181,6 +185,11 @@ Route::middleware(['auth'])->group(function () {
         Route::match(['get', 'post'], '/seed', [ApiController::class, 'seedDemoDatabase']);
         Route::get('/roles', [ApiController::class, 'roles']);
         Route::post('/roles/permissions', [ApiController::class, 'updateRolePermissions']);
+
+        // System Activity Logs (Super Admin Only)
+        Route::middleware(['super_admin'])->group(function () {
+            Route::get('/system-logs', [\App\Http\Controllers\ActivityLogController::class, 'index']);
+        });
     });
 
     // 1. Dashboard & Profile (Vue 3 Master Attendance UI)
@@ -242,8 +251,8 @@ Route::middleware(['auth'])->group(function () {
 
     // 7. Timetable Management
     Route::get('/timetables', $spa)->name('timetables.index');
-    Route::post('/timetables', [TimetableController::class, 'store'])->name('timetables.store');
-    Route::delete('/timetables/{timetable}', [TimetableController::class, 'destroy'])->name('timetables.destroy');
+    Route::post('/timetables', [TimetableController::class, 'store'])->middleware('role:admin,super_admin,teacher')->name('timetables.store');
+    Route::delete('/timetables/{timetable}', [TimetableController::class, 'destroy'])->middleware('role:admin,super_admin,teacher')->name('timetables.destroy');
 
     // 8. Attendance Management (Master Template)
     Route::get('/attendance', $spa)->name('attendance.index');
@@ -256,6 +265,8 @@ Route::middleware(['auth'])->group(function () {
 
     // 9. Examination & Results Management
     Route::get('/examinations', $spa)->name('examinations.index');
+    Route::get('/results', $spa)->name('result.index');
+    Route::get('/results-overview', $spa)->name('results.index');
     Route::post('/examinations', [ExaminationController::class, 'store'])->name('examinations.store');
     Route::get('/examinations/{examination}/scores', $spa)->name('examinations.scores');
     Route::post('/examinations/{examination}/scores', [ExaminationController::class, 'storeScores'])->name('examinations.scores.store');
@@ -297,12 +308,14 @@ Route::middleware(['auth'])->group(function () {
     // 14. Reports & Analytics
     Route::get('/reports', $spa)->name('reports.index');
 
-    // 15. System Settings
-    Route::get('/settings', $spa)->name('settings.index');
-    Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+    // 15. System Settings (Admin & Super Admin Only)
+    Route::middleware(['role:admin,super_admin'])->group(function () use ($spa) {
+        Route::get('/settings', $spa)->name('settings.index');
+        Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
 
-    // 16. Roles & Permissions Management
-    Route::get('/roles', $spa)->name('roles.index');
+        // 16. Roles & Permissions Management
+        Route::get('/roles', $spa)->name('roles.index');
+    });
     Route::get('/role', $spa)->name('role.index');
     Route::get('/permissions', $spa)->name('permissions.index');
     Route::get('/users/{user}/permissions', $spa)->name('user.permissions.edit');
@@ -316,6 +329,11 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/scores/{subject}', [SubjectController::class, 'destroy'])->name('subject.destroy');
     Route::get('students/{student}/subjects/create', $spa)->name('subject.create.legacy');
     Route::get('students/{student}/subjects', $spa)->name('subject.show.legacy');
+
+    // 18. System Activity Logs (Super Admin Only)
+    Route::middleware(['super_admin'])->group(function () use ($spa) {
+        Route::get('/system-logs', $spa)->name('system-logs.index');
+    });
 
     // Master Catch-All for Vue 3 SPA routing
     Route::get('/spa/{any?}', $spa)->where('any', '.*')->name('spa');

@@ -11,6 +11,9 @@ use App\Models\SchoolParent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Mail\StudentApprovedMail;
 use Carbon\Carbon;
 
 class StudentController extends Controller
@@ -52,7 +55,7 @@ class StudentController extends Controller
 
         $students = $query->latest()->paginate(10)->withQueryString();
 
-        $availableGrades = SchoolClass::orderBy('name')->pluck('name');
+        $availableGrades = SchoolClass::orderedNames();
         $classes = $availableGrades;
         $academicYears = AcademicYear::where('status', 'active')->get();
         $status = $statusFilter ?? '';
@@ -98,7 +101,7 @@ class StudentController extends Controller
     {
         $this->ensureCanManageStudents();
 
-        $availableGrades = SchoolClass::orderBy('name')->pluck('name');
+        $availableGrades = SchoolClass::orderedNames();
         $academicYears = AcademicYear::where('status', 'active')->get();
 
         return view('student.create', compact('availableGrades', 'academicYears'));
@@ -207,7 +210,7 @@ class StudentController extends Controller
     {
         $this->ensureCanManageStudents();
 
-        $availableGrades = SchoolClass::orderBy('name')->pluck('name');
+        $availableGrades = SchoolClass::orderedNames();
         $academicYears = AcademicYear::where('status', 'active')->get();
 
         return view('student.edit', compact('student', 'availableGrades', 'academicYears'));
@@ -338,5 +341,98 @@ class StudentController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Approve a pending student, create their login user, and email credentials via Brevo.
+     */
+    public function approve(Request $request, Student $student)
+    {
+        $this->ensureCanManageStudents();
+
+        $validated = $request->validate([
+            'grade' => 'nullable|string',
+            'student_id_card' => 'nullable|string',
+        ]);
+
+        // 1. Auto-generate official Student ID (STU-YYYY-XXXX) if needed
+        $studentIdCard = $validated['student_id_card'] ?? $student->student_id_card;
+        if (empty($studentIdCard) || $studentIdCard === 'STU-រង់ចាំ') {
+            $year = date('Y');
+            $lastStudent = Student::whereNotNull('student_id_card')
+                ->where('student_id_card', 'like', "STU-{$year}-%")
+                ->orderBy('id', 'desc')
+                ->first();
+            
+            $nextNum = 1;
+            if ($lastStudent && preg_match('/STU-\d{4}-(\d+)/', $lastStudent->student_id_card, $matches)) {
+                $nextNum = intval($matches[1]) + 1;
+            } else {
+                $nextNum = Student::whereNotNull('student_id_card')->count() + 1;
+            }
+            $studentIdCard = sprintf('STU-%s-%04d', $year, $nextNum);
+        }
+
+        // 2. Generate secure temporary plain-text password (Pdt@ + last 4 digits of phone)
+        $cleanPhone = preg_replace('/\D/', '', (string) ($student->phone ?: '1234'));
+        $last4Phone = strlen($cleanPhone) >= 4 ? substr($cleanPhone, -4) : str_pad((string)rand(100, 9999), 4, '0', STR_PAD_LEFT);
+        $plainPassword = 'Pdt@' . $last4Phone;
+
+        // 3. Determine login email
+        $loginEmail = $student->email;
+        if (empty($loginEmail)) {
+            $loginEmail = strtolower(str_replace([' ', '-'], '', $studentIdCard)) . '@school.edu.kh';
+            $student->email = $loginEmail;
+        }
+
+        // 4. Create or update User record
+        $user = null;
+        if ($student->user_id) {
+            $user = User::find($student->user_id);
+        }
+        if (!$user) {
+            $user = User::where('email', $loginEmail)->first();
+        }
+        if (!$user) {
+            $user = new User();
+        }
+
+        $baseName = $student->name_khmer ?: ($student->name_latin ?: 'Student');
+        $user->name = $baseName;
+        $user->email = $loginEmail;
+        $user->password = Hash::make($plainPassword);
+        $user->save();
+
+        $studentRole = Role::where('name', 'student')->first();
+        if ($studentRole) {
+            $user->roles()->syncWithoutDetaching([$studentRole->id]);
+        }
+
+        $student->user_id = $user->id;
+        if (!empty($validated['grade'])) {
+            $student->grade = $validated['grade'];
+        }
+        $student->student_id_card = $studentIdCard;
+        $student->status = 'enrolled';
+        $student->enrollment_date = Carbon::today();
+        $student->save();
+
+        // 5. Brevo SMTP Email Sending with try/catch
+        $emailSent = false;
+        if (!empty($student->email)) {
+            try {
+                Mail::to($student->email)
+                    ->send(new StudentApprovedMail($student, $plainPassword, route('login')));
+                $emailSent = true;
+            } catch (\Throwable $e) {
+                Log::error('Brevo SMTP failed to send StudentApprovedMail: ' . $e->getMessage());
+            }
+        }
+
+        if ($emailSent) {
+            return back()->with('success', "បានអនុម័តសិស្ស {$student->display_name} (អត្តលេខ: {$studentIdCard}) ជោគជ័យ! ព័ត៌មានគណនី និងពាក្យសម្ងាត់បណ្តោះអាសន្ន ({$plainPassword}) ត្រូវបានផ្ញើទៅកាន់អ៊ីមែល {$student->email} រួចរាល់។");
+        } else {
+            return back()->with('warning', "បានអនុម័តសិស្ស {$student->display_name} (អត្តលេខ: {$studentIdCard}) ជោគជ័យ! (ចំណាំ៖ មិនអាចផ្ញើអ៊ីមែលបានទេ! ពាក្យសម្ងាត់បណ្តោះអាសន្នគឺ៖ {$plainPassword} សូមចម្លងជូនសិស្សដោយផ្ទាល់)។");
+        }
     }
 }

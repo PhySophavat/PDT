@@ -24,6 +24,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'protect.route' => \App\Http\Middleware\ProtectRoute::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'permission' => \App\Http\Middleware\PermissionMiddleware::class,
+            'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -11,12 +11,32 @@ use Illuminate\Http\Request;
 
 class TimetableController extends Controller
 {
+    private function authorizeTimetableManagement(): void
+    {
+        $user = auth()->user();
+        if ($user && ($user->hasRole('student') || strtolower($user->role ?? '') === 'student')) {
+            abort(403, 'មិនមានការអនុញ្ញាត៖ សិស្សមិនអាចបង្កើត កែប្រែ ឬលុបកាលវិភាគបានទេ។ (Students cannot modify timetables.)');
+        }
+    }
+
     public function index(Request $request)
     {
-        $selectedClass = $request->input('class', '7A');
-        $selectedTeacher = $request->input('teacher_id');
+        $user = auth()->user();
+        $isStudent = false;
+        $studentClass = null;
 
-        $classes = SchoolClass::orderBy('name')->pluck('name');
+        if ($user && ($user->hasRole('student') || strtolower($user->role ?? '') === 'student')) {
+            $isStudent = true;
+            $studentProfile = $user->student;
+            $studentClass = $studentProfile?->grade ?: '7A';
+            $selectedClass = $studentClass;
+            $selectedTeacher = null;
+        } else {
+            $selectedClass = $request->input('class', '7A');
+            $selectedTeacher = $request->input('teacher_id');
+        }
+
+        $classes = $isStudent ? collect([$selectedClass]) : SchoolClass::orderedNames();
         $teachers = Teacher::with('user')->get();
         $subjects = CourseSubject::orderBy('name')->get();
         $academicYears = AcademicYear::where('status', 'active')->get();
@@ -25,7 +45,9 @@ class TimetableController extends Controller
 
         $query = Timetable::with('courseSubject', 'teacher.user');
 
-        if ($selectedTeacher) {
+        if ($isStudent) {
+            $query->where('class_name', $selectedClass);
+        } elseif ($selectedTeacher) {
             $query->where('teacher_id', $selectedTeacher);
         } else {
             $query->where('class_name', $selectedClass);
@@ -33,7 +55,7 @@ class TimetableController extends Controller
 
         $timetables = $query->orderBy('start_time')->get()->groupBy('day_of_week');
 
-        return view('timetable.index', compact(
+        return view('timetables.index', compact(
             'timetables',
             'classes',
             'teachers',
@@ -41,12 +63,20 @@ class TimetableController extends Controller
             'academicYears',
             'selectedClass',
             'selectedTeacher',
-            'days'
+            'days',
+            'isStudent'
         ));
+    }
+
+    public function create()
+    {
+        $this->authorizeTimetableManagement();
     }
 
     public function store(Request $request)
     {
+        $this->authorizeTimetableManagement();
+
         $validated = $request->validate([
             'class_name' => 'required|string|max:50',
             'course_subject_id' => 'required|exists:course_subjects,id',
@@ -95,8 +125,20 @@ class TimetableController extends Controller
         return back()->with('success', 'បានបញ្ចូលកាលវិភាគបង្រៀនថ្មីដោយជោគជ័យ!');
     }
 
+    public function edit(Timetable $timetable)
+    {
+        $this->authorizeTimetableManagement();
+    }
+
+    public function update(Request $request, Timetable $timetable)
+    {
+        $this->authorizeTimetableManagement();
+    }
+
     public function destroy(Timetable $timetable)
     {
+        $this->authorizeTimetableManagement();
+
         $timetable->delete();
 
         return back()->with('success', 'បានលុបម៉ោងបង្រៀនចេញពីកាលវិភាគ!');

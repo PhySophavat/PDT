@@ -307,6 +307,24 @@ class TeacherController extends Controller
     }
 
     /**
+     * API: Restore a rejected teacher leave request back to pending.
+     */
+    public function restoreLeaveRequest(Request $request, $id)
+    {
+        $leave = TeacherLeaveRequest::findOrFail($id);
+        $leave->status = 'pending';
+        $leave->rejection_reason = null;
+        $leave->approved_by = null;
+        $leave->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => "បានស្ដារសំណើសុំច្បាប់របស់លោកគ្រូ-អ្នកគ្រូ {$leave->teacher_name} មកជា «រង់ចាំពិនិត្យ» វិញដោយជោគជ័យ!",
+            'leave' => $leave,
+        ]);
+    }
+
+    /**
      * Display a listing of teachers.
      */
     public function index(Request $request)
@@ -360,7 +378,7 @@ class TeacherController extends Controller
     {
         $this->ensureCanManageTeachers();
 
-        $classes = SchoolClass::orderBy('name')->pluck('name');
+        $classes = SchoolClass::orderedNames();
         $subjects = CourseSubject::orderBy('name')->pluck('name');
 
         return view('teacher.create', compact('classes', 'subjects'));
@@ -448,7 +466,7 @@ class TeacherController extends Controller
     {
         $this->ensureCanManageTeachers();
 
-        $classes = SchoolClass::orderBy('name')->pluck('name');
+        $classes = SchoolClass::orderedNames();
         $subjects = CourseSubject::orderBy('name')->pluck('name');
         $assignedClasses = $teacher->getAssignedClassesArray();
 

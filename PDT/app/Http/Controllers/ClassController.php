@@ -69,7 +69,7 @@ class ClassController extends Controller
             ->searchByUserName($search)
             ->get();
 
-        $allClasses = SchoolClass::orderBy('name')->pluck('name');
+        $allClasses = SchoolClass::orderedNames();
         $teachers = Teacher::with('user')->get();
 
         return view('class.show', compact('students', 'className', 'classInfo', 'allClasses', 'teachers', 'search'));

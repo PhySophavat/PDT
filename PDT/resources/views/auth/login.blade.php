@@ -45,22 +45,22 @@
     <form action="/login" method="POST" class="space-y-4">
         @csrf
 
-        <!-- Email Field -->
+        <!-- Email or Student ID Field -->
         <div class="space-y-1.5">
             <label for="email" class="block text-xs font-bold text-slate-700">
-                <span>អាសយដ្ឋានអ៊ីមែល</span>
+                <span>អាសយដ្ឋានអ៊ីមែល ឬ អត្តលេខសិស្ស (ID)</span>
                 <span class="text-rose-500">*</span>
             </label>
             <div class="relative">
                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <i class="fa-regular fa-envelope text-sm"></i>
+                    <i class="fa-solid fa-user text-sm"></i>
                 </span>
                 <input 
                     id="email" 
-                    type="email" 
+                    type="text" 
                     name="email" 
                     value="{{ old('email') }}" 
-                    placeholder="name@school.edu.kh" 
+                    placeholder="ឧ. name@gmail.com ឬ STU-2026-004" 
                     required
                     autofocus
                     class="w-full pl-10 pr-4 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition"

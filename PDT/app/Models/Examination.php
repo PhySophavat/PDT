@@ -3,9 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\LogsActivity;
 
 class Examination extends Model
 {
+    use LogsActivity;
+
+    protected string $activityModule = 'ការប្រឡង';
+
     protected $fillable = [
         'title',
         'exam_type',

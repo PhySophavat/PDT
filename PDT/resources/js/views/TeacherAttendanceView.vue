@@ -541,8 +541,18 @@
                       ✕ បដិសេធ
                     </button>
                   </div>
-                  <div v-else class="text-[11px] text-slate-400">
-                    {{ req.status === 'approved' ? '✓ កត់ត្រារួច' : '✕ បដិសេធរួច' }}
+                  <div v-else class="flex items-center justify-center gap-2">
+                    <span class="text-[11px] text-slate-400">
+                      {{ req.status === 'approved' ? '✓ កត់ត្រារួច' : '✕ បដិសេធរួច' }}
+                    </span>
+                    <button 
+                      @click="restoreTeacherLeave(req)" 
+                      type="button" 
+                      class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg text-[10px] font-bold transition cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                      title="យកមកវិញ / ត្រឡប់មកជា Pending វិញ"
+                    >
+                      <span>⟲ យកមកវិញ</span>
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -1006,6 +1016,19 @@ const rejectTeacherLeave = async (req) => {
     await fetchTeacherLeaves();
   } catch (err) {
     alert(err.response?.data?.message || 'មានបញ្ហាក្នុងការបដិសេធ!');
+  }
+};
+
+const restoreTeacherLeave = async (req) => {
+  if (!confirm(`តើអ្នកចង់ស្ដារសំណើសុំច្បាប់របស់លោកគ្រូ-អ្នកគ្រូ ${req.teacher_name} មកជា «រង់ចាំពិនិត្យ» វិញមែនទេ?`)) return;
+
+  try {
+    const res = await axios.post(`/api/teacher-leave-requests/${req.id}/restore`);
+    alert(res.data.message || 'បានស្ដារសំណើសុំច្បាប់ជោគជ័យ!');
+    await fetchTeacherLeaves();
+    await fetchTeacherAttendance();
+  } catch (err) {
+    alert(err.response?.data?.message || 'មិនអាចស្ដារសំណើបានទេ សូមព្យាយាមម្តងទៀត!');
   }
 };
 

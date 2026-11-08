@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\SchoolClass;
 use App\Models\AcademicYear;
+use App\Mail\StudentRegistrationReceivedMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class PublicRegistrationController extends Controller
@@ -15,15 +18,33 @@ class PublicRegistrationController extends Controller
      */
     public function show()
     {
-        $classes = SchoolClass::orderBy('name')->pluck('name');
+        $classes = SchoolClass::orderedNames();
         if ($classes->isEmpty()) {
             $classes = collect([
-                '7A','7B','7C','7D',
-                '8A','8B','8C','8D',
-                '9A','9B','9C','9D',
-                '10A','10B','10C','10D',
-                '11A','11B','11C','11D',
-                '12A','12B','12C','12D'
+                '7A',
+                '7B',
+                '7C',
+                '7D',
+                '8A',
+                '8B',
+                '8C',
+                '8D',
+                '9A',
+                '9B',
+                '9C',
+                '9D',
+                '10A',
+                '10B',
+                '10C',
+                '10D',
+                '11A',
+                '11B',
+                '11C',
+                '11D',
+                '12A',
+                '12B',
+                '12C',
+                '12D'
             ]);
         }
 
@@ -41,6 +62,7 @@ class PublicRegistrationController extends Controller
             'gender' => 'required|in:male,female',
             'date_of_birth' => 'required|date',
             'phone' => 'required|string|max:50',
+            'email' => 'required|email|max:255|unique:students,email|unique:users,email',
             'grade' => 'required|string|max:50',
             'address' => 'required|string|max:500',
             'photo' => 'nullable|image|max:3072',
@@ -54,6 +76,12 @@ class PublicRegistrationController extends Controller
             'gender.required' => 'សូមជ្រើសរើសភេទ',
             'date_of_birth.required' => 'សូមជ្រើសរើសថ្ងៃខែឆ្នាំកំណើត',
             'phone.required' => 'សូមបញ្ចូលលេខទូរស័ព្ទសិស្ស',
+            'email.required' => 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែល (Email) របស់សិស្ស',
+            'email.email' => 'ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវឡើយ (ឧ. name@example.com)',
+            'email.unique' => 'អ៊ីមែលនេះមានក្នុងប្រព័ន្ធរួចហើយ សូមប្រើប្រាស់អ៊ីមែលផ្សេង',
+            'email.required' => 'សូមបញ្ចូលអ៊ីមែលសិស្សសម្រាប់ទទួលដំណឹង',
+            'email.email' => 'ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវឡើយ (ឧ. student@example.com)',
+            'email.unique' => 'អ៊ីមែលនេះមានក្នុងប្រព័ន្ធរួចរាល់ហើយ',
             'grade.required' => 'សូមជ្រើសរើសកម្រិតថ្នាក់ដែលចង់ស្នើសុំចូលរៀន',
             'address.required' => 'សូមបញ្ចូលអាសយដ្ឋានបច្ចុប្បន្ន',
             'photo.image' => 'ឯកសាររូបថតត្រូវតែជាប្រភេទរូបភាព (JPG, PNG, WebP)',
@@ -76,6 +104,7 @@ class PublicRegistrationController extends Controller
             'gender' => $validated['gender'],
             'date_of_birth' => $validated['date_of_birth'],
             'phone' => $validated['phone'],
+            'email' => strtolower(trim($validated['email'])),
             'grade' => $validated['grade'],
             'address' => $validated['address'],
             'province' => $validated['address'],
@@ -103,14 +132,33 @@ class PublicRegistrationController extends Controller
 
         $student = Student::create($studentData);
 
+        // Send acknowledgement email to student via Brevo SMTP
+        if (!empty($student->email)) {
+            try {
+                Mail::to($student->email)->send(new StudentRegistrationReceivedMail($student));
+            } catch (\Throwable $e) {
+                Log::error('Brevo SMTP failed to send StudentRegistrationReceivedMail to ' . $student->email . ': ' . $e->getMessage());
+            }
+        }
+
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'ការចុះឈ្មោះរបស់អ្នកត្រូវបានបញ្ជូនដោយជោគជ័យ! សូមរង់ចាំការត្រួតពិនិត្យពីសាលា។',
+                'message' => 'ការចុះឈ្មោះរបស់អ្នកត្រូវបានបញ្ជូនដោយជោគជ័យ! យើងបានផ្ញើសារបញ្ជាក់ទៅកាន់អ៊ីមែល ' . $student->email . ' រួចរាល់ហើយ។',
                 'student_id' => $student->id
             ]);
         }
 
-        return redirect()->route('public.register-student')->with('registration_success', true);
+        return redirect()->route('public.register-student')->with([
+            'registration_success' => true,
+            'registered_name' => $student->name_khmer ?: $student->name_latin,
+            'registered_name_latin' => $student->name_latin,
+            'registered_email' => $student->email,
+            'registered_phone' => $student->phone,
+            'registered_grade' => $student->grade,
+            'registered_gender' => $student->gender === 'female' ? 'ស្រី' : 'ប្រុស',
+            'registered_dob' => Carbon::parse($student->date_of_birth)->format('d/m/Y'),
+            'registered_date' => Carbon::now()->format('d/m/Y - h:i A'),
+        ]);
     }
 }

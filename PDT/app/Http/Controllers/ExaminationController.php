@@ -27,6 +27,11 @@ class ExaminationController extends Controller
 
     public function store(Request $request)
     {
+        $user = auth()->user();
+        if ($user && ($user->hasRole('student') || strtolower($user->role ?? '') === 'student')) {
+            abort(403, 'Unauthorized. Students cannot create examinations.');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'exam_type' => 'required|string',
@@ -49,7 +54,7 @@ class ExaminationController extends Controller
     {
         $selectedClass = $request->input('class', '7A');
 
-        $classes = SchoolClass::orderBy('name')->pluck('name');
+        $classes = SchoolClass::orderedNames();
         $subjects = CourseSubject::orderBy('name')->get();
         $rawStudents = Student::with('user')->where('grade', $selectedClass)->get();
         if (class_exists('Collator')) {
@@ -77,6 +82,11 @@ class ExaminationController extends Controller
      */
     public function storeScores(Request $request, Examination $examination)
     {
+        $user = auth()->user();
+        if ($user && ($user->hasRole('student') || strtolower($user->role ?? '') === 'student')) {
+            abort(403, 'Unauthorized. Students cannot enter or save examination scores.');
+        }
+
         $validated = $request->validate([
             'class_name' => 'required|string',
             'course_subject_id' => 'required|exists:course_subjects,id',
@@ -126,6 +136,14 @@ class ExaminationController extends Controller
      */
     public function reportCard(Examination $examination, Student $student)
     {
+        $authUser = auth()->user();
+        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+            $studentProfile = $authUser->student;
+            if (!$studentProfile || $studentProfile->id !== $student->id) {
+                abort(403, 'អ្នកមិនមានសិទ្ធិមើលព្រឹត្តិបត្រពិន្ទុរបស់អ្នកដទៃឡើយ។');
+            }
+        }
+
         $student->load('user', 'academicYear');
 
         $scores = ExaminationScore::with('courseSubject')
@@ -189,6 +207,14 @@ class ExaminationController extends Controller
     public function rankingSheet(Request $request, Examination $examination)
     {
         $className = $request->input('class', '11D');
+
+        $authUser = auth()->user();
+        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+            $studentProfile = $authUser->student;
+            if ($studentProfile && $studentProfile->grade) {
+                $className = $studentProfile->grade;
+            }
+        }
 
         $students = Student::with('user')
             ->where('grade', $className)

@@ -4,7 +4,7 @@
     <PageHeader 
       :title="$t('announcements.title')" 
       :breadcrumb="$t('nav.notice')" 
-      :actionLabel="$t('announcements.createNotice')"
+      :actionLabel="canManageAnnouncements ? $t('announcements.createNotice') : ''"
       @action="openCreateModal"
     />
 
@@ -86,7 +86,7 @@
             <button @click="viewNotice(item)" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-200 transition">
               អាន &rarr;
             </button>
-            <button @click="handleDelete(item.id)" class="px-2 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-semibold hover:bg-rose-100 transition">
+            <button v-if="canManageAnnouncements" @click="handleDelete(item.id)" class="px-2 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-semibold hover:bg-rose-100 transition">
               {{ $t('common.delete') }}
             </button>
           </td>
@@ -194,6 +194,13 @@ import FilterBar from '../components/FilterBar.vue';
 import DataTable from '../components/DataTable.vue';
 
 const { t } = useI18n();
+
+const currentUser = ref(window.__INITIAL_USER__ || {});
+const isStudent = computed(() => {
+  const r = (currentUser.value?.role || '').toLowerCase();
+  return !currentUser.value?.is_super_admin && !r.includes('admin') && !r.includes('teacher') && !r.includes('គ្រូ');
+});
+const canManageAnnouncements = computed(() => !isStudent.value);
 
 const activeAudience = ref('all');
 const searchQuery = ref('');

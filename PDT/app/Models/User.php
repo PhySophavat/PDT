@@ -44,6 +44,14 @@ class User extends Authenticatable
     ];
 
     /**
+     * Get the primary role name of the user.
+     */
+    public function getRoleAttribute(): string
+    {
+        return $this->roles->first()?->name ?? '';
+    }
+
+    /**
      * Relationship with roles
      */
     public function roles()
@@ -98,6 +106,14 @@ class User extends Authenticatable
         }
         
         return $this->roles()->where('name', $role)->exists();
+    }
+
+    /**
+     * Check if user is Super Admin
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('super_admin');
     }
 
     /**

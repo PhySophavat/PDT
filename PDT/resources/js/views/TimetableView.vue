@@ -2,9 +2,9 @@
   <div class="space-y-6">
     <!-- Header -->
     <PageHeader 
-      :title="$t('timetables.title')" 
-      :breadcrumb="$t('nav.homework')" 
-      :actionLabel="$t('timetables.addSchedule')"
+      :title="isStudent ? 'កាលវិភាគសិក្សា' : $t('timetables.title')" 
+      :breadcrumb="isStudent ? 'កាលវិភាគសិក្សា' : $t('nav.homework')" 
+      :actionLabel="canManageTimetable ? $t('timetables.addSchedule') : ''"
       @action="openCreateModal"
     />
 
@@ -23,7 +23,13 @@
     />
 
     <!-- 4 Statistics Summary Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div v-if="isStudent" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <StatCard title="ម៉ោងសិក្សាសរុប" :value="studentWeeklyHours + ' ម៉ោង/សប្តាហ៍'" />
+      <StatCard title="មុខវិជ្ជាសរុប" :value="studentTotalSubjects + ' មុខវិជ្ជា'" />
+      <StatCard title="ថ្នាក់រៀន" :value="'ថ្នាក់ ' + studentClass" />
+      <StatCard title="ម៉ោងរៀនថ្ងៃនេះ" :value="studentTodayHours + ' ម៉ោង'" />
+    </div>
+    <div v-else class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard :title="$t('timetables.period')" :value="filteredTimetables.length" />
       <StatCard :title="$t('classes.totalClasses')" :value="classesList.length || 48" />
       <StatCard :title="$t('teachers.totalTeachers')" :value="teachersList.length || 15" />
@@ -32,9 +38,23 @@
 
     <!-- Filter Bar -->
     <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
+      <!-- For Student: Clean Badge showing assigned class -->
+      <div v-if="isStudent" class="flex items-center gap-2.5">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-blue-50 text-blue-700 rounded-xl font-bold text-xs border border-blue-200/60 shadow-xs">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          <span>ថ្នាក់រៀនរបស់អ្នក៖ ថ្នាក់ {{ studentClass }}</span>
+        </div>
+      </div>
+
+      <!-- For Admin/Teacher: Dropdown selector -->
+      <div v-else class="flex items-center gap-3">
         <label class="text-xs font-bold text-slate-700">ជ្រើសរើសថ្នាក់រៀន:</label>
-        <select v-model="selectedClass" class="px-3.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+        <select 
+          v-model="selectedClass" 
+          class="px-3.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+        >
           <option value="">-- បង្ហាញគ្រប់ថ្នាក់ --</option>
           <option v-for="c in classesList" :key="c" :value="c">ថ្នាក់ {{ c }}</option>
         </select>
@@ -42,7 +62,12 @@
 
       <div class="flex items-center gap-2">
         <span class="text-xs text-slate-500">
-          សរុបមាន: <strong>{{ filteredTimetables.length }}</strong> ម៉ោងបង្រៀន
+          <template v-if="isStudent">
+            ម៉ោងរៀនសរុប៖ <strong>{{ filteredTimetables.length }}</strong> ម៉ោង
+          </template>
+          <template v-else>
+            សរុបមាន: <strong>{{ filteredTimetables.length }}</strong> ម៉ោងបង្រៀន
+          </template>
         </span>
       </div>
     </div>
@@ -57,13 +82,13 @@
           <th class="py-3 px-4 font-bold text-slate-700">{{ $t('timetables.class') }}</th>
           <th class="py-3 px-4 font-bold text-slate-700">{{ $t('timetables.teacher') }}</th>
           <th class="py-3 px-4 font-bold text-slate-700">{{ $t('timetables.room') }}</th>
-          <th class="py-3 px-4 font-bold text-slate-700 text-right">{{ $t('common.actions') }}</th>
+          <th v-if="canManageTimetable" class="py-3 px-4 font-bold text-slate-700 text-right">{{ $t('common.actions') }}</th>
         </tr>
       </template>
 
       <template #body>
         <tr v-if="filteredTimetables.length === 0">
-          <td colspan="7" class="py-10 text-center text-slate-400">{{ $t('common.noData') }}</td>
+          <td :colspan="canManageTimetable ? 7 : 6" class="py-10 text-center text-slate-400">{{ $t('common.noData') }}</td>
         </tr>
         <tr v-for="t in filteredTimetables" :key="t.id" class="hover:bg-slate-50/70 transition-colors">
           <td class="py-3 px-4 font-bold text-blue-700">
@@ -76,7 +101,7 @@
           <td class="py-3 px-4 font-bold text-blue-600">ថ្នាក់ {{ t.class || t.class_name }}</td>
           <td class="py-3 px-4 text-slate-600 font-medium">{{ t.teacher }}</td>
           <td class="py-3 px-4 text-slate-500 font-mono">{{ t.room_number || t.room || '-' }}</td>
-          <td class="py-3 px-4 text-right">
+          <td v-if="canManageTimetable" class="py-3 px-4 text-right">
             <button @click="handleDelete(t)" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-semibold hover:bg-rose-100 transition">
               {{ $t('common.delete') }}
             </button>
@@ -173,16 +198,66 @@ import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
 import StatCard from '../components/StatCard.vue';
 import DataTable from '../components/DataTable.vue';
+import { sortClassesNaturally } from '../utils/classSort';
 
 const { t } = useI18n();
 
+const currentUser = ref(window.__INITIAL_USER__ || {});
+
+const isStudent = computed(() => {
+  if (currentUser.value?.is_super_admin) return false;
+  const r = (currentUser.value?.role || '').toLowerCase();
+  const rKh = (currentUser.value?.role_khmer || '').toLowerCase();
+  if (r.includes('admin') || r.includes('teacher') || r.includes('គ្រូ') || rKh.includes('គ្រូ') || rKh.includes('អ្នកគ្រប់គ្រង')) {
+    return false;
+  }
+  return true;
+});
+
+const canManageTimetable = computed(() => !isStudent.value);
+
+const studentClass = computed(() => currentUser.value?.student_grade || '7A');
+
 const selectedDay = ref('all');
-const selectedClass = ref('');
+const selectedClass = ref(isStudent.value ? studentClass.value : '');
 
 const timetablesList = ref([]);
 const classesList = ref([]);
 const subjectsList = ref([]);
 const teachersList = ref([]);
+
+// Khmer Days mapping for today's classes count
+const khmerDaysMap = ['អាទិត្យ', 'ច័ន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'];
+const todayKhmerDay = computed(() => {
+  const dayIndex = new Date().getDay();
+  return khmerDaysMap[dayIndex] || 'ច័ន្ទ';
+});
+
+// All timetable slots for student's class (entire week)
+const studentClassTimetables = computed(() => {
+  const targetClass = studentClass.value;
+  return timetablesList.value.filter(t => {
+    const cName = t.class_name || t.class;
+    return cName === targetClass;
+  });
+});
+
+// 1) Total weekly hours for student's class
+const studentWeeklyHours = computed(() => studentClassTimetables.value.length);
+
+// 2) Total subjects in student's class
+const studentTotalSubjects = computed(() => {
+  const set = new Set(studentClassTimetables.value.map(t => t.subject).filter(Boolean));
+  return set.size;
+});
+
+// 4) Today's classes count for student
+const studentTodayHours = computed(() => {
+  return studentClassTimetables.value.filter(t => {
+    const day = t.day_of_week || t.day;
+    return day === todayKhmerDay.value;
+  }).length;
+});
 
 const showCreateModal = ref(false);
 const isSubmitting = ref(false);
@@ -201,9 +276,12 @@ const fetchTimetables = async () => {
   try {
     const res = await axios.get('/api/timetables');
     timetablesList.value = res.data.timetables || [];
-    classesList.value = res.data.classes || [];
+    classesList.value = sortClassesNaturally(res.data.classes || []);
     subjectsList.value = res.data.subjects || [];
     teachersList.value = [...(res.data.teachers || [])].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
+    if (isStudent.value) {
+      selectedClass.value = studentClass.value;
+    }
   } catch (err) {
     console.error('Failed to fetch timetables:', err);
   }
@@ -218,7 +296,8 @@ const filteredTimetables = computed(() => {
     const day = t.day_of_week || t.day;
     const matchesDay = selectedDay.value === 'all' || day === selectedDay.value;
     const cName = t.class_name || t.class;
-    const matchesClass = !selectedClass.value || cName === selectedClass.value;
+    const targetClass = isStudent.value ? studentClass.value : selectedClass.value;
+    const matchesClass = !targetClass || cName === targetClass;
     return matchesDay && matchesClass;
   });
 });

@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\LogsActivity;
 
 class Teacher extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
+    protected string $activityModule = 'ព័ត៌មានគ្រូបង្រៀន';
 
     protected $fillable = [
         'user_id',

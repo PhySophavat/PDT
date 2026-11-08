@@ -24,7 +24,7 @@ class AttendanceController extends Controller
         $selectedDate = $request->input('date', Carbon::today()->toDateString());
         $academicYearId = $request->input('academic_year_id');
 
-        $classes = SchoolClass::orderBy('name')->pluck('name');
+        $classes = SchoolClass::orderedNames();
         $academicYears = AcademicYear::where('status', 'active')->get();
 
         $students = Student::with('user')
@@ -382,6 +382,24 @@ class AttendanceController extends Controller
         return response()->json([
             'success' => true,
             'message' => "បានបដិសេធសំណើសុំច្បាប់របស់សិស្ស {$leave->student_name}!",
+        ]);
+    }
+
+    /**
+     * API: Restore a rejected leave request back to pending.
+     */
+    public function restoreLeaveRequest(Request $request, $id)
+    {
+        $leave = StudentLeaveRequest::findOrFail($id);
+        $leave->status = 'pending';
+        $leave->rejection_reason = null;
+        $leave->approved_by = null;
+        $leave->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => "បានស្ដារសំណើសុំច្បាប់របស់សិស្ស {$leave->student_name} មកជា «រង់ចាំពិនិត្យ» វិញដោយជោគជ័យ!",
+            'leave' => $leave,
         ]);
     }
 }

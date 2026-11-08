@@ -4,7 +4,7 @@
     <PageHeader 
       :title="t('dashboard.title')" 
       :breadcrumb="t('nav.dashboard')" 
-      :actionLabel="t('common.createNew')"
+      :actionLabel="canCreateRecord ? t('common.createNew') : ''"
       @action="handleCreateNew"
     />
 
@@ -857,9 +857,16 @@ import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
 import FilterBar from '../components/FilterBar.vue';
+import { sortClassesNaturally } from '../utils/classSort';
 
 const { t } = useI18n();
 const router = useRouter();
+
+const canCreateRecord = computed(() => {
+  const role = window.__INITIAL_USER__?.role || '';
+  const isSuper = Boolean(window.__INITIAL_USER__?.is_super_admin);
+  return isSuper || role === 'Admin' || role === 'Super Admin';
+});
 
 const activeTab = ref('overview');
 const classSearchQuery = ref('');
@@ -908,7 +915,7 @@ try {
   if (cachedDashboard) {
     const d = JSON.parse(cachedDashboard);
     if (d.stats) stats.value = { ...stats.value, ...d.stats };
-    if (d.allClasses && d.allClasses.length) allClasses.value = d.allClasses;
+    if (d.allClasses && d.allClasses.length) allClasses.value = sortClassesNaturally(d.allClasses);
     if (d.recentClasses && d.recentClasses.length) recentClasses.value = d.recentClasses;
     if (d.weeklyTrend && d.weeklyTrend.length) chartDays.value = d.weeklyTrend;
     if (d.topClasses && d.topClasses.length) displayTopClasses.value = d.topClasses;
@@ -1075,7 +1082,7 @@ const fetchDashboardData = async (force = false) => {
         stats.value = { ...stats.value, ...res.data.stats };
       }
       if (res.data.allClasses && res.data.allClasses.length) {
-        allClasses.value = res.data.allClasses;
+        allClasses.value = sortClassesNaturally(res.data.allClasses);
       }
       if (res.data.recentClasses) {
         recentClasses.value = res.data.recentClasses;

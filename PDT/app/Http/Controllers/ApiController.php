@@ -32,6 +32,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Mail\StudentApprovedMail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -99,7 +102,7 @@ class ApiController extends Controller
             }
 
             // All classes for dashboard with homeroom teacher info (eager-load teacher.user to eliminate N+1)
-            $allClasses = SchoolClass::with('teacher.user')->orderBy('name')->get()->map(function ($cls) use ($studentCounts, $presentCounts, $absentCounts) {
+            $allClasses = SchoolClass::with('teacher.user')->ordered()->get()->map(function ($cls) use ($studentCounts, $presentCounts, $absentCounts) {
                 $stuCount = $studentCounts[$cls->name] ?? 0;
                 $presentCount = $presentCounts[$cls->name] ?? 0;
                 $absentCount = $absentCounts[$cls->name] ?? 0;
@@ -492,6 +495,7 @@ class ApiController extends Controller
 
         return response()->json([
             'students' => $students,
+            'classes' => SchoolClass::orderedNames(),
             'counts' => [
                 'total' => $totalCount,
                 'active' => $activeCount,
@@ -527,29 +531,42 @@ class ApiController extends Controller
             $studentIdCard = sprintf('STU-%s-%03d', $year, $nextNum);
         }
 
-        // Create or link User if not exists
-        if (!$student->user_id) {
-            $baseName = $student->name_khmer ?: ($student->name_latin ?: 'Student');
-            $email = strtolower(str_replace([' ', '-'], '', $studentIdCard)) . '@school.edu.kh';
-            
-            if (\App\Models\User::where('email', $email)->exists()) {
-                $email = strtolower(str_replace([' ', '-'], '', $studentIdCard)) . '_' . $student->id . '@school.edu.kh';
-            }
+        // Generate secure temporary password
+        $phoneDigits = preg_replace('/[^0-9]/', '', (string)$student->phone);
+        $last4 = strlen($phoneDigits) >= 4 ? substr($phoneDigits, -4) : rand(1000, 9999);
+        $plainPassword = 'Pdt@' . $last4;
 
-            $user = \App\Models\User::create([
-                'name' => $baseName,
-                'email' => $email,
-                'password' => \Illuminate\Support\Facades\Hash::make('123456'),
-            ]);
-
-            $studentRole = Role::where('name', 'student')->first();
-            if ($studentRole) {
-                $user->roles()->syncWithoutDetaching([$studentRole->id]);
-            }
-
-            $student->user_id = $user->id;
+        // Determine login email
+        $loginEmail = $student->email;
+        if (empty($loginEmail)) {
+            $loginEmail = strtolower(str_replace([' ', '-'], '', $studentIdCard)) . '@school.edu.kh';
+            $student->email = $loginEmail;
         }
 
+        // Create or link User
+        $user = null;
+        if ($student->user_id) {
+            $user = User::find($student->user_id);
+        }
+        if (!$user) {
+            $user = User::where('email', $loginEmail)->first();
+        }
+        if (!$user) {
+            $user = new User();
+        }
+
+        $baseName = $student->name_khmer ?: ($student->name_latin ?: 'Student');
+        $user->name = $baseName;
+        $user->email = $loginEmail;
+        $user->password = Hash::make($plainPassword);
+        $user->save();
+
+        $studentRole = Role::where('name', 'student')->first();
+        if ($studentRole) {
+            $user->roles()->syncWithoutDetaching([$studentRole->id]);
+        }
+
+        $student->user_id = $user->id;
         $student->grade = $validated['grade'];
         $student->student_id_card = $studentIdCard;
         $student->status = 'active';
@@ -566,12 +583,58 @@ class ApiController extends Controller
             $student->parents()->syncWithoutDetaching([$parent->id => ['relationship' => $parent->relationship]]);
         }
 
+        // Send Brevo SMTP approval email to student
+        $emailSent = false;
+        if (!empty($student->email)) {
+            try {
+                Mail::to($student->email)->send(new StudentApprovedMail($student, $plainPassword, route('login')));
+                $emailSent = true;
+            } catch (\Throwable $e) {
+                Log::error('Brevo SMTP failed to send StudentApprovedMail: ' . $e->getMessage());
+            }
+        }
+
+        Cache::forget('portal_dashboard_payload');
+
+        $message = "បានអនុម័តសិស្ស {$student->display_name} (អត្តលេខ: {$studentIdCard}) ចូលរៀនថ្នាក់ {$student->grade} ដោយជោគជ័យ!";
+        if ($emailSent) {
+            $message .= " ព័ត៌មានគណនី និងពាក្យសម្ងាត់បណ្តោះអាសន្ន ({$plainPassword}) ត្រូវបានផ្ញើទៅកាន់អ៊ីមែល {$student->email} រួចរាល់ហើយ។";
+        } elseif (!empty($student->email)) {
+            $message .= " (ពាក្យសម្ងាត់បណ្តោះអាសន្នគឺ៖ {$plainPassword})";
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'student' => $student->load('user'),
+            'temporary_password' => $plainPassword,
+            'email_sent' => $emailSent,
+        ]);
+    }
+
+    public function rejectStudent(Request $request, Student $student)
+    {
+        $student->status = 'rejected';
+        $student->save();
         Cache::forget('portal_dashboard_payload');
 
         return response()->json([
             'success' => true,
-            'message' => "បានអនុម័តសិស្ស {$student->display_name} (អត្តលេខ: {$studentIdCard}) ចូលរៀនថ្នាក់ {$student->grade} ដោយជោគជ័យ!",
-            'student' => $student->load('user')
+            'message' => "បានបដិសេធពាក្យសុំចុះឈ្មោះរបស់សិស្ស {$student->display_name} រួចរាល់។",
+            'student' => $student,
+        ]);
+    }
+
+    public function restoreStudent(Request $request, Student $student)
+    {
+        $student->status = 'pending';
+        $student->save();
+        Cache::forget('portal_dashboard_payload');
+
+        return response()->json([
+            'success' => true,
+            'message' => "បានស្ដារសិស្ស {$student->display_name} មកកាន់បញ្ជី «រង់ចាំអនុម័ត» វិញដោយជោគជ័យ!",
+            'student' => $student,
         ]);
     }
 
@@ -1896,6 +1959,11 @@ class ApiController extends Controller
 
     public function storeAnnouncement(Request $request)
     {
+        $authUser = Auth::user();
+        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+            return response()->json(['message' => 'Unauthorized. Students cannot create announcements.'], 403);
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'category' => 'required|string|max:100',
@@ -1916,6 +1984,11 @@ class ApiController extends Controller
 
     public function destroyAnnouncement(Announcement $announcement)
     {
+        $authUser = Auth::user();
+        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+            return response()->json(['message' => 'Unauthorized. Students cannot delete announcements.'], 403);
+        }
+
         $title = $announcement->title;
         $announcement->delete();
 
@@ -1927,7 +2000,7 @@ class ApiController extends Controller
 
     public function classes()
     {
-        $classes = SchoolClass::with('teacher.user')->withCount('students')->get()->map(fn ($c) => [
+        $classes = SchoolClass::with('teacher.user')->withCount('students')->ordered()->get()->map(fn ($c) => [
             'id' => $c->id,
             'name' => $c->name,
             'grade' => $c->grade,
@@ -2209,6 +2282,11 @@ class ApiController extends Controller
 
     public function saveAttendance(Request $request)
     {
+        $authUser = Auth::user();
+        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+            return response()->json(['message' => 'Unauthorized. Students cannot mark or save attendance.'], 403);
+        }
+
         $validated = $request->validate([
             'class_name' => 'required|string',
             'date' => 'required|date',
@@ -2613,9 +2691,20 @@ class ApiController extends Controller
         $selectedClass = $request->input('class');
         $selectedTeacher = $request->input('teacher_id');
 
+        $authUser = Auth::user();
+        $isStudent = false;
+        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+            $isStudent = true;
+            $studentProfile = $authUser->student;
+            $selectedClass = $studentProfile?->grade ?: '7A';
+            $selectedTeacher = null;
+        }
+
         $query = Timetable::with('courseSubject', 'teacher.user');
 
-        if ($selectedTeacher) {
+        if ($isStudent) {
+            $query->where('class_name', $selectedClass);
+        } elseif ($selectedTeacher) {
             $query->where('teacher_id', $selectedTeacher);
         } elseif ($selectedClass) {
             $query->where('class_name', $selectedClass);
@@ -2637,7 +2726,7 @@ class ApiController extends Controller
             'room_number' => $tt->room_number,
         ]);
 
-        $classes = SchoolClass::orderedNames();
+        $classes = $isStudent ? [$selectedClass] : SchoolClass::orderedNames();
         $subjects = CourseSubject::orderBy('name')->get()->map(fn ($s) => [
             'id' => $s->id,
             'name' => $s->name,
@@ -2653,11 +2742,18 @@ class ApiController extends Controller
             'classes' => $classes,
             'subjects' => $subjects,
             'teachers' => $teachers,
+            'student_class' => $selectedClass,
+            'is_student' => $isStudent,
         ]);
     }
 
     public function storeTimetable(Request $request)
     {
+        $authUser = Auth::user();
+        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+            return response()->json(['message' => 'Unauthorized. Students cannot manage timetables.'], 403);
+        }
+
         $validated = $request->validate([
             'class_name' => 'required|string|max:50',
             'course_subject_id' => 'required|exists:course_subjects,id',
@@ -2696,6 +2792,11 @@ class ApiController extends Controller
 
     public function destroyTimetable(Timetable $timetable)
     {
+        $authUser = Auth::user();
+        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+            return response()->json(['message' => 'Unauthorized. Students cannot delete timetables.'], 403);
+        }
+
         $timetable->delete();
 
         return response()->json([
@@ -2801,6 +2902,11 @@ class ApiController extends Controller
 
     public function storeExamination(Request $request)
     {
+        $authUser = Auth::user();
+        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+            return response()->json(['message' => 'Unauthorized. Students cannot create examinations.'], 403);
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'exam_type' => 'required|string',
@@ -2823,6 +2929,11 @@ class ApiController extends Controller
 
     public function updateExamination(Request $request, Examination $examination)
     {
+        $authUser = Auth::user();
+        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+            return response()->json(['message' => 'Unauthorized. Students cannot update examinations.'], 403);
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'exam_type' => 'required|string',
@@ -2845,6 +2956,11 @@ class ApiController extends Controller
 
     public function destroyExamination(Examination $examination)
     {
+        $authUser = Auth::user();
+        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+            return response()->json(['message' => 'Unauthorized. Students cannot delete examinations.'], 403);
+        }
+
         $title = $examination->title;
         $examination->scores()->delete();
         $examination->delete();
@@ -2861,6 +2977,14 @@ class ApiController extends Controller
         $className = $request->input('class', '7A');
         $subjectId = $request->input('subject_id');
         $demoMode = $request->input('demo_mode', SystemSetting::get('demo_mode', '0'));
+
+        $authUser = Auth::user();
+        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+            $studentProfile = $authUser->student;
+            if ($studentProfile && $studentProfile->grade) {
+                $className = $studentProfile->grade;
+            }
+        }
 
         $currentSubject = $subjectId ? CourseSubject::find($subjectId) : null;
         $subjectMaxScore = $currentSubject ? $currentSubject->getMaxScoreForClass($className) : 100.0;
@@ -2937,6 +3061,11 @@ class ApiController extends Controller
 
     public function saveExamScores(Request $request, Examination $examination)
     {
+        $authUser = Auth::user();
+        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+            return response()->json(['message' => 'Unauthorized. Students cannot save examination scores.'], 403);
+        }
+
         $validated = $request->validate([
             'class_name' => 'required|string',
             'course_subject_id' => 'required|exists:course_subjects,id',
@@ -3171,6 +3300,11 @@ class ApiController extends Controller
 
     public function saveExamMatrixScores(Request $request, Examination $examination)
     {
+        $authUser = Auth::user();
+        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+            return response()->json(['message' => 'Unauthorized. Students cannot save matrix scores.'], 403);
+        }
+
         $validated = $request->validate([
             'class_name' => 'required|string',
             'matrix' => 'required|array',
@@ -3231,6 +3365,11 @@ class ApiController extends Controller
 
     public function importExamScores(Request $request, Examination $examination)
     {
+        $authUser = Auth::user();
+        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+            return response()->json(['message' => 'Unauthorized. Students cannot import scores.'], 403);
+        }
+
         $validated = $request->validate([
             'class_name' => 'required|string',
             'rows' => 'required|array',
@@ -3982,7 +4121,7 @@ class ApiController extends Controller
             ];
         });
 
-        $classes = SchoolClass::with('teacher')->orderBy('name')->get()->map(function ($c) {
+        $classes = SchoolClass::with('teacher')->ordered()->get()->map(function ($c) {
             return [
                 'ឈ្មោះថ្នាក់' => $c->name,
                 'បន្ទប់រៀន' => $c->room ?: '',

@@ -4,11 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\LogsActivity;
 
 class Student extends Model
 {
+    use LogsActivity;
+
+    protected string $activityModule = 'ព័ត៌មានសិស្ស';
+
     protected $fillable = [
         'user_id',
+        'email',
         'student_id_card',
         'grade',
         'status',

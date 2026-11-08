@@ -4,19 +4,14 @@
     <PageHeader 
       :title="$t('examinations.title')" 
       :breadcrumb="$t('nav.exam')" 
-      :actionLabel="$t('examinations.addExam')"
+      :actionLabel="canManageExams ? $t('examinations.addExam') : ''"
       @action="openCreateModal"
     />
 
-    <!-- Sub Tabs -->
+    <!-- Sub Tabs (Filtered by Role) -->
     <TabNav 
       v-model="activeTab" 
-      :tabs="[
-        { id: 'exams', label: $t('examinations.examList') },
-        { id: 'scores', label: $t('examinations.enterScores') },
-        { id: 'matrix', label: '📊 តារាងពិន្ទុរួម' },
-        { id: 'report_cards', label: $t('examinations.reportCard') }
-      ]"
+      :tabs="availableTabs"
     />
 
     <!-- 4 Statistics Summary Cards -->
@@ -88,13 +83,13 @@
               </span>
             </td>
             <td class="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
-              <button @click="openScoresForExam(ex)" class="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">
+              <button v-if="canEnterScores" @click="openScoresForExam(ex)" class="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">
                 បញ្ចូលពិន្ទុ &rarr;
               </button>
-              <button @click="openEditModal(ex)" class="px-2 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-200 transition">
+              <button v-if="canManageExams" @click="openEditModal(ex)" class="px-2 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-200 transition">
                 {{ $t('common.edit') }}
               </button>
-              <button @click="handleDelete(ex)" class="px-2 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-semibold hover:bg-rose-100 transition">
+              <button v-if="canManageExams" @click="handleDelete(ex)" class="px-2 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-semibold hover:bg-rose-100 transition">
                 {{ $t('common.delete') }}
               </button>
             </td>
@@ -103,8 +98,8 @@
       </DataTable>
     </div>
 
-    <!-- TAB 2: Enter Scores Interactive Workspace -->
-    <div v-else-if="activeTab === 'scores'" class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+    <!-- TAB 2: Enter Scores Interactive Workspace (Teachers & Admins Only) -->
+    <div v-else-if="activeTab === 'scores' && canEnterScores" class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
           <h3 class="font-bold text-slate-800 text-base">បញ្ចូលពិន្ទុប្រឡងសិស្ស</h3>
@@ -230,8 +225,9 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-          <!-- Template Download -->
+          <!-- Template Download (Teachers/Admins Only) -->
           <button 
+            v-if="canEnterScores"
             type="button"
             @click="downloadMatrixTemplate"
             :disabled="!selectedMatrixClass"
@@ -241,8 +237,9 @@
             📥 គំរូ Excel
           </button>
 
-          <!-- Import Excel/CSV -->
+          <!-- Import Excel/CSV (Teachers/Admins Only) -->
           <button 
+            v-if="canEnterScores"
             type="button"
             @click="openImportModal"
             class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition"
@@ -285,8 +282,9 @@
             🖨️ បោះពុម្ព
           </button>
 
-          <!-- Save Matrix -->
+          <!-- Save Matrix (Teachers/Admins Only) -->
           <button 
+            v-if="canEnterScores"
             type="button"
             @click="submitSaveMatrix" 
             :disabled="isSavingMatrix || matrixStudents.length === 0"
@@ -317,7 +315,8 @@
           <select 
             v-model="selectedMatrixClass" 
             @change="loadMatrixSheet" 
-            class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            :disabled="isStudent"
+            class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
           >
             <option value="">-- ជ្រើសរើសថ្នាក់ --</option>
             <optgroup v-for="(gClasses, gKey) in groupedClasses" :key="gKey" :label="`-- កម្រិតថ្នាក់ទី ${gKey} --`">
@@ -443,6 +442,7 @@
                 class="py-1.5 px-2 text-center border-l border-slate-100"
               >
                 <input 
+                  v-if="canEnterScores"
                   type="number"
                   min="0"
                   :max="sub.max_score || (sub.credit * 50) || 50"
@@ -458,6 +458,19 @@
                     'bg-slate-50 text-slate-500 border-slate-200'
                   ]"
                 />
+                <span 
+                  v-else 
+                  :class="[
+                    'font-bold text-xs block py-1 font-mono',
+                    (matrixData[st.student_id]?.[sub.id] / (sub.max_score || 50)) >= 0.8 ? 'text-emerald-700 font-extrabold' :
+                    (matrixData[st.student_id]?.[sub.id] / (sub.max_score || 50)) >= 0.65 ? 'text-blue-700' :
+                    (matrixData[st.student_id]?.[sub.id] / (sub.max_score || 50)) >= 0.5 ? 'text-amber-700' :
+                    matrixData[st.student_id]?.[sub.id] !== undefined && matrixData[st.student_id]?.[sub.id] !== null && matrixData[st.student_id]?.[sub.id] !== '' ? 'text-rose-700' :
+                    'text-slate-400'
+                  ]"
+                >
+                  {{ matrixData[st.student_id]?.[sub.id] !== undefined && matrixData[st.student_id]?.[sub.id] !== null && matrixData[st.student_id]?.[sub.id] !== '' ? matrixData[st.student_id]?.[sub.id] : '-' }}
+                </span>
               </td>
 
               <!-- Total -->
@@ -517,7 +530,12 @@
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">ជ្រើសរើសថ្នាក់</label>
-          <select v-model="selectedClassForScores" @change="loadScoreSheet" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+          <select 
+            v-model="selectedClassForScores" 
+            @change="loadScoreSheet" 
+            :disabled="isStudent"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
+          >
             <option value="">-- ជ្រើសរើសថ្នាក់ --</option>
             <optgroup v-for="(gClasses, gKey) in groupedClasses" :key="gKey" :label="`-- កម្រិតថ្នាក់ទី ${gKey} --`">
               <option v-for="c in gClasses" :key="c" :value="c">ថ្នាក់ {{ c }}</option>
@@ -556,7 +574,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            <tr v-for="st in scoreSheetStudents" :key="st.student_id" class="hover:bg-slate-50">
+            <tr v-for="st in displayedReportCardStudents" :key="st.student_id" class="hover:bg-slate-50">
               <td class="py-3 px-4 font-mono font-bold text-slate-600">{{ st.student_id_card }}</td>
               <td class="py-3 px-4 font-bold text-slate-800">{{ st.name }}</td>
               <td class="py-3 px-4 font-bold text-blue-600">ថ្នាក់ {{ selectedClassForScores }}</td>
@@ -818,10 +836,52 @@ import TabNav from '../components/TabNav.vue';
 import StatCard from '../components/StatCard.vue';
 import FilterBar from '../components/FilterBar.vue';
 import DataTable from '../components/DataTable.vue';
+import { sortClassesNaturally } from '../utils/classSort';
 
 const { t } = useI18n();
 
-const activeTab = ref('exams');
+// User Role Resolution
+const currentUser = ref(window.__INITIAL_USER__ || {});
+const userRole = computed(() => {
+  if (currentUser.value?.is_super_admin) return 'admin';
+  const r = (currentUser.value?.role || '').toLowerCase();
+  if (r.includes('admin')) return 'admin';
+  if (r.includes('teacher') || r.includes('គ្រូ')) return 'teacher';
+  return 'student';
+});
+
+const isAdmin = computed(() => userRole.value === 'admin');
+const isTeacher = computed(() => userRole.value === 'teacher');
+const isStudent = computed(() => userRole.value === 'student');
+
+const canManageExams = computed(() => isAdmin.value);
+const canEnterScores = computed(() => isAdmin.value || isTeacher.value);
+
+const availableTabs = computed(() => {
+  if (isStudent.value) {
+    return [
+      { id: 'report_cards', label: 'បណ្ណសម្គាល់លទ្ធផលសិក្សា (Report Card)' },
+      { id: 'exams', label: 'កាលវិភាគសម័យប្រឡង' },
+      { id: 'matrix', label: '📊 តារាងចំណាត់ថ្នាក់រួម' }
+    ];
+  }
+  if (isTeacher.value) {
+    return [
+      { id: 'scores', label: t('examinations.enterScores') },
+      { id: 'exams', label: t('examinations.examList') },
+      { id: 'matrix', label: '📊 តារាងពិន្ទុរួម' },
+      { id: 'report_cards', label: t('examinations.reportCard') }
+    ];
+  }
+  return [
+    { id: 'exams', label: t('examinations.examList') },
+    { id: 'scores', label: t('examinations.enterScores') },
+    { id: 'matrix', label: '📊 តារាងពិន្ទុរួម' },
+    { id: 'report_cards', label: t('examinations.reportCard') }
+  ];
+});
+
+const activeTab = ref(isStudent.value ? 'report_cards' : (isTeacher.value ? 'scores' : 'exams'));
 const examTypeFilter = ref('');
 
 const examsList = ref([]);
@@ -839,7 +899,7 @@ try {
       examsList.value = d.examinations;
       isLoadingExams.value = false;
     }
-    if (d.classes) classesList.value = d.classes;
+    if (d.classes) classesList.value = sortClassesNaturally(d.classes);
     if (d.subjects) subjectsList.value = d.subjects;
     if (d.academicYears) academicYearsList.value = d.academicYears;
   }
@@ -851,16 +911,27 @@ const selectedExam = ref(null);
 const isSubmitting = ref(false);
 
 const selectedExamId = ref('');
-const selectedClassForScores = ref('7A');
+const selectedClassForScores = ref(currentUser.value?.student_grade || '7A');
 const selectedSubjectForScores = ref('');
 const scoreSheetStudents = ref([]);
 const scoresMap = ref({});
 const isLoadingScores = ref(false);
 const isSavingScores = ref(false);
 
+const displayedReportCardStudents = computed(() => {
+  if (isStudent.value) {
+    const studentId = currentUser.value?.student_id;
+    if (studentId) {
+      const match = scoreSheetStudents.value.filter(st => st.student_id === studentId);
+      if (match.length > 0) return match;
+    }
+  }
+  return scoreSheetStudents.value;
+});
+
 // Matrix State
 const selectedMatrixExamId = ref('');
-const selectedMatrixClass = ref('7A');
+const selectedMatrixClass = ref(currentUser.value?.student_grade || '7A');
 const matrixSubjects = ref([]);
 const matrixStudents = ref([]);
 const matrixData = ref({});
@@ -906,7 +977,7 @@ const fetchExams = async () => {
       params: { demo_mode: demoMode, _t: Date.now() }
     });
     examsList.value = res.data.examinations || [];
-    classesList.value = res.data.classes || [];
+    classesList.value = sortClassesNaturally(res.data.classes || []);
     subjectsList.value = res.data.subjects || [];
     academicYearsList.value = res.data.academicYears || [];
     try {

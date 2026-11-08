@@ -40,7 +40,8 @@
         { id: 'pending', label: 'រង់ចាំអនុម័ត', badge: pendingCount, badgeColor: 'bg-amber-100 text-amber-800' },
         { id: 'active', label: t('students.enrolled') },
         { id: 'graduated', label: t('students.graduated') },
-        { id: 'transferred', label: t('students.transferred') }
+        { id: 'transferred', label: t('students.transferred') },
+        { id: 'rejected', label: 'បានបដិសេធ' }
       ]"
     />
 
@@ -209,6 +210,13 @@
             >
               {{ t('students.enrolled') }}
             </span>
+            <!-- Rejected Status Badge -->
+            <span 
+              v-else-if="st.status === 'rejected'"
+              class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200"
+            >
+              បានបដិសេធ
+            </span>
             <!-- Other Status Badges -->
             <span 
               v-else
@@ -222,12 +230,32 @@
             <template v-if="st.status === 'pending'">
               <button 
                 @click="openApproveModal(st)"
-                class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition inline-flex items-center gap-1"
+                class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition inline-flex items-center gap-1 cursor-pointer"
               >
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                 </svg>
                 <span>អនុម័ត</span>
+              </button>
+              <button 
+                @click="rejectStudent(st)"
+                class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1 cursor-pointer"
+                title="បដិសេធ"
+              >
+                ✕ បដិសេធ
+              </button>
+            </template>
+            <!-- Action button for Rejected Students: Restore -->
+            <template v-else-if="st.status === 'rejected'">
+              <button 
+                @click="restoreStudent(st)"
+                class="px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 rounded-lg text-xs font-bold transition inline-flex items-center gap-1 shadow-2xs cursor-pointer"
+                title="ស្ដារមកវិញ"
+              >
+                <span>⟲ យកមកវិញ</span>
+              </button>
+              <button @click="confirmDeleteStudent(st)" class="px-2 py-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg text-xs transition cursor-pointer" title="លុបជាអចិន្ត្រៃយ៍">
+                <i class="fa-solid fa-trash-can"></i>
               </button>
             </template>
             <!-- Normal Active Students Action buttons -->
@@ -458,11 +486,18 @@
             <div class="flex-1">
               <h4 class="font-bold text-sm text-slate-900">{{ selectedStudent.name }}</h4>
               <p v-if="selectedStudent.name_latin" class="text-[11px] text-slate-500 font-mono">{{ selectedStudent.name_latin }}</p>
-              <div class="flex items-center gap-3 text-slate-500 mt-1">
+              <div class="flex flex-wrap items-center gap-3 text-slate-500 mt-1">
                 <span>ភេទ: {{ selectedStudent.gender === 'male' ? 'ប្រុស' : 'ស្រី' }}</span>
                 <span>ទូរស័ព្ទ: {{ selectedStudent.phone || '-' }}</span>
+                <span v-if="selectedStudent.email" class="text-blue-600 font-medium">✉ {{ selectedStudent.email }}</span>
               </div>
             </div>
+          </div>
+
+          <!-- Brevo Email Notice -->
+          <div class="p-3 bg-blue-50 border border-blue-200/80 rounded-xl text-[11px] text-blue-800 flex items-start gap-2">
+            <span class="text-sm">📧</span>
+            <span>នៅពេលចុចយល់ព្រម ប្រព័ន្ធនឹងបង្កើតគណនី និងផ្ញើពាក្យសម្ងាត់បណ្តោះអាសន្នទៅកាន់អ៊ីមែល <strong>{{ selectedStudent.email || 'របស់សិស្ស' }}</strong> ដោយស្វ័យប្រវត្តិតាមរយៈ Brevo SMTP។</span>
           </div>
 
           <div class="grid grid-cols-2 gap-3 pt-2">
@@ -1224,6 +1259,7 @@ import TabNav from '../components/TabNav.vue';
 import StatCard from '../components/StatCard.vue';
 import FilterBar from '../components/FilterBar.vue';
 import DataTable from '../components/DataTable.vue';
+import { sortClassesNaturally } from '../utils/classSort';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -1261,12 +1297,12 @@ try {
 } catch (e) {}
 
 const availableClasses = ref([
-  '7A', '7B', '7C', '7D',
-  '8A', '8B', '8C', '8D',
-  '9A', '9B', '9C', '9D',
-  '10A', '10B', '10C', '10D',
-  '11A', '11B', '11C', '11D',
-  '12A', '12B', '12C', '12D'
+  '7A', '7B', '7C', '7D', '7E', '7F', '7G', '7H',
+  '8A', '8B', '8C', '8D', '8E', '8F', '8G', '8H',
+  '9A', '9B', '9C', '9D', '9E', '9F', '9G', '9H',
+  '10A', '10B', '10C', '10D', '10E', '10F', '10G', '10H',
+  '11A', '11B', '11C', '11D', '11E', '11F', '11G', '11H',
+  '12A', '12B', '12C', '12D', '12E', '12F', '12G', '12H'
 ]);
 
 // Modal States
@@ -1371,6 +1407,9 @@ const fetchStudents = async (force = false) => {
           localStorage.setItem('pdt_cached_students', JSON.stringify(res.data.students));
         } catch (e) {}
       }
+      if (res.data.classes && res.data.classes.length) {
+        availableClasses.value = sortClassesNaturally(res.data.classes);
+      }
       if (res.data.counts) {
         pendingCount.value = res.data.counts.pending || 0;
         activeCount.value = res.data.counts.active || 0;
@@ -1422,6 +1461,8 @@ const filteredStudents = computed(() => {
       matchesTab = st.status === 'graduated';
     } else if (activeTab.value === 'transferred') {
       matchesTab = st.status === 'transferred';
+    } else if (activeTab.value === 'rejected') {
+      matchesTab = st.status === 'rejected';
     }
 
     const s = searchQuery.value.toLowerCase().trim();
@@ -1661,6 +1702,30 @@ const submitApproval = async () => {
     alert('ការអនុម័តបានបរាជ័យ សូមព្យាយាមម្តងទៀត។');
   } finally {
     isSubmittingApproval.value = false;
+  }
+};
+
+const rejectStudent = async (st) => {
+  if (!confirm(`តើអ្នកពិតជាចង់បដិសេធពាក្យសុំចុះឈ្មោះរបស់សិស្ស ${st.name} មែនទេ?`)) return;
+  try {
+    const res = await axios.post(`/api/students/${st.id}/reject`);
+    alert(res.data.message || 'បានបដិសេធសិស្សជោគជ័យ!');
+    notifyDataChanged();
+    await fetchStudents();
+  } catch (err) {
+    alert('មិនអាចបដិសេធបានទេ សូមព្យាយាមម្តងទៀត!');
+  }
+};
+
+const restoreStudent = async (st) => {
+  if (!confirm(`តើអ្នកចង់ស្ដារសិស្ស ${st.name} មកកាន់បញ្ជី «រង់ចាំអនុម័ត» វិញមែនទេ?`)) return;
+  try {
+    const res = await axios.post(`/api/students/${st.id}/restore`);
+    alert(res.data.message || 'បានស្ដារសិស្សជោគជ័យ!');
+    notifyDataChanged();
+    await fetchStudents();
+  } catch (err) {
+    alert('មិនអាចស្ដារសិស្សបានទេ សូមព្យាយាមម្តងទៀត!');
   }
 };
 

@@ -28,19 +28,40 @@
     $logoUrl = $cachedSettings['logoUrl'];
     $authUser = Auth::user();
     $roleName = 'Student';
+    $roleKhmer = 'សិស្សានុសិស្ស';
+    $isSuperAdmin = false;
+    $studentGrade = null;
+    $studentId = null;
+
     if ($authUser) {
-        if ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1) {
+        $isSuperAdmin = $authUser->isSuperAdmin();
+        if ($isSuperAdmin) {
+            $roleName = 'Super Admin';
+            $roleKhmer = 'អគ្គអ្នកគ្រប់គ្រង';
+        } elseif ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin') {
             $roleName = 'Admin';
+            $roleKhmer = 'អ្នកគ្រប់គ្រង';
         } elseif ($authUser->hasRole('teacher') || strtolower($authUser->role ?? '') === 'teacher') {
             $roleName = 'Teacher';
+            $roleKhmer = 'គ្រូបង្រៀន';
+        } else {
+            $roleName = 'Student';
+            $roleKhmer = 'សិស្សានុសិស្ស';
+            $studentProfile = $authUser->student;
+            $studentGrade = $studentProfile?->grade;
+            $studentId = $studentProfile?->id;
         }
     }
     $initialUserJson = json_encode([
         'id' => $authUser?->id,
         'name' => $authUser?->name ?? 'portal sala',
         'role' => $roleName,
+        'role_khmer' => $roleKhmer,
+        'is_super_admin' => $isSuperAdmin,
         'email' => $authUser?->email ?? 'admin@school.edu.kh',
-        'avatar' => $authUser?->avatar ?? ''
+        'avatar' => $authUser?->avatar ?? '',
+        'student_grade' => $studentGrade,
+        'student_id' => $studentId,
     ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
     $initialSettingsJson = json_encode([
         'school_logo_url' => $cachedSettings['logoUrl'],

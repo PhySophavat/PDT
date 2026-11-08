@@ -28,7 +28,7 @@ class ReportController extends Controller
         $endDate = $request->input('end_date');
 
         $academicYears = AcademicYear::all();
-        $classes = SchoolClass::orderBy('name')->pluck('name');
+        $classes = SchoolClass::orderedNames();
 
         $reportData = [];
 

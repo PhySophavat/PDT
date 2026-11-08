@@ -3,9 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\LogsActivity;
 
 class ExaminationScore extends Model
 {
+    use LogsActivity;
+
+    protected string $activityModule = 'ពិន្ទុប្រឡង';
+
     protected $fillable = [
         'examination_id',
         'student_id',

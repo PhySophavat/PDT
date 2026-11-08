@@ -4,7 +4,7 @@
     <PageHeader 
       :title="t('attendance.title')" 
       :breadcrumb="t('nav.attendance')" 
-      actionLabel="កត់ត្រាវត្តមានប្រចាំថ្ងៃ"
+      :actionLabel="canTakeAttendance ? 'កត់ត្រាវត្តមានប្រចាំថ្ងៃ' : ''"
       @action="openMarkAttendanceModal"
     >
       <template #extraActions>
@@ -24,16 +24,7 @@
     <!-- Sub Tabs with Badge for Pending Leave Requests -->
     <TabNav 
       v-model="activeTab" 
-      :tabs="[
-        { id: 'matrix', label: 'តារាងវត្តមានប្រចាំឆ្នាំ' },
-        { id: 'daily', label: 'ស្រង់វត្តមានតាមថ្នាក់' },
-        { 
-          id: 'leaves', 
-          label: 'សំណើសុំច្បាប់', 
-          badge: pendingLeavesCount, 
-          badgeColor: 'bg-rose-100 text-rose-800' 
-        }
-      ]"
+      :tabs="availableTabs"
     />
 
     <!-- 4 Statistics Summary Cards -->
@@ -86,7 +77,8 @@
             <select 
               v-model="selectedClass" 
               @change="fetchAttendanceData" 
-              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 text-indigo-700 font-bold rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              :disabled="isStudent"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 text-indigo-700 font-bold rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
             >
               <option v-for="c in classesList" :key="c" :value="c">ថ្នាក់ {{ c }}</option>
             </select>
@@ -260,8 +252,8 @@
       </div>
     </div>
 
-    <!-- TAB 2: Daily Attendance Sheet for Class -->
-    <div v-else-if="activeTab === 'daily'" class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+    <!-- TAB 2: Daily Attendance Sheet for Class (Teachers & Admins Only) -->
+    <div v-else-if="activeTab === 'daily' && canTakeAttendance" class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
           <h3 class="font-bold text-slate-800 text-base">បញ្ជីវត្តមានសិស្សប្រចាំថ្ងៃ</h3>
@@ -574,8 +566,18 @@
                     ✕ បដិសេធ
                   </button>
                 </div>
-                <div v-else class="text-[11px] text-slate-400">
-                  {{ req.status === 'approved' ? '✓ កត់ត្រារួច' : '✕ បដិសេធរួច' }}
+                <div v-else class="flex items-center justify-center gap-2">
+                  <span class="text-[11px] text-slate-400">
+                    {{ req.status === 'approved' ? '✓ កត់ត្រារួច' : '✕ បដិសេធរួច' }}
+                  </span>
+                  <button 
+                    @click="restoreLeave(req)" 
+                    type="button" 
+                    class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg text-[10px] font-bold transition cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                    title="យកមកវិញ / ត្រឡប់មកជា Pending វិញ"
+                  >
+                    <span>⟲ យកមកវិញ</span>
+                  </button>
                 </div>
               </td>
             </tr>
@@ -705,9 +707,41 @@ import PageHeader from '../components/PageHeader.vue';
 import TabNav from '../components/TabNav.vue';
 import StatCard from '../components/StatCard.vue';
 import DataTable from '../components/DataTable.vue';
+import { sortClassesNaturally } from '../utils/classSort';
 
 const { t } = useI18n();
 const route = useRoute();
+
+const currentUser = ref(window.__INITIAL_USER__ || {});
+const isStudent = computed(() => {
+  const r = (currentUser.value?.role || '').toLowerCase();
+  return !currentUser.value?.is_super_admin && !r.includes('admin') && !r.includes('teacher') && !r.includes('គ្រូ');
+});
+const canTakeAttendance = computed(() => !isStudent.value);
+
+const availableTabs = computed(() => {
+  if (isStudent.value) {
+    return [
+      { id: 'matrix', label: 'ប្រវត្តិវត្តមានរបស់ខ្ញុំ' },
+      { 
+        id: 'leaves', 
+        label: 'សំណើសុំច្បាប់', 
+        badge: pendingLeavesCount.value, 
+        badgeColor: 'bg-rose-100 text-rose-800' 
+      }
+    ];
+  }
+  return [
+    { id: 'matrix', label: 'តារាងវត្តមានប្រចាំឆ្នាំ' },
+    { id: 'daily', label: 'ស្រង់វត្តមានតាមថ្នាក់' },
+    { 
+      id: 'leaves', 
+      label: 'សំណើសុំច្បាប់', 
+      badge: pendingLeavesCount.value, 
+      badgeColor: 'bg-rose-100 text-rose-800' 
+    }
+  ];
+});
 
 // Tab state: 'matrix', 'daily', or 'leaves'
 const activeTab = ref(route.query?.tab || 'matrix');
@@ -718,7 +752,7 @@ const filterStatus = ref('all');
 const isLoading = ref(true);
 
 // Advanced Filter Bar States
-const selectedClass = ref('7A');
+const selectedClass = ref(currentUser.value?.student_grade || '7A');
 const selectedAcademicYear = ref(
   localStorage.getItem('pdt_current_academic_year') ||
   window.__INITIAL_SETTINGS__?.current_academic_year ||
@@ -885,6 +919,13 @@ const getStudentSummary = (studentId) => {
 
 const displayedStudentsList = computed(() => {
   let list = studentsList.value;
+  if (isStudent.value) {
+    const studentId = currentUser.value?.student_id;
+    if (studentId) {
+      const match = list.filter(st => st.student_id === studentId);
+      if (match.length > 0) return match;
+    }
+  }
   if (onlyShowAbsentStudents.value) {
     list = list.filter(st => {
       const sum = getStudentSummary(st.student_id);
@@ -957,7 +998,7 @@ const fetchAttendanceData = async (force = false) => {
     });
     if (res.data) {
       if (res.data.stats) stats.value = res.data.stats;
-      if (res.data.classes && res.data.classes.length > 0) classesList.value = res.data.classes;
+      if (res.data.classes && res.data.classes.length > 0) classesList.value = sortClassesNaturally(res.data.classes);
       if (res.data.currentAcademicYear) {
         selectedAcademicYear.value = res.data.currentAcademicYear;
         localStorage.setItem('pdt_current_academic_year', res.data.currentAcademicYear);
@@ -1082,6 +1123,20 @@ const rejectLeave = async (req) => {
     await fetchLeaveRequests();
   } catch (err) {
     alert(err.response?.data?.message || 'មានបញ្ហាក្នុងការបដិសេធ!');
+  }
+};
+
+// Restore Leave Request (Undo Reject/Approve)
+const restoreLeave = async (req) => {
+  if (!confirm(`តើអ្នកចង់ស្ដារសំណើសុំច្បាប់របស់សិស្ស ${req.student_name} មកជា «រង់ចាំពិនិត្យ» វិញមែនទេ?`)) return;
+
+  try {
+    const res = await axios.post(`/api/leave-requests/${req.id}/restore`);
+    alert(res.data.message || 'បានស្ដារសំណើសុំច្បាប់ជោគជ័យ!');
+    await fetchLeaveRequests();
+    await fetchAttendanceData();
+  } catch (err) {
+    alert(err.response?.data?.message || 'មិនអាចស្ដារសំណើបានទេ សូមព្យាយាមម្តងទៀត!');
   }
 };
 

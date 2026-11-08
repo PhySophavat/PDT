@@ -54,7 +54,8 @@
     "hostel": "Students",
     "expense": "School Expenses",
     "updatePassword": "Update Password",
-    "teachers": "Teachers"
+    "teachers": "Teachers",
+    "systemLogs": "System Activity Logs"
   },
   "dashboard": {
     "title": "School Overview Dashboard",

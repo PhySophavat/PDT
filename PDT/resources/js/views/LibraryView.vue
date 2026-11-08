@@ -28,36 +28,6 @@
       :tabs="availableTabs"
     />
 
-    <!-- Compact Modern Hero Banner -->
-    <div class="py-5 px-6 bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 text-white rounded-2xl shadow-md border border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-4">
-        <div class="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-xl flex-shrink-0 shadow-inner">
-          📚
-        </div>
-        <div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <h4 class="font-bold text-sm sm:text-base tracking-tight text-white">បណ្ណាល័យអេឡិចត្រូនិកជាតិ ថ្នាក់ទី៧–១២</h4>
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-400 text-emerald-950">អានបាន ២៤/៧</span>
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-white/15 text-blue-100 border border-white/20">MoEYS E-Library</span>
-          </div>
-          <p class="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
-            បណ្តុំសៀវភៅពុម្ពផ្លូវការគ្រប់មុខវិជ្ជាជាតិ សៀវភៅជំនួយស្មារតី កំនែមេរៀន និងឯកសារត្រៀមប្រឡងឌីប្លូម & បាក់ឌុប អាន និងរក្សាទុកក្នុងទូរស័ព្ទដៃបានភ្លាមៗ។
-          </p>
-        </div>
-      </div>
-      <div class="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-end">
-        <button 
-          v-if="activeTab !== 'elibrary'"
-          type="button" 
-          @click="activeTab = 'elibrary'"
-          class="px-4 py-2 rounded-xl bg-white text-indigo-900 hover:bg-slate-100 text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
-        >
-          <i class="fa-solid fa-book-open text-rose-500"></i>
-          <span>ចូលអានសៀវភៅ PDF</span>
-        </button>
-      </div>
-    </div>
-
     <!-- TAB 1: Digital E-Library (Grades 7–12) -->
     <div v-if="activeTab === 'elibrary'" class="space-y-4">
       
@@ -1489,6 +1459,15 @@ const resetFilters = () => {
 
 const filteredELibraryBooks = computed(() => {
   let list = eLibraryBooks.value;
+
+  // Filter out teacher guides if role is student
+  if (isStudent.value) {
+    list = list.filter(b => {
+      const t = (b.title || '').toLowerCase();
+      const cat = (b.category_name || '').toLowerCase();
+      return !t.includes('សៀវភៅគ្រូ') && !t.includes('មគ្គុទ្ទេសក៍គ្រូ') && !cat.includes('គ្រូ');
+    });
+  }
 
   // Sub filter
   if (subFilter.value === 'bookmarks') {

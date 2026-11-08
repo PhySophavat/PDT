@@ -402,6 +402,7 @@ import TabNav from '../components/TabNav.vue';
 import StatCard from '../components/StatCard.vue';
 import FilterBar from '../components/FilterBar.vue';
 import DataTable from '../components/DataTable.vue';
+import { sortClassesNaturally } from '../utils/classSort';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -423,7 +424,7 @@ try {
   if (cached) {
     const d = JSON.parse(cached);
     if (d.classes && d.classes.length) {
-      classesList.value = d.classes;
+      classesList.value = sortClassesNaturally(d.classes);
       isLoading.value = false;
     }
     if (d.teachers) teachersList.value = d.teachers;
@@ -473,7 +474,7 @@ const fetchClassesData = async () => {
   }
   try {
     const res = await axios.get('/api/classes', { params: { _t: Date.now() } });
-    classesList.value = res.data.classes || [];
+    classesList.value = sortClassesNaturally(res.data.classes || []);
     teachersList.value = [...(res.data.teachers || [])].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
     academicYearsList.value = res.data.academicYears || [];
     studentsList.value = [...(res.data.students || [])].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));

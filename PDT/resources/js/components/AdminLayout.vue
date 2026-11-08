@@ -54,7 +54,7 @@
 
         <!-- Navigation Menu (Always shows icons) -->
         <div class="flex-1 overflow-y-auto px-1.5 sm:px-3 py-4 space-y-1 custom-scrollbar">
-          <template v-for="item in menuItems" :key="item.path || item.id">
+          <template v-for="item in visibleMenuItems" :key="item.path || item.id">
             <!-- Dropdown Menu Item (e.g. វត្តមាន: សិស្ស & គ្រូ) -->
             <div v-if="item.children" class="space-y-1">
               <button 
@@ -67,7 +67,7 @@
                     ? 'bg-[#e5ecfc] text-[#1e40af] font-semibold shadow-xs' 
                     : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                 ]"
-                :title="!sidebarOpen ? t(item.i18nKey) : ''"
+                :title="!sidebarOpen ? getMenuLabel(item) : ''"
               >
                 <div class="flex items-center gap-3 truncate">
                   <component 
@@ -77,7 +77,7 @@
                       isChildActive(item) ? 'text-[#1e40af]' : 'text-slate-400 group-hover:text-slate-600'
                     ]"
                   />
-                  <span v-if="sidebarOpen" class="truncate">{{ t(item.i18nKey) }}</span>
+                  <span v-if="sidebarOpen" class="truncate">{{ getMenuLabel(item) }}</span>
                 </div>
                 <svg 
                   v-if="sidebarOpen" 
@@ -132,7 +132,7 @@
                   ? 'bg-[#e5ecfc] text-[#1e40af] font-semibold shadow-xs' 
                   : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
               ]"
-              :title="!sidebarOpen ? t(item.i18nKey) : ''"
+              :title="!sidebarOpen ? getMenuLabel(item) : ''"
             >
               <div class="flex items-center gap-3 truncate">
                 <component 
@@ -142,7 +142,7 @@
                     isActive(item.path) ? 'text-[#1e40af]' : 'text-slate-400 group-hover:text-slate-600'
                   ]"
                 />
-                <span v-if="sidebarOpen" class="truncate">{{ t(item.i18nKey) }}</span>
+                <span v-if="sidebarOpen" class="truncate">{{ getMenuLabel(item) }}</span>
               </div>
             </router-link>
           </template>
@@ -285,7 +285,7 @@
               </div>
               <div class="text-right hidden md:block">
                 <h4 class="text-xs font-bold text-slate-900 leading-tight">{{ user.name || 'portal sala' }}</h4>
-                <p class="text-[10px] text-slate-400 leading-tight">{{ currentLocale === 'km' ? 'អ្នកគ្រប់គ្រង' : 'Admin' }}</p>
+                <p class="text-[10px] text-slate-400 leading-tight font-medium">{{ displayRoleName }}</p>
               </div>
             </div>
 
@@ -630,6 +630,7 @@ import {
   BookMarked, 
   BadgePercent, 
   ShieldCheck, 
+  ShieldAlert,
   Building, 
   Receipt, 
   KeyRound,
@@ -920,51 +921,126 @@ const switchLanguage = (lang) => {
 
 const user = ref({
   name: window.__INITIAL_USER__?.name || 'Stevne Zone',
-  role: window.__INITIAL_USER__?.role || 'Admin',
-  avatar: window.__INITIAL_USER__?.avatar || ''
+  role: window.__INITIAL_USER__?.role || 'Student',
+  role_khmer: window.__INITIAL_USER__?.role_khmer || '',
+  is_super_admin: Boolean(window.__INITIAL_USER__?.is_super_admin),
+  avatar: window.__INITIAL_USER__?.avatar || '',
+  student_grade: window.__INITIAL_USER__?.student_grade || '',
+  student_id: window.__INITIAL_USER__?.student_id || null,
 });
 
 const csrfToken = computed(() => {
   return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 });
 
-// Menu items with i18n keys
+// Menu items with i18n keys and role access definitions
 const menuItems = [
-  { i18nKey: 'nav.dashboard', path: '/dashboard', icon: LayoutDashboard },
+  { 
+    i18nKey: 'nav.dashboard', 
+    path: '/dashboard', 
+    icon: LayoutDashboard,
+    roles: ['Super Admin', 'Admin', 'Teacher', 'Student']
+  },
   { 
     id: 'attendance',
     i18nKey: 'nav.attendance', 
     icon: CalendarCheck,
+    roles: ['Super Admin', 'Admin', 'Teacher', 'Student'],
     children: [
       { 
         nameKm: 'វត្តមានសិស្ស', 
         nameEn: 'Student Attendance', 
         path: '/attendance', 
-        icon: GraduationCap 
+        icon: GraduationCap,
+        roles: ['Super Admin', 'Admin', 'Teacher', 'Student']
       },
       { 
         nameKm: 'វត្តមានគ្រូបង្រៀន', 
         nameEn: 'Teacher Attendance', 
         path: '/teacher-attendance', 
-        icon: Users 
+        icon: Users,
+        roles: ['Super Admin', 'Admin']
       },
     ]
   },
-  { i18nKey: 'nav.hostel', path: '/students', icon: GraduationCap },
-  { i18nKey: 'nav.teachers', path: '/teachers', icon: Users },
-  { i18nKey: 'nav.academics', path: '/classes', icon: Building },
-  { i18nKey: 'nav.academicYears', path: '/academic-years', icon: CalendarCheck },
-  { i18nKey: 'nav.inventory', path: '/course-subjects', icon: Package },
-  { i18nKey: 'nav.homework', path: '/timetables', icon: BookMarked },
-  { i18nKey: 'nav.exam', path: '/examinations', icon: FileText },
-  { i18nKey: 'nav.messaging', path: '/parents', icon: MessageSquare },
-  { i18nKey: 'nav.feesCollection', path: '/finance', icon: BadgePercent },
-  { i18nKey: 'nav.library', path: '/library', icon: BookOpen },
-  { i18nKey: 'nav.notice', path: '/announcements', icon: Bell },
-  { i18nKey: 'nav.reports', path: '/reports', icon: FileText },
-  { i18nKey: 'nav.rolesPermissions', path: '/roles', icon: ShieldCheck },
-  { i18nKey: 'nav.websiteSetting', path: '/settings', icon: Settings },
+  { i18nKey: 'nav.hostel', path: '/students', icon: GraduationCap, roles: ['Super Admin', 'Admin', 'Teacher'] },
+  { i18nKey: 'nav.teachers', path: '/teachers', icon: Users, roles: ['Super Admin', 'Admin'] },
+  { i18nKey: 'nav.academics', path: '/classes', icon: Building, roles: ['Super Admin', 'Admin', 'Teacher'] },
+  { i18nKey: 'nav.academicYears', path: '/academic-years', icon: CalendarCheck, roles: ['Super Admin', 'Admin'] },
+  { i18nKey: 'nav.inventory', path: '/course-subjects', icon: Package, roles: ['Super Admin', 'Admin'] },
+  { i18nKey: 'nav.homework', path: '/timetables', icon: BookMarked, roles: ['Super Admin', 'Admin', 'Teacher', 'Student'] },
+  { i18nKey: 'nav.exam', path: '/examinations', icon: FileText, roles: ['Super Admin', 'Admin', 'Teacher', 'Student'] },
+  { i18nKey: 'nav.messaging', path: '/parents', icon: MessageSquare, roles: ['Super Admin', 'Admin'] },
+  { i18nKey: 'nav.feesCollection', path: '/finance', icon: BadgePercent, roles: ['Super Admin', 'Admin'] },
+  { i18nKey: 'nav.library', path: '/library', icon: BookOpen, roles: ['Super Admin', 'Admin', 'Teacher', 'Student'] },
+  { i18nKey: 'nav.notice', path: '/announcements', icon: Bell, roles: ['Super Admin', 'Admin', 'Teacher', 'Student'] },
+  { i18nKey: 'nav.reports', path: '/reports', icon: FileText, roles: ['Super Admin', 'Admin', 'Teacher'] },
+  { i18nKey: 'nav.rolesPermissions', path: '/roles', icon: ShieldCheck, roles: ['Super Admin', 'Admin'] },
+  { i18nKey: 'nav.systemLogs', path: '/system-logs', icon: ShieldAlert, superAdminOnly: true, roles: ['Super Admin'] },
+  { i18nKey: 'nav.websiteSetting', path: '/settings', icon: Settings, roles: ['Super Admin', 'Admin'] },
 ];
+
+const userRole = computed(() => {
+  if (user.value.is_super_admin) return 'Super Admin';
+  return user.value.role || 'Admin';
+});
+
+const displayRoleName = computed(() => {
+  const isKm = currentLocale.value === 'km';
+  if (user.value.role_khmer && isKm) {
+    return user.value.role_khmer;
+  }
+  if (user.value.is_super_admin) {
+    return isKm ? 'អគ្គអ្នកគ្រប់គ្រង' : 'Super Admin';
+  }
+  const r = (user.value.role || '').toLowerCase();
+  if (r.includes('super_admin') || r.includes('superadmin')) {
+    return isKm ? 'អគ្គអ្នកគ្រប់គ្រង' : 'Super Admin';
+  }
+  if (r.includes('teacher') || r.includes('គ្រូ')) {
+    return isKm ? 'គ្រូបង្រៀន' : 'Teacher';
+  }
+  if (r.includes('student') || r.includes('សិស្ស')) {
+    return isKm ? 'សិស្សានុសិស្ស' : 'Student';
+  }
+  if (r.includes('admin')) {
+    return isKm ? 'អ្នកគ្រប់គ្រង' : 'Admin';
+  }
+  return isKm ? 'សិស្សានុសិស្ស' : 'Student';
+});
+
+const getMenuLabel = (item) => {
+  const isStudentUser = !user.value.is_super_admin && 
+    (user.value.role === 'Student' || (user.value.role_khmer || '').includes('សិស្ស') || (user.value.role || '').toLowerCase().includes('student'));
+  if (item.path === '/timetables' && isStudentUser) {
+    return currentLocale.value === 'km' ? 'កាលវិភាគសិក្សា' : 'Class Timetable';
+  }
+  return t(item.i18nKey);
+};
+
+const isItemVisible = (item) => {
+  if (item.superAdminOnly && !user.value.is_super_admin) {
+    return false;
+  }
+  if (item.roles && !item.roles.includes(userRole.value)) {
+    return false;
+  }
+  return true;
+};
+
+const visibleMenuItems = computed(() => {
+  return menuItems
+    .filter(isItemVisible)
+    .map(item => {
+      if (item.children) {
+        return {
+          ...item,
+          children: item.children.filter(child => !child.roles || child.roles.includes(userRole.value))
+        };
+      }
+      return item;
+    });
+});
 
 const isActive = (path) => {
   if (!path) return false;

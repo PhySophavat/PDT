@@ -25,6 +25,10 @@ class RoleMiddleware
                 ->with('error', 'Please log in to continue.');
         }
 
+        if ($user->isSuperAdmin()) {
+            return $next($request);
+        }
+
         foreach ($roles as $role) {
             if ($user->hasRole($role)) {
                 return $next($request);

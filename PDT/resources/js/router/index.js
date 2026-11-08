@@ -18,6 +18,7 @@ import AnnouncementView from '../views/AnnouncementView.vue';
 import ReportView from '../views/ReportView.vue';
 import SettingView from '../views/SettingView.vue';
 import RoleView from '../views/RoleView.vue';
+import SystemLogsView from '../views/SystemLogsView.vue';
 
 const routes = [
   { path: '/', redirect: '/dashboard' },
@@ -65,6 +66,7 @@ const routes = [
 
   // Examination routes
   { path: '/examinations', name: 'Examinations', component: ExaminationView },
+  { path: '/results', redirect: '/examinations' },
   { path: '/examinations/create', redirect: '/examinations' },
   { path: '/examinations/:id/scores', redirect: '/examinations' },
   { path: '/examinations/:id/report-card', redirect: '/examinations' },
@@ -96,6 +98,9 @@ const routes = [
   { path: '/roles', name: 'Roles', component: RoleView },
   { path: '/permissions', name: 'Permissions', component: RoleView },
 
+  // System Activity Logs (Super Admin Only)
+  { path: '/system-logs', name: 'SystemLogs', component: SystemLogsView },
+
   // SPA alias routes - handle Laravel /spa/* prefix if any
   { path: '/spa/:pathMatch(.*)*', redirect: to => '/' + (to.params.pathMatch || 'dashboard') },
 
@@ -109,6 +114,39 @@ const router = createRouter({
   scrollBehavior() {
     return { top: 0 };
   }
+});
+
+router.beforeEach((to, from, next) => {
+  const user = window.__INITIAL_USER__ || {};
+  const isSuperAdmin = Boolean(user.is_super_admin);
+  const role = isSuperAdmin ? 'Super Admin' : (user.role || 'Admin');
+
+  // 1. Super Admin only routes
+  if (to.path.startsWith('/system-logs') && !isSuperAdmin) {
+    return next('/dashboard');
+  }
+
+  // 2. Admin & Super Admin only routes
+  const adminOnlyPaths = ['/roles', '/settings', '/teachers', '/academic-years', '/course-subjects', '/parents'];
+  if (adminOnlyPaths.some(p => to.path === p || to.path.startsWith(p + '/'))) {
+    if (role !== 'Admin' && role !== 'Super Admin') {
+      return next('/dashboard');
+    }
+  }
+
+  // 3. Student restricted routes (Students cannot access admin or teacher management areas)
+  if (role === 'Student') {
+    const studentBlockedPaths = [
+      '/finance', '/students', '/teachers', '/classes', 
+      '/teacher-attendance', '/reports', '/academic-years', 
+      '/course-subjects', '/parents', '/roles', '/settings', '/system-logs'
+    ];
+    if (studentBlockedPaths.some(p => to.path === p || to.path.startsWith(p + '/'))) {
+      return next('/dashboard');
+    }
+  }
+
+  next();
 });
 
 router.afterEach(() => {
