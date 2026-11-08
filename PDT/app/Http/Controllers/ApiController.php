@@ -1551,7 +1551,7 @@ class ApiController extends Controller
 
         if ($canManage) {
             $today = Carbon::today();
-            $borrowsData = BookBorrow::with(['book:id,title', 'student:id,user_id,display_name,student_id_card'])->latest()->take(50)->get();
+            $borrowsData = BookBorrow::with(['book:id,title', 'student:id,name_khmer,name_latin,student_id_card'])->latest()->take(50)->get();
             $activeBorrows = $borrowsData->where('status', 'borrowed')->count();
             $overdueBorrows = $borrowsData->where('status', 'borrowed')->filter(fn ($br) => $br->due_date && Carbon::parse($br->due_date)->lt($today))->count();
             $borrows = $borrowsData->map(fn ($br) => [
@@ -1566,7 +1566,7 @@ class ApiController extends Controller
                 'status_raw' => $br->status,
             ]);
 
-            $students = Student::select('id', 'display_name', 'student_id_card', 'grade')->get()->map(fn ($s) => [
+            $students = Student::select('id', 'name_khmer', 'name_latin', 'student_id_card', 'grade')->get()->map(fn ($s) => [
                 'id' => $s->id,
                 'name' => $s->display_name,
                 'student_id_card' => $s->student_id_card,
