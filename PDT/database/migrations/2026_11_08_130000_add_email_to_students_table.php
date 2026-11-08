@@ -13,9 +13,17 @@ return new class extends Migration
     {
         Schema::table('students', function (Blueprint $table) {
             if (!Schema::hasColumn('students', 'email')) {
-                $table->string('email')->nullable()->unique()->after('user_id');
+                $table->string('email')->nullable()->after('user_id');
             }
         });
+
+        try {
+            Schema::table('students', function (Blueprint $table) {
+                $table->unique('email', 'students_email_unique');
+            });
+        } catch (\Throwable $e) {
+            // Index might already exist
+        }
     }
 
     /**
