@@ -1,7 +1,6 @@
 // School Portal Service Worker for PWA
-const CACHE_NAME = 'sala-portal-v1';
+const CACHE_NAME = 'sala-portal-v2';
 const STATIC_ASSETS = [
-  '/',
   '/manifest.json',
   '/site.webmanifest',
   '/images/icon-192.png',
