@@ -105,7 +105,7 @@
           <div class="mt-4">
             <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">សៀវភៅសិក្សា</h3>
             <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">៧២+</span>
+              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ studentInfo.student_visible_books || studentInfo.total_books || stats.books || 81 }}</span>
               <span class="text-xs font-medium text-slate-400">ក្បាល</span>
             </div>
             <router-link to="/library" class="text-[11px] text-blue-600 hover:text-blue-800 mt-2 font-bold inline-flex items-center gap-1">

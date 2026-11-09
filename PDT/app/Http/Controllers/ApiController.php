@@ -61,6 +61,7 @@ class ApiController extends Controller
             $totalTeachers = Teacher::count();
             $totalClasses = SchoolClass::count();
             $totalSubjects = CourseSubject::count();
+            $totalBooks = Book::count();
 
             $femaleRatio = $totalStudents > 0 ? round(($femaleStudents / $totalStudents) * 100) : 0;
             $maleStudents = max(0, $totalStudents - $femaleStudents);
@@ -218,6 +219,7 @@ class ApiController extends Controller
                     'teachers' => $totalTeachers,
                     'classes' => $totalClasses,
                     'subjects' => $totalSubjects,
+                    'books' => $totalBooks,
                     'attendanceRate' => $attendanceRate,
                     'teacherAttendanceRate' => $teacherAttendanceRate,
                     'femaleRatio' => $femaleRatio,
@@ -323,6 +325,8 @@ class ApiController extends Controller
                         'total' => $totalSchoolDays,
                         'rate' => $attRate,
                     ],
+                    'total_books' => Book::count(),
+                    'student_visible_books' => Book::where('title', 'not like', '%សៀវភៅគ្រូ%')->where('title', 'not like', '%មគ្គុទ្ទេសក៍គ្រូ%')->count(),
                 ];
             } elseif ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student') {
                 // Fallback for student account without linked student profile
@@ -349,6 +353,8 @@ class ApiController extends Controller
                         'total' => 7,
                         'rate' => 100.0,
                     ],
+                    'total_books' => Book::count(),
+                    'student_visible_books' => Book::where('title', 'not like', '%សៀវភៅគ្រូ%')->where('title', 'not like', '%មគ្គុទ្ទេសក៍គ្រូ%')->count(),
                 ];
             }
         }
