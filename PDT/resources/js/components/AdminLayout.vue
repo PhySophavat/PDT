@@ -880,35 +880,51 @@ const executeLogout = async () => {
   isLoggingOut.value = true;
 
   try {
-    // Clear all client-side cached data in localStorage
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k && (k.startsWith('sala_portal_') || k.startsWith('pdt_') || k.startsWith('chunk_retry_'))) {
-        keysToRemove.push(k);
+    // 1. Clear all client-side cached data in localStorage and sessionStorage
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith('sala_portal_') || k.startsWith('pdt_') || k.startsWith('chunk_retry_') || k.startsWith('sp_'))) {
+          keysToRemove.push(k);
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+      sessionStorage.clear();
+    } catch (e) {}
+
+    // 2. Clear PWA app badge
+    if (typeof navigator !== 'undefined' && 'clearAppBadge' in navigator) {
+      navigator.clearAppBadge().catch(() => {});
+    }
+
+    // 3. Fast logout call with strict 1.2s timeout so the user NEVER hangs for 10s
+    let targetUrl = '/portal-sala-access-2026';
+    try {
+      const logoutPromise = axios.post('/logout', {}, {
+        headers: {
+          'X-CSRF-TOKEN': csrfToken.value,
+          'Accept': 'application/json'
+        },
+        timeout: 2000
+      });
+
+      const res = await Promise.race([
+        logoutPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1200))
+      ]);
+      if (res?.data?.redirect) {
+        targetUrl = res.data.redirect;
+      }
+    } catch (e) {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('/logout');
       }
     }
-    keysToRemove.forEach(k => localStorage.removeItem(k));
 
-    // Send fast JSON logout request
-    const res = await axios.post('/logout', {}, {
-      headers: {
-        'X-CSRF-TOKEN': csrfToken.value,
-        'Accept': 'application/json'
-      }
-    });
-
-    // Immediate clean redirect to secret login page
-    const targetUrl = res.data?.redirect || '/portal-sala-access-2026';
     window.location.href = targetUrl;
   } catch (err) {
-    console.warn('Axios logout failed, falling back to form submit:', err);
-    const form = document.getElementById('spa-logout-form');
-    if (form) {
-      form.submit();
-    } else {
-      window.location.href = '/portal-sala-access-2026';
-    }
+    window.location.href = '/portal-sala-access-2026';
   }
 };
 

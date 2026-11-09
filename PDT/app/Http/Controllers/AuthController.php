@@ -158,19 +158,23 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        if ($user = Auth::user()) {
-            ActivityLogger::log(
-                action: 'LOGOUT',
-                module: 'ចូលប្រើប្រព័ន្ធ',
-                targetId: $user->id,
-                description: "បានចាកចេញពីប្រព័ន្ធ",
-                user: $user
-            );
-        }
+        try {
+            if ($user = Auth::user()) {
+                ActivityLogger::log(
+                    action: 'LOGOUT',
+                    module: 'ចូលប្រើប្រព័ន្ធ',
+                    targetId: $user->id,
+                    description: "បានចាកចេញពីប្រព័ន្ធ",
+                    user: $user
+                );
+            }
+        } catch (\Throwable $e) {}
 
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        try {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        } catch (\Throwable $e) {}
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([

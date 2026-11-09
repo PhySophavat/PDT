@@ -47,7 +47,7 @@ Route::get('/icon-512.png', fn() => response()->file(public_path('icon-512.png')
 Route::get('/apple-touch-icon.png', fn() => response()->file(public_path('apple-touch-icon.png'), ['Content-Type' => 'image/png']));
 
 
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::any('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Public Database Health Check
 Route::get('/health-db', function () {
