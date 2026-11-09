@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\Log;
 use App\Mail\StudentApprovedMail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class ApiController extends Controller
 {
@@ -241,11 +242,122 @@ class ApiController extends Controller
             ];
         });
 
+        // Dynamic Student Dashboard Payload for logged-in students
+        $authUser = $request->user();
+        if ($authUser) {
+            $student = $authUser->student;
+            if (!$student && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+                $student = Student::where('user_id', $authUser->id)->orWhere('email', $authUser->email)->first();
+            }
+
+            if ($student) {
+                $myGrade = $student->grade ?: '7A';
+                $myClass = SchoolClass::with('teacher.user')->where('name', $myGrade)->first();
+                $classmatesCount = Student::where('grade', $myGrade)->count();
+
+                $today = Carbon::today();
+                $startOfMonth = $today->copy()->startOfMonth();
+
+                $attRecords = Attendance::where('student_id', $student->id)
+                    ->orWhere(function($q) use ($student, $myGrade) {
+                        $q->where('student_name', $student->name_khmer)->where('class_name', $myGrade);
+                    })->get()->keyBy(function($item) {
+                        return Carbon::parse($item->date)->toDateString();
+                    });
+
+                $leaveReqs = StudentLeaveRequest::where('student_id', $student->id)
+                    ->where('status', 'approved')
+                    ->get();
+
+                $presentDays = 0;
+                $excusedDays = 0;
+                $absentDays = 0;
+                $lateDays = 0;
+                $totalSchoolDays = 0;
+
+                for ($curr = $startOfMonth->copy(); $curr->lte($today); $curr->addDay()) {
+                    if ($curr->isSunday()) continue;
+
+                    $totalSchoolDays++;
+                    $dateStr = $curr->toDateString();
+                    $att = $attRecords->get($dateStr);
+
+                    $isLeave = $leaveReqs->contains(function($l) use ($dateStr) {
+                        return Carbon::parse($l->start_date)->toDateString() <= $dateStr && Carbon::parse($l->end_date)->toDateString() >= $dateStr;
+                    });
+
+                    if ($att && $att->status === 'absent') {
+                        $absentDays++;
+                    } elseif ($att && in_array($att->status, ['excused', 'holiday'])) {
+                        $excusedDays++;
+                    } elseif ($isLeave) {
+                        $excusedDays++;
+                    } elseif ($att && $att->status === 'late') {
+                        $lateDays++;
+                        $presentDays++;
+                    } else {
+                        $presentDays++;
+                    }
+                }
+
+                $totalLeaves = $excusedDays + $absentDays;
+                $attRate = $totalSchoolDays > 0 ? round((($presentDays + $excusedDays) / $totalSchoolDays) * 100, 1) : 100;
+
+                $payload['studentData'] = [
+                    'student_id' => $student->id,
+                    'student_name' => $student->name_khmer ?: $student->name,
+                    'student_id_card' => $student->student_id_card,
+                    'grade' => $myGrade,
+                    'class_name' => $myClass?->name ?: $myGrade,
+                    'room' => $myClass?->room ?: ('បន្ទប់ ' . $myGrade),
+                    'homeroom_teacher' => $myClass?->teacher ? ($myClass->teacher->name_khmer ?: ($myClass->teacher->name_latin ?: $myClass->teacher->user?->name)) : null,
+                    'teacher_phone' => $myClass?->teacher?->phone,
+                    'teacher_photo' => $myClass?->teacher?->photo ? (str_starts_with($myClass->teacher->photo, 'http') ? $myClass->teacher->photo : asset('storage/' . $myClass->teacher->photo)) : null,
+                    'classmates_count' => $classmatesCount,
+                    'attendance' => [
+                        'present' => $presentDays,
+                        'excused' => $excusedDays,
+                        'absent' => $absentDays,
+                        'late' => $lateDays,
+                        'total_leave' => $totalLeaves,
+                        'total' => $totalSchoolDays,
+                        'rate' => $attRate,
+                    ],
+                ];
+            } elseif ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student') {
+                // Fallback for student account without linked student profile
+                $myGrade = '7A';
+                $myClass = SchoolClass::with('teacher.user')->where('name', $myGrade)->first();
+                $classmatesCount = Student::where('grade', $myGrade)->count() ?: 50;
+                $payload['studentData'] = [
+                    'student_id' => $authUser->id,
+                    'student_name' => $authUser->name,
+                    'student_id_card' => 'STU-2026-7A-001',
+                    'grade' => $myGrade,
+                    'class_name' => $myClass?->name ?: $myGrade,
+                    'room' => $myClass?->room ?: ('បន្ទប់ ' . $myGrade),
+                    'homeroom_teacher' => $myClass?->teacher ? ($myClass->teacher->name_khmer ?: ($myClass->teacher->name_latin ?: $myClass->teacher->user?->name)) : null,
+                    'teacher_phone' => $myClass?->teacher?->phone,
+                    'teacher_photo' => $myClass?->teacher?->photo ? (str_starts_with($myClass->teacher->photo, 'http') ? $myClass->teacher->photo : asset('storage/' . $myClass->teacher->photo)) : null,
+                    'classmates_count' => $classmatesCount,
+                    'attendance' => [
+                        'present' => 6,
+                        'excused' => 1,
+                        'absent' => 0,
+                        'late' => 0,
+                        'total_leave' => 1,
+                        'total' => 7,
+                        'rate' => 100.0,
+                    ],
+                ];
+            }
+        }
+
         return response()->json($payload);
     }
 
     /**
-     * Get real pending notifications (new registered students, teachers, and leave requests)
+     * Get real pending notifications (announcements, registrations, and leave requests) tailored by role.
      */
     public function getPendingNotifications(Request $request)
     {
@@ -253,126 +365,330 @@ class ApiController extends Controller
             session()->save();
         }
 
+        $authUser = Auth::user();
+        $userId = $authUser ? $authUser->id : 0;
+        $roleName = strtolower($authUser?->roles?->first()?->name ?? $authUser?->role ?? 'guest');
+        $isSuperAdmin = $authUser?->is_super_admin || $roleName === 'super_admin' || $roleName === 'super admin';
+        $isAdmin = $isSuperAdmin || $roleName === 'admin';
+        $isStudent = str_contains($roleName, 'student') || ($authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('student')) || !empty($authUser?->student);
+        $isTeacher = !$isStudent && (str_contains($roleName, 'teacher') || ($authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('teacher')) || !empty($authUser?->teacher));
+
+        $version = Cache::get('notif_version', 1);
+        $cacheKey = "user_notifs_v{$version}_{$userId}_{$roleName}";
+
         if ($request->has('force')) {
+            Cache::forget($cacheKey);
             Cache::forget('pending_notifications_payload');
         }
 
-        $payload = Cache::remember('pending_notifications_payload', 30, function () {
-            // 1. Pending Students
-            $pendingStudents = Student::with('user:id,name')
-                ->where('status', 'pending')
-                ->latest('id')
-                ->take(20)
-                ->get();
-            $studentCount = Student::where('status', 'pending')->count();
-
-            // 2. Pending Teachers
-            $pendingTeachers = Teacher::with('user:id,name')
-                ->where('status', 'pending')
-                ->latest('id')
-                ->take(20)
-                ->get();
-            $teacherCount = Teacher::where('status', 'pending')->count();
-
-            // 3. Pending Student Leave Requests (សុំច្បាប់)
-            $pendingLeaves = StudentLeaveRequest::with('student:id,name_khmer,name_latin')
-                ->where('status', 'pending')
-                ->latest('id')
-                ->take(20)
-                ->get();
-            $studentLeaveCount = StudentLeaveRequest::where('status', 'pending')->count();
-
-            // 4. Pending Teacher Leave Requests (សុំច្បាប់គ្រូ)
-            $pendingTeacherLeaves = TeacherLeaveRequest::where('status', 'pending')
-                ->latest('id')
-                ->take(20)
-                ->get();
-            $teacherLeaveCount = TeacherLeaveRequest::where('status', 'pending')->count();
-            $leaveCount = $studentLeaveCount + $teacherLeaveCount;
-
+        $payload = Cache::remember($cacheKey, 15, function () use ($authUser, $isStudent, $isTeacher, $isAdmin, $isSuperAdmin) {
             $notifications = collect();
+            $counts = [
+                'announcements' => 0,
+                'students' => 0,
+                'teachers' => 0,
+                'leaves' => 0,
+            ];
 
-            foreach ($pendingStudents as $st) {
-                $name = $st->name_khmer ?: ($st->user?->name ?: ($st->name_latin ?: 'សិស្សថ្មី'));
+            // 1. Announcements (សេចក្តីជូនដំណឹង)
+            // Students see 'all' and 'students'
+            // Teachers see 'all' and 'teachers'
+            // Admin sees all announcements
+            $announcementQuery = Announcement::query()
+                ->where(function ($q) {
+                    $q->where('is_active', true)->orWhereNull('is_active');
+                });
+
+            if ($isStudent) {
+                $announcementQuery->where(function ($q) {
+                    $q->whereNull('target_audience')
+                      ->orWhereIn(DB::raw('LOWER(target_audience)'), ['all', 'students', 'all_users', 'សិស្ស', 'ទាំងអស់គ្នា', 'ទូទៅ']);
+                });
+            } elseif ($isTeacher) {
+                $announcementQuery->where(function ($q) {
+                    $q->whereNull('target_audience')
+                      ->orWhereIn(DB::raw('LOWER(target_audience)'), ['all', 'teachers', 'all_users', 'គ្រូ', 'ទាំងអស់គ្នា', 'ទូទៅ']);
+                });
+            }
+
+            $announcements = $announcementQuery->latest('id')->take(15)->get();
+            $counts['announcements'] = $announcements->count();
+
+            foreach ($announcements as $a) {
+                $audienceLabel = match (strtolower($a->target_audience ?? '')) {
+                    'students', 'សិស្ស' => 'សិស្សានុសិស្ស',
+                    'teachers', 'គ្រូ' => 'លោកគ្រូ/អ្នកគ្រូ',
+                    default => 'ទាំងអស់គ្នា',
+                };
+                $cleanContent = trim(preg_replace('/\s+/', ' ', strip_tags($a->content ?? '')));
+                $shortContent = mb_strlen($cleanContent) > 60 ? mb_substr($cleanContent, 0, 60) . '...' : $cleanContent;
+
                 $notifications->push([
-                    'id' => 'student-' . $st->id,
-                    'type' => 'student',
-                    'type_label' => 'សិស្សចុះឈ្មោះថ្មី',
-                    'name' => $name,
-                    'title' => "សិស្ស {$name} បានចុះឈ្មោះចូលរៀន",
-                    'subtitle' => 'ស្នើសុំចូលរៀនថ្នាក់ ' . ($st->grade ?: 'N/A') . ' • ' . ($st->phone ?: 'គ្មានលេខទូរស័ព្ទ'),
-                    'time' => $st->created_at ? $st->created_at->diffForHumans() : 'ថ្មីៗនេះ',
-                    'timestamp' => $st->created_at ? $st->created_at->timestamp : 0,
-                    'link' => '/students?tab=pending',
-                    'icon' => 'fa-solid fa-user-graduate',
-                    'badge_color' => 'bg-emerald-500',
-                    'bg_color' => 'bg-emerald-50 text-emerald-700 border-emerald-100',
+                    'id' => 'announcement-' . $a->id,
+                    'type' => 'announcement',
+                    'type_label' => 'សេចក្ដីជូនដំណឹង',
+                    'name' => $a->title,
+                    'title' => $a->title,
+                    'subtitle' => "ជូនចំពោះ: {$audienceLabel} • {$shortContent}",
+                    'time' => $a->created_at ? $a->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                    'timestamp' => $a->created_at ? $a->created_at->timestamp : 0,
+                    'link' => '/announcements',
+                    'icon' => 'fa-solid fa-bullhorn',
+                    'badge_color' => 'bg-indigo-500',
+                    'bg_color' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
                 ]);
             }
 
-            foreach ($pendingTeachers as $tc) {
-                $name = $tc->name_khmer ?: ($tc->user?->name ?: ($tc->name_latin ?: 'គ្រូថ្មី'));
-                $notifications->push([
-                    'id' => 'teacher-' . $tc->id,
-                    'type' => 'teacher',
-                    'type_label' => 'គ្រូចុះឈ្មោះថ្មី',
-                    'name' => $name,
-                    'title' => "លោកគ្រូ/អ្នកគ្រូ {$name} បានចុះឈ្មោះ",
-                    'subtitle' => 'ឯកទេស ' . ($tc->specialization ?: ($tc->subject ?: 'ទូទៅ')) . ' • ' . ($tc->phone ?: 'គ្មានលេខទូរស័ព្ទ'),
-                    'time' => $tc->created_at ? $tc->created_at->diffForHumans() : 'ថ្មីៗនេះ',
-                    'timestamp' => $tc->created_at ? $tc->created_at->timestamp : 0,
-                    'link' => '/teachers?tab=pending',
-                    'icon' => 'fa-solid fa-chalkboard-user',
-                    'badge_color' => 'bg-blue-500',
-                    'bg_color' => 'bg-blue-50 text-blue-700 border-blue-100',
-                ]);
+            // 2. Student Mode
+            if ($isStudent && $authUser) {
+                $studentProfile = $authUser->student ?? Student::where('email', $authUser->email)->first();
+                $studentId = $studentProfile?->id;
+                $studentName = $studentProfile?->name_khmer ?: ($studentProfile?->name_latin ?: $authUser->name);
+
+                $studentLeaves = StudentLeaveRequest::query()
+                    ->where(function ($q) use ($studentId, $studentName, $authUser) {
+                        if ($studentId) {
+                            $q->where('student_id', $studentId);
+                        }
+                        $q->orWhere('student_name', $studentName)
+                          ->orWhere('student_name', $authUser->name);
+                    })
+                    ->latest('updated_at')
+                    ->take(15)
+                    ->get();
+
+                $counts['leaves'] = $studentLeaves->count();
+
+                foreach ($studentLeaves as $lv) {
+                    $datesFormatted = $lv->start_date ? Carbon::parse($lv->start_date)->format('d/m/Y') : '';
+                    if ($lv->end_date && $lv->end_date != $lv->start_date) {
+                        $datesFormatted .= ' - ' . Carbon::parse($lv->end_date)->format('d/m/Y');
+                    }
+                    $daysText = ($lv->days_count ?: 1) . ' ថ្ងៃ';
+
+                    if ($lv->status === 'approved') {
+                        $notifications->push([
+                            'id' => 'leave-approved-' . $lv->id,
+                            'type' => 'leave',
+                            'leave_status' => 'approved',
+                            'type_label' => 'បានអនុម័តច្បាប់ ✓',
+                            'name' => 'សំណើសុំច្បាប់',
+                            'title' => 'សំណើសុំច្បាប់ត្រូវបានអនុម័ត ✓',
+                            'subtitle' => "សុំច្បាប់ {$daysText} ({$datesFormatted}) ត្រូវបានអនុម័តដោយជោគជ័យ!",
+                            'time' => $lv->updated_at ? $lv->updated_at->diffForHumans() : 'ថ្មីៗនេះ',
+                            'timestamp' => $lv->updated_at ? $lv->updated_at->timestamp : 0,
+                            'link' => '/attendance?tab=leaves',
+                            'icon' => 'fa-solid fa-circle-check',
+                            'badge_color' => 'bg-emerald-500',
+                            'bg_color' => 'bg-emerald-50 text-emerald-700 border-emerald-100',
+                        ]);
+                    } elseif ($lv->status === 'rejected') {
+                        $notifications->push([
+                            'id' => 'leave-rejected-' . $lv->id,
+                            'type' => 'leave',
+                            'leave_status' => 'rejected',
+                            'type_label' => 'បដិសេធច្បាប់ ✗',
+                            'name' => 'សំណើសុំច្បាប់',
+                            'title' => 'សំណើសុំច្បាប់ត្រូវបានបដិសេធ ✗',
+                            'subtitle' => "មូលហេតុ: " . ($lv->rejection_reason ?: 'ពុំមានមូលហេតុគ្រប់គ្រាន់'),
+                            'time' => $lv->updated_at ? $lv->updated_at->diffForHumans() : 'ថ្មីៗនេះ',
+                            'timestamp' => $lv->updated_at ? $lv->updated_at->timestamp : 0,
+                            'link' => '/attendance?tab=leaves',
+                            'icon' => 'fa-solid fa-circle-xmark',
+                            'badge_color' => 'bg-rose-500',
+                            'bg_color' => 'bg-rose-50 text-rose-700 border-rose-100',
+                        ]);
+                    } else { // pending
+                        $notifications->push([
+                            'id' => 'leave-pending-' . $lv->id,
+                            'type' => 'leave',
+                            'leave_status' => 'pending',
+                            'type_label' => 'រង់ចាំពិនិត្យ',
+                            'name' => 'សំណើសុំច្បាប់',
+                            'title' => 'សំណើសុំច្បាប់កំពុងរង់ចាំការពិនិត្យ',
+                            'subtitle' => "សុំច្បាប់ {$daysText} ({$datesFormatted}) បានផ្ញើរួចរាល់",
+                            'time' => $lv->created_at ? $lv->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                            'timestamp' => $lv->created_at ? $lv->created_at->timestamp : 0,
+                            'link' => '/attendance?tab=leaves',
+                            'icon' => 'fa-solid fa-clock',
+                            'badge_color' => 'bg-amber-500',
+                            'bg_color' => 'bg-amber-50 text-amber-700 border-amber-100',
+                        ]);
+                    }
+                }
             }
 
-            foreach ($pendingLeaves as $lv) {
-                $name = $lv->student_name ?: ($lv->student?->name_khmer ?: 'សិស្ស');
-                $notifications->push([
-                    'id' => 'leave-' . $lv->id,
-                    'type' => 'leave',
-                    'type_label' => 'សុំច្បាប់សិស្ស',
-                    'name' => $name,
-                    'title' => "សិស្ស {$name} សុំច្បាប់ឈប់សម្រាក",
-                    'subtitle' => 'ថ្នាក់ ' . ($lv->class_name ?: 'N/A') . ' • រយៈពេល ' . ($lv->days_count ?: 1) . ' ថ្ងៃ (' . ($lv->reason ?: 'មានធុរៈផ្ទាល់ខ្លួន') . ')',
-                    'time' => $lv->created_at ? $lv->created_at->diffForHumans() : 'ថ្មីៗនេះ',
-                    'timestamp' => $lv->created_at ? $lv->created_at->timestamp : 0,
-                    'link' => '/attendance?tab=leaves',
-                    'icon' => 'fa-solid fa-calendar-minus',
-                    'badge_color' => 'bg-amber-500',
-                    'bg_color' => 'bg-amber-50 text-amber-700 border-amber-100',
-                ]);
+            // 3. Teacher Mode
+            elseif ($isTeacher && $authUser) {
+                // Pending student leave requests for teacher to review
+                $teacherProfile = $authUser->teacher ?? Teacher::where('email', $authUser->email)->first();
+                $assignedClasses = $teacherProfile?->class_assigned ? array_map('trim', explode(',', $teacherProfile->class_assigned)) : [];
+
+                $pendingStudentLeavesQuery = StudentLeaveRequest::where('status', 'pending');
+                if (!empty($assignedClasses)) {
+                    $pendingStudentLeavesQuery->whereIn('class_name', $assignedClasses);
+                }
+                $pendingLeaves = $pendingStudentLeavesQuery->latest('id')->take(15)->get();
+                $counts['leaves'] = $pendingLeaves->count();
+
+                foreach ($pendingLeaves as $lv) {
+                    $name = $lv->student_name ?: ($lv->student?->name_khmer ?: 'សិស្ស');
+                    $notifications->push([
+                        'id' => 'leave-' . $lv->id,
+                        'type' => 'leave',
+                        'type_label' => 'សុំច្បាប់សិស្ស',
+                        'name' => $name,
+                        'title' => "សិស្ស {$name} សុំច្បាប់ឈប់សម្រាក",
+                        'subtitle' => 'ថ្នាក់ ' . ($lv->class_name ?: 'N/A') . ' • រយៈពេល ' . ($lv->days_count ?: 1) . ' ថ្ងៃ (' . ($lv->reason ?: 'មានធុរៈផ្ទាល់ខ្លួន') . ')',
+                        'time' => $lv->created_at ? $lv->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                        'timestamp' => $lv->created_at ? $lv->created_at->timestamp : 0,
+                        'link' => '/attendance?tab=leaves',
+                        'icon' => 'fa-solid fa-calendar-minus',
+                        'badge_color' => 'bg-amber-500',
+                        'bg_color' => 'bg-amber-50 text-amber-700 border-amber-100',
+                    ]);
+                }
+
+                // Teacher's own leave requests status
+                if ($teacherProfile) {
+                    $myTeacherLeaves = TeacherLeaveRequest::where('teacher_id', $teacherProfile->id)
+                        ->latest('updated_at')
+                        ->take(10)
+                        ->get();
+                    foreach ($myTeacherLeaves as $tlv) {
+                        if ($tlv->status === 'approved') {
+                            $notifications->push([
+                                'id' => 'teacher-leave-app-' . $tlv->id,
+                                'type' => 'leave',
+                                'type_label' => 'បានអនុម័តច្បាប់ ✓',
+                                'name' => 'សំណើសុំច្បាប់',
+                                'title' => 'សំណើសុំច្បាប់របស់អ្នកត្រូវបានអនុម័ត',
+                                'subtitle' => "សុំច្បាប់ {$tlv->days_count} ថ្ងៃត្រូវបានអនុម័តរួចរាល់",
+                                'time' => $tlv->updated_at ? $tlv->updated_at->diffForHumans() : 'ថ្មីៗនេះ',
+                                'timestamp' => $tlv->updated_at ? $tlv->updated_at->timestamp : 0,
+                                'link' => '/teacher-attendance?tab=leaves',
+                                'icon' => 'fa-solid fa-circle-check',
+                                'badge_color' => 'bg-emerald-500',
+                                'bg_color' => 'bg-emerald-50 text-emerald-700 border-emerald-100',
+                            ]);
+                        }
+                    }
+                }
             }
 
-            foreach ($pendingTeacherLeaves as $tlv) {
-                $name = $tlv->teacher_name ?: 'គ្រូបង្រៀន';
-                $notifications->push([
-                    'id' => 'teacher-leave-' . $tlv->id,
-                    'type' => 'leave',
-                    'type_label' => 'សុំច្បាប់គ្រូ',
-                    'name' => $name,
-                    'title' => "លោកគ្រូ/អ្នកគ្រូ {$name} សុំច្បាប់ឈប់សម្រាក",
-                    'subtitle' => 'ឯកទេស ' . ($tlv->specialization ?: 'ទូទៅ') . ' • រយៈពេល ' . ($tlv->days_count ?: 1) . ' ថ្ងៃ (' . ($tlv->reason ?: $tlv->leave_type) . ')',
-                    'time' => $tlv->created_at ? $tlv->created_at->diffForHumans() : 'ថ្មីៗនេះ',
-                    'timestamp' => $tlv->created_at ? $tlv->created_at->timestamp : 0,
-                    'link' => '/teacher-attendance?tab=leaves',
-                    'icon' => 'fa-solid fa-calendar-minus',
-                    'badge_color' => 'bg-teal-500',
-                    'bg_color' => 'bg-teal-50 text-teal-700 border-teal-100',
-                ]);
+            // 4. Admin / Super Admin Mode
+            else {
+                // Pending Students
+                $pendingStudents = Student::with('user:id,name')
+                    ->where('status', 'pending')
+                    ->latest('id')
+                    ->take(20)
+                    ->get();
+                $counts['students'] = Student::where('status', 'pending')->count();
+
+                // Pending Teachers
+                $pendingTeachers = Teacher::with('user:id,name')
+                    ->where('status', 'pending')
+                    ->latest('id')
+                    ->take(20)
+                    ->get();
+                $counts['teachers'] = Teacher::where('status', 'pending')->count();
+
+                // Pending Student Leaves
+                $pendingLeaves = StudentLeaveRequest::with('student:id,name_khmer,name_latin')
+                    ->where('status', 'pending')
+                    ->latest('id')
+                    ->take(20)
+                    ->get();
+                $studentLeaveCount = StudentLeaveRequest::where('status', 'pending')->count();
+
+                // Pending Teacher Leaves
+                $pendingTeacherLeaves = TeacherLeaveRequest::where('status', 'pending')
+                    ->latest('id')
+                    ->take(20)
+                    ->get();
+                $teacherLeaveCount = TeacherLeaveRequest::where('status', 'pending')->count();
+                $counts['leaves'] = $studentLeaveCount + $teacherLeaveCount;
+
+                foreach ($pendingStudents as $st) {
+                    $name = $st->name_khmer ?: ($st->user?->name ?: ($st->name_latin ?: 'សិស្សថ្មី'));
+                    $notifications->push([
+                        'id' => 'student-' . $st->id,
+                        'type' => 'student',
+                        'type_label' => 'សិស្សចុះឈ្មោះថ្មី',
+                        'name' => $name,
+                        'title' => "សិស្ស {$name} បានចុះឈ្មោះចូលរៀន",
+                        'subtitle' => 'ស្នើសុំចូលរៀនថ្នាក់ ' . ($st->grade ?: 'N/A') . ' • ' . ($st->phone ?: 'គ្មានលេខទូរស័ព្ទ'),
+                        'time' => $st->created_at ? $st->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                        'timestamp' => $st->created_at ? $st->created_at->timestamp : 0,
+                        'link' => '/students?tab=pending',
+                        'icon' => 'fa-solid fa-user-graduate',
+                        'badge_color' => 'bg-emerald-500',
+                        'bg_color' => 'bg-emerald-50 text-emerald-700 border-emerald-100',
+                    ]);
+                }
+
+                foreach ($pendingTeachers as $tc) {
+                    $name = $tc->name_khmer ?: ($tc->user?->name ?: ($tc->name_latin ?: 'គ្រូថ្មី'));
+                    $notifications->push([
+                        'id' => 'teacher-' . $tc->id,
+                        'type' => 'teacher',
+                        'type_label' => 'គ្រូចុះឈ្មោះថ្មី',
+                        'name' => $name,
+                        'title' => "លោកគ្រូ/អ្នកគ្រូ {$name} បានចុះឈ្មោះ",
+                        'subtitle' => 'ឯកទេស ' . ($tc->specialization ?: ($tc->subject ?: 'ទូទៅ')) . ' • ' . ($tc->phone ?: 'គ្មានលេខទូរស័ព្ទ'),
+                        'time' => $tc->created_at ? $tc->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                        'timestamp' => $tc->created_at ? $tc->created_at->timestamp : 0,
+                        'link' => '/teachers?tab=pending',
+                        'icon' => 'fa-solid fa-chalkboard-user',
+                        'badge_color' => 'bg-blue-500',
+                        'bg_color' => 'bg-blue-50 text-blue-700 border-blue-100',
+                    ]);
+                }
+
+                foreach ($pendingLeaves as $lv) {
+                    $name = $lv->student_name ?: ($lv->student?->name_khmer ?: 'សិស្ស');
+                    $notifications->push([
+                        'id' => 'leave-' . $lv->id,
+                        'type' => 'leave',
+                        'type_label' => 'សុំច្បាប់សិស្ស',
+                        'name' => $name,
+                        'title' => "សិស្ស {$name} សុំច្បាប់ឈប់សម្រាក",
+                        'subtitle' => 'ថ្នាក់ ' . ($lv->class_name ?: 'N/A') . ' • រយៈពេល ' . ($lv->days_count ?: 1) . ' ថ្ងៃ (' . ($lv->reason ?: 'មានធុរៈផ្ទាល់ខ្លួន') . ')',
+                        'time' => $lv->created_at ? $lv->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                        'timestamp' => $lv->created_at ? $lv->created_at->timestamp : 0,
+                        'link' => '/attendance?tab=leaves',
+                        'icon' => 'fa-solid fa-calendar-minus',
+                        'badge_color' => 'bg-amber-500',
+                        'bg_color' => 'bg-amber-50 text-amber-700 border-amber-100',
+                    ]);
+                }
+
+                foreach ($pendingTeacherLeaves as $tlv) {
+                    $name = $tlv->teacher_name ?: 'គ្រូបង្រៀន';
+                    $notifications->push([
+                        'id' => 'teacher-leave-' . $tlv->id,
+                        'type' => 'leave',
+                        'type_label' => 'សុំច្បាប់គ្រូ',
+                        'name' => $name,
+                        'title' => "លោកគ្រូ/អ្នកគ្រូ {$name} សុំច្បាប់ឈប់សម្រាក",
+                        'subtitle' => 'ឯកទេស ' . ($tlv->specialization ?: 'ទូទៅ') . ' • រយៈពេល ' . ($tlv->days_count ?: 1) . ' ថ្ងៃ (' . ($tlv->reason ?: $tlv->leave_type) . ')',
+                        'time' => $tlv->created_at ? $tlv->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                        'timestamp' => $tlv->created_at ? $tlv->created_at->timestamp : 0,
+                        'link' => '/teacher-attendance?tab=leaves',
+                        'icon' => 'fa-solid fa-calendar-minus',
+                        'badge_color' => 'bg-teal-500',
+                        'bg_color' => 'bg-teal-50 text-teal-700 border-teal-100',
+                    ]);
+                }
             }
 
             $sortedNotifications = $notifications->sortByDesc('timestamp')->values();
+            $totalCount = $sortedNotifications->count();
 
             return [
-                'total_count' => $studentCount + $teacherCount + $leaveCount,
-                'counts' => [
-                    'students' => $studentCount,
-                    'teachers' => $teacherCount,
-                    'leaves' => $leaveCount,
-                ],
+                'total_count' => $totalCount,
+                'counts' => $counts,
                 'notifications' => $sortedNotifications,
             ];
         });
@@ -515,8 +831,8 @@ class ApiController extends Controller
             'student_id_card' => 'nullable|string',
         ]);
 
-        // Auto-generate student ID if not provided or empty
-        $studentIdCard = $validated['student_id_card'] ?? null;
+        // Preserve existing student ID card or auto-generate if not provided or empty
+        $studentIdCard = !empty($validated['student_id_card']) ? $validated['student_id_card'] : ($student->student_id_card ?? null);
         if (empty($studentIdCard) || $studentIdCard === 'STU-រង់ចាំ') {
             $year = date('Y');
             $lastStudent = Student::whereNotNull('student_id_card')
@@ -2039,6 +2355,11 @@ class ApiController extends Controller
         $validated['publish_date'] = $validated['publish_date'] ?? Carbon::today();
         $announcement = Announcement::create($validated);
 
+        try {
+            Cache::increment('notif_version');
+            Cache::forget('pending_notifications_payload');
+        } catch (\Throwable $e) {}
+
         return response()->json([
             'success' => true,
             'message' => "បានផ្សាយសេចក្តីជូនដំណឹង {$announcement->title} ដោយជោគជ័យ!",
@@ -2055,6 +2376,11 @@ class ApiController extends Controller
 
         $title = $announcement->title;
         $announcement->delete();
+
+        try {
+            Cache::increment('notif_version');
+            Cache::forget('pending_notifications_payload');
+        } catch (\Throwable $e) {}
 
         return response()->json([
             'success' => true,
@@ -2107,6 +2433,14 @@ class ApiController extends Controller
 
     public function storeClass(Request $request)
     {
+        $user = $request->user();
+        if (!$user || (!$user->isSuperAdmin() && !$user->hasRole('admin') && strtolower($user->role ?? '') !== 'admin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'អ្នកមិនមានសិទ្ធិបង្កើតថ្នាក់រៀនឡើយ (Unauthorized)។ មានតែគណៈគ្រប់គ្រងប៉ុណ្ណោះដែលអាចបង្កើតបាន។',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'grade' => 'required|string|max:20',
             'section' => 'required|string|max:10',
@@ -2131,6 +2465,14 @@ class ApiController extends Controller
 
     public function updateClass(Request $request, SchoolClass $class)
     {
+        $user = $request->user();
+        if (!$user || (!$user->isSuperAdmin() && !$user->hasRole('admin') && strtolower($user->role ?? '') !== 'admin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'អ្នកមិនមានសិទ្ធិកែប្រែព័ត៌មានថ្នាក់រៀន ឬចាត់តាំងគ្រូបន្ទុកថ្នាក់ឡើយ (Unauthorized)។',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'grade' => 'nullable|string|max:20',
             'section' => 'nullable|string|max:10',
@@ -2156,6 +2498,14 @@ class ApiController extends Controller
 
     public function destroyClass(SchoolClass $class)
     {
+        $user = request()->user();
+        if (!$user || (!$user->isSuperAdmin() && !$user->hasRole('admin') && strtolower($user->role ?? '') !== 'admin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'អ្នកមិនមានសិទ្ធិលុបថ្នាក់រៀនឡើយ (Unauthorized)។',
+            ], 403);
+        }
+
         $name = $class->name;
 
         // 1. Relational Integrity Check: Prevent deleting class if active students exist

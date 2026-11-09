@@ -182,23 +182,12 @@
         <!-- Top Navbar (relative z-40 ensures dropdowns float above all view content) -->
         <header class="relative z-40 h-16 sm:h-20 px-3 sm:px-6 md:px-8 flex items-center justify-between border-b border-slate-100 bg-white/80 backdrop-blur-md flex-shrink-0">
           <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-            <!-- Toggle Sidebar Button in Navbar -->
-            <button 
-              @click="sidebarOpen = !sidebarOpen" 
-              class="text-slate-500 hover:text-slate-800 p-2 rounded-xl hover:bg-slate-100 transition flex items-center justify-center cursor-pointer shrink-0" 
-              title="បង្រួម / ពង្រីកម៉ឺនុយ"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
-              </svg>
-            </button>
-
             <!-- Mobile Brand Title -->
             <div class="flex items-center gap-2 md:hidden min-w-0">
               <div class="w-7 h-7 rounded-lg overflow-hidden border border-slate-100 bg-white flex items-center justify-center p-0.5 shadow-2xs flex-shrink-0">
                 <img :src="schoolLogo || '/images/logo.png'" alt="Logo" class="w-full h-full object-contain" />
               </div>
-              <span class="text-xs font-bold text-slate-900 truncate max-w-[130px] sm:max-w-none">
+              <span class="text-xs sm:text-sm font-bold text-slate-900 truncate max-w-[150px] sm:max-w-none">
                 {{ schoolName || 'សាលារៀន ជំនាន់ថ្មី' }}
               </span>
             </div>
@@ -301,10 +290,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                 </svg>
                 <span 
-                  v-if="pendingTotalCount > 0" 
+                  v-if="unreadCount > 0" 
                   class="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[#ef4444] text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs animate-pulse"
                 >
-                  {{ pendingTotalCount > 99 ? '99+' : pendingTotalCount }}
+                  {{ unreadCount > 99 ? '99+' : unreadCount }}
                 </span>
               </button>
 
@@ -330,12 +319,23 @@
                       </div>
                       <div>
                         <h4 class="text-xs font-bold text-slate-800 leading-tight">ការជូនដំណឹង</h4>
-                        <p class="text-[10px] text-slate-400">សំណើរង់ចាំការអនុម័ត</p>
+                        <p class="text-[10px] text-slate-400">
+                          {{ isStudentUser ? 'ដំណឹង និងស្ថានភាពសុំច្បាប់' : 'សំណើរង់ចាំការអនុម័ត និងដំណឹង' }}
+                        </p>
                       </div>
                     </div>
                     <div class="flex items-center gap-1.5">
-                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="pendingTotalCount > 0 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-500'">
-                        {{ pendingTotalCount }} សំណើ
+                      <button 
+                        v-if="unreadCount > 0"
+                        type="button" 
+                        @click.stop="markAllAsRead" 
+                        class="text-[10px] text-blue-600 hover:text-blue-800 font-medium hover:underline mr-1 cursor-pointer"
+                        title="កំណត់ថាមើលរួចទាំងអស់"
+                      >
+                        មើលរួចទាំងអស់
+                      </button>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="unreadCount > 0 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-500'">
+                        {{ unreadCount > 0 ? unreadCount + ' ថ្មី' : pendingTotalCount + ' ដំណឹង' }}
                       </span>
                       <button 
                         type="button" 
@@ -348,7 +348,7 @@
                     </div>
                   </div>
 
-                  <!-- Filter Pills: ទាំងអស់ | សិស្សថ្មី | គ្រូថ្មី | សុំច្បាប់ -->
+                  <!-- Filter Pills: ទាំងអស់ | សេចក្ដីជូនដំណឹង | សិស្សថ្មី | គ្រូថ្មី | សុំច្បាប់ -->
                   <div class="p-2 border-b border-slate-100 bg-slate-50/50 flex items-center gap-1 overflow-x-auto text-[11px]">
                     <button
                       type="button"
@@ -362,15 +362,27 @@
                     </button>
                     <button
                       type="button"
+                      @click="notificationFilter = 'announcement'"
+                      :class="[
+                        'px-2.5 py-1 rounded-lg transition font-medium whitespace-nowrap cursor-pointer',
+                        notificationFilter === 'announcement' ? 'bg-white text-indigo-700 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
+                      ]"
+                    >
+                      សេចក្ដីជូនដំណឹង ({{ pendingCounts.announcements || 0 }})
+                    </button>
+                    <button
+                      v-if="!isStudentUser"
+                      type="button"
                       @click="notificationFilter = 'student'"
                       :class="[
                         'px-2.5 py-1 rounded-lg transition font-medium whitespace-nowrap cursor-pointer',
                         notificationFilter === 'student' ? 'bg-white text-emerald-700 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
                       ]"
                     >
-                      សិស្សថ្មី ({{ pendingCounts.students }})
+                      សិស្សថ្មី ({{ pendingCounts.students || 0 }})
                     </button>
                     <button
+                      v-if="!isStudentUser"
                       type="button"
                       @click="notificationFilter = 'teacher'"
                       :class="[
@@ -378,7 +390,7 @@
                         notificationFilter === 'teacher' ? 'bg-white text-blue-700 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
                       ]"
                     >
-                      គ្រូថ្មី ({{ pendingCounts.teachers }})
+                      គ្រូថ្មី ({{ pendingCounts.teachers || 0 }})
                     </button>
                     <button
                       type="button"
@@ -388,7 +400,7 @@
                         notificationFilter === 'leave' ? 'bg-white text-amber-700 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
                       ]"
                     >
-                      សុំច្បាប់ ({{ pendingCounts.leaves }})
+                      សុំច្បាប់ ({{ pendingCounts.leaves || 0 }})
                     </button>
                   </div>
 
@@ -403,16 +415,20 @@
                       <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mx-auto text-base">
                         <i class="fa-solid fa-check"></i>
                       </div>
-                      <p class="text-xs font-bold text-slate-700">ពុំមានសំណើរង់ចាំការអនុម័តឡើយ</p>
-                      <p class="text-[10px] text-slate-400">រាល់ការចុះឈ្មោះ និងសំណើសុំច្បាប់ត្រូវបានអនុម័តរួចរាល់</p>
+                      <p class="text-xs font-bold text-slate-700">
+                        {{ isStudentUser ? 'ពុំមានការជូនដំណឹងថ្មីឡើយ' : 'ពុំមានសំណើរង់ចាំការអនុម័តឡើយ' }}
+                      </p>
+                      <p class="text-[10px] text-slate-400">
+                        {{ isStudentUser ? 'រាល់ដំណឹង និងការអនុម័តច្បាប់នឹងបង្ហាញនៅទីនេះ' : 'រាល់ការចុះឈ្មោះ និងសំណើសុំច្បាប់ត្រូវបានអនុម័តរួចរាល់' }}
+                      </p>
                     </div>
 
                     <div 
                       v-else
                       v-for="item in filteredNotificationItems" 
                       :key="item.id"
-                      @click="goToNotificationLink(item.link)"
-                      class="p-3 hover:bg-slate-50/80 transition flex items-start gap-2.5 cursor-pointer group"
+                      @click="goToNotificationLink(item.link, item.id)"
+                      class="p-3 hover:bg-slate-50/80 transition flex items-start gap-2.5 cursor-pointer group relative"
                     >
                       <!-- Type Icon Badge -->
                       <div 
@@ -423,11 +439,17 @@
                       </div>
 
                       <!-- Details -->
-                      <div class="flex-1 min-w-0">
+                      <div class="flex-1 min-w-0 pr-3">
                         <div class="flex items-center justify-between gap-1 mb-0.5">
                           <span 
                             class="text-[9px] font-bold px-1.5 py-0.2 rounded"
-                            :class="item.type === 'student' ? 'bg-emerald-100 text-emerald-800' : (item.type === 'teacher' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800')"
+                            :class="[
+                              item.type === 'announcement' ? 'bg-indigo-100 text-indigo-800' :
+                              (item.leave_status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
+                              (item.leave_status === 'rejected' ? 'bg-rose-100 text-rose-800' :
+                              (item.type === 'student' ? 'bg-emerald-100 text-emerald-800' :
+                              (item.type === 'teacher' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'))))
+                            ]"
                           >
                             {{ item.type_label }}
                           </span>
@@ -441,6 +463,13 @@
                         </p>
                       </div>
 
+                      <!-- Unread Indicator Dot -->
+                      <span 
+                        v-if="!readNotificationIds.includes(item.id)" 
+                        class="absolute top-3.5 right-6 w-2 h-2 rounded-full bg-blue-500 ring-2 ring-white"
+                        title="មិនទាន់មើល"
+                      ></span>
+
                       <div class="shrink-0 text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition text-xs mt-2">
                         <i class="fa-solid fa-chevron-right"></i>
                       </div>
@@ -449,29 +478,64 @@
 
                   <!-- Footer Shortcuts -->
                   <div class="p-2.5 bg-slate-50/90 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
-                    <button 
-                      type="button" 
-                      @click="goToNotificationLink('/students?tab=pending')"
-                      class="hover:text-blue-700 hover:underline cursor-pointer"
-                    >
-                      សិស្សរង់ចាំ
-                    </button>
-                    <span>•</span>
-                    <button 
-                      type="button" 
-                      @click="goToNotificationLink('/teachers?tab=pending')"
-                      class="hover:text-blue-700 hover:underline cursor-pointer"
-                    >
-                      គ្រូរង់ចាំ
-                    </button>
-                    <span>•</span>
-                    <button 
-                      type="button" 
-                      @click="goToNotificationLink('/attendance?tab=leaves')"
-                      class="hover:text-blue-700 hover:underline cursor-pointer"
-                    >
-                      សុំច្បាប់រង់ចាំ
-                    </button>
+                    <template v-if="isStudentUser">
+                      <button 
+                        type="button" 
+                        @click="goToNotificationLink('/announcements')"
+                        class="hover:text-blue-700 hover:underline cursor-pointer"
+                      >
+                        សេចក្ដីជូនដំណឹង
+                      </button>
+                      <span>•</span>
+                      <button 
+                        type="button" 
+                        @click="goToNotificationLink('/attendance')"
+                        class="hover:text-blue-700 hover:underline cursor-pointer"
+                      >
+                        វត្តមានរបស់ខ្ញុំ
+                      </button>
+                      <span>•</span>
+                      <button 
+                        type="button" 
+                        @click="goToNotificationLink('/attendance?tab=leaves')"
+                        class="hover:text-blue-700 hover:underline cursor-pointer"
+                      >
+                        សំណើសុំច្បាប់
+                      </button>
+                    </template>
+                    <template v-else>
+                      <button 
+                        type="button" 
+                        @click="goToNotificationLink('/announcements')"
+                        class="hover:text-blue-700 hover:underline cursor-pointer"
+                      >
+                        សេចក្ដីជូនដំណឹង
+                      </button>
+                      <span>•</span>
+                      <button 
+                        type="button" 
+                        @click="goToNotificationLink('/students?tab=pending')"
+                        class="hover:text-blue-700 hover:underline cursor-pointer"
+                      >
+                        សិស្សរង់ចាំ
+                      </button>
+                      <span>•</span>
+                      <button 
+                        type="button" 
+                        @click="goToNotificationLink('/teachers?tab=pending')"
+                        class="hover:text-blue-700 hover:underline cursor-pointer"
+                      >
+                        គ្រូរង់ចាំ
+                      </button>
+                      <span>•</span>
+                      <button 
+                        type="button" 
+                        @click="goToNotificationLink('/attendance?tab=leaves')"
+                        class="hover:text-blue-700 hover:underline cursor-pointer"
+                      >
+                        សុំច្បាប់រង់ចាំ
+                      </button>
+                    </template>
                   </div>
                 </div>
               </transition>
@@ -508,7 +572,7 @@
         <span>ផ្ទាំងដើម</span>
       </router-link>
 
-      <!-- 2. Attendance -->
+      <!-- 2. Attendance (Clipboard-Check Icon) -->
       <router-link 
         to="/attendance" 
         @click="sidebarOpen = false"
@@ -518,13 +582,29 @@
         ]"
       >
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
         </svg>
         <span>វត្តមាន</span>
       </router-link>
 
-      <!-- 3. Students -->
+      <!-- 3. Timetables (for Students: Calendar-Clock Icon) OR Students (for Admin / Teacher) -->
       <router-link 
+        v-if="isStudentUser"
+        to="/timetables" 
+        @click="sidebarOpen = false"
+        :class="[
+          'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
+          isActive('/timetables') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+        ]"
+      >
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span>{{ currentLocale === 'km' ? 'កាលវិភាគ' : 'Timetable' }}</span>
+      </router-link>
+
+      <router-link 
+        v-else
         to="/students" 
         @click="sidebarOpen = false"
         :class="[
@@ -535,11 +615,27 @@
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/>
         </svg>
-        <span>សិស្ស</span>
+        <span>{{ currentLocale === 'km' ? 'សិស្ស' : 'Students' }}</span>
       </router-link>
 
-      <!-- 4. Teachers -->
+      <!-- 4. Teachers (for Admin / Teacher) OR Library (for Students) -->
       <router-link 
+        v-if="isStudentUser"
+        to="/library" 
+        @click="sidebarOpen = false"
+        :class="[
+          'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
+          isActive('/library') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+        ]"
+      >
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+        </svg>
+        <span>{{ currentLocale === 'km' ? 'បណ្ណាល័យ' : 'Library' }}</span>
+      </router-link>
+
+      <router-link 
+        v-else
         to="/teachers" 
         @click="sidebarOpen = false"
         :class="[
@@ -550,7 +646,7 @@
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
         </svg>
-        <span>គ្រូ</span>
+        <span>{{ currentLocale === 'km' ? 'គ្រូ' : 'Teachers' }}</span>
       </router-link>
 
       <!-- 5. All Menu (Opens full drawer) -->
@@ -651,8 +747,63 @@ const notificationDropdownRef = ref(null);
 const isLoadingNotifications = ref(false);
 const notificationFilter = ref('all');
 const pendingTotalCount = ref(0);
-const pendingCounts = ref({ students: 0, teachers: 0, leaves: 0 });
+const pendingCounts = ref({ announcements: 0, students: 0, teachers: 0, leaves: 0 });
 const pendingNotificationItems = ref([]);
+const readNotificationIds = ref([]);
+
+const getStorageUserKey = () => {
+  return window.__INITIAL_USER__?.id || window.__INITIAL_USER__?.name || 'user';
+};
+
+const loadReadNotificationIds = () => {
+  try {
+    const raw = localStorage.getItem(`pdt_read_notifs_${getStorageUserKey()}`);
+    readNotificationIds.value = raw ? JSON.parse(raw) : [];
+  } catch {
+    readNotificationIds.value = [];
+  }
+};
+
+const markAllAsRead = () => {
+  if (pendingNotificationItems.value.length === 0) return;
+  const ids = pendingNotificationItems.value.map(i => i.id);
+  const combined = Array.from(new Set([...readNotificationIds.value, ...ids]));
+  readNotificationIds.value = combined;
+  try {
+    localStorage.setItem(`pdt_read_notifs_${getStorageUserKey()}`, JSON.stringify(combined));
+  } catch (e) {
+    console.warn('LocalStorage error:', e);
+  }
+};
+
+const markItemAsRead = (id) => {
+  if (!id) return;
+  if (!readNotificationIds.value.includes(id)) {
+    const combined = [...readNotificationIds.value, id];
+    readNotificationIds.value = combined;
+    try {
+      localStorage.setItem(`pdt_read_notifs_${getStorageUserKey()}`, JSON.stringify(combined));
+    } catch (e) {
+      console.warn('LocalStorage error:', e);
+    }
+  }
+};
+
+const unreadCount = computed(() => {
+  if (showNotificationDropdown.value) return 0;
+  return pendingNotificationItems.value.filter(item => !readNotificationIds.value.includes(item.id)).length;
+});
+
+// Sync PWA App Badge on mobile home screen / desktop taskbar
+watch(unreadCount, (count) => {
+  if (typeof navigator !== 'undefined' && 'setAppBadge' in navigator) {
+    if (count > 0) {
+      navigator.setAppBadge(count).catch(() => {});
+    } else {
+      navigator.clearAppBadge().catch(() => {});
+    }
+  }
+}, { immediate: true });
 
 const filteredNotificationItems = computed(() => {
   if (notificationFilter.value === 'all') return pendingNotificationItems.value;
@@ -663,10 +814,14 @@ const toggleNotificationDropdown = () => {
   showNotificationDropdown.value = !showNotificationDropdown.value;
   if (showNotificationDropdown.value) {
     fetchPendingNotifications();
+    markAllAsRead();
   }
 };
 
-const goToNotificationLink = (link) => {
+const goToNotificationLink = (link, itemId = null) => {
+  if (itemId) {
+    markItemAsRead(itemId);
+  }
   showNotificationDropdown.value = false;
   router.push(link);
   window.dispatchEvent(new CustomEvent('pdt-data-updated'));
@@ -684,8 +839,13 @@ const fetchPendingNotifications = async () => {
     if (res.data) {
       const newTotal = res.data.total_count || 0;
       pendingTotalCount.value = newTotal;
-      pendingCounts.value = res.data.counts || { students: 0, teachers: 0, leaves: 0 };
+      pendingCounts.value = res.data.counts || { announcements: 0, students: 0, teachers: 0, leaves: 0 };
       pendingNotificationItems.value = res.data.notifications || [];
+
+      // If dropdown is currently open when new items arrive, mark them as read
+      if (showNotificationDropdown.value) {
+        markAllAsRead();
+      }
 
       // If pending count changed (e.g. new student registered), alert active views to refresh
       if (lastPendingCount !== -1 && newTotal !== lastPendingCount) {
@@ -731,22 +891,23 @@ const executeLogout = async () => {
     keysToRemove.forEach(k => localStorage.removeItem(k));
 
     // Send fast JSON logout request
-    await axios.post('/logout', {}, {
+    const res = await axios.post('/logout', {}, {
       headers: {
         'X-CSRF-TOKEN': csrfToken.value,
         'Accept': 'application/json'
       }
     });
 
-    // Immediate clean redirect to login page
-    window.location.href = '/';
+    // Immediate clean redirect to secret login page
+    const targetUrl = res.data?.redirect || '/portal-sala-access-2026';
+    window.location.href = targetUrl;
   } catch (err) {
     console.warn('Axios logout failed, falling back to form submit:', err);
     const form = document.getElementById('spa-logout-form');
     if (form) {
       form.submit();
     } else {
-      window.location.href = '/';
+      window.location.href = '/portal-sala-access-2026';
     }
   }
 };
@@ -911,6 +1072,7 @@ onMounted(() => {
   });
 
   document.addEventListener('click', handleDocClick);
+  loadReadNotificationIds();
   fetchPendingNotifications();
   const notifInterval = setInterval(fetchPendingNotifications, 30000);
   window.addEventListener('pdt-data-updated', fetchPendingNotifications);
@@ -1018,10 +1180,15 @@ const displayRoleName = computed(() => {
   return isKm ? 'សិស្សានុសិស្ស' : 'Student';
 });
 
+const isStudentUser = computed(() => {
+  if (user.value.is_super_admin) return false;
+  const r = (user.value.role || '').toLowerCase();
+  const rKm = user.value.role_khmer || '';
+  return r.includes('student') || rKm.includes('សិស្ស') || userRole.value === 'Student';
+});
+
 const getMenuLabel = (item) => {
-  const isStudentUser = !user.value.is_super_admin && 
-    (user.value.role === 'Student' || (user.value.role_khmer || '').includes('សិស្ស') || (user.value.role || '').toLowerCase().includes('student'));
-  if (item.path === '/timetables' && isStudentUser) {
+  if (item.path === '/timetables' && isStudentUser.value) {
     return currentLocale.value === 'km' ? 'កាលវិភាគសិក្សា' : 'Class Timetable';
   }
   return t(item.i18nKey);

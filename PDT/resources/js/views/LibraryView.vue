@@ -203,22 +203,64 @@
         </div>
       </div>
 
-      <!-- Book Grid -->
-      <div v-if="filteredELibraryBooks.length === 0" class="py-16 text-center bg-white rounded-3xl border border-slate-200">
-        <div class="w-16 h-16 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center text-3xl mx-auto mb-3 shadow-inner">
-          📚
+      <!-- Book Grid / Empty State -->
+      <div v-if="filteredELibraryBooks.length === 0" class="py-14 px-4 text-center bg-white rounded-3xl border border-slate-200/80 shadow-xs">
+        <div class="w-16 h-16 rounded-2xl bg-amber-50 text-amber-500 border border-amber-100 flex items-center justify-center text-3xl mx-auto mb-3 shadow-inner">
+          <i class="fa-solid fa-book-open-reader text-2xl"></i>
         </div>
-        <h4 class="font-bold text-slate-700 text-sm">រកមិនឃើញសៀវភៅដែលត្រូវនឹងការស្វែងរកទេ</h4>
-        <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-          សូមសាកល្បងផ្លាស់ប្តូរការជ្រើសរើសកម្រិតថ្នាក់ មុខវិជ្ជា ឬពាក្យគន្លឹះស្វែងរក។
+        <h4 class="font-bold text-slate-800 text-base">
+          <template v-if="selectedGrade && selectedSubjectId">
+            មិនទាន់មានសៀវភៅមុខវិជ្ជា {{ currentSubjectName }} សម្រាប់ថ្នាក់ទី {{ selectedGrade }} នៅឡើយទេ
+          </template>
+          <template v-else-if="selectedGrade">
+            មិនទាន់មានសៀវភៅសម្រាប់ថ្នាក់ទី {{ selectedGrade }} នៅឡើយទេ
+          </template>
+          <template v-else-if="selectedSubjectId">
+            មិនទាន់មានសៀវភៅសម្រាប់មុខវិជ្ជា {{ currentSubjectName }} នៅឡើយទេ
+          </template>
+          <template v-else>
+            រកមិនឃើញសៀវភៅដែលត្រូវនឹងការស្វែងរកទេ
+          </template>
+        </h4>
+        <p class="text-xs text-slate-500 mt-1.5 max-w-md mx-auto leading-relaxed">
+          <template v-if="selectedGrade && selectedSubjectId">
+            បច្ចុប្បន្នមុខវិជ្ជានេះមិនទាន់មានឯកសារ ឬសៀវភៅពុម្ពក្នុងថ្នាក់ទី {{ selectedGrade }} ទេ។ លោកអ្នកអាចចុចមើលមុខវិជ្ជានេះគ្រប់ថ្នាក់ ឬមើលមុខវិជ្ជាផ្សេងៗក្នុងថ្នាក់ទី {{ selectedGrade }}។
+          </template>
+          <template v-else>
+            សូមសាកល្បងផ្លាស់ប្តូរការជ្រើសរើសកម្រិតថ្នាក់ មុខវិជ្ជា ឬពាក្យគន្លឹះស្វែងរក។
+          </template>
         </p>
-        <button 
-          type="button" 
-          @click="resetFilters"
-          class="mt-4 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
-        >
-          កំណត់ឡើងវិញ (Reset Filters)
-        </button>
+
+        <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
+          <button 
+            v-if="selectedGrade && selectedSubjectId"
+            type="button" 
+            @click="selectedGrade = ''"
+            class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+          >
+            <i class="fa-solid fa-layer-group text-xs"></i>
+            <span>មើល {{ currentSubjectName }} គ្រប់ថ្នាក់ទាំងអស់</span>
+          </button>
+
+          <button 
+            v-if="selectedGrade && selectedSubjectId"
+            type="button" 
+            @click="selectedSubjectId = ''"
+            class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+          >
+            <i class="fa-solid fa-book text-xs"></i>
+            <span>មើលគ្រប់មុខវិជ្ជាក្នុងថ្នាក់ទី {{ selectedGrade }}</span>
+          </button>
+
+          <button 
+            type="button" 
+            @click="resetFilters"
+            class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+          >
+            <i class="fa-solid fa-rotate-left text-xs"></i>
+            <span>កំណត់ឡើងវិញ (Reset Filters)</span>
+          </button>
+        </div>
       </div>
 
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -1531,27 +1573,19 @@ const isLitBook = (b) => {
   return b.grade === 'ទូទៅ' || b.level === 'អក្សរសិល្ប៍' || (b.subject_name && b.subject_name === 'អក្សរសិល្ប៍');
 };
 
+const currentSubjectName = computed(() => {
+  if (!selectedSubjectId.value) return '';
+  return getSubjectName(selectedSubjectId.value);
+});
+
 const selectSubject = (subId) => {
   selectedSubjectId.value = subId;
   if (!subId) return;
 
-  // Grade-independent: when user clicks [អក្សរសិល្ប៍ (8)], display all 8 books by clearing grade filter
+  // Grade-independent: when user clicks literature [អក្សរសិល្ប៍], display literature books by clearing grade filter
   if (isLiteratureSubject(subId)) {
     selectedGrade.value = '';
     return;
-  }
-
-  // If currently selected grade has no books for this subject, auto-clear grade so subject books display
-  if (selectedGrade.value) {
-    const target = normalizeGrade(selectedGrade.value);
-    const subName = getSubjectName(subId);
-    const hasBooks = eLibraryBooks.value.some(b => 
-      normalizeGrade(b.grade) === target && 
-      (String(b.course_subject_id) === String(subId) || (subName && b.subject_name === subName))
-    );
-    if (!hasBooks) {
-      selectedGrade.value = '';
-    }
   }
 };
 
@@ -1563,19 +1597,6 @@ const selectGrade = (grade) => {
   if (isLiteratureSubject(selectedSubjectId.value)) {
     selectedSubjectId.value = '';
     return;
-  }
-
-  // If currently selected subject has no books for this grade, auto-reset subject to 'ទាំងអស់'
-  if (selectedSubjectId.value) {
-    const target = normalizeGrade(grade);
-    const subName = getSubjectName(selectedSubjectId.value);
-    const hasBooks = eLibraryBooks.value.some(b => 
-      normalizeGrade(b.grade) === target && 
-      (String(b.course_subject_id) === String(selectedSubjectId.value) || (subName && b.subject_name === subName))
-    );
-    if (!hasBooks) {
-      selectedSubjectId.value = '';
-    }
   }
 };
 

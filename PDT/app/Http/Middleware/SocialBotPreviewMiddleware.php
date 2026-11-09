@@ -16,8 +16,10 @@ class SocialBotPreviewMiddleware
     {
         $ua = strtolower((string) $request->header('User-Agent'));
         $bots = [
+            'telegram',
             'telegrambot',
             'facebookexternalhit',
+            'facebot',
             'twitterbot',
             'whatsapp',
             'linkedinbot',
@@ -26,6 +28,10 @@ class SocialBotPreviewMiddleware
             'discordbot',
             'googlebot',
             'bingbot',
+            'applebot',
+            'viber',
+            'vkshare',
+            'pinterest',
         ];
 
         $isBot = false;
@@ -36,7 +42,10 @@ class SocialBotPreviewMiddleware
             }
         }
 
-        if ($isBot && $request->isMethod('GET') && !$request->is('api/*')) {
+        if ($isBot && ($request->isMethod('GET') || $request->isMethod('HEAD')) && !$request->is('api/*') && !$request->is('portal-sala-access-2026*') && !$request->is('portal-sala-register-2026*')) {
+            if ($request->isMethod('HEAD')) {
+                return response('', 200, ['Content-Type' => 'text/html; charset=utf-8']);
+            }
             // Render SPA view with dynamic Open Graph tags for the crawler
             return response()->view('spa');
         }
@@ -44,3 +53,4 @@ class SocialBotPreviewMiddleware
         return $next($request);
     }
 }
+

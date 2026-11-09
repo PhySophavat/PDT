@@ -12,6 +12,7 @@ use App\Models\TeacherAttendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class TeacherController extends Controller
@@ -283,6 +284,11 @@ class TeacherController extends Controller
             }
         }
 
+        try {
+            Cache::increment('notif_version');
+            Cache::forget('pending_notifications_payload');
+        } catch (\Throwable $e) {}
+
         return response()->json([
             'success' => true,
             'message' => "បានអនុម័តសំណើសុំច្បាប់របស់លោកគ្រូ-អ្នកគ្រូ {$leave->teacher_name} និងកត់ត្រាវត្តមានជា «មានច្បាប់» ដោយជោគជ័យ!",
@@ -300,6 +306,11 @@ class TeacherController extends Controller
         $leave->approved_by = auth()->id();
         $leave->save();
 
+        try {
+            Cache::increment('notif_version');
+            Cache::forget('pending_notifications_payload');
+        } catch (\Throwable $e) {}
+
         return response()->json([
             'success' => true,
             'message' => "បានបដិសេធសំណើសុំច្បាប់របស់លោកគ្រូ-អ្នកគ្រូ {$leave->teacher_name}!",
@@ -316,6 +327,11 @@ class TeacherController extends Controller
         $leave->rejection_reason = null;
         $leave->approved_by = null;
         $leave->save();
+
+        try {
+            Cache::increment('notif_version');
+            Cache::forget('pending_notifications_payload');
+        } catch (\Throwable $e) {}
 
         return response()->json([
             'success' => true,

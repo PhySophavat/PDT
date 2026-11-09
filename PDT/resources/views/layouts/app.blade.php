@@ -82,9 +82,12 @@
         } else {
             $roleName = 'Student';
             $roleKhmer = 'សិស្សានុសិស្ស';
-            $studentProfile = $authUser->student;
-            $studentGrade = $studentProfile?->grade;
+            $studentProfile = $authUser->student ?? \App\Models\Student::where('email', $authUser->email)->first();
+            $studentGrade = $studentProfile?->grade ?? '7A';
             $studentId = $studentProfile?->id;
+            $studentName = $studentProfile?->name_khmer ?: ($studentProfile?->name_latin ?: $authUser->name);
+            $studentIdCard = $studentProfile?->student_id_card ?? '';
+            $studentPhone = $studentProfile?->phone ?? '';
         }
     }
     $initialUserJson = json_encode([
@@ -97,6 +100,9 @@
         'avatar' => $authUser?->avatar ?? '',
         'student_grade' => $studentGrade,
         'student_id' => $studentId,
+        'student_name' => $studentName ?? $authUser?->name,
+        'student_id_card' => $studentIdCard ?? '',
+        'student_phone' => $studentPhone ?? '',
     ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
     $initialSettingsJson = json_encode([
         'school_logo_url' => $cachedSettings['logoUrl'],

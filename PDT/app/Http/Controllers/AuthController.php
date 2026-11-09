@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Student;
+use App\Models\Teacher;
+use App\Models\Role;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -75,6 +79,17 @@ class AuthController extends Controller
         $passwordInput = trim((string) $request->input('password'));
         $remember = $request->boolean('remember', true);
 
+        // Brute-force rate limiting: Max 5 failed attempts per minute per email/ID and IP
+        $throttleKey = Str::transliterate(Str::lower($loginInput) . '|' . $request->ip());
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey) ?: 60;
+            return back()
+                ->withInput($request->only('email'))
+                ->with('lockout_seconds', $seconds)
+                ->with('error', 'អ្នកបានព្យាយាមចូលខុស ៥ ដងហើយ។ សូមរង់ចាំ ' . $seconds . ' វិនាទី ទៀត ទើបអាចសាកល្បងម្តងទៀត។');
+        }
+
         // Find user by email (case-insensitive) or by Student ID card
         $user = User::where('email', strtolower($loginInput))->first();
         if (!$user) {
@@ -99,6 +114,18 @@ class AuthController extends Controller
         }
 
         if ($user && $passwordValid) {
+            // Check account status & approval
+            if ($user->status === 'pending' || $user->is_approved === false) {
+                return back()->withInput($request->only('email'))
+                    ->with('error', 'សំណើចុះឈ្មោះរបស់អ្នកកំពុងស្ថិតក្នុងការរង់ចាំការអនុម័តពីគណៈគ្រប់គ្រងសាលា (Account Pending Approval)។ សូមរង់ចាំការពិនិត្យ និងអនុម័ត។');
+            }
+
+            if ($user->status === 'inactive' || $user->status === 'suspended') {
+                return back()->withInput($request->only('email'))
+                    ->with('error', 'គណនីរបស់អ្នកត្រូវបានផ្អាកដំណើរការជាបណ្តោះអាសន្ន (Account Suspended)។ សូមទាក់ទងរដ្ឋបាលសាលា។');
+            }
+
+            RateLimiter::clear($throttleKey);
             Auth::login($user, $remember);
             $request->session()->regenerate();
 
@@ -123,6 +150,8 @@ class AuthController extends Controller
             targetId: null,
             description: "ការប៉ុនប៉ងចូលប្រើប្រព័ន្ធមិនជោគជ័យ (Login: {$loginInput}) - ពាក្យសម្ងាត់មិនត្រឹមត្រូវ"
         );
+
+        RateLimiter::hit($throttleKey, 60);
 
         return back()->withInput($request->only('email'))->with('error', 'អ៊ីមែល/អត្តលេខ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវឡើយ (Invalid credentials)។ សូមពិនិត្យមើលអក្សរធំ-តូចនៃពាក្យសម្ងាត់ឡើងវិញ។');
     }
@@ -151,7 +180,7 @@ class AuthController extends Controller
             ]);
         }
 
-        return redirect()->route('login')->with('success', 'Logged out successfully.');
+        return redirect()->route('login')->with('success', 'បានចាកចេញពីប្រព័ន្ធដោយជោគជ័យ។');
     }
 
     protected function shouldForgetIntendedUrl(User $user, ?string $intendedUrl): bool

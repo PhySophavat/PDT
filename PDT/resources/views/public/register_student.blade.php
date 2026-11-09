@@ -151,6 +151,13 @@
 
             <div class="space-y-0.5">
               <span class="text-slate-500 text-[11px] flex items-center gap-1.5">
+                <i class="fa-solid fa-id-badge text-slate-400"></i> អត្តលេខសិស្ស (ID)៖
+              </span>
+              <strong class="text-blue-700 text-sm font-extrabold block font-mono">{{ session('registered_id_card') ?? '---' }}</strong>
+            </div>
+
+            <div class="space-y-0.5">
+              <span class="text-slate-500 text-[11px] flex items-center gap-1.5">
                 <i class="fa-solid fa-graduation-cap text-slate-400"></i> ថ្នាក់ស្នើសុំចូលរៀន៖
               </span>
               <strong class="text-blue-700 text-sm font-extrabold block">ថ្នាក់ {{ session('registered_grade') ?? '---' }}</strong>
@@ -201,14 +208,21 @@
           <span>ដើម្បីធានាសុវត្ថិភាពទិន្នន័យផ្ទាល់ខ្លួន និងជៀសវាងការចុះឈ្មោះស្ទួន ប្រព័ន្ធបានបញ្ចប់ការចុះឈ្មោះនេះរួចរាល់។</span>
         </div>
 
-        <!-- Close Window Button -->
-        <div class="flex items-center justify-center">
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap items-center justify-center gap-3">
+          <a 
+            href="{{ route('login') }}" 
+            class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-2"
+          >
+            <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
+            <span>ត្រឡប់ទៅទំព័រចូលប្រព័ន្ធ</span>
+          </a>
           <button 
             type="button" 
             onclick="window.close();" 
-            class="px-7 py-3 bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer"
+            class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer"
           >
-            <i class="fa-solid fa-circle-xmark text-sm"></i>
+            <i class="fa-solid fa-circle-xmark text-xs"></i>
             <span>បិទផ្ទាំងនេះ (Close Window)</span>
           </button>
         </div>
@@ -373,6 +387,29 @@
                   />
                 </div>
                 @error('email')
+                  <p class="text-[11px] text-red-500 mt-1">{{ $message }}</p>
+                @enderror
+              </div>
+
+              <!-- Student ID Card (អត្តលេខសិស្ស) -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
+                  <span>អត្តលេខសិស្ស (Student ID)</span>
+                  <span class="text-[11px] text-slate-400 font-normal">(ប្រសិនបើមាន ឬទុកទំនេរ)</span>
+                </label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                    <i class="fa-solid fa-id-badge text-xs"></i>
+                  </span>
+                  <input 
+                    type="text" 
+                    name="student_id_card" 
+                    value="{{ old('student_id_card') }}" 
+                    placeholder="ឧ. STU-2026-001"
+                    class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border @error('student_id_card') border-red-500 @else border-slate-200 @enderror rounded-xl text-xs text-slate-800 uppercase focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                  />
+                </div>
+                @error('student_id_card')
                   <p class="text-[11px] text-red-500 mt-1">{{ $message }}</p>
                 @enderror
               </div>

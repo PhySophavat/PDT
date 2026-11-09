@@ -40,6 +40,24 @@ $app = Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, \Illuminate\Http\Request $request) {
+            if ($e->getStatusCode() === 429) {
+                $headers = $e->getHeaders();
+                $retryAfter = (int) ($headers['Retry-After'] ?? 60);
+                if ($retryAfter <= 0) $retryAfter = 60;
+
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => 'អ្នកបានព្យាយាមចូលខុស ៥ ដងហើយ។ សូមរង់ចាំ (' . $retryAfter . ' វិនាទី) ទៀត ទើបអាចសាកល្បងម្តងទៀត។',
+                        'retry_after' => $retryAfter
+                    ], 429);
+                }
+
+                return redirect()->route('login')
+                    ->withInput($request->only('email'))
+                    ->with('lockout_seconds', $retryAfter)
+                    ->with('error', 'អ្នកបានព្យាយាមចូលខុស ៥ ដងហើយ។ សូមរង់ចាំ ' . $retryAfter . ' វិនាទី ទៀត ទើបអាចសាកល្បងម្តងទៀត។');
+            }
+
             if ($e->getStatusCode() === 419) {
                 if ($request->expectsJson()) {
                     return response()->json(['message' => 'CSRF token mismatch. Please refresh.'], 419);

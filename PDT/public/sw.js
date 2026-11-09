@@ -68,3 +68,52 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+
+// Push Notification Event (Background Push when app is closed)
+self.addEventListener('push', (event) => {
+  let data = { title: 'ដំណឹងថ្មីពីសាលារៀន', body: 'អ្នកមានសារជូនដំណឹងថ្មីមួយ។', url: '/' };
+  if (event.data) {
+    try {
+      data = Object.assign(data, event.data.json());
+    } catch (e) {
+      data.body = event.data.text();
+    }
+  }
+
+  const options = {
+    body: data.body,
+    icon: '/images/icon-192.png',
+    badge: '/images/icon-192.png',
+    vibrate: [100, 50, 100],
+    data: {
+      url: data.url || '/'
+    }
+  };
+
+  if ('setAppBadge' in self.navigator && typeof data.badgeCount === 'number') {
+    self.navigator.setAppBadge(data.badgeCount).catch(() => {});
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+// Notification Click Event (Opens the app or navigates to the URL)
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      for (let client of windowClients) {
+        if (client.url.includes(targetUrl) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
+});

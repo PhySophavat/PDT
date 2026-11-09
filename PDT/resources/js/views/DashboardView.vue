@@ -21,8 +21,103 @@
 
     <!-- Tab 1: Overview Tab (Primary Dashboard) -->
     <div v-show="activeTab === 'overview'" class="space-y-6">
-      <!-- 2. Upgrade the 4 KPI Summary Cards (Vibrant & Modern Pastel Themes) -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- 1. STUDENT DASHBOARD: 4 Personal Student Summary Cards -->
+      <div v-if="isStudent" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Student Card 1: My Class -->
+        <div class="relative overflow-hidden bg-white border border-blue-100/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all group">
+          <div class="absolute -top-10 -right-10 w-28 h-28 bg-blue-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
+          <div class="flex items-start justify-between">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
+              <i class="fa-solid fa-graduation-cap text-xl"></i>
+            </div>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 ring-1 ring-blue-500/20">
+              {{ studentInfo.room || ('បន្ទប់ ' + studentInfo.class_name) }}
+            </span>
+          </div>
+          <div class="mt-4">
+            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">ថ្នាក់រៀនរបស់ខ្ញុំ</h3>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">ថ្នាក់ទី {{ studentInfo.class_name }}</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-2 font-medium">
+              សិស្សសរុបក្នុងថ្នាក់ <span class="font-bold text-slate-700">{{ studentInfo.classmates_count || 50 }}</span> នាក់
+            </p>
+          </div>
+        </div>
+
+        <!-- Student Card 2: Homeroom Teacher -->
+        <div class="relative overflow-hidden bg-white border border-emerald-100/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all group">
+          <div class="absolute -top-10 -right-10 w-28 h-28 bg-emerald-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
+          <div class="flex items-start justify-between">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20">
+              <i class="fa-solid fa-chalkboard-user text-xl"></i>
+            </div>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 ring-1 ring-emerald-500/20">
+              គ្រូបន្ទុកថ្នាក់
+            </span>
+          </div>
+          <div class="mt-4">
+            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">គ្រូបន្ទុកថ្នាក់</h3>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight truncate max-w-full">
+                {{ studentInfo.homeroom_teacher || 'មិនទាន់ចាត់តាំង' }}
+              </span>
+            </div>
+            <p class="text-[11px] text-emerald-700 mt-2 font-medium">
+              ទំនាក់ទំនង: <span class="font-bold">{{ studentInfo.teacher_phone || '-' }}</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Student Card 3: Personal Attendance Rate -->
+        <div class="relative overflow-hidden bg-white border border-purple-100/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all group">
+          <div class="absolute -top-10 -right-10 w-28 h-28 bg-purple-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
+          <div class="flex items-start justify-between">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-violet-500 text-white flex items-center justify-center shadow-md shadow-purple-500/20">
+              <i class="fa-solid fa-calendar-check text-xl"></i>
+            </div>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800 ring-1 ring-purple-500/20">
+              អត្រាវត្តមាន
+            </span>
+          </div>
+          <div class="mt-4">
+            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">វត្តមានផ្ទាល់ខ្លួន</h3>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ studentInfo.attendance?.rate ?? 100 }}%</span>
+            </div>
+            <p class="text-[11px] text-purple-700 mt-2 font-medium">
+              មានវត្តមាន <span class="font-bold text-emerald-700">{{ studentInfo.attendance?.present ?? 0 }}</span> ថ្ងៃ • ឈប់សរុប <span class="font-bold text-rose-600">{{ studentInfo.attendance?.total_leave ?? ((studentInfo.attendance?.excused || 0) + (studentInfo.attendance?.absent || 0)) }}</span> ថ្ងៃ (ច្បាប់ <span class="font-bold text-blue-600">{{ studentInfo.attendance?.excused ?? 0 }}</span> • អត់ច្បាប់ <span class="font-bold text-rose-600">{{ studentInfo.attendance?.absent ?? 0 }}</span>)
+            </p>
+          </div>
+        </div>
+
+        <!-- Student Card 4: Learning Resources & Digital Library -->
+        <div class="relative overflow-hidden bg-white border border-amber-100/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all group">
+          <div class="absolute -top-10 -right-10 w-28 h-28 bg-amber-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
+          <div class="flex items-start justify-between">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20">
+              <i class="fa-solid fa-book-bookmark text-xl"></i>
+            </div>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 ring-1 ring-amber-500/20">
+              បណ្ណាល័យឌីជីថល
+            </span>
+          </div>
+          <div class="mt-4">
+            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">សៀវភៅសិក្សា</h3>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">៧២+</span>
+              <span class="text-xs font-medium text-slate-400">ក្បាល</span>
+            </div>
+            <router-link to="/library" class="text-[11px] text-blue-600 hover:text-blue-800 mt-2 font-bold inline-flex items-center gap-1">
+              <span>ចូលអានសៀវភៅពុម្ព MoEYS</span>
+              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </router-link>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. ADMIN/TEACHER DASHBOARD: 4 Administrative KPI Summary Cards -->
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Card 1: Total Students (Blue Theme) -->
         <div class="relative overflow-hidden bg-white border border-blue-100/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all group">
           <div class="absolute -top-10 -right-10 w-28 h-28 bg-blue-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
@@ -126,27 +221,10 @@
         </div>
       </div>
 
-      <!-- Public School Metrics & Academic Filters (Finance Removed) -->
+      <!-- Academic Filters -->
       <FilterBar>
         <template #left>
-          <div class="flex flex-wrap items-center gap-3">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200/80 text-emerald-800 rounded-xl text-xs font-semibold">
-              <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-              </svg>
-              អត្រាប្រឡងជាប់មធ្យម: <strong class="text-emerald-700 ml-0.5">{{ stats.averagePassRate ?? 0 }}%</strong>
-            </span>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 border border-purple-200/80 text-purple-800 rounded-xl text-xs font-semibold">
-              <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
-              </svg>
-              សិស្សអាហារូបករណ៍: <strong class="text-purple-700 ml-0.5">{{ stats.scholarshipCount ?? 0 }} នាក់</strong>
-            </span>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 border border-blue-200/80 text-blue-800 rounded-xl text-xs font-semibold">
-              <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-              {{ t('dashboard.attendanceToday') }}: <strong class="text-blue-700 ml-0.5">{{ stats.attendanceRate ?? 0 }}%</strong>
-            </span>
-          </div>
+          <div></div>
         </template>
 
         <template #right>
@@ -413,8 +491,156 @@
 
       <!-- Main Section: Table (Left 2/3) + Side Widget for Live Activity & Top Classes (Right 1/3) -->
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
-        <!-- 5. Modernized Classroom Data Table (xl:col-span-2) -->
-        <div class="xl:col-span-2 space-y-4">
+        <!-- STUDENT VIEW: My Classroom & Homeroom Teacher Detailed Card -->
+        <div v-if="isStudent" class="xl:col-span-2 space-y-4">
+          <div class="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden p-6 space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+              <div>
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full text-xs font-bold mb-2">
+                  <i class="fa-solid fa-school text-xs"></i>
+                  <span>ព័ត៌មានថ្នាក់រៀនផ្ទាល់ខ្លួន</span>
+                </div>
+                <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">
+                  ថ្នាក់រៀនទី {{ studentInfo.class_name }}
+                </h2>
+                <p class="text-xs text-slate-500 mt-0.5">
+                  {{ studentInfo.room }} • ឆ្នាំសិក្សា {{ activeAcademicYear }}
+                </p>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <router-link 
+                  to="/leave-request" 
+                  class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition"
+                >
+                  <i class="fa-solid fa-file-signature"></i>
+                  <span>ស្នើសុំច្បាប់អវត្តមាន</span>
+                </router-link>
+              </div>
+            </div>
+
+            <!-- Homeroom Teacher & Class Details -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Homeroom Teacher Profile Box -->
+              <div class="p-4 rounded-2xl bg-gradient-to-br from-slate-50 to-blue-50/40 border border-slate-200/80 space-y-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-2xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center text-slate-600 font-bold text-sm shadow-xs shrink-0">
+                    <img v-if="studentInfo.teacher_photo" :src="studentInfo.teacher_photo" alt="Teacher" class="w-full h-full object-cover">
+                    <span v-else class="text-lg">👨‍🏫</span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">គ្រូបន្ទុកថ្នាក់</span>
+                    <h4 class="font-extrabold text-slate-900 text-sm mt-0.5">{{ studentInfo.homeroom_teacher || 'មិនទាន់ចាត់តាំង' }}</h4>
+                  </div>
+                </div>
+                <div class="pt-2 border-t border-slate-200/60 text-xs text-slate-600 space-y-1">
+                  <div class="flex items-center justify-between">
+                    <span class="text-slate-400">លេខទូរស័ព្ទ:</span>
+                    <span class="font-bold text-slate-800">{{ studentInfo.teacher_phone || '-' }}</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-slate-400">ការទទួលបន្ទុក:</span>
+                    <span class="font-semibold text-emerald-700">គ្រប់គ្រងវិន័យ និងការសិក្សា</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Student Quick Stats Box -->
+              <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+                <div class="flex items-center justify-between">
+                  <h4 class="font-bold text-xs text-slate-700 uppercase tracking-wide">ស្ថានភាពវត្តមានរបស់ខ្ញុំ</h4>
+                  <span class="text-[11px] font-bold text-emerald-700 bg-emerald-100/70 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                    អត្រាវត្តមាន {{ studentInfo.attendance?.rate ?? 100 }}%
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                  <!-- 1. មានវត្តមាន -->
+                  <div class="p-2.5 bg-white rounded-xl border border-emerald-100 shadow-2xs">
+                    <span class="block text-lg sm:text-xl font-black text-emerald-600">{{ studentInfo.attendance?.present ?? 0 }}</span>
+                    <span class="text-[10px] font-bold text-slate-500">មានវត្តមាន</span>
+                  </div>
+
+                  <!-- 2. ចំនួនឈប់សរុប -->
+                  <div class="p-2.5 bg-white rounded-xl border border-purple-100 shadow-2xs">
+                    <span class="block text-lg sm:text-xl font-black text-purple-600">
+                      {{ studentInfo.attendance?.total_leave ?? ((studentInfo.attendance?.excused || 0) + (studentInfo.attendance?.absent || 0)) }}
+                    </span>
+                    <span class="text-[10px] font-bold text-purple-700">ចំនួនឈប់សរុប</span>
+                  </div>
+
+                  <!-- 3. មានច្បាប់ -->
+                  <div class="p-2.5 bg-white rounded-xl border border-blue-100 shadow-2xs">
+                    <span class="block text-lg sm:text-xl font-black text-blue-600">{{ studentInfo.attendance?.excused ?? 0 }}</span>
+                    <span class="text-[10px] font-bold text-slate-500">មានច្បាប់</span>
+                  </div>
+
+                  <!-- 4. អត់ច្បាប់ -->
+                  <div class="p-2.5 bg-white rounded-xl border border-rose-100 shadow-2xs">
+                    <span class="block text-lg sm:text-xl font-black text-rose-600">{{ studentInfo.attendance?.absent ?? 0 }}</span>
+                    <span class="text-[10px] font-bold text-slate-500">អត់ច្បាប់</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-200/60 text-slate-500">
+                  <span class="text-[11px]">សរុបថ្ងៃសិក្សាខែនេះ: <strong class="text-slate-700">{{ studentInfo.attendance?.total ?? 0 }} ថ្ងៃ</strong></span>
+                  <router-link to="/attendance" class="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1">
+                    <span>មើលកាលវិភាគវត្តមាន</span>
+                    <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                  </router-link>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Academic Navigation Shortcuts -->
+            <div class="space-y-2 pt-2">
+              <h4 class="font-bold text-xs text-slate-700 uppercase tracking-wide">សកម្មភាព និងឧបករណ៍សិក្សា</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <router-link 
+                  to="/library" 
+                  class="p-3.5 bg-white border border-slate-200 hover:border-blue-300 hover:shadow-xs rounded-xl flex items-center gap-3 transition group"
+                >
+                  <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-105 transition">
+                    <i class="fa-solid fa-book-open text-sm"></i>
+                  </div>
+                  <div>
+                    <span class="block font-bold text-xs text-slate-800">បណ្ណាល័យឌីជីថល</span>
+                    <span class="block text-[10px] text-slate-400">អានសៀវភៅពុម្ព MoEYS</span>
+                  </div>
+                </router-link>
+
+                <router-link 
+                  to="/timetable" 
+                  class="p-3.5 bg-white border border-slate-200 hover:border-indigo-300 hover:shadow-xs rounded-xl flex items-center gap-3 transition group"
+                >
+                  <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-105 transition">
+                    <i class="fa-solid fa-calendar-days text-sm"></i>
+                  </div>
+                  <div>
+                    <span class="block font-bold text-xs text-slate-800">កាលវិភាគសិក្សា</span>
+                    <span class="block text-[10px] text-slate-400">ពិនិត្យម៉ោងរៀនប្រចាំថ្ងៃ</span>
+                  </div>
+                </router-link>
+
+                <router-link 
+                  to="/examinations" 
+                  class="p-3.5 bg-white border border-slate-200 hover:border-purple-300 hover:shadow-xs rounded-xl flex items-center gap-3 transition group"
+                >
+                  <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-105 transition">
+                    <i class="fa-solid fa-chart-line text-sm"></i>
+                  </div>
+                  <div>
+                    <span class="block font-bold text-xs text-slate-800">ពិន្ទុ & ចំណាត់ថ្នាក់</span>
+                    <span class="block text-[10px] text-slate-400">តាមដានលទ្ធផលប្រឡង</span>
+                  </div>
+                </router-link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. ADMIN/TEACHER VIEW: Modernized Classroom Data Table (xl:col-span-2) -->
+        <div v-else class="xl:col-span-2 space-y-4">
           <div class="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">
             <!-- Table Header Bar with Search & Filters -->
             <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -510,6 +736,7 @@
                       </div>
                       <div v-else>
                         <button 
+                          v-if="isAdmin"
                           @click="openAssignTeacherModal(cls)"
                           type="button"
                           class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-300 hover:bg-amber-100 hover:border-amber-400 transition-all cursor-pointer shadow-2xs group"
@@ -520,6 +747,7 @@
                           </svg>
                           <span>+ ចាត់តាំង</span>
                         </button>
+                        <span v-else class="text-xs text-slate-400 italic font-medium">មិនទាន់ចាត់តាំង</span>
                       </div>
                     </td>
 
@@ -824,7 +1052,7 @@
           >
             <option value="">-- សូមជ្រើសរើសគ្រូបង្រៀន --</option>
             <option v-for="teacher in teachersList" :key="teacher.id" :value="teacher.id">
-              {{ teacher.name_khmer || teacher.name_english }}
+              {{ teacher.name || teacher.name_khmer || teacher.name_latin || ('លោកគ្រូ/អ្នកគ្រូ #' + teacher.id) }}
             </option>
           </select>
         </div>
@@ -862,11 +1090,34 @@ import { sortClassesNaturally } from '../utils/classSort';
 const { t } = useI18n();
 const router = useRouter();
 
-const canCreateRecord = computed(() => {
-  const role = window.__INITIAL_USER__?.role || '';
-  const isSuper = Boolean(window.__INITIAL_USER__?.is_super_admin);
-  return isSuper || role === 'Admin' || role === 'Super Admin';
+const currentUser = computed(() => window.__INITIAL_USER__ || {});
+const userRole = computed(() => (currentUser.value.role || '').toLowerCase());
+const isSuperAdmin = computed(() => Boolean(currentUser.value.is_super_admin));
+const isAdmin = computed(() => isSuperAdmin.value || userRole.value === 'admin' || userRole.value === 'super admin' || userRole.value === 'super_admin');
+const isStudent = computed(() => userRole.value === 'student' || userRole.value === 'សិស្សានុសិស្ស');
+const isTeacher = computed(() => userRole.value === 'teacher' || userRole.value === 'គ្រូបង្រៀន');
+
+const studentInfo = ref({
+  student_name: currentUser.value.name || 'សិស្សានុសិស្ស',
+  student_id_card: currentUser.value.student_id || '',
+  grade: currentUser.value.student_grade || '7A',
+  class_name: currentUser.value.student_grade || '7A',
+  room: 'បន្ទប់ ' + (currentUser.value.student_grade || '7A'),
+  homeroom_teacher: 'មិនទាន់ចាត់តាំង',
+  teacher_phone: '',
+  teacher_photo: null,
+  classmates_count: 50,
+  attendance: {
+    present: 0,
+    excused: 0,
+    absent: 0,
+    total_leave: 0,
+    total: 0,
+    rate: 100,
+  }
 });
+
+const canCreateRecord = computed(() => isAdmin.value);
 
 const activeTab = ref('overview');
 const classSearchQuery = ref('');
@@ -1096,6 +1347,9 @@ const fetchDashboardData = async (force = false) => {
       if (res.data.recentActivities && res.data.recentActivities.length) {
         displayActivities.value = res.data.recentActivities;
       }
+      if (res.data.studentData) {
+        studentInfo.value = { ...studentInfo.value, ...res.data.studentData };
+      }
       try {
         localStorage.setItem('pdt_cached_dashboard', JSON.stringify(res.data));
       } catch (e) {}
@@ -1111,21 +1365,28 @@ const onDataUpdated = () => {
   fetchDashboardData(true);
 };
 
+const fetchTeachersForAssign = async () => {
+  try {
+    const teacherRes = await axios.get('/api/teachers');
+    const resData = teacherRes.data;
+    if (resData && Array.isArray(resData.teachers)) {
+      teachersList.value = [...resData.teachers].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
+    } else if (resData && Array.isArray(resData.data)) {
+      teachersList.value = [...resData.data].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
+    } else if (Array.isArray(resData)) {
+      teachersList.value = [...resData].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
+    }
+  } catch (e) {
+    console.error('Failed to fetch teachers for assign modal:', e);
+  }
+};
+
 // Lifecycle
 onMounted(async () => {
   await fetchDashboardData();
 
   // Fetch teachers for quick assign modal
-  try {
-    const teacherRes = await axios.get('/api/teachers');
-    if (teacherRes.data && teacherRes.data.data) {
-      teachersList.value = teacherRes.data.data;
-    } else if (Array.isArray(teacherRes.data)) {
-      teachersList.value = teacherRes.data;
-    }
-  } catch (e) {
-    // Non-critical
-  }
+  await fetchTeachersForAssign();
 
   window.addEventListener('pdt-data-updated', onDataUpdated);
 });
@@ -1133,6 +1394,9 @@ onMounted(async () => {
 // Reactivate when navigating back through keep-alive
 onActivated(async () => {
   await fetchDashboardData();
+  if (!teachersList.value || teachersList.value.length === 0) {
+    await fetchTeachersForAssign();
+  }
 });
 
 onUnmounted(() => {
@@ -1150,10 +1414,13 @@ const handleDownload = () => {
   window.open('/api/settings/backup-excel', '_blank');
 };
 
-const openAssignTeacherModal = (cls) => {
+const openAssignTeacherModal = async (cls) => {
   targetClass.value = cls;
   selectedTeacherId.value = cls.teacher_id || '';
   showAssignModal.value = true;
+  if (!teachersList.value || teachersList.value.length === 0) {
+    await fetchTeachersForAssign();
+  }
 };
 
 const submitAssignTeacher = async () => {
@@ -1161,7 +1428,7 @@ const submitAssignTeacher = async () => {
   assigning.value = true;
   try {
     const teacherObj = teachersList.value.find(t => t.id == selectedTeacherId.value);
-    const teacherName = teacherObj ? (teacherObj.name_khmer || teacherObj.name_english) : 'គ្រូបង្រៀន';
+    const teacherName = teacherObj ? (teacherObj.name || teacherObj.name_khmer || teacherObj.name_latin) : 'គ្រូបង្រៀន';
     
     // Call backend API to update class homeroom teacher
     if (targetClass.value.id) {
@@ -1179,7 +1446,7 @@ const submitAssignTeacher = async () => {
     // Still update local UI for seamless experience
     const teacherObj = teachersList.value.find(t => t.id == selectedTeacherId.value);
     if (teacherObj) {
-      targetClass.value.teacher = teacherObj.name_khmer || teacherObj.name_english;
+      targetClass.value.teacher = teacherObj.name || teacherObj.name_khmer || teacherObj.name_latin;
     }
     showAssignModal.value = false;
   } finally {

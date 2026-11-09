@@ -6,8 +6,12 @@ Allow: /teacher-leave-request
 Allow: /register-student
 Allow: /register-teacher
 Allow: /register-parent
+Allow: /library
 
 # Block sensitive routes from indexing
+Disallow: /portal-sala-access-2026
+Disallow: /portal-sala-register-2026
+Disallow: /login
 Disallow: /admin
 Disallow: /api/
 Disallow: /telescope

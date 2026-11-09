@@ -56,7 +56,14 @@ class PublicRegistrationController extends Controller
      */
     public function store(Request $request)
     {
+        if ($request->filled('student_id_card')) {
+            $request->merge([
+                'student_id_card' => strtoupper(trim((string) $request->input('student_id_card'))),
+            ]);
+        }
+
         $validated = $request->validate([
+            'student_id_card' => 'nullable|string|max:50|unique:students,student_id_card',
             'name_khmer' => 'required|string|max:255',
             'name_latin' => 'required|string|max:255',
             'gender' => 'required|in:male,female',
@@ -71,6 +78,8 @@ class PublicRegistrationController extends Controller
             'parent_occupation' => 'nullable|string|max:255',
             'parent_phone' => 'required|string|max:50',
         ], [
+            'student_id_card.unique' => 'អត្តលេខសិស្សនេះមានក្នុងប្រព័ន្ធរួចហើយ សូមពិនិត្យ ឬជ្រើសរើសអត្តលេខផ្សេង',
+            'student_id_card.max' => 'អត្តលេខសិស្សមិនត្រូវលើសពី ៥០ តួអក្សរឡើយ',
             'name_khmer.required' => 'សូមបញ្ចូលឈ្មោះពេញជាភាសាខ្មែរ',
             'name_latin.required' => 'សូមបញ្ចូលឈ្មោះជាអក្សរឡាតាំង',
             'gender.required' => 'សូមជ្រើសរើសភេទ',
@@ -79,9 +88,6 @@ class PublicRegistrationController extends Controller
             'email.required' => 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែល (Email) របស់សិស្ស',
             'email.email' => 'ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវឡើយ (ឧ. name@example.com)',
             'email.unique' => 'អ៊ីមែលនេះមានក្នុងប្រព័ន្ធរួចហើយ សូមប្រើប្រាស់អ៊ីមែលផ្សេង',
-            'email.required' => 'សូមបញ្ចូលអ៊ីមែលសិស្សសម្រាប់ទទួលដំណឹង',
-            'email.email' => 'ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវឡើយ (ឧ. student@example.com)',
-            'email.unique' => 'អ៊ីមែលនេះមានក្នុងប្រព័ន្ធរួចរាល់ហើយ',
             'grade.required' => 'សូមជ្រើសរើសកម្រិតថ្នាក់ដែលចង់ស្នើសុំចូលរៀន',
             'address.required' => 'សូមបញ្ចូលអាសយដ្ឋានបច្ចុប្បន្ន',
             'photo.image' => 'ឯកសាររូបថតត្រូវតែជាប្រភេទរូបភាព (JPG, PNG, WebP)',
@@ -98,7 +104,26 @@ class PublicRegistrationController extends Controller
 
         $activeYear = AcademicYear::where('status', 'active')->first();
 
+        // Use custom student ID card or auto-generate if blank
+        $studentIdCard = !empty($validated['student_id_card']) ? trim($validated['student_id_card']) : null;
+        if (!$studentIdCard) {
+            $year = date('Y');
+            $lastStudent = Student::whereNotNull('student_id_card')
+                ->where('student_id_card', 'like', "STU-{$year}-%")
+                ->orderBy('id', 'desc')
+                ->first();
+
+            $nextNum = 1;
+            if ($lastStudent && preg_match('/STU-\d{4}-(\d+)/', $lastStudent->student_id_card, $matches)) {
+                $nextNum = intval($matches[1]) + 1;
+            } else {
+                $nextNum = Student::whereNotNull('student_id_card')->count() + 1;
+            }
+            $studentIdCard = sprintf('STU-%s-%03d', $year, $nextNum);
+        }
+
         $studentData = [
+            'student_id_card' => $studentIdCard,
             'name_khmer' => $validated['name_khmer'],
             'name_latin' => $validated['name_latin'],
             'gender' => $validated['gender'],
@@ -151,6 +176,7 @@ class PublicRegistrationController extends Controller
 
         return redirect()->route('public.register-student')->with([
             'registration_success' => true,
+            'registered_id_card' => $student->student_id_card,
             'registered_name' => $student->name_khmer ?: $student->name_latin,
             'registered_name_latin' => $student->name_latin,
             'registered_email' => $student->email,

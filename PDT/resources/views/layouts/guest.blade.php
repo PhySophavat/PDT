@@ -24,7 +24,7 @@
     <meta name="description" content="@yield('meta_description', $defaultDesc)">
     <meta name="keywords" content="@yield('meta_keywords', 'សាលារៀនជំនាន់ថ្មី, ប្រព័ន្ធគ្រប់គ្រងសាលារៀន, បណ្ណាល័យឌីជីថល, ពិន្ទុប្រឡង, តារាងចំណាត់ថ្នាក់, សៀវភៅពុម្ព MoEYS, New Generation School, Digital Library Cambodia')">
     <meta name="author" content="{{ $schoolName }}">
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+    <meta name="robots" content="@yield('meta_robots', 'index, follow, max-image-preview:large, max-snippet:-1')">
 
     <!-- Open Graph / Facebook / Telegram Sharing -->
     <meta property="og:locale" content="km_KH">

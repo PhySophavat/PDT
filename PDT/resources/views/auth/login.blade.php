@@ -1,6 +1,7 @@
 @extends('layouts.guest')
 
 @section('title', 'ចូលប្រើប្រព័ន្ធ | portal sala')
+@section('meta_robots', 'noindex, nofollow')
 
 @section('content')
 <div class="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-3xl p-7 sm:p-9 shadow-xl shadow-slate-200/60 space-y-6">
@@ -19,30 +20,35 @@
         </p>
     </div>
 
-    <!-- Alert Notifications -->
+    <!-- Alert Notifications (Single unified alert box with real-time countdown if locked) -->
     @if (session('success'))
-        <div class="flex items-start gap-2.5 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-medium">
+        <div class="flex items-start gap-2.5 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-medium animate-in fade-in duration-200">
             <i class="fa-solid fa-circle-check text-emerald-600 text-sm mt-0.5 flex-shrink-0"></i>
             <span>{{ session('success') }}</span>
         </div>
-    @endif
-
-    @if (session('error'))
-        <div class="flex items-start gap-2.5 p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-medium">
-            <i class="fa-solid fa-circle-exclamation text-rose-600 text-sm mt-0.5 flex-shrink-0"></i>
-            <span>{{ session('error') }}</span>
-        </div>
-    @endif
-
-    @if ($errors->any())
-        <div class="flex items-start gap-2.5 p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-medium">
-            <i class="fa-solid fa-circle-exclamation text-rose-600 text-sm mt-0.5 flex-shrink-0"></i>
-            <span>{{ $errors->first() }}</span>
+    @elseif (session('lockout_seconds') || session('error') || $errors->any())
+        @php
+            $lockoutSecs = (int) session('lockout_seconds', 0);
+            $errorMessage = session('error') ?: $errors->first();
+        @endphp
+        <div id="lockout-alert" class="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-medium space-y-2 animate-in fade-in duration-200">
+            <div class="flex items-start gap-2.5">
+                <i class="fa-solid fa-circle-exclamation text-rose-600 text-sm mt-0.5 flex-shrink-0"></i>
+                <div class="flex-1">
+                    <span id="lockout-text">{{ $errorMessage }}</span>
+                    @if ($lockoutSecs > 0)
+                        <div class="mt-2.5 flex items-center gap-2 pt-2 border-t border-rose-200/80 text-rose-700">
+                            <i class="fa-solid fa-clock-rotate-left text-xs animate-spin" style="animation-duration: 3s;"></i>
+                            <span>អាចសាកល្បងម្តងទៀតក្នុងរយៈពេល៖ <strong id="countdown-timer" class="font-mono text-sm font-bold text-rose-900 bg-white/90 px-2 py-0.5 rounded-lg border border-rose-200 shadow-2xs">{{ $lockoutSecs }}</strong> វិនាទី</span>
+                        </div>
+                    @endif
+                </div>
+            </div>
         </div>
     @endif
 
     <!-- Login Form -->
-    <form action="/login" method="POST" class="space-y-4">
+    <form action="{{ route('login') }}" method="POST" class="space-y-4">
         @csrf
 
         <!-- Email or Student ID Field -->
@@ -116,6 +122,17 @@
             <i class="fa-solid fa-arrow-right-to-bracket text-sm"></i>
             <span>ចូលប្រើប្រព័ន្ធ</span>
         </button>
+
+        <!-- Request Registration Link -->
+        <div class="pt-4 border-t border-slate-100 text-center">
+            <a 
+                href="{{ route('public.register-student') }}" 
+                class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline transition"
+            >
+                <i class="fa-solid fa-user-plus text-xs"></i>
+                <span>មិនទាន់មានគណនី? ស្នើសុំចុះឈ្មោះចូលប្រព័ន្ធ</span>
+            </a>
+        </div>
     </form>
 
 </div>
@@ -162,5 +179,48 @@
             refreshCsrfToken();
         }
     });
+
+    // Real-Time Countdown Timer for Rate Limiting / Lockout
+    @if (session('lockout_seconds'))
+    (function() {
+        let timeLeft = {{ (int) session('lockout_seconds') }};
+        const countdownEl = document.getElementById('countdown-timer');
+        const submitBtn = document.querySelector('button[type="submit"]');
+        const lockoutAlert = document.getElementById('lockout-alert');
+
+        if (submitBtn && timeLeft > 0) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-60', 'cursor-not-allowed', 'pointer-events-none');
+            const origSubmitHtml = submitBtn.innerHTML;
+            submitBtn.innerHTML = `<i class="fa-solid fa-hourglass-half text-sm animate-pulse"></i> <span>សូមរង់ចាំ (${timeLeft} វិនាទី)</span>`;
+
+            const timerInterval = setInterval(() => {
+                timeLeft--;
+                if (countdownEl) {
+                    countdownEl.innerText = timeLeft;
+                }
+                if (submitBtn) {
+                    submitBtn.innerHTML = `<i class="fa-solid fa-hourglass-half text-sm animate-pulse"></i> <span>សូមរង់ចាំ (${timeLeft} វិនាទី)</span>`;
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-60', 'cursor-not-allowed', 'pointer-events-none');
+                    submitBtn.innerHTML = origSubmitHtml;
+                    if (lockoutAlert) {
+                        lockoutAlert.className = 'p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-medium animate-in fade-in duration-300';
+                        lockoutAlert.innerHTML = `
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+                                <span>អ្នកអាចសាកល្បងបញ្ចូលពាក្យសម្ងាត់ដើម្បីចូលម្តងទៀតបានហើយ!</span>
+                            </div>
+                        `;
+                    }
+                }
+            }, 1000);
+        }
+    })();
+    @endif
 </script>
 @endpush

@@ -11,6 +11,22 @@
   @endphp
   <title>ទម្រង់សុំច្បាប់សិស្ស | {{ $schoolName }}</title>
 
+  <!-- SEO & Social Open Graph Tags -->
+  <meta name="description" content="ទម្រង់សុំច្បាប់សិស្សអនឡាញ នៃ{{ $schoolName }} ងាយស្រួល ឆាប់រហ័ស និងមានសុវត្ថិភាព។">
+  <meta property="og:locale" content="km_KH">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ $schoolName }}">
+  <meta property="og:title" content="ទម្រង់សុំច្បាប់សិស្ស | {{ $schoolName }}">
+  <meta property="og:description" content="ទម្រង់សុំច្បាប់សិស្សអនឡាញ នៃ{{ $schoolName }} ងាយស្រួល ឆាប់រហ័ស និងមានសុវត្ថិភាព។">
+  <meta property="og:url" content="{{ url()->current() }}">
+  <meta property="og:image" content="{{ asset('images/og-preview.jpg') }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ទម្រង់សុំច្បាប់សិស្ស | {{ $schoolName }}">
+  <meta name="twitter:description" content="ទម្រង់សុំច្បាប់សិស្សអនឡាញ នៃ{{ $schoolName }} ងាយស្រួល ឆាប់រហ័ស និងមានសុវត្ថិភាព។">
+  <meta name="twitter:image" content="{{ asset('images/og-preview.jpg') }}">
+
   <!-- Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

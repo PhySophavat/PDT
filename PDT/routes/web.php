@@ -20,8 +20,16 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\SubjectController;
 
-// Authentication
-Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
+// Root Redirect to Leave Request Form
+Route::get('/', fn() => redirect()->route('public.leave-request'));
+
+// Disable default /login URL (Returns 404 Not Found)
+Route::any('/login', fn() => abort(404));
+
+// Custom Secret Authentication URL
+Route::get('/portal-sala-access-2026', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/portal-sala-access-2026', [AuthController::class, 'login'])->middleware('throttle:5,1');
+
 Route::get('/auth/quick-login', [AuthController::class, 'directLogin'])->name('auth.quick-login');
 Route::get('/csrf-token', fn() => response()->json(['csrf_token' => csrf_token()]))->name('csrf-token');
 
@@ -34,7 +42,6 @@ Route::get('/icon-512.png', fn() => response()->file(public_path('icon-512.png')
 Route::get('/apple-touch-icon.png', fn() => response()->file(public_path('apple-touch-icon.png'), ['Content-Type' => 'image/png']));
 
 
-Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Public Database Health Check
@@ -132,6 +139,7 @@ Route::middleware(['auth'])->group(function () use ($spa) {
         Route::get('/teacher-attendance', [ApiController::class, 'teacherAttendance']);
         Route::post('/teacher-attendance', [ApiController::class, 'saveTeacherAttendance']);
         Route::get('/leave-requests', [AttendanceController::class, 'getLeaveRequests']);
+        Route::post('/leave-requests', [AttendanceController::class, 'submitPublicLeaveForm']);
         Route::post('/leave-requests/{id}/approve', [AttendanceController::class, 'approveLeaveRequest']);
         Route::post('/leave-requests/{id}/reject', [AttendanceController::class, 'rejectLeaveRequest']);
         Route::post('/leave-requests/{id}/restore', [AttendanceController::class, 'restoreLeaveRequest']);

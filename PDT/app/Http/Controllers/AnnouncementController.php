@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Announcement;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class AnnouncementController extends Controller
 {
@@ -35,6 +36,11 @@ class AnnouncementController extends Controller
 
         Announcement::create($validated);
 
+        try {
+            Cache::increment('notif_version');
+            Cache::forget('pending_notifications_payload');
+        } catch (\Throwable $e) {}
+
         return redirect()->route('announcements.index')->with('success', 'បានផ្សាយដំណឹងថ្មីដោយជោគជ័យ!');
     }
 
@@ -53,12 +59,22 @@ class AnnouncementController extends Controller
 
         $announcement->update($validated);
 
+        try {
+            Cache::increment('notif_version');
+            Cache::forget('pending_notifications_payload');
+        } catch (\Throwable $e) {}
+
         return redirect()->route('announcements.index')->with('success', 'បានកែប្រែដំណឹងដោយជោគជ័យ!');
     }
 
     public function destroy(Announcement $announcement)
     {
         $announcement->delete();
+
+        try {
+            Cache::increment('notif_version');
+            Cache::forget('pending_notifications_payload');
+        } catch (\Throwable $e) {}
 
         return redirect()->route('announcements.index')->with('success', 'បានលុបដំណឹងដោយជោគជ័យ!');
     }

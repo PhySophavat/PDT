@@ -12,6 +12,7 @@ use App\Models\StudentLeaveRequest;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 class AttendanceController extends Controller
 {
@@ -219,7 +220,7 @@ class AttendanceController extends Controller
             'student_name' => 'required|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'leave_type' => 'required|string',
+            'leave_type' => 'nullable|string',
             'reason' => 'required|string|max:1000',
             'phone' => 'nullable|string|max:50',
             'attachment' => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:5120',
@@ -229,7 +230,6 @@ class AttendanceController extends Controller
             'start_date.required' => 'សូមជ្រើសរើសកាលបរិច្ឆេទចាប់ផ្ដើមសុំច្បាប់',
             'end_date.required' => 'សូមជ្រើសរើសកាលបរិច្ឆេទបញ្ចប់',
             'end_date.after_or_equal' => 'កាលបរិច្ឆេទបញ្ចប់ត្រូវតែស្មើ ឬក្រោយថ្ងៃចាប់ផ្ដើម',
-            'leave_type.required' => 'សូមជ្រើសរើសប្រភេទច្បាប់',
             'reason.required' => 'សូមបញ្ជាក់មូលហេតុនៃការសុំច្បាប់',
             'attachment.mimes' => 'ឯកសារភ្ជាប់ត្រូវតែជា JPG, PNG, WebP ឬ PDF',
             'attachment.max' => 'ឯកសារភ្ជាប់មិនត្រូវលើសពី 5MB ឡើយ',
@@ -238,6 +238,9 @@ class AttendanceController extends Controller
         $startDate = Carbon::parse($validated['start_date']);
         $endDate = Carbon::parse($validated['end_date']);
         $daysCount = $startDate->diffInDays($endDate) + 1;
+        if ($request->filled('days_count') && is_numeric($request->input('days_count'))) {
+            $daysCount = (float) $request->input('days_count');
+        }
 
         $attachmentPath = null;
         if ($request->hasFile('attachment')) {
@@ -258,12 +261,25 @@ class AttendanceController extends Controller
             'start_date' => $validated['start_date'],
             'end_date' => $validated['end_date'],
             'days_count' => $daysCount,
-            'leave_type' => $validated['leave_type'],
+            'leave_type' => $validated['leave_type'] ?? 'ច្បាប់',
             'reason' => $validated['reason'],
             'phone' => $validated['phone'] ?? null,
             'attachment_path' => $attachmentPath,
             'status' => 'pending',
         ]);
+
+        try {
+            Cache::increment('notif_version');
+            Cache::forget('pending_notifications_payload');
+        } catch (\Throwable $e) {}
+
+        if ($request->wantsJson() || $request->ajax() || $request->is('api/*')) {
+            return response()->json([
+                'success' => true,
+                'message' => 'សំណើសុំច្បាប់ត្រូវបានបញ្ជូនដោយជោគជ័យ! សាលានឹងពិនិត្យ និងអនុម័តជូនឆាប់ៗនេះ។',
+                'leave' => $leave,
+            ]);
+        }
 
         return back()->with('leave_success', [
             'message' => 'សំណើសុំច្បាប់ត្រូវបានបញ្ជូនដោយជោគជ័យ! សាលានឹងពិនិត្យ និងអនុម័តជូនឆាប់ៗនេះ។',
@@ -285,8 +301,35 @@ class AttendanceController extends Controller
 
         $query = StudentLeaveRequest::query()->latest();
 
-        if ($className && $className !== 'all') {
-            $query->where('class_name', $className);
+        $authUser = auth()->user();
+        $isStudentUser = ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student'));
+
+        if ($isStudentUser) {
+            $studentProfile = $authUser->student ?? \App\Models\Student::where('email', $authUser->email)->first();
+            $studentId = $studentProfile?->id;
+            $studentName = $studentProfile?->name_khmer ?: ($studentProfile?->name_latin ?: $authUser->name);
+            $query->where(function ($q) use ($studentId, $studentName, $authUser) {
+                if ($studentId) {
+                    $q->where('student_id', $studentId);
+                }
+                $q->orWhere('student_name', $studentName)
+                  ->orWhere('student_name', $authUser->name);
+            });
+
+            $pendingCount = StudentLeaveRequest::where(function ($q) use ($studentId, $studentName, $authUser) {
+                if ($studentId) {
+                    $q->where('student_id', $studentId);
+                }
+                $q->orWhere('student_name', $studentName)
+                  ->orWhere('student_name', $authUser->name);
+            })->where('status', 'pending')->count();
+        } else {
+            if ($className && $className !== 'all') {
+                $query->where('class_name', $className);
+            }
+            $pendingCount = StudentLeaveRequest::where('status', 'pending')
+                ->when($className && $className !== 'all', fn($q) => $q->where('class_name', $className))
+                ->count();
         }
 
         if ($status && $status !== 'all') {
@@ -318,8 +361,6 @@ class AttendanceController extends Controller
                 'created_at' => $l->created_at ? $l->created_at->format('Y-m-d H:i') : '',
             ];
         });
-
-        $pendingCount = StudentLeaveRequest::where('status', 'pending')->count();
 
         return response()->json([
             'requests' => $requests,
@@ -362,6 +403,11 @@ class AttendanceController extends Controller
             }
         }
 
+        try {
+            Cache::increment('notif_version');
+            Cache::forget('pending_notifications_payload');
+        } catch (\Throwable $e) {}
+
         return response()->json([
             'success' => true,
             'message' => "បានអនុម័តសំណើសុំច្បាប់របស់សិស្ស {$leave->student_name} និងកត់ត្រាវត្តមានជា «មានច្បាប់» ដោយជោគជ័យ!",
@@ -379,6 +425,11 @@ class AttendanceController extends Controller
         $leave->approved_by = auth()->id();
         $leave->save();
 
+        try {
+            Cache::increment('notif_version');
+            Cache::forget('pending_notifications_payload');
+        } catch (\Throwable $e) {}
+
         return response()->json([
             'success' => true,
             'message' => "បានបដិសេធសំណើសុំច្បាប់របស់សិស្ស {$leave->student_name}!",
@@ -395,6 +446,11 @@ class AttendanceController extends Controller
         $leave->rejection_reason = null;
         $leave->approved_by = null;
         $leave->save();
+
+        try {
+            Cache::increment('notif_version');
+            Cache::forget('pending_notifications_payload');
+        } catch (\Throwable $e) {}
 
         return response()->json([
             'success' => true,
