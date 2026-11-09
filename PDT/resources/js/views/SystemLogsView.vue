@@ -3,7 +3,7 @@
     <!-- Top Header -->
     <PageHeader 
       title="កំណត់ហេតុប្រព័ន្ធ (System Activity Logs)" 
-      subtitle="តាមដាន ត្រួតពិនិត្យ និងកត់ត្រារាល់សកម្មភាពរបស់អ្នកប្រើប្រាស់ទូទាំងប្រព័ន្ធ"
+      subtitle="តាមដាន ត្រួតពិនិត្យ វត្តមានចូល-ចេញ និងកត់ត្រារាល់សកម្មភាពរបស់អ្នកប្រើប្រាស់ទូទាំងប្រព័ន្ធ"
     >
       <template #actions>
         <div class="flex items-center gap-2">
@@ -35,56 +35,102 @@
       </template>
     </PageHeader>
 
+    <!-- View Mode Switcher Tabs -->
+    <div class="flex items-center gap-2 border-b border-slate-200/80 pb-3 flex-wrap">
+      <button 
+        type="button" 
+        @click="switchViewMode('all')"
+        :class="[
+          'px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer',
+          activeViewMode === 'all' 
+            ? 'bg-blue-600 text-white shadow-xs' 
+            : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+        ]"
+      >
+        <i class="fa-solid fa-list-check"></i>
+        <span>សកម្មភាពទូទៅ (All Activities)</span>
+      </button>
+
+      <button 
+        type="button" 
+        @click="switchViewMode('sessions')"
+        :class="[
+          'px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer',
+          activeViewMode === 'sessions' 
+            ? 'bg-indigo-600 text-white shadow-xs' 
+            : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+        ]"
+      >
+        <i class="fa-solid fa-stopwatch"></i>
+        <span>វត្តមានចូល-ចេញ & ម៉ោងប្រើប្រាស់ (User Sessions & Usage)</span>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="activeViewMode === 'sessions' ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700'">
+          {{ (stats.successful_logins_today || 0) + (stats.logouts_today || 0) }} ថ្ងៃនេះ
+        </span>
+      </button>
+    </div>
+
     <!-- 1. Summary Statistics Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
       <!-- Total Logs -->
-      <div class="bg-white rounded-2xl p-4.5 border border-slate-200/80 shadow-xs flex items-center justify-between">
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex items-center justify-between">
         <div>
-          <p class="text-xs font-medium text-slate-500">សកម្មភាពសរុបទាំងអស់</p>
-          <h3 class="text-2xl font-bold text-slate-900 mt-1 font-mono">{{ stats.total_logs.toLocaleString() }}</h3>
-          <p class="text-[11px] text-slate-400 mt-0.5">កត់ត្រាដោយស្វ័យប្រវត្ត</p>
+          <p class="text-xs font-medium text-slate-500">សកម្មភាពសរុប</p>
+          <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1 font-mono">{{ stats.total_logs.toLocaleString() }}</h3>
+          <p class="text-[10px] text-slate-400 mt-0.5">កត់ត្រាស្វ័យប្រវត្ត</p>
         </div>
-        <div class="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center text-xl shadow-inner">
+        <div class="w-11 h-11 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center text-lg shadow-inner">
           <i class="fa-solid fa-clock-rotate-left"></i>
         </div>
       </div>
 
       <!-- Activities Today -->
-      <div class="bg-white rounded-2xl p-4.5 border border-slate-200/80 shadow-xs flex items-center justify-between">
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex items-center justify-between">
         <div>
           <p class="text-xs font-medium text-slate-500">សកម្មភាពថ្ងៃនេះ</p>
-          <h3 class="text-2xl font-bold text-emerald-600 mt-1 font-mono">{{ stats.today_logs.toLocaleString() }}</h3>
-          <p class="text-[11px] text-slate-400 mt-0.5">អ្នកប្រើសកម្ម: <strong class="text-slate-600">{{ stats.unique_users_today }}</strong> នាក់</p>
+          <h3 class="text-xl sm:text-2xl font-bold text-emerald-600 mt-1 font-mono">{{ stats.today_logs.toLocaleString() }}</h3>
+          <p class="text-[10px] text-slate-400 mt-0.5">អ្នកប្រើសកម្ម: <strong class="text-slate-600">{{ stats.unique_users_today }}</strong> នាក់</p>
         </div>
-        <div class="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center text-xl shadow-inner">
+        <div class="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center text-lg shadow-inner">
           <i class="fa-solid fa-calendar-day"></i>
         </div>
       </div>
 
       <!-- Successful Logins Today -->
-      <div class="bg-white rounded-2xl p-4.5 border border-slate-200/80 shadow-xs flex items-center justify-between">
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex items-center justify-between">
         <div>
-          <p class="text-xs font-medium text-slate-500">ការ Login ជោគជ័យ (ថ្ងៃនេះ)</p>
-          <h3 class="text-2xl font-bold text-sky-600 mt-1 font-mono">{{ stats.successful_logins_today.toLocaleString() }}</h3>
-          <p class="text-[11px] text-slate-400 mt-0.5">ការតភ្ជាប់ប្រព័ន្ធធម្មតា</p>
+          <p class="text-xs font-medium text-slate-500">Login ចូលថ្ងៃនេះ</p>
+          <h3 class="text-xl sm:text-2xl font-bold text-sky-600 mt-1 font-mono">{{ stats.successful_logins_today.toLocaleString() }}</h3>
+          <p class="text-[10px] text-slate-400 mt-0.5">វត្តមានចូលប្រព័ន្ធ</p>
         </div>
-        <div class="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-100 text-sky-600 flex items-center justify-center text-xl shadow-inner">
+        <div class="w-11 h-11 rounded-2xl bg-sky-50 border border-sky-100 text-sky-600 flex items-center justify-center text-lg shadow-inner">
           <i class="fa-solid fa-right-to-bracket"></i>
         </div>
       </div>
 
-      <!-- Failed Logins Today -->
-      <div class="bg-white rounded-2xl p-4.5 border border-slate-200/80 shadow-xs flex items-center justify-between">
+      <!-- Logouts Today -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex items-center justify-between">
         <div>
-          <p class="text-xs font-medium text-slate-500">ការ Login បរាជ័យ (ថ្ងៃនេះ)</p>
-          <h3 class="text-2xl font-bold mt-1 font-mono" :class="stats.failed_logins_today > 0 ? 'text-rose-600' : 'text-slate-700'">
+          <p class="text-xs font-medium text-slate-500">Logout ចេញថ្ងៃនេះ</p>
+          <h3 class="text-xl sm:text-2xl font-bold text-purple-600 mt-1 font-mono">{{ (stats.logouts_today || 0).toLocaleString() }}</h3>
+          <p class="text-[10px] text-slate-400 mt-0.5">បានកត់ត្រារយៈពេល</p>
+        </div>
+        <div class="w-11 h-11 rounded-2xl bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center text-lg shadow-inner">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </div>
+      </div>
+
+      <!-- Failed Logins Today -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex items-center justify-between sm:col-span-2 lg:col-span-1">
+        <div>
+          <p class="text-xs font-medium text-slate-500">Login បរាជ័យ</p>
+          <h3 class="text-xl sm:text-2xl font-bold mt-1 font-mono" :class="stats.failed_logins_today > 0 ? 'text-rose-600' : 'text-slate-700'">
             {{ stats.failed_logins_today.toLocaleString() }}
           </h3>
-          <p class="text-[11px] mt-0.5" :class="stats.failed_logins_today > 0 ? 'text-rose-500 font-semibold' : 'text-slate-400'">
-            {{ stats.failed_logins_today > 0 ? '⚠️ មានការព្យាយាមចូលមិនត្រូវ' : 'សុវត្ថិភាពល្អប្រសើរ' }}
+          <p class="text-[10px] mt-0.5" :class="stats.failed_logins_today > 0 ? 'text-rose-500 font-semibold' : 'text-slate-400'">
+            {{ stats.failed_logins_today > 0 ? '⚠️ មានចូលខុស' : 'សុវត្ថិភាពល្អ' }}
           </p>
         </div>
-        <div class="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center text-xl shadow-inner">
+        <div class="w-11 h-11 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center text-lg shadow-inner">
           <i class="fa-solid fa-shield-halved"></i>
         </div>
       </div>
@@ -186,6 +232,17 @@
           </button>
           <button 
             type="button"
+            @click="setActionFilter('SESSIONS')"
+            :class="[
+              'px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer text-xs whitespace-nowrap flex items-center gap-1',
+              selectedAction === 'SESSIONS' ? 'bg-indigo-700 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            ]"
+          >
+            <i class="fa-solid fa-users text-[10px]"></i>
+            <span>ចូល-ចេញ (Sessions)</span>
+          </button>
+          <button 
+            type="button"
             @click="setActionFilter('CREATED')"
             :class="[
               'px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer text-xs whitespace-nowrap flex items-center gap-1',
@@ -226,7 +283,18 @@
             ]"
           >
             <i class="fa-solid fa-right-to-bracket text-[10px]"></i>
-            <span>LOGIN</span>
+            <span>LOGIN (ចូល)</span>
+          </button>
+          <button 
+            type="button"
+            @click="setActionFilter('LOGOUT')"
+            :class="[
+              'px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer text-xs whitespace-nowrap flex items-center gap-1',
+              selectedAction === 'LOGOUT' ? 'bg-purple-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            ]"
+          >
+            <i class="fa-solid fa-arrow-right-from-bracket text-[10px]"></i>
+            <span>LOGOUT (ចេញ)</span>
           </button>
           <button 
             type="button"
@@ -281,7 +349,129 @@
         </button>
       </div>
 
-      <!-- Logs Table -->
+      <!-- 3A. Dedicated Sessions Table (When in Sessions View Mode) -->
+      <div v-else-if="activeViewMode === 'sessions'" class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-indigo-50/60 border-b border-indigo-100 text-slate-700 font-bold">
+              <th class="py-3 px-4 whitespace-nowrap">កាលបរិច្ឆេទ</th>
+              <th class="py-3 px-4 whitespace-nowrap">អ្នកប្រើប្រាស់ (User)</th>
+              <th class="py-3 px-4 whitespace-nowrap">សកម្មភាព</th>
+              <th class="py-3 px-4 whitespace-nowrap text-emerald-700">ម៉ោងចូល (Login)</th>
+              <th class="py-3 px-4 whitespace-nowrap text-rose-700">ម៉ោងចេញ (Logout)</th>
+              <th class="py-3 px-4 whitespace-nowrap text-purple-700">រយៈពេលប្រើប្រាស់</th>
+              <th class="py-3 px-4 whitespace-nowrap">ឧបករណ៍ & IP Address</th>
+              <th class="py-3 px-4">សេចក្តីពណ៌នា</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700">
+            <tr 
+              v-for="log in logs" 
+              :key="log.id" 
+              class="hover:bg-indigo-50/30 transition-colors"
+            >
+              <!-- Date & Timestamp -->
+              <td class="py-3 px-4 whitespace-nowrap">
+                <div class="font-mono text-xs font-semibold text-slate-800">{{ formatDateTime(log.created_at) }}</div>
+                <div class="text-[10px] text-slate-400">{{ formatRelativeTime(log.created_at) }}</div>
+              </td>
+
+              <!-- User -->
+              <td class="py-3 px-4 whitespace-nowrap">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                    {{ (log.display_name || log.user_name || 'U').charAt(0).toUpperCase() }}
+                  </div>
+                  <div>
+                    <div class="font-bold text-slate-900 leading-tight">
+                      {{ log.display_name || log.user_name || 'ភ្ញៀវ (Guest)' }}
+                    </div>
+                    <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                      <span 
+                        class="inline-block px-1.5 py-0.2 rounded text-[10px] font-semibold border"
+                        :class="getRoleBadgeClass(log.user_role)"
+                      >
+                        {{ log.user_role || 'User' }}
+                      </span>
+                      <span v-if="log.student_grade" class="text-[10px] text-slate-500 font-medium">
+                        ថ្នាក់ {{ log.student_grade }}
+                      </span>
+                    </div>
+                    <div v-if="log.user_email" class="text-[10px] text-slate-400 font-mono mt-0.5">
+                      {{ log.user_email }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Action Badge -->
+              <td class="py-3 px-4 whitespace-nowrap">
+                <span 
+                  class="px-2.5 py-1 rounded-full text-[11px] font-bold border inline-flex items-center gap-1.5"
+                  :class="log.action === 'LOGIN' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-purple-50 text-purple-700 border-purple-200'"
+                >
+                  <i :class="log.action === 'LOGIN' ? 'fa-solid fa-right-to-bracket text-emerald-600' : 'fa-solid fa-arrow-right-from-bracket text-purple-600'" class="text-[11px]"></i>
+                  <span>{{ log.action === 'LOGIN' ? 'ចូលប្រព័ន្ធ (LOGIN)' : 'ចាកចេញ (LOGOUT)' }}</span>
+                </span>
+              </td>
+
+              <!-- Login Time -->
+              <td class="py-3 px-4 whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-emerald-700 bg-emerald-50/80 px-2.5 py-1 rounded-lg border border-emerald-200/80">
+                  <i class="fa-regular fa-clock text-[10px]"></i>
+                  <span>{{ log.session_info?.login_time || (log.action === 'LOGIN' ? formatTimeOnly(log.created_at) : '---') }}</span>
+                </div>
+              </td>
+
+              <!-- Logout Time -->
+              <td class="py-3 px-4 whitespace-nowrap">
+                <div v-if="log.action === 'LOGOUT'" class="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-rose-700 bg-rose-50/80 px-2.5 py-1 rounded-lg border border-rose-200/80">
+                  <i class="fa-solid fa-clock-rotate-left text-[10px]"></i>
+                  <span>{{ log.session_info?.logout_time || formatTimeOnly(log.created_at) }}</span>
+                </div>
+                <div v-else-if="log.action === 'LOGIN'" class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600 bg-emerald-50/60 px-2 py-0.8 rounded-lg border border-emerald-100">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>កំពុងប្រើប្រាស់</span>
+                </div>
+                <span v-else class="text-slate-400 font-mono">---</span>
+              </td>
+
+              <!-- Usage Duration -->
+              <td class="py-3 px-4 whitespace-nowrap">
+                <div v-if="log.session_info?.duration" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-800 border border-indigo-200 shadow-2xs">
+                  <i class="fa-solid fa-stopwatch text-indigo-600 text-[11px]"></i>
+                  <span>{{ log.session_info.duration }}</span>
+                </div>
+                <div v-else-if="log.action === 'LOGIN'" class="text-[11px] text-slate-500 font-medium flex items-center gap-1">
+                  <i class="fa-solid fa-hourglass-half text-amber-500 text-[10px]"></i>
+                  <span>រាប់ម៉ោងពេល Logout</span>
+                </div>
+                <span v-else class="text-slate-400 font-mono">---</span>
+              </td>
+
+              <!-- Device & IP -->
+              <td class="py-3 px-4 whitespace-nowrap">
+                <div class="flex items-center gap-1.5 font-medium text-slate-800">
+                  <i :class="getDeviceIcon(log.device_name)" class="text-slate-400 text-xs"></i>
+                  <span>{{ log.device_name || 'Unknown Device' }}</span>
+                </div>
+                <div class="text-[11px] font-mono text-slate-400 mt-0.5 pl-4">
+                  {{ log.ip_address || '127.0.0.1' }}
+                </div>
+              </td>
+
+              <!-- Description -->
+              <td class="py-3 px-4 max-w-xs">
+                <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed" :title="log.description">
+                  {{ log.description || '---' }}
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 3B. Standard Logs Table (When in All Activities View Mode) -->
       <div v-else class="overflow-x-auto">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
@@ -309,18 +499,28 @@
 
               <!-- Actor -->
               <td class="py-3 px-4 whitespace-nowrap">
-                <div class="flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 text-xs shrink-0">
-                    {{ (log.user_name || 'U').charAt(0).toUpperCase() }}
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-700 text-xs shrink-0 shadow-2xs">
+                    {{ (log.display_name || log.user_name || 'U').charAt(0).toUpperCase() }}
                   </div>
                   <div>
-                    <div class="font-bold text-slate-900 leading-tight">{{ log.user_name || 'ភ្ញៀវ (Guest)' }}</div>
-                    <span 
-                      class="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-semibold border"
-                      :class="getRoleBadgeClass(log.user_role)"
-                    >
-                      {{ log.user_role || 'User' }}
-                    </span>
+                    <div class="font-bold text-slate-900 leading-tight">
+                      {{ log.display_name || log.user_name || 'ភ្ញៀវ (Guest)' }}
+                    </div>
+                    <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                      <span 
+                        class="inline-block px-1.5 py-0.2 rounded text-[10px] font-semibold border"
+                        :class="getRoleBadgeClass(log.user_role)"
+                      >
+                        {{ log.user_role || 'User' }}
+                      </span>
+                      <span v-if="log.student_grade" class="text-[10px] text-slate-500 font-medium">
+                        ថ្នាក់ {{ log.student_grade }}
+                      </span>
+                    </div>
+                    <div v-if="log.user_email" class="text-[10px] text-slate-400 font-mono mt-0.5">
+                      {{ log.user_email }}
+                    </div>
                   </div>
                 </div>
               </td>
@@ -345,6 +545,20 @@
                   <i :class="getActionIcon(log.action)" class="text-[10px]"></i>
                   <span>{{ log.action }}</span>
                 </span>
+
+                <!-- Duration highlight if available -->
+                <div v-if="log.action === 'LOGOUT' && log.session_info?.duration" class="mt-1">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                    <i class="fa-solid fa-stopwatch text-[9px]"></i>
+                    <span>ប្រើអស់: {{ log.session_info.duration }}</span>
+                  </span>
+                </div>
+                <div v-else-if="log.action === 'LOGIN'" class="mt-1">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
+                    <i class="fa-regular fa-clock text-[9px]"></i>
+                    <span>ចូលម៉ោង: {{ log.session_info?.login_time || formatTimeOnly(log.created_at) }}</span>
+                  </span>
+                </div>
               </td>
 
               <!-- Device & IP -->
@@ -363,6 +577,12 @@
                 <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed" :title="log.description">
                   {{ log.description || '---' }}
                 </p>
+                <div v-if="log.session_info?.login_time && log.session_info?.logout_time" class="mt-1 text-[11px] text-slate-500 font-medium flex items-center gap-2 flex-wrap">
+                  <span class="text-emerald-700 font-semibold"><i class="fa-regular fa-clock mr-1"></i>ចូល: {{ log.session_info.login_time }}</span>
+                  <span>➔</span>
+                  <span class="text-rose-700 font-semibold"><i class="fa-solid fa-arrow-right-from-bracket mr-1"></i>ចេញ: {{ log.session_info.logout_time }}</span>
+                  <span class="text-purple-800 font-bold bg-purple-50 px-1.5 py-0.2 rounded border border-purple-100">រយៈពេល: {{ log.session_info.duration }}</span>
+                </div>
               </td>
 
               <!-- View Changes Button -->
@@ -460,7 +680,7 @@
         <div class="px-6 py-3 bg-slate-50/40 border-b border-slate-100 flex items-center justify-between text-xs text-slate-600 flex-wrap gap-2">
           <div class="flex items-center gap-2">
             <i class="fa-solid fa-user-circle text-slate-400"></i>
-            <span>អ្នកប្រព្រឹត្ត៖ <strong>{{ activeLog.user_name }}</strong> ({{ activeLog.user_role }})</span>
+            <span>អ្នកប្រព្រឹត្ត៖ <strong>{{ activeLog.display_name || activeLog.user_name }}</strong> ({{ activeLog.user_role }})</span>
           </div>
           <div class="flex items-center gap-3 font-mono text-[11px] text-slate-500">
             <span><i class="fa-solid fa-laptop text-slate-400 mr-1"></i>{{ activeLog.device_name }}</span>
@@ -552,6 +772,7 @@ const stats = ref({
   total_logs: 0,
   today_logs: 0,
   successful_logins_today: 0,
+  logouts_today: 0,
   failed_logins_today: 0,
   unique_users_today: 0,
 });
@@ -564,6 +785,9 @@ const pagination = ref({
   from: 0,
   to: 0,
 });
+
+// View Mode ('all' | 'sessions')
+const activeViewMode = ref('all');
 
 // Filters
 const searchQuery = ref('');
@@ -629,8 +853,27 @@ const onSearchInput = () => {
   }, 350);
 };
 
+const switchViewMode = (mode) => {
+  activeViewMode.value = mode;
+  pagination.value.current_page = 1;
+  if (mode === 'sessions') {
+    selectedAction.value = 'SESSIONS';
+    selectedModule.value = '';
+  } else {
+    if (selectedAction.value === 'SESSIONS') {
+      selectedAction.value = '';
+    }
+  }
+  fetchLogs();
+};
+
 const setActionFilter = (act) => {
   selectedAction.value = act;
+  if (act === 'SESSIONS') {
+    activeViewMode.value = 'sessions';
+  } else if (activeViewMode.value === 'sessions' && act !== 'LOGIN' && act !== 'LOGOUT') {
+    activeViewMode.value = 'all';
+  }
   pagination.value.current_page = 1;
   fetchLogs();
 };
@@ -719,6 +962,12 @@ const formatDateTime = (dt) => {
   return d.toLocaleString('sv-SE', { timeZone: 'Asia/Phnom_Penh' });
 };
 
+const formatTimeOnly = (dt) => {
+  if (!dt) return '---';
+  const d = new Date(dt);
+  return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Phnom_Penh' });
+};
+
 const formatRelativeTime = (dt) => {
   if (!dt) return '';
   const now = Date.now();
@@ -744,7 +993,7 @@ const getActionBadgeClass = (action) => {
     case 'FAILED_LOGIN':
       return 'bg-amber-50 text-amber-800 border-amber-200';
     case 'LOGOUT':
-      return 'bg-slate-100 text-slate-700 border-slate-200';
+      return 'bg-purple-50 text-purple-700 border-purple-200';
     default:
       return 'bg-slate-50 text-slate-700 border-slate-200';
   }

@@ -14,12 +14,59 @@
       :tabs="availableTabs"
     />
 
-    <!-- 4 Statistics Summary Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard :title="$t('examinations.examList')" :value="examsList.length" />
-      <StatCard :title="$t('examinations.scores')" :value="totalScoresCount" />
-      <StatCard :title="$t('examinations.passRate')" :value="computedPassRate" />
-      <StatCard :title="$t('classes.totalClasses')" :value="classesList.length" />
+    <!-- 4 Statistics Summary Cards (Compact 2-col on mobile, refined badges) -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <!-- 1. Exam List -->
+      <div class="bg-white rounded-2xl py-3 px-3.5 sm:px-4 border border-slate-100 shadow-sm flex items-center justify-between hover:border-slate-200 transition-all">
+        <div class="min-w-0 pr-2">
+          <p class="text-[11px] sm:text-xs font-medium text-slate-500 truncate">{{ $t('examinations.examList') }}</p>
+          <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight">{{ examsList.length }}</h3>
+        </div>
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100/60 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- 2. Exam Scores -->
+      <div class="bg-white rounded-2xl py-3 px-3.5 sm:px-4 border border-slate-100 shadow-sm flex items-center justify-between hover:border-slate-200 transition-all">
+        <div class="min-w-0 pr-2">
+          <p class="text-[11px] sm:text-xs font-medium text-slate-500 truncate">{{ $t('examinations.scores') }}</p>
+          <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight">{{ totalScoresCount }}</h3>
+        </div>
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-100/60 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- 3. Pass Rate -->
+      <div class="bg-white rounded-2xl py-3 px-3.5 sm:px-4 border border-slate-100 shadow-sm flex items-center justify-between hover:border-slate-200 transition-all">
+        <div class="min-w-0 pr-2">
+          <p class="text-[11px] sm:text-xs font-medium text-slate-500 truncate">{{ $t('examinations.passRate') }}</p>
+          <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight">{{ computedPassRate }}</h3>
+        </div>
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100/60 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- 4. Total Classes -->
+      <div class="bg-white rounded-2xl py-3 px-3.5 sm:px-4 border border-slate-100 shadow-sm flex items-center justify-between hover:border-slate-200 transition-all">
+        <div class="min-w-0 pr-2">
+          <p class="text-[11px] sm:text-xs font-medium text-slate-500 truncate">{{ $t('classes.totalClasses') }}</p>
+          <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight">{{ classesList.length }}</h3>
+        </div>
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100/60 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5"/>
+          </svg>
+        </div>
+      </div>
     </div>
 
     <!-- TAB 1: Examination List View -->
@@ -512,77 +559,86 @@
         </table>
       </div>
     </div>
-    <div v-else-if="activeTab === 'report_cards'" class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-4">
+    <div v-else-if="activeTab === 'report_cards'" class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4 font-sans">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
         <div>
-          <h3 class="font-bold text-slate-800 text-base">ព្រឹត្តិបត្រពិន្ទុ និងចំណាត់ថ្នាក់សិស្ស</h3>
-          <p class="text-xs text-slate-500">បោះពុម្ពសៀវភៅតាមដានការសិក្សា និងព្រឹត្តិបត្រពិន្ទុផ្លូវការ</p>
+          <h3 class="font-bold text-slate-900 text-sm sm:text-base">ព្រឹត្តិបត្រពិន្ទុ និងចំណាត់ថ្នាក់សិស្ស</h3>
+          <p class="text-xs text-slate-500 font-medium mt-0.5">បោះពុម្ពសៀវភៅតាមដានការសិក្សា និងព្រឹត្តិបត្រពិន្ទុផ្លូវការ</p>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">ជ្រើសរើសការប្រឡង</label>
-          <select v-model="selectedExamId" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-            <option value="">-- ជ្រើសរើសសម័យប្រឡង --</option>
+      <!-- Exam Selector (Full Width, Class dropdown removed) -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+          ជ្រើសរើសការប្រឡង
+        </label>
+        <div class="relative">
+          <select 
+            v-model="selectedExamId" 
+            @change="loadScoreSheet"
+            class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 shadow-2xs transition-all appearance-none pr-10 cursor-pointer"
+          >
+            <option value="" disabled>-- ជ្រើសរើសសម័យប្រឡង --</option>
             <option v-for="ex in examsList" :key="ex.id" :value="ex.id">{{ ex.title }}</option>
           </select>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">ជ្រើសរើសថ្នាក់</label>
-          <select 
-            v-model="selectedClassForScores" 
-            @change="loadScoreSheet" 
-            :disabled="isStudent"
-            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
-          >
-            <option value="">-- ជ្រើសរើសថ្នាក់ --</option>
-            <optgroup v-for="(gClasses, gKey) in groupedClasses" :key="gKey" :label="`-- កម្រិតថ្នាក់ទី ${gKey} --`">
-              <option v-for="c in gClasses" :key="c" :value="c">ថ្នាក់ {{ c }}</option>
-            </optgroup>
-          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
         </div>
       </div>
 
-      <!-- Quick Action: Official Class Ranking Sheet -->
-      <div v-if="selectedExamId && selectedClassForScores" class="p-3 bg-indigo-50/70 border border-indigo-200/60 rounded-xl flex items-center justify-between">
-        <div>
-          <h4 class="font-bold text-xs text-indigo-950 flex items-center gap-1.5">
-            <span>📜</span>
-            <span>តារាងចំណាត់ថ្នាក់ប្រចាំខែផ្លូវការ</span>
-          </h4>
-          <p class="text-[11px] text-indigo-700">បោះពុម្ពតារាងចំណាត់ថ្នាក់សិស្សទាំងអស់ក្នុងថ្នាក់ {{ selectedClassForScores }} ជាទម្រង់ ២ ជួរឈរ (A4 Portrait ដូចទម្រង់ក្រសួង)</p>
+      <!-- Quick Action: Official Class Ranking Sheet (Clean Responsive Callout Card) -->
+      <div v-if="selectedExamId && selectedClassForScores" class="p-3.5 sm:p-4 bg-gradient-to-r from-blue-50/70 to-indigo-50/40 border border-blue-100/80 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5 sm:gap-4 transition-all shadow-2xs">
+        <div class="flex items-start sm:items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-100/80 text-blue-700 flex items-center justify-center shrink-0 shadow-2xs">
+            <span class="text-lg">📜</span>
+          </div>
+          <div>
+            <h4 class="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-2">
+              តារាងចំណាត់ថ្នាក់ប្រចាំខែផ្លូវការ
+              <span class="px-2 py-0.5 rounded-full bg-blue-100/80 text-blue-700 text-[10px] font-bold">
+                ថ្នាក់ {{ selectedClassForScores }}
+              </span>
+            </h4>
+            <p class="text-xs text-slate-600 font-medium leading-relaxed mt-0.5">
+              បោះពុម្ពតារាងចំណាត់ថ្នាក់សិស្សទាំងអស់ក្នុងថ្នាក់ {{ selectedClassForScores }} ជាទម្រង់ ២ ជួរឈរ (A4 Portrait ដូចទម្រង់ក្រសួង)
+            </p>
+          </div>
         </div>
         <a 
           :href="`/examinations/${selectedExamId || (examsList[0]?.id || 1)}/ranking-sheet?class=${selectedClassForScores || '7A'}`" 
           target="_blank"
-          class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition inline-flex items-center gap-1.5 whitespace-nowrap"
+          class="w-full sm:w-auto px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs rounded-xl shadow-xs transition-colors inline-flex items-center justify-center gap-1.5 shrink-0"
         >
           <span>📜 បើកតារាងចំណាត់ថ្នាក់</span>
-          <span>&rarr;</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
         </a>
       </div>
 
-      <div v-if="scoreSheetStudents.length > 0" class="overflow-x-auto pt-2">
+      <div v-if="scoreSheetStudents.length > 0" class="overflow-x-auto pt-1">
         <table class="w-full text-left text-xs">
           <thead>
-            <tr class="bg-slate-100 text-slate-700 uppercase font-bold border-b border-slate-200">
-              <th class="py-3 px-4">អត្តលេខ</th>
-              <th class="py-3 px-4">ឈ្មោះសិស្ស</th>
-              <th class="py-3 px-4">ថ្នាក់</th>
-              <th class="py-3 px-4 text-right">សកម្មភាព</th>
+            <tr class="bg-slate-50 text-slate-600 uppercase font-semibold text-[11px] tracking-wider border-b border-slate-200">
+              <th class="py-3 px-3.5 sm:px-4">អត្តលេខ</th>
+              <th class="py-3 px-3.5 sm:px-4">ឈ្មោះសិស្ស</th>
+              <th class="py-3 px-3.5 sm:px-4">ថ្នាក់</th>
+              <th class="py-3 px-3.5 sm:px-4 text-right">សកម្មភាព</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            <tr v-for="st in displayedReportCardStudents" :key="st.student_id" class="hover:bg-slate-50">
-              <td class="py-3 px-4 font-mono font-bold text-slate-600">{{ st.student_id_card }}</td>
-              <td class="py-3 px-4 font-bold text-slate-800">{{ st.name }}</td>
-              <td class="py-3 px-4 font-bold text-blue-600">ថ្នាក់ {{ selectedClassForScores }}</td>
-              <td class="py-3 px-4 text-right">
+            <tr v-for="st in displayedReportCardStudents" :key="st.student_id" class="hover:bg-slate-50/70 transition-colors">
+              <td class="py-3 px-3.5 sm:px-4 font-mono font-bold text-slate-600">{{ st.student_id_card }}</td>
+              <td class="py-3 px-3.5 sm:px-4 font-bold text-slate-800">{{ st.name }}</td>
+              <td class="py-3 px-3.5 sm:px-4 font-bold text-blue-600">ថ្នាក់ {{ selectedClassForScores }}</td>
+              <td class="py-3 px-3.5 sm:px-4 text-right">
                 <a 
                   :href="`/examinations/${selectedExamId}/report-card/${st.student_id}`" 
                   target="_blank" 
-                  class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition"
                 >
                   🖨️ បោះពុម្ពព្រឹត្តិបត្រពិន្ទុ
                 </a>
@@ -592,7 +648,7 @@
         </table>
       </div>
       <div v-else class="py-8 text-center text-slate-400">
-        សូមជ្រើសរើសការប្រឡង និងថ្នាក់រៀន ដើម្បីបោះពុម្ពព្រឹត្តិបត្រពិន្ទុ។
+        សូមជ្រើសរើសការប្រឡង ដើម្បីបោះពុម្ពព្រឹត្តិបត្រពិន្ទុ។
       </div>
     </div>
 
@@ -990,17 +1046,17 @@ const fetchExams = async () => {
       selectedMatrixExamId.value = examsList.value[0].id;
     }
     if (!selectedClassForScores.value && classesList.value.length > 0) {
-      selectedClassForScores.value = classesList.value.includes('7A') ? '7A' : classesList.value[0];
+      selectedClassForScores.value = currentUser.value?.student_grade || (classesList.value.includes('7A') ? '7A' : classesList.value[0]);
     }
     if (!selectedMatrixClass.value && classesList.value.length > 0) {
-      selectedMatrixClass.value = classesList.value.includes('7A') ? '7A' : classesList.value[0];
+      selectedMatrixClass.value = currentUser.value?.student_grade || (classesList.value.includes('7A') ? '7A' : classesList.value[0]);
     }
     if (!selectedSubjectForScores.value && subjectsList.value.length > 0) {
       selectedSubjectForScores.value = subjectsList.value[0].id;
     }
     if (activeTab.value === 'matrix') {
       await loadMatrixSheet();
-    } else if (activeTab.value === 'scores') {
+    } else if (activeTab.value === 'scores' || activeTab.value === 'report_cards') {
       await loadScoreSheet();
     }
   } catch (err) {
@@ -1021,7 +1077,7 @@ onActivated(() => {
 watch(activeTab, (tab) => {
   if (tab === 'matrix') {
     loadMatrixSheet();
-  } else if (tab === 'scores') {
+  } else if (tab === 'scores' || tab === 'report_cards') {
     loadScoreSheet();
   }
 });

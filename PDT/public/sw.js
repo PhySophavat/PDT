@@ -31,6 +31,16 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Message Event - Force skip waiting & clear caches on client request
+self.addEventListener('message', (event) => {
+  if (event.data && (event.data.type === 'SKIP_WAITING' || event.data.type === 'CLEAR_CACHE')) {
+    self.skipWaiting();
+    caches.keys().then((keys) => {
+      return Promise.all(keys.map((key) => caches.delete(key)));
+    });
+  }
+});
+
 // Fetch Event - Network First for APIs & Live data, Cache Fallback for static assets
 self.addEventListener('fetch', (event) => {
   const request = event.request;

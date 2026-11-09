@@ -148,14 +148,20 @@
                 <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
                 <div>
                     <span class="text-[11px] sm:text-xs font-bold text-slate-800">ទម្រង់តារាងចំណាត់ថ្នាក់ប្រចាំខែផ្លូវការ (A4 Portrait)</span>
+                    @if($canEditSheet)
                     <span class="text-[10px] sm:text-[11px] text-slate-500 hidden sm:block">អ្នកអាចចុចលើអត្ថបទផ្ទាល់ ឬប្រើប្រអប់ខាងក្រោមដើម្បីកែឈ្មោះគ្រូ នាយក និងស្ថាប័ន</span>
+                    @else
+                    <span class="text-[10px] sm:text-[11px] text-slate-500 hidden sm:block">ពិនិត្យលទ្ធផលចំណាត់ថ្នាក់សិស្សផ្លូវការប្រចាំខែ</span>
+                    @endif
                 </div>
             </div>
             <div class="flex items-center gap-1.5 sm:gap-2">
+                @if($canEditSheet)
                 <button type="button" onclick="toggleEditPanel()" class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] sm:text-xs transition flex items-center gap-1 sm:gap-1.5">
                     <i class="fa-solid fa-sliders text-blue-600 text-[10px] sm:text-xs"></i>
                     <span>កំណត់ព័ត៌មាន</span>
                 </button>
+                @endif
                 <button type="button" onclick="window.print()" class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] sm:text-xs shadow-md transition flex items-center gap-1.5 sm:gap-2">
                     <i class="fa-solid fa-print text-[10px] sm:text-xs"></i>
                     <span>បោះពុម្ព / PDF</span>
@@ -166,7 +172,8 @@
             </div>
         </div>
 
-        <!-- Expandable Settings Panel -->
+        @if($canEditSheet)
+        <!-- Expandable Settings Panel (Only visible for Admins & Teachers, strictly hidden for Students) -->
         <div id="settingsPanel" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 transition-all duration-200">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
                 <div class="flex items-center gap-2">
@@ -237,6 +244,7 @@
                 ✅ បានរក្សាទុកព័ត៌មានជាលំនាំដើមក្នុងប្រព័ន្ធដោយជោគជ័យ!
             </div>
         </div>
+        @endif
     </div>
 
     <!-- Official Document Sheet (Standard Cambodian High School Layout) -->
@@ -251,10 +259,10 @@
                     <img src="{{ asset('images/moeys-logo.jpg') }}" alt="Logo MoEYS" class="h-11 sm:h-16 w-auto object-contain">
                 </div>
                 <h4 class="font-bold text-[10px] sm:text-[12px] text-slate-800 leading-tight">
-                    <span id="textDistrict" contenteditable="true" onblur="handleContentEdit('district', this.innerText)" class="editable-field" title="ចុចដើម្បីកែប្រែការិយាល័យ">{{ $districtOffice }}</span>
+                    <span id="textDistrict" @if($canEditSheet) contenteditable="true" onblur="handleContentEdit('district', this.innerText)" class="editable-field" title="ចុចដើម្បីកែប្រែការិយាល័យ" @endif>{{ $districtOffice }}</span>
                 </h4>
                 <h3 class="font-bold text-[11px] sm:text-[13px] text-slate-900 leading-tight mt-0.5">
-                    <span id="textSchool" contenteditable="true" onblur="handleContentEdit('school', this.innerText)" class="editable-field" title="ចុចដើម្បីកែប្រែឈ្មោះវិទ្យាល័យ">{{ $schoolName }}</span>
+                    <span id="textSchool" @if($canEditSheet) contenteditable="true" onblur="handleContentEdit('school', this.innerText)" class="editable-field" title="ចុចដើម្បីកែប្រែឈ្មោះវិទ្យាល័យ" @endif>{{ $schoolName }}</span>
                 </h3>
             </div>
 
@@ -272,10 +280,10 @@
         <!-- Document Title -->
         <div class="text-center my-1.5 sm:my-2 space-y-0.5">
             <h1 class="font-moul text-[12px] sm:text-[15px] text-blue-900 leading-tight">
-                <span id="textTitle" contenteditable="true" class="editable-field" title="ចុចដើម្បីកែប្រែចំណងជើង">តារាងចំណាត់ថ្នាក់ប្រចាំខែ {{ str_contains($examination->title, 'កុម្ភៈ') ? 'កុម្ភៈ' : (str_contains($examination->title, 'មករា') ? 'មករា' : $examination->title) }}</span>
+                <span id="textTitle" @if($canEditSheet) contenteditable="true" class="editable-field" title="ចុចដើម្បីកែប្រែចំណងជើង" @endif>តារាងចំណាត់ថ្នាក់ប្រចាំខែ {{ str_contains($examination->title, 'កុម្ភៈ') ? 'កុម្ភៈ' : (str_contains($examination->title, 'មករា') ? 'មករា' : $examination->title) }}</span>
             </h1>
             <p class="font-bold text-[11px] sm:text-[13px] text-blue-800">
-                ថ្នាក់ទី {{ $className }} &nbsp;&bull;&nbsp; ឆ្នាំសិក្សា <span id="textAcademicYear" contenteditable="true" onblur="handleContentEdit('academicYear', this.innerText)" class="editable-field" title="ចុចដើម្បីកែប្រែឆ្នាំសិក្សា">{{ $academicYearName }}</span>
+                ថ្នាក់ទី {{ $className }} &nbsp;&bull;&nbsp; ឆ្នាំសិក្សា <span id="textAcademicYear" @if($canEditSheet) contenteditable="true" onblur="handleContentEdit('academicYear', this.innerText)" class="editable-field" title="ចុចដើម្បីកែប្រែឆ្នាំសិក្សា" @endif>{{ $academicYearName }}</span>
             </p>
         </div>
 
@@ -354,10 +362,10 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between font-bold text-slate-900 mb-1 gap-1">
                 <div>
                     <span>បញ្ឈប់បញ្ជីត្រឹម <span contenteditable="true" class="editable-field font-mono text-xs sm:text-sm text-blue-950" title="ចុចដើម្បីកែប្រែចំនួនសរុប">{{ sprintf('%02d', $totalCount) }}</span> នាក់</span>
-                    <span class="ml-2 sm:ml-4">ស្រី <span contenteditable="true" class="editable-field font-mono text-xs sm:text-sm text-rose-700" title="ចុចដើម្បីកែប្រែចំនួនស្រី">{{ sprintf('%02d', $femaleCount) }}</span> នាក់</span>
+                    <span class="ml-2 sm:ml-4">ស្រី <span @if($canEditSheet) contenteditable="true" class="editable-field font-mono text-xs sm:text-sm text-rose-700" title="ចុចដើម្បីកែប្រែចំនួនស្រី" @else class="font-mono text-xs sm:text-sm text-rose-700 font-bold" @endif>{{ sprintf('%02d', $femaleCount) }}</span> នាក់</span>
                 </div>
                 <div class="text-[9.5px] sm:text-xs text-slate-800">
-                    <span id="textDate" contenteditable="true" onblur="handleContentEdit('date', this.innerText)" class="editable-field font-semibold" title="ចុចដើម្បីកែប្រែកាលបរិច្ឆេទ">{{ $sheetDate }}</span>
+                    <span id="textDate" @if($canEditSheet) contenteditable="true" onblur="handleContentEdit('date', this.innerText)" class="editable-field font-semibold" title="ចុចដើម្បីកែប្រែកាលបរិច្ឆេទ" @else class="font-semibold" @endif>{{ $sheetDate }}</span>
                 </div>
             </div>
 
@@ -374,46 +382,46 @@
                         </div>
                     </div>
                     <p class="font-bold text-slate-900 text-[10.5px] sm:text-[13px] tracking-wide">
-                        <span id="textPrincipal" contenteditable="true" onblur="handleContentEdit('principal', this.innerText)" class="editable-field" title="ចុចដើម្បីកែប្រែឈ្មោះនាយក">{{ $principalName }}</span>
+                        <span id="textPrincipal" @if($canEditSheet) contenteditable="true" onblur="handleContentEdit('principal', this.innerText)" class="editable-field" title="ចុចដើម្បីកែប្រែឈ្មោះនាយក" @endif>{{ $principalName }}</span>
                     </p>
                 </div>
 
                 <!-- Center Block: Official Grade Distribution -->
                 <div class="col-span-4 text-[7.5px] sm:text-[10px] space-y-0.5 px-0.5 sm:px-2 border-x border-slate-200">
                     <div class="flex justify-between items-center py-0.5 border-b border-slate-100">
-                        <span class="font-bold">A: <span contenteditable="true" class="editable-field font-mono font-bold" title="ចុចដើម្បីកែ">{{ sprintf('%02d', $gradeStats['A']['count']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
-                        <span>ស្រី <span contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ">{{ sprintf('%02d', $gradeStats['A']['female']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
-                        <span class="font-mono font-bold"><span contenteditable="true" class="editable-field" title="ចុចដើម្បីកែ">{{ $gradeStats['A']['pct'] }}</span>%</span>
+                        <span class="font-bold">A: <span @if($canEditSheet) contenteditable="true" class="editable-field font-mono font-bold" title="ចុចដើម្បីកែ" @else class="font-mono font-bold" @endif>{{ sprintf('%02d', $gradeStats['A']['count']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
+                        <span>ស្រី <span @if($canEditSheet) contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ" @else class="font-mono" @endif>{{ sprintf('%02d', $gradeStats['A']['female']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
+                        <span class="font-mono font-bold"><span @if($canEditSheet) contenteditable="true" class="editable-field" title="ចុចដើម្បីកែ" @endif>{{ $gradeStats['A']['pct'] }}</span>%</span>
                     </div>
                     <div class="flex justify-between items-center py-0.5 border-b border-slate-100">
-                        <span class="font-bold">B: <span contenteditable="true" class="editable-field font-mono font-bold" title="ចុចដើម្បីកែ">{{ sprintf('%02d', $gradeStats['B']['count']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
-                        <span>ស្រី <span contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ">{{ sprintf('%02d', $gradeStats['B']['female']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
-                        <span class="font-mono font-bold"><span contenteditable="true" class="editable-field" title="ចុចដើម្បីកែ">{{ $gradeStats['B']['pct'] }}</span>%</span>
+                        <span class="font-bold">B: <span @if($canEditSheet) contenteditable="true" class="editable-field font-mono font-bold" title="ចុចដើម្បីកែ" @else class="font-mono font-bold" @endif>{{ sprintf('%02d', $gradeStats['B']['count']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
+                        <span>ស្រី <span @if($canEditSheet) contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ" @else class="font-mono" @endif>{{ sprintf('%02d', $gradeStats['B']['female']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
+                        <span class="font-mono font-bold"><span @if($canEditSheet) contenteditable="true" class="editable-field" title="ចុចដើម្បីកែ" @endif>{{ $gradeStats['B']['pct'] }}</span>%</span>
                     </div>
                     <div class="flex justify-between items-center py-0.5 border-b border-slate-100">
-                        <span class="font-bold">C: <span contenteditable="true" class="editable-field font-mono font-bold" title="ចុចដើម្បីកែ">{{ sprintf('%02d', $gradeStats['C']['count']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
-                        <span>ស្រី <span contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ">{{ sprintf('%02d', $gradeStats['C']['female']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
-                        <span class="font-mono font-bold"><span contenteditable="true" class="editable-field" title="ចុចដើម្បីកែ">{{ $gradeStats['C']['pct'] }}</span>%</span>
+                        <span class="font-bold">C: <span @if($canEditSheet) contenteditable="true" class="editable-field font-mono font-bold" title="ចុចដើម្បីកែ" @else class="font-mono font-bold" @endif>{{ sprintf('%02d', $gradeStats['C']['count']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
+                        <span>ស្រី <span @if($canEditSheet) contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ" @else class="font-mono" @endif>{{ sprintf('%02d', $gradeStats['C']['female']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
+                        <span class="font-mono font-bold"><span @if($canEditSheet) contenteditable="true" class="editable-field" title="ចុចដើម្បីកែ" @endif>{{ $gradeStats['C']['pct'] }}</span>%</span>
                     </div>
                     <div class="flex justify-between items-center py-0.5 border-b border-slate-100">
-                        <span class="font-bold">D: <span contenteditable="true" class="editable-field font-mono font-bold" title="ចុចដើម្បីកែ">{{ sprintf('%02d', $gradeStats['D']['count']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
-                        <span>ស្រី <span contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ">{{ sprintf('%02d', $gradeStats['D']['female']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
-                        <span class="font-mono font-bold"><span contenteditable="true" class="editable-field" title="ចុចដើម្បីកែ">{{ $gradeStats['D']['pct'] }}</span>%</span>
+                        <span class="font-bold">D: <span @if($canEditSheet) contenteditable="true" class="editable-field font-mono font-bold" title="ចុចដើម្បីកែ" @else class="font-mono font-bold" @endif>{{ sprintf('%02d', $gradeStats['D']['count']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
+                        <span>ស្រី <span @if($canEditSheet) contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ" @else class="font-mono" @endif>{{ sprintf('%02d', $gradeStats['D']['female']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
+                        <span class="font-mono font-bold"><span @if($canEditSheet) contenteditable="true" class="editable-field" title="ចុចដើម្បីកែ" @endif>{{ $gradeStats['D']['pct'] }}</span>%</span>
                     </div>
                     <div class="flex justify-between items-center py-0.5 border-b border-slate-100">
-                        <span class="font-bold">E: <span contenteditable="true" class="editable-field font-mono font-bold" title="ចុចដើម្បីកែ">{{ sprintf('%02d', $gradeStats['E']['count']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
-                        <span>ស្រី <span contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ">{{ sprintf('%02d', $gradeStats['E']['female']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
-                        <span class="font-mono font-bold"><span contenteditable="true" class="editable-field" title="ចុចដើម្បីកែ">{{ $gradeStats['E']['pct'] }}</span>%</span>
+                        <span class="font-bold">E: <span @if($canEditSheet) contenteditable="true" class="editable-field font-mono font-bold" title="ចុចដើម្បីកែ" @else class="font-mono font-bold" @endif>{{ sprintf('%02d', $gradeStats['E']['count']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
+                        <span>ស្រី <span @if($canEditSheet) contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ" @else class="font-mono" @endif>{{ sprintf('%02d', $gradeStats['E']['female']) }}</span><span class="hidden sm:inline"> នាក់</span></span>
+                        <span class="font-mono font-bold"><span @if($canEditSheet) contenteditable="true" class="editable-field" title="ចុចដើម្បីកែ" @endif>{{ $gradeStats['E']['pct'] }}</span>%</span>
                     </div>
                     <div class="flex justify-between items-center py-0.5 border-b border-slate-100">
-                        <span class="font-bold text-slate-600">F: <span contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ">{{ sprintf('%02d', $gradeStats['F']['count'] ?? 0) }}</span><span class="hidden sm:inline"> នាក់</span></span>
-                        <span class="text-slate-600">ស្រី <span contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ">{{ sprintf('%02d', $gradeStats['F']['female'] ?? 0) }}</span><span class="hidden sm:inline"> នាក់</span></span>
-                        <span class="font-mono font-bold text-slate-600"><span contenteditable="true" class="editable-field" title="ចុចដើម្បីកែ">{{ $gradeStats['F']['pct'] ?? '0.00' }}</span>%</span>
+                        <span class="font-bold text-slate-600">F: <span @if($canEditSheet) contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ" @else class="font-mono" @endif>{{ sprintf('%02d', $gradeStats['F']['count'] ?? 0) }}</span><span class="hidden sm:inline"> នាក់</span></span>
+                        <span class="text-slate-600">ស្រី <span @if($canEditSheet) contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ" @else class="font-mono" @endif>{{ sprintf('%02d', $gradeStats['F']['female'] ?? 0) }}</span><span class="hidden sm:inline"> នាក់</span></span>
+                        <span class="font-mono font-bold text-slate-600"><span @if($canEditSheet) contenteditable="true" class="editable-field" title="ចុចដើម្បីកែ" @endif>{{ $gradeStats['F']['pct'] ?? '0.00' }}</span>%</span>
                     </div>
                     <div class="flex justify-between items-center py-0.5">
-                        <span class="font-bold text-slate-500">បោះបង់: <span contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ">00</span></span>
-                        <span class="text-slate-500">ស្រី <span contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ">00</span></span>
-                        <span class="font-mono text-slate-400"><span contenteditable="true" class="editable-field" title="ចុចដើម្បីកែ">0.00</span>%</span>
+                        <span class="font-bold text-slate-500">បោះបង់: <span @if($canEditSheet) contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ" @else class="font-mono" @endif>00</span></span>
+                        <span class="text-slate-500">ស្រី <span @if($canEditSheet) contenteditable="true" class="editable-field font-mono" title="ចុចដើម្បីកែ" @else class="font-mono" @endif>00</span></span>
+                        <span class="font-mono text-slate-400"><span @if($canEditSheet) contenteditable="true" class="editable-field" title="ចុចដើម្បីកែ" @endif>0.00</span>%</span>
                     </div>
                 </div>
 
@@ -425,7 +433,7 @@
                         <div class="w-16 sm:w-28 border-b border-dotted border-slate-400"></div>
                     </div>
                     <p class="font-bold text-slate-900 text-[10.5px] sm:text-[13px] tracking-wide">
-                        <span id="textTeacher" contenteditable="true" onblur="handleContentEdit('teacher', this.innerText)" class="editable-field" title="ចុចដើម្បីកែប្រែឈ្មោះគ្រូទទួលបន្ទុក">{{ $teacherName }}</span>
+                        <span id="textTeacher" @if($canEditSheet) contenteditable="true" onblur="handleContentEdit('teacher', this.innerText)" class="editable-field" title="ចុចដើម្បីកែប្រែឈ្មោះគ្រូទទួលបន្ទុក" @endif>{{ $teacherName }}</span>
                     </p>
                 </div>
             </div>
@@ -433,7 +441,8 @@
 
     </div>
 
-    <!-- Interactive Script for Two-way Editing and Local Storage Persistence -->
+    @if($canEditSheet)
+    <!-- Interactive Script for Two-way Editing and Local Storage Persistence (Only for Admin/Teacher) -->
     <script>
         const STORAGE_KEY = 'ranking_sheet_settings_{{ $className }}';
 
@@ -494,7 +503,7 @@
 
         function toggleEditPanel() {
             const p = document.getElementById('settingsPanel');
-            p.classList.toggle('hidden');
+            if (p) p.classList.toggle('hidden');
         }
 
         function saveToLocalStorage() {
@@ -552,5 +561,6 @@
             }
         }
     </script>
+    @endif
 </body>
 </html>

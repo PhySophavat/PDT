@@ -38,6 +38,24 @@ Route::post('/portal-sala-access-2026', [AuthController::class, 'login'])->middl
 Route::get('/auth/quick-login', [AuthController::class, 'directLogin'])->name('auth.quick-login');
 Route::get('/csrf-token', fn() => response()->json(['csrf_token' => csrf_token()]))->name('csrf-token');
 
+// Real-Time App Build Version Endpoint for Production Auto-Updater
+Route::get('/api/app-version', function () {
+    $manifestPath = public_path('build/manifest.json');
+    $version = 'v1';
+    $mtime = 0;
+    if (file_exists($manifestPath)) {
+        $mtime = filemtime($manifestPath);
+        $version = substr(md5_file($manifestPath), 0, 16);
+    }
+    return response()->json([
+        'version' => $version,
+        'timestamp' => $mtime,
+        'time' => now()->toIso8601String(),
+    ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+      ->header('Pragma', 'no-cache')
+      ->header('Expires', '0');
+})->name('api.app-version');
+
 // PWA Fallbacks
 Route::get('/manifest.json', fn() => response()->file(public_path('manifest.json'), ['Content-Type' => 'application/manifest+json']));
 Route::get('/site.webmanifest', fn() => response()->file(public_path('site.webmanifest'), ['Content-Type' => 'application/manifest+json']));

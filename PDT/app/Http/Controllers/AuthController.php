@@ -52,12 +52,23 @@ class AuthController extends Controller
         // 2. Perform instant login & regenerate session
         Auth::login($user, true);
         $request->session()->regenerate();
+        $request->session()->put('login_time', now()->toIso8601String());
+
+        $loginTimeKh = now()->format('H:i');
+        $loginDateKh = now()->format('d/m/Y');
 
         ActivityLogger::log(
             action: 'LOGIN',
             module: 'ចូលប្រើប្រព័ន្ធ',
             targetId: $user->id,
-            description: "បានចូលប្រើប្រព័ន្ធស្វ័យប្រវត្តិតាមរយៈ Magic Login Link ({$user->email})",
+            description: "បានចូលប្រើប្រព័ន្ធស្វ័យប្រវត្តិតាមរយៈ Magic Login Link ({$user->email}) [ម៉ោង {$loginTimeKh} ថ្ងៃទី {$loginDateKh}]",
+            oldValues: null,
+            newValues: [
+                'login_at' => now()->toIso8601String(),
+                'login_time' => $loginTimeKh,
+                'login_date' => $loginDateKh,
+                'method' => 'magic_link',
+            ],
             user: $user
         );
 
@@ -128,12 +139,25 @@ class AuthController extends Controller
             RateLimiter::clear($throttleKey);
             Auth::login($user, $remember);
             $request->session()->regenerate();
+            $request->session()->put('login_time', now()->toIso8601String());
+
+            $loginTimeKh = now()->format('H:i');
+            $loginDateKh = now()->format('d/m/Y');
+            $displayName = ActivityLogger::determineUserName($user);
 
             ActivityLogger::log(
                 action: 'LOGIN',
                 module: 'ចូលប្រើប្រព័ន្ធ',
                 targetId: $user->id,
-                description: "បានចូលប្រើប្រព័ន្ធដោយជោគជ័យ ({$loginInput})",
+                description: "{$displayName} បានចូលប្រើប្រព័ន្ធដោយជោគជ័យ [ម៉ោង {$loginTimeKh} ថ្ងៃទី {$loginDateKh}] ({$loginInput})",
+                oldValues: null,
+                newValues: [
+                    'user_name' => $displayName,
+                    'login_at' => now()->toIso8601String(),
+                    'login_time' => $loginTimeKh,
+                    'login_date' => $loginDateKh,
+                    'identifier' => $loginInput,
+                ],
                 user: $user
             );
 
@@ -160,11 +184,57 @@ class AuthController extends Controller
     {
         try {
             if ($user = Auth::user()) {
+                $loginAtIso = $request->session()->get('login_time');
+                $durationText = 'តិចជាង ១ នាទី';
+                $durationMinutes = 0;
+                $loginTimeKh = null;
+                $loginDateKh = null;
+
+                if ($loginAtIso) {
+                    try {
+                        $loginAt = \Carbon\Carbon::parse($loginAtIso);
+                        $loginTimeKh = $loginAt->format('H:i');
+                        $loginDateKh = $loginAt->format('d/m/Y');
+                        $diffMinutes = (int) $loginAt->diffInMinutes(now());
+                        $durationMinutes = max(1, $diffMinutes);
+                        $hours = intdiv($durationMinutes, 60);
+                        $mins = $durationMinutes % 60;
+                        if ($hours > 0) {
+                            $durationText = "{$hours} ម៉ោង {$mins} នាទី";
+                        } else {
+                            $durationText = "{$mins} នាទី";
+                        }
+                    } catch (\Throwable $e) {}
+                }
+
+                $logoutTimeKh = now()->format('H:i');
+                $logoutDateKh = now()->format('d/m/Y');
+                $displayName = ActivityLogger::determineUserName($user);
+
+                $description = "{$displayName} បានចាកចេញពីប្រព័ន្ធ";
+                if ($loginTimeKh) {
+                    $description .= " (ចូល: {$loginTimeKh} • ចេញ: {$logoutTimeKh} • រយៈពេលប្រើប្រាស់: {$durationText})";
+                } else {
+                    $description .= " (ចេញម៉ោង: {$logoutTimeKh} ថ្ងៃទី {$logoutDateKh})";
+                }
+
                 ActivityLogger::log(
                     action: 'LOGOUT',
                     module: 'ចូលប្រើប្រព័ន្ធ',
                     targetId: $user->id,
-                    description: "បានចាកចេញពីប្រព័ន្ធ",
+                    description: $description,
+                    oldValues: null,
+                    newValues: [
+                        'user_name' => $displayName,
+                        'login_at' => $loginAtIso,
+                        'login_time' => $loginTimeKh,
+                        'login_date' => $loginDateKh,
+                        'logout_at' => now()->toIso8601String(),
+                        'logout_time' => $logoutTimeKh,
+                        'logout_date' => $logoutDateKh,
+                        'duration_minutes' => $durationMinutes,
+                        'duration_text' => $durationText,
+                    ],
                     user: $user
                 );
             }

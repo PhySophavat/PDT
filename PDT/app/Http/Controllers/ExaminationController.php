@@ -227,10 +227,21 @@ class ExaminationController extends Controller
         $className = $request->input('class', '11D');
 
         $authUser = auth()->user();
-        if ($authUser && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
-            $studentProfile = $authUser->student;
-            if ($studentProfile && $studentProfile->grade) {
-                $className = $studentProfile->grade;
+        $isStudent = false;
+        $canEditSheet = false;
+
+        if ($authUser) {
+            if ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student') {
+                $isStudent = true;
+                $studentProfile = $authUser->student;
+                if ($studentProfile && $studentProfile->grade) {
+                    $className = $studentProfile->grade;
+                }
+            } else {
+                $canEditSheet = $authUser->hasRole('admin') || 
+                                $authUser->hasRole('super_admin') || 
+                                $authUser->hasRole('teacher') || 
+                                (method_exists($authUser, 'canManageTeachers') && $authUser->canManageTeachers());
             }
         }
 
@@ -339,7 +350,9 @@ class ExaminationController extends Controller
             'academicYearName',
             'principalName',
             'teacherName',
-            'sheetDate'
+            'sheetDate',
+            'isStudent',
+            'canEditSheet'
         ));
     }
 
@@ -348,6 +361,13 @@ class ExaminationController extends Controller
      */
     public function saveRankingSettings(Request $request)
     {
+        $user = auth()->user();
+        if (!$user || $user->hasRole('student') || strtolower($user->role ?? '') === 'student') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized. Students cannot modify school settings.'
+            ], 403);
+        }
         $validated = $request->validate([
             'district_office' => 'nullable|string|max:255',
             'school_name' => 'nullable|string|max:255',

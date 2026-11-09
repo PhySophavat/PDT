@@ -11,12 +11,7 @@
     <!-- Sub Tabs (NGS Public School: Removed Finance, Added STEM & Lab) -->
     <TabNav 
       v-model="activeTab" 
-      :tabs="[
-        { id: 'overview', label: 'ទិដ្ឋភាពទូទៅ' },
-        { id: 'academic', label: 'ថ្នាក់រៀន និងកាលវិភាគ' },
-        { id: 'stem_lab', label: 'សម្ភារៈ និងបន្ទប់ពិសោធន៍' },
-        { id: 'attendance', label: 'វត្តមានសិស្ស-គ្រូ' }
-      ]"
+      :tabs="dashboardTabs"
     />
 
     <!-- Tab 1: Overview Tab (Primary Dashboard) -->
@@ -31,16 +26,22 @@
               <i class="fa-solid fa-graduation-cap text-xl"></i>
             </div>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 ring-1 ring-blue-500/20">
-              {{ studentInfo.room || ('បន្ទប់ ' + studentInfo.class_name) }}
+              {{ studentInfo.room || (currentLocale === 'km' ? ('បន្ទប់ ' + studentInfo.class_name) : ('Room ' + studentInfo.class_name)) }}
             </span>
           </div>
           <div class="mt-4">
-            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">ថ្នាក់រៀនរបស់ខ្ញុំ</h3>
+            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">
+              {{ currentLocale === 'km' ? 'ថ្នាក់រៀនរបស់ខ្ញុំ' : 'My Classroom' }}
+            </h3>
             <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">ថ្នាក់ទី {{ studentInfo.class_name }}</span>
+              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                {{ currentLocale === 'km' ? ('ថ្នាក់ទី ' + studentInfo.class_name) : ('Grade ' + studentInfo.class_name) }}
+              </span>
             </div>
             <p class="text-[11px] text-slate-500 mt-2 font-medium">
-              សិស្សសរុបក្នុងថ្នាក់ <span class="font-bold text-slate-700">{{ studentInfo.classmates_count || 50 }}</span> នាក់
+              {{ currentLocale === 'km' ? 'សិស្សសរុបក្នុងថ្នាក់' : 'Total students in class:' }}
+              <span class="font-bold text-slate-700">{{ studentInfo.classmates_count || 50 }}</span>
+              {{ currentLocale === 'km' ? 'នាក់' : '' }}
             </p>
           </div>
         </div>
@@ -53,18 +54,20 @@
               <i class="fa-solid fa-chalkboard-user text-xl"></i>
             </div>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 ring-1 ring-emerald-500/20">
-              គ្រូបន្ទុកថ្នាក់
+              {{ currentLocale === 'km' ? 'គ្រូបន្ទុកថ្នាក់' : 'Homeroom Teacher' }}
             </span>
           </div>
           <div class="mt-4">
-            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">គ្រូបន្ទុកថ្នាក់</h3>
+            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">
+              {{ currentLocale === 'km' ? 'គ្រូបន្ទុកថ្នាក់' : 'Homeroom Teacher' }}
+            </h3>
             <div class="flex items-baseline gap-2 mt-1">
               <span class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight truncate max-w-full">
-                {{ studentInfo.homeroom_teacher || 'មិនទាន់ចាត់តាំង' }}
+                {{ studentInfo.homeroom_teacher || (currentLocale === 'km' ? 'មិនទាន់ចាត់តាំង' : 'Unassigned') }}
               </span>
             </div>
             <p class="text-[11px] text-emerald-700 mt-2 font-medium">
-              ទំនាក់ទំនង: <span class="font-bold">{{ studentInfo.teacher_phone || '-' }}</span>
+              {{ currentLocale === 'km' ? 'ទំនាក់ទំនង: ' : 'Contact: ' }}<span class="font-bold">{{ studentInfo.teacher_phone || '-' }}</span>
             </p>
           </div>
         </div>
@@ -77,16 +80,23 @@
               <i class="fa-solid fa-calendar-check text-xl"></i>
             </div>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800 ring-1 ring-purple-500/20">
-              អត្រាវត្តមាន
+              {{ currentLocale === 'km' ? 'អត្រាវត្តមាន' : 'Attendance' }}
             </span>
           </div>
           <div class="mt-4">
-            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">វត្តមានផ្ទាល់ខ្លួន</h3>
+            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">
+              {{ currentLocale === 'km' ? 'វត្តមានផ្ទាល់ខ្លួន' : 'My Attendance' }}
+            </h3>
             <div class="flex items-baseline gap-2 mt-1">
               <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ studentInfo.attendance?.rate ?? 100 }}%</span>
             </div>
             <p class="text-[11px] text-purple-700 mt-2 font-medium">
-              មានវត្តមាន <span class="font-bold text-emerald-700">{{ studentInfo.attendance?.present ?? 0 }}</span> ថ្ងៃ • ឈប់សរុប <span class="font-bold text-rose-600">{{ studentInfo.attendance?.total_leave ?? ((studentInfo.attendance?.excused || 0) + (studentInfo.attendance?.absent || 0)) }}</span> ថ្ងៃ (ច្បាប់ <span class="font-bold text-blue-600">{{ studentInfo.attendance?.excused ?? 0 }}</span> • អត់ច្បាប់ <span class="font-bold text-rose-600">{{ studentInfo.attendance?.absent ?? 0 }}</span>)
+              <template v-if="currentLocale === 'km'">
+                មានវត្តមាន <span class="font-bold text-emerald-700">{{ studentInfo.attendance?.present ?? 0 }}</span> ថ្ងៃ • ឈប់សរុប <span class="font-bold text-rose-600">{{ studentInfo.attendance?.total_leave ?? ((studentInfo.attendance?.excused || 0) + (studentInfo.attendance?.absent || 0)) }}</span> ថ្ងៃ (ច្បាប់ <span class="font-bold text-blue-600">{{ studentInfo.attendance?.excused ?? 0 }}</span> • អត់ច្បាប់ <span class="font-bold text-rose-600">{{ studentInfo.attendance?.absent ?? 0 }}</span>)
+              </template>
+              <template v-else>
+                Present <span class="font-bold text-emerald-700">{{ studentInfo.attendance?.present ?? 0 }}</span> days • Absent <span class="font-bold text-rose-600">{{ studentInfo.attendance?.total_leave ?? ((studentInfo.attendance?.excused || 0) + (studentInfo.attendance?.absent || 0)) }}</span> days (Excused <span class="font-bold text-blue-600">{{ studentInfo.attendance?.excused ?? 0 }}</span> • Unexcused <span class="font-bold text-rose-600">{{ studentInfo.attendance?.absent ?? 0 }}</span>)
+              </template>
             </p>
           </div>
         </div>
@@ -99,17 +109,19 @@
               <i class="fa-solid fa-book-bookmark text-xl"></i>
             </div>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 ring-1 ring-amber-500/20">
-              បណ្ណាល័យឌីជីថល
+              {{ currentLocale === 'km' ? 'បណ្ណាល័យឌីជីថល' : 'Digital Library' }}
             </span>
           </div>
           <div class="mt-4">
-            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">សៀវភៅសិក្សា</h3>
+            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">
+              {{ currentLocale === 'km' ? 'សៀវភៅសិក្សា' : 'Textbooks' }}
+            </h3>
             <div class="flex items-baseline gap-2 mt-1">
               <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ studentInfo.student_visible_books || studentInfo.total_books || stats.books || 81 }}</span>
-              <span class="text-xs font-medium text-slate-400">ក្បាល</span>
+              <span class="text-xs font-medium text-slate-400">{{ currentLocale === 'km' ? 'ក្បាល' : 'Books' }}</span>
             </div>
             <router-link to="/library" class="text-[11px] text-blue-600 hover:text-blue-800 mt-2 font-bold inline-flex items-center gap-1">
-              <span>ចូលអានសៀវភៅពុម្ព MoEYS</span>
+              <span>{{ currentLocale === 'km' ? 'ចូលអានសៀវភៅពុម្ព MoEYS' : 'Read MoEYS Digital Textbooks' }}</span>
               <i class="fa-solid fa-arrow-right text-[10px]"></i>
             </router-link>
           </div>
@@ -281,7 +293,7 @@
               <span class="text-3xl block mb-2">📈</span>
               <p class="text-xs font-medium">មិនទាន់មានទិន្នន័យវត្តមានប្រចាំសប្តាហ៍</p>
             </div>
-            <svg v-else class="w-full h-full overflow-visible" viewBox="0 0 600 200" preserveAspectRatio="none">
+            <svg v-else class="w-full h-full overflow-visible" viewBox="0 0 600 215" preserveAspectRatio="none">
               <defs>
                 <!-- Present Gradient -->
                 <linearGradient id="presentGradient" x1="0" y1="0" x2="0" y2="1">
@@ -357,9 +369,9 @@
                 <!-- Day Label (X-axis) -->
                 <text 
                   :x="getX(idx)" 
-                  y="185" 
+                  y="182" 
                   text-anchor="middle" 
-                  class="text-[11px] font-bold fill-slate-600"
+                  class="text-[11px] font-bold fill-slate-700"
                 >
                   {{ day.day }}
                 </text>
@@ -367,7 +379,7 @@
                   :x="getX(idx)" 
                   y="198" 
                   text-anchor="middle" 
-                  class="text-[9px] font-medium fill-slate-400"
+                  class="text-[9px] font-semibold fill-slate-400"
                 >
                   {{ day.date }}
                 </text>
@@ -1087,8 +1099,16 @@ import TabNav from '../components/TabNav.vue';
 import FilterBar from '../components/FilterBar.vue';
 import { sortClassesNaturally } from '../utils/classSort';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const currentLocale = computed(() => locale.value || 'km');
 const router = useRouter();
+
+const dashboardTabs = computed(() => [
+  { id: 'overview', label: currentLocale.value === 'km' ? 'ទិដ្ឋភាពទូទៅ' : 'Overview' },
+  { id: 'academic', label: currentLocale.value === 'km' ? 'ថ្នាក់រៀន និងកាលវិភាគ' : 'Classes & Timetables' },
+  { id: 'stem_lab', label: currentLocale.value === 'km' ? 'សម្ភារៈ និងបន្ទប់ពិសោធន៍' : 'STEM & Lab Equipment' },
+  { id: 'attendance', label: currentLocale.value === 'km' ? 'វត្តមានសិស្ស-គ្រូ' : 'Attendance' }
+]);
 
 const currentUser = computed(() => window.__INITIAL_USER__ || {});
 const userRole = computed(() => (currentUser.value.role || '').toLowerCase());
@@ -1168,7 +1188,10 @@ try {
     if (d.stats) stats.value = { ...stats.value, ...d.stats };
     if (d.allClasses && d.allClasses.length) allClasses.value = sortClassesNaturally(d.allClasses);
     if (d.recentClasses && d.recentClasses.length) recentClasses.value = d.recentClasses;
-    if (d.weeklyTrend && d.weeklyTrend.length) chartDays.value = d.weeklyTrend;
+    if (d.weeklyTrend && d.weeklyTrend.length) {
+      const hasRealData = d.weeklyTrend.some(x => (x.present || 0) + (x.absent || 0) > 0);
+      if (hasRealData) chartDays.value = d.weeklyTrend;
+    }
     if (d.topClasses && d.topClasses.length) displayTopClasses.value = d.topClasses;
     if (d.recentActivities && d.recentActivities.length) displayActivities.value = d.recentActivities;
     if (d.currentAcademicYear) activeAcademicYear.value = d.currentAcademicYear;
@@ -1219,8 +1242,9 @@ const getYAbsent = (present, absent) => {
   const total = (present + absent);
   if (!total || total === 0) return 160;
   const rate = (absent / total) * 100;
-  // map absent 0-25% to Y: 0% -> 160, 25% -> 120
-  return 160 - ((rate / 100) * 135);
+  // Scale absent 0% - 20% to hover gracefully around Y: 160 -> 125
+  const yOffset = Math.min(45, (rate / 20) * 45);
+  return 160 - yOffset;
 };
 
 // SVG Paths for Area & Lines
@@ -1383,7 +1407,7 @@ const fetchTeachersForAssign = async () => {
 
 // Lifecycle
 onMounted(async () => {
-  await fetchDashboardData();
+  await fetchDashboardData(true);
 
   // Fetch teachers for quick assign modal
   await fetchTeachersForAssign();

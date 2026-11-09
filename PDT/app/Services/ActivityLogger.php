@@ -37,7 +37,7 @@ class ActivityLogger
         try {
             $user = $user ?: Auth::user();
 
-            $userName = $user?->name ?? 'ភ្ញៀវ (Guest)';
+            $userName = self::determineUserName($user);
             $userRole = self::determineKhmerRole($user);
 
             $request = request();
@@ -121,6 +121,42 @@ class ActivityLogger
         }
 
         return "{$os} - {$browser}";
+    }
+
+    /**
+     * Determine clean display name for user (Prioritize Student/Teacher Khmer name)
+     */
+    public static function determineUserName(mixed $user): string
+    {
+        if (!$user) {
+            return 'ភ្ញៀវ (Guest)';
+        }
+
+        try {
+            // 1. If student profile exists, use Khmer name and student ID if available
+            if (method_exists($user, 'student') && $user->student) {
+                $nameKh = trim((string) ($user->student->name_khmer ?? ''));
+                $cardId = trim((string) ($user->student->student_id_card ?? ''));
+                if ($nameKh !== '') {
+                    return $cardId !== '' ? "{$nameKh} ({$cardId})" : $nameKh;
+                }
+            }
+
+            // 2. If teacher profile exists, use Khmer name if available
+            if (method_exists($user, 'teacher') && $user->teacher) {
+                $nameKh = trim((string) ($user->teacher->name_khmer ?? ''));
+                if ($nameKh !== '') {
+                    return "គ្រូ " . $nameKh;
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        $name = trim((string) ($user->name ?? ''));
+        if ($name !== '' && !in_array(strtolower($name), ['student', 'teacher', 'user'])) {
+            return $name;
+        }
+
+        return $name ?: ($user->email ?? 'អ្នកប្រើប្រាស់');
     }
 
     /**

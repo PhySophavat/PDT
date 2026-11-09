@@ -110,7 +110,10 @@
         'school_name_en' => $cachedSettings['school_name_en'],
         'current_academic_year' => $cachedSettings['activeYear']
     ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+    $manifestFile = public_path('build/manifest.json');
+    $currentBuildVersion = file_exists($manifestFile) ? substr(md5_file($manifestFile), 0, 16) : 'v1';
   @endphp
+  <meta name="app-version" content="{{ $currentBuildVersion }}">
   <link id="app-favicon" rel="icon" type="image/png" href="{{ $logoUrl }}">
   
   <!-- Progressive Web App (PWA) Meta & Links -->
@@ -128,6 +131,7 @@
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 
   <script>
+    window.__APP_VERSION__ = "{{ $currentBuildVersion }}";
     window.__INITIAL_USER__ = {!! $initialUserJson !!};
     window.__INITIAL_SETTINGS__ = {!! $initialSettingsJson !!};
   </script>

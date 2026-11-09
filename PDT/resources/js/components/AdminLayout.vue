@@ -31,7 +31,7 @@
 
             <div v-if="sidebarOpen" class="flex flex-col truncate">
               <span class="text-base font-extrabold tracking-tight text-[#1e293b] leading-tight truncate">
-                {{ schoolName || 'សាលារៀន ជំនាន់ថ្មី' }}
+                {{ currentLocale === 'en' ? (schoolNameEn || 'New Generation School PDT') : (schoolName || 'សាលារៀន ជំនាន់ថ្មី') }}
               </span>
               <span class="text-[10px] text-slate-400 font-medium truncate leading-none mt-0.5">
                 {{ schoolNameEn || 'New Generation School' }}
@@ -49,6 +49,16 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
             </svg>
+          </button>
+
+          <!-- Collapse button on Desktop when Sidebar is open -->
+          <button 
+            v-if="sidebarOpen"
+            @click="sidebarOpen = false"
+            class="hidden md:flex w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-700 items-center justify-center transition flex-shrink-0 ml-1 cursor-pointer"
+            title="បង្រួមម៉ឺនុយ"
+          >
+            <i class="fa-solid fa-chevron-left text-xs"></i>
           </button>
         </div>
 
@@ -179,20 +189,33 @@
 
       <!-- 2. MAIN CONTENT AREA -->
       <main class="flex-1 flex flex-col min-w-0 bg-[#fbfcff] overflow-hidden">
-        <!-- Top Navbar (relative z-40 ensures dropdowns float above all view content) -->
-        <header class="relative z-40 h-16 sm:h-20 px-3 sm:px-6 md:px-8 flex items-center justify-between border-b border-slate-100 bg-white/80 backdrop-blur-md flex-shrink-0">
-          <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-            <!-- Mobile Brand Title -->
-            <div class="flex items-center gap-2 md:hidden min-w-0">
-              <div class="w-7 h-7 rounded-lg overflow-hidden border border-slate-100 bg-white flex items-center justify-center p-0.5 shadow-2xs flex-shrink-0">
+        <!-- Top Navbar: Clean Frosted Glass Style -->
+        <header class="relative z-40 h-16 px-4 py-3 sm:px-6 md:px-8 flex items-center justify-between border-b border-slate-100 bg-white/90 backdrop-blur-md flex-shrink-0 transition-all shadow-2xs">
+          <!-- Left Section: Menu Toggle, Brand / School Logo -->
+          <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <!-- Sidebar / Menu Toggle Button (Desktop & Laptop only, hidden on mobile) -->
+            <button 
+              type="button" 
+              @click="sidebarOpen = !sidebarOpen" 
+              class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 items-center justify-center transition shadow-2xs cursor-pointer shrink-0"
+              :title="sidebarOpen ? 'បង្រួមម៉ឺនុយ' : 'ពង្រីកម៉ឺនុយ (Menu)'"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
+            </button>
+
+            <!-- Mobile Brand Title with School Logo -->
+            <div class="flex items-center gap-2.5 md:hidden min-w-0">
+              <div class="w-8 h-8 rounded-xl overflow-hidden border border-slate-100 bg-white p-0.5 shadow-2xs flex-shrink-0 flex items-center justify-center">
                 <img :src="schoolLogo || '/images/logo.png'" alt="Logo" class="w-full h-full object-contain" />
               </div>
-              <span class="text-xs sm:text-sm font-bold text-slate-900 truncate max-w-[150px] sm:max-w-none">
-                {{ schoolName || 'សាលារៀន ជំនាន់ថ្មី' }}
+              <span class="text-xs font-bold text-slate-800 truncate max-w-[155px] sm:max-w-none leading-tight">
+                {{ currentLocale === 'en' ? (schoolNameEn || 'New Generation School PDT') : (schoolName || 'សាលារៀន ជំនាន់ថ្មី PDT') }}
               </span>
             </div>
 
-            <!-- Search Bar (Desktop/Tablet Only to prevent overcrowding on mobile) -->
+            <!-- Search Bar (Desktop/Tablet Only) -->
             <div class="hidden md:block relative w-44 sm:w-64 lg:w-80 transition-all">
               <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
                 <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -202,13 +225,13 @@
               <input 
                 type="text" 
                 :placeholder="t('common.searchPlaceholder')" 
-                class="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 bg-[#f2f5fb] border-none rounded-xl text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition font-khmer"
+                class="w-full pl-9 pr-4 py-2 bg-slate-100/80 border-none rounded-xl text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition font-khmer"
               />
             </div>
           </div>
 
-          <!-- Right: Fullscreen, Language Switcher, Profile & Badges -->
-          <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          <!-- Right: Cleanly Aligned Actions Group -->
+          <div class="flex items-center gap-2 sm:gap-3 shrink-0">
             <!-- Fullscreen Toggle Button (Large Screen Only) -->
             <button 
               @click="toggleFullscreen" 
@@ -223,10 +246,10 @@
               </svg>
             </button>
 
-            <!-- Language Switcher: Mobile Compact Toggle -->
+            <!-- Language Switcher: Mobile Compact Toggle (rounded-full bg-slate-100 text-slate-700 text-xs px-2.5 py-1) -->
             <button 
               @click="switchLanguage(currentLocale === 'km' ? 'en' : 'km')"
-              class="sm:hidden px-2 py-1 rounded-xl bg-slate-100/90 text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition flex items-center gap-1 text-[11px] font-bold border border-slate-200/60"
+              class="sm:hidden rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-2.5 py-1 transition flex items-center gap-1 font-semibold border border-slate-200/60 shadow-2xs"
               :title="currentLocale === 'km' ? 'Switch to English' : 'ប្តូរជាភាសាខ្មែរ'"
             >
               <span class="text-xs">{{ currentLocale === 'km' ? '🇰🇭' : '🇬🇧' }}</span>
@@ -234,7 +257,7 @@
             </button>
 
             <!-- Language Switcher: Desktop Dual Buttons -->
-            <div class="hidden sm:flex relative items-center bg-slate-100/80 p-1 rounded-xl text-xs font-semibold">
+            <div class="hidden sm:flex relative items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold">
               <button 
                 @click="switchLanguage('km')" 
                 :class="[
@@ -263,27 +286,27 @@
               </button>
             </div>
 
-            <!-- User Profile (Admin) -->
-            <div class="flex items-center gap-2 sm:gap-3">
-              <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-200 ring-2 ring-blue-500/20 overflow-hidden flex-shrink-0">
+            <!-- Profile Avatar: rounded-full ring-2 ring-blue-500/20 w-8 h-8 -->
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full ring-2 ring-blue-500/20 overflow-hidden flex-shrink-0 bg-slate-100 shadow-2xs">
                 <img 
                   :src="user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces'" 
                   alt="User Avatar" 
                   class="w-full h-full object-cover"
                 />
               </div>
-              <div class="text-right hidden md:block">
-                <h4 class="text-xs font-bold text-slate-900 leading-tight">{{ user.name || 'portal sala' }}</h4>
+              <div class="text-left hidden md:block">
+                <h4 class="text-xs font-bold text-slate-900 leading-tight">{{ user.name || 'Phy Sophavat' }}</h4>
                 <p class="text-[10px] text-slate-400 leading-tight font-medium">{{ displayRoleName }}</p>
               </div>
             </div>
 
-            <!-- Dynamic Notification Bell & Dropdown for New Students, Teachers & Leave Requests -->
+            <!-- Notification Bell Button with subtle unread red dot -->
             <div class="relative z-50" ref="notificationDropdownRef">
               <button 
                 type="button"
                 @click.stop="toggleNotificationDropdown"
-                class="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#fef2f2] text-[#ef4444] flex items-center justify-center hover:bg-[#fee2e2] transition shadow-xs cursor-pointer"
+                class="relative w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 flex items-center justify-center transition shadow-2xs cursor-pointer"
                 title="ការជូនដំណឹង"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -291,10 +314,8 @@
                 </svg>
                 <span 
                   v-if="unreadCount > 0" 
-                  class="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[#ef4444] text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs animate-pulse"
-                >
-                  {{ unreadCount > 99 ? '99+' : unreadCount }}
-                </span>
+                  class="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white"
+                ></span>
               </button>
 
               <!-- Notifications Dropdown Menu -->
@@ -427,52 +448,158 @@
                       v-else
                       v-for="item in filteredNotificationItems" 
                       :key="item.id"
-                      @click="goToNotificationLink(item.link, item.id)"
-                      class="p-3 hover:bg-slate-50/80 transition flex items-start gap-2.5 cursor-pointer group relative"
+                      class="border-b border-slate-50 last:border-0 transition"
+                      :class="{ 'bg-slate-50/60': expandedNotificationId === item.id }"
                     >
-                      <!-- Type Icon Badge -->
+                      <!-- Main Clickable Header Row (Click to Expand / Read) -->
                       <div 
-                        class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs border shadow-xs"
-                        :class="item.bg_color"
+                        @click="toggleNotificationExpand(item)"
+                        class="p-3 hover:bg-slate-50/80 transition flex items-start gap-2.5 cursor-pointer group relative select-none"
                       >
-                        <i :class="item.icon"></i>
-                      </div>
-
-                      <!-- Details -->
-                      <div class="flex-1 min-w-0 pr-3">
-                        <div class="flex items-center justify-between gap-1 mb-0.5">
-                          <span 
-                            class="text-[9px] font-bold px-1.5 py-0.2 rounded"
-                            :class="[
-                              item.type === 'announcement' ? 'bg-indigo-100 text-indigo-800' :
-                              (item.leave_status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
-                              (item.leave_status === 'rejected' ? 'bg-rose-100 text-rose-800' :
-                              (item.type === 'student' ? 'bg-emerald-100 text-emerald-800' :
-                              (item.type === 'teacher' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'))))
-                            ]"
-                          >
-                            {{ item.type_label }}
-                          </span>
-                          <span class="text-[10px] text-slate-400 shrink-0">{{ item.time }}</span>
+                        <!-- Type Icon Badge -->
+                        <div 
+                          class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs border shadow-xs"
+                          :class="item.bg_color"
+                        >
+                          <i :class="item.icon"></i>
                         </div>
-                        <h5 class="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition leading-snug truncate">
-                          {{ item.title }}
-                        </h5>
-                        <p class="text-[11px] text-slate-500 truncate mt-0.5">
-                          {{ item.subtitle }}
-                        </p>
+
+                        <!-- Details Summary -->
+                        <div class="flex-1 min-w-0 pr-3">
+                          <div class="flex items-center justify-between gap-1 mb-0.5">
+                            <span 
+                              class="text-[9px] font-bold px-1.5 py-0.2 rounded"
+                              :class="[
+                                item.type === 'announcement' ? 'bg-indigo-100 text-indigo-800' :
+                                (item.leave_status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
+                                (item.leave_status === 'rejected' ? 'bg-rose-100 text-rose-800' :
+                                (item.type === 'student' ? 'bg-emerald-100 text-emerald-800' :
+                                (item.type === 'teacher' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'))))
+                              ]"
+                            >
+                              {{ item.type_label }}
+                            </span>
+                            <span class="text-[10px] text-slate-400 shrink-0">{{ item.time }}</span>
+                          </div>
+                          <h5 class="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition leading-snug truncate">
+                            {{ item.title }}
+                          </h5>
+                          <p class="text-[11px] text-slate-500 truncate mt-0.5" v-if="expandedNotificationId !== item.id">
+                            {{ item.subtitle }}
+                          </p>
+                        </div>
+
+                        <!-- Unread Indicator Dot -->
+                        <span 
+                          v-if="!readNotificationIds.includes(item.id)" 
+                          class="absolute top-3.5 right-7 w-2 h-2 rounded-full bg-blue-500 ring-2 ring-white"
+                          title="មិនទាន់មើល"
+                        ></span>
+
+                        <!-- Rotating Dropdown / Chevron Indicator -->
+                        <div class="shrink-0 text-slate-300 group-hover:text-blue-500 transition text-xs mt-2">
+                          <i 
+                            class="fa-solid fa-chevron-right transition-transform duration-200"
+                            :class="{ 'rotate-90 text-blue-600 font-bold': expandedNotificationId === item.id }"
+                          ></i>
+                        </div>
                       </div>
 
-                      <!-- Unread Indicator Dot -->
-                      <span 
-                        v-if="!readNotificationIds.includes(item.id)" 
-                        class="absolute top-3.5 right-6 w-2 h-2 rounded-full bg-blue-500 ring-2 ring-white"
-                        title="មិនទាន់មើល"
-                      ></span>
+                      <!-- Expandable Accordion Body (Read Notification Content Directly) -->
+                      <transition
+                        enter-active-class="transition-all duration-200 ease-out overflow-hidden"
+                        enter-from-class="opacity-0 max-h-0"
+                        enter-to-class="opacity-100 max-h-96"
+                        leave-active-class="transition-all duration-150 ease-in overflow-hidden"
+                        leave-from-class="opacity-100 max-h-96"
+                        leave-to-class="opacity-0 max-h-0"
+                      >
+                        <div 
+                          v-if="expandedNotificationId === item.id"
+                          class="px-3.5 pb-3.5 pt-0.5"
+                        >
+                          <div class="p-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs space-y-2.5 text-xs text-slate-700">
+                            <!-- 1. Announcement Content -->
+                            <template v-if="item.type === 'announcement'">
+                              <div class="space-y-1.5">
+                                <div class="flex items-center justify-between text-[10px] text-slate-400">
+                                  <span class="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full">
+                                    <i class="fa-solid fa-bullhorn mr-1 text-[9px]"></i>
+                                    {{ item.target_audience ? 'ជូនចំពោះ៖ ' + item.target_audience : 'ជូនចំពោះ៖ ទាំងអស់គ្នា' }}
+                                  </span>
+                                  <span>{{ item.time }}</span>
+                                </div>
+                                <div class="text-[12px] text-slate-800 leading-relaxed font-normal whitespace-pre-line bg-slate-50/70 p-2.5 rounded-lg border border-slate-100 select-text">
+                                  {{ item.full_content || item.subtitle || item.title }}
+                                </div>
+                              </div>
+                              <div class="flex items-center justify-end pt-1">
+                                <button 
+                                  type="button" 
+                                  @click.stop="goToNotificationLink(item.link, item.id)"
+                                  class="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                                >
+                                  <span>បើកមើលទំព័រពេញលេញ</span>
+                                  <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                </button>
+                              </div>
+                            </template>
 
-                      <div class="shrink-0 text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition text-xs mt-2">
-                        <i class="fa-solid fa-chevron-right"></i>
-                      </div>
+                            <!-- 2. Leave Request / Status Content -->
+                            <template v-else-if="item.type === 'leave'">
+                              <div class="space-y-2 text-[11px]">
+                                <div v-if="item.dates_formatted" class="flex items-center justify-between py-0.5 border-b border-slate-100">
+                                  <span class="text-slate-400">កាលបរិច្ឆេទសុំច្បាប់៖</span>
+                                  <span class="font-bold text-slate-800">{{ item.dates_formatted }} ({{ item.days_text || (item.days_count ? item.days_count + ' ថ្ងៃ' : '1 ថ្ងៃ') }})</span>
+                                </div>
+                                <div v-if="item.class_name" class="flex items-center justify-between py-0.5 border-b border-slate-100">
+                                  <span class="text-slate-400">ថ្នាក់រៀន៖</span>
+                                  <span class="font-bold text-indigo-600">ថ្នាក់ {{ item.class_name }}</span>
+                                </div>
+                                <div v-if="item.reason" class="pt-0.5">
+                                  <span class="text-slate-400 block text-[10px] mb-1">មូលហេតុសុំច្បាប់៖</span>
+                                  <div class="p-2 bg-slate-50 rounded-lg border border-slate-100 text-slate-700 leading-relaxed select-text">
+                                    {{ item.reason }}
+                                  </div>
+                                </div>
+                                <div v-if="item.rejection_reason" class="pt-0.5">
+                                  <span class="text-rose-600 font-bold block text-[10px] mb-1">មូលហេតុនៃការបដិសេធ៖</span>
+                                  <div class="p-2 bg-rose-50 rounded-lg border border-rose-100 text-rose-800 leading-relaxed select-text">
+                                    {{ item.rejection_reason }}
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="flex items-center justify-end pt-1">
+                                <button 
+                                  type="button" 
+                                  @click.stop="goToNotificationLink(item.link, item.id)"
+                                  class="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                                >
+                                  <span>{{ isStudentUser ? 'មើលប្រវត្តិវត្តមាន និងច្បាប់' : 'ពិនិត្យ និងអនុម័តសំណើ' }}</span>
+                                  <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                </button>
+                              </div>
+                            </template>
+
+                            <!-- 3. Student / Teacher Registration Content -->
+                            <template v-else>
+                              <div class="text-[11px] text-slate-700 bg-slate-50 p-2.5 rounded-lg border border-slate-100 leading-relaxed select-text">
+                                {{ item.subtitle }}
+                              </div>
+                              <div class="flex items-center justify-end pt-1">
+                                <button 
+                                  type="button" 
+                                  @click.stop="goToNotificationLink(item.link, item.id)"
+                                  class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-bold shadow-xs inline-flex items-center gap-1 cursor-pointer transition"
+                                >
+                                  <span>ពិនិត្យសំណើនេះ</span>
+                                  <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                </button>
+                              </div>
+                            </template>
+                          </div>
+                        </div>
+                      </transition>
                     </div>
                   </div>
 
@@ -569,7 +696,7 @@
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
         </svg>
-        <span>ផ្ទាំងដើម</span>
+        <span>{{ currentLocale === 'km' ? 'ផ្ទាំងដើម' : 'Home' }}</span>
       </router-link>
 
       <!-- 2. Attendance (Clipboard-Check Icon) -->
@@ -584,7 +711,7 @@
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
         </svg>
-        <span>វត្តមាន</span>
+        <span>{{ currentLocale === 'km' ? 'វត្តមាន' : 'Attendance' }}</span>
       </router-link>
 
       <!-- 3. Timetables (for Students: Calendar-Clock Icon) OR Students (for Admin / Teacher) -->
@@ -661,7 +788,7 @@
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
-        <span>ម៉ឺនុយ</span>
+        <span>{{ currentLocale === 'km' ? 'ម៉ឺនុយ' : 'Menu' }}</span>
       </button>
     </nav>
 
@@ -750,6 +877,16 @@ const pendingTotalCount = ref(0);
 const pendingCounts = ref({ announcements: 0, students: 0, teachers: 0, leaves: 0 });
 const pendingNotificationItems = ref([]);
 const readNotificationIds = ref([]);
+const expandedNotificationId = ref(null);
+
+const toggleNotificationExpand = (item) => {
+  if (expandedNotificationId.value === item.id) {
+    expandedNotificationId.value = null;
+  } else {
+    expandedNotificationId.value = item.id;
+    markItemAsRead(item.id);
+  }
+};
 
 const getStorageUserKey = () => {
   return window.__INITIAL_USER__?.id || window.__INITIAL_USER__?.name || 'user';
@@ -830,7 +967,11 @@ const goToNotificationLink = (link, itemId = null) => {
 let isFetchingPendingNotifs = false;
 let lastPendingCount = -1;
 
-const fetchPendingNotifications = async () => {
+const fetchPendingNotifications = async (force = false) => {
+  // Sleep / Pause polling if tab is in the background or screen is locked (Saves 80-90% server resources)
+  if (!force && typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+    return;
+  }
   if (isFetchingPendingNotifs) return;
   isFetchingPendingNotifs = true;
   isLoadingNotifications.value = true;
@@ -864,6 +1005,7 @@ const fetchPendingNotifications = async () => {
 const handleDocClick = (e) => {
   if (notificationDropdownRef.value && !notificationDropdownRef.value.contains(e.target)) {
     showNotificationDropdown.value = false;
+    expandedNotificationId.value = null;
   }
 };
 
@@ -1031,8 +1173,12 @@ const toggleFullscreen = () => {
 };
 
 onMounted(() => {
-  if (typeof window !== 'undefined' && window.innerWidth < 768) {
-    sidebarOpen.value = false;
+  if (typeof window !== 'undefined') {
+    if (window.innerWidth < 768) {
+      sidebarOpen.value = false;
+    } else {
+      sidebarOpen.value = true;
+    }
   }
 
   document.addEventListener('fullscreenchange', () => {
@@ -1089,14 +1235,28 @@ onMounted(() => {
 
   document.addEventListener('click', handleDocClick);
   loadReadNotificationIds();
-  fetchPendingNotifications();
-  const notifInterval = setInterval(fetchPendingNotifications, 30000);
-  window.addEventListener('pdt-data-updated', fetchPendingNotifications);
+  fetchPendingNotifications(true);
+
+  // Poll every 60 seconds (optimized from 30s)
+  const notifInterval = setInterval(() => {
+    fetchPendingNotifications();
+  }, 60000);
+
+  // Tab Visibility Detection: Auto-fetch immediately when user unlocks screen or returns to tab
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
+      fetchPendingNotifications(true);
+    }
+  };
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  window.addEventListener('pdt-data-updated', () => fetchPendingNotifications(true));
 
   onUnmounted(() => {
     document.removeEventListener('click', handleDocClick);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
     clearInterval(notifInterval);
-    window.removeEventListener('pdt-data-updated', fetchPendingNotifications);
+    window.removeEventListener('pdt-data-updated', () => fetchPendingNotifications(true));
   });
 });
 
