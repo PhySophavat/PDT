@@ -1,6 +1,7 @@
 {
   "version": 2,
   "framework": null,
+  "regions": ["sin1"],
   "buildCommand": "cd PDT && npm run build",
   "outputDirectory": "PDT/public",
   "functions": {

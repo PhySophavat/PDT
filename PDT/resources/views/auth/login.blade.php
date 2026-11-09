@@ -48,7 +48,7 @@
     @endif
 
     <!-- Login Form -->
-    <form action="{{ route('login') }}" method="POST" class="space-y-4">
+    <form id="login-form" action="{{ route('login') }}" method="POST" class="space-y-4">
         @csrf
 
         <!-- Email or Student ID Field -->
@@ -117,11 +117,23 @@
         <!-- Submit Button -->
         <button 
             type="submit" 
+            id="login-submit-btn"
             class="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-md shadow-blue-500/25 transition-all hover:shadow-lg hover:shadow-blue-500/35 active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
         >
-            <i class="fa-solid fa-arrow-right-to-bracket text-sm"></i>
-            <span>ចូលប្រើប្រព័ន្ធ</span>
+            <i class="fa-solid fa-arrow-right-to-bracket text-sm" id="btn-icon"></i>
+            <span id="btn-text">ចូលប្រើប្រព័ន្ធ</span>
         </button>
+
+        <!-- Live Login Progress Indicator -->
+        <div id="login-loading-indicator" class="hidden p-3.5 bg-blue-50/90 border border-blue-200/80 rounded-2xl text-center space-y-1.5 animate-in fade-in duration-200 shadow-2xs">
+            <div class="flex items-center justify-center gap-2 text-xs font-bold text-blue-700">
+                <i class="fa-solid fa-circle-notch fa-spin text-sm text-blue-600"></i>
+                <span>កំពុងផ្ទៀងផ្ទាត់ និងចូលប្រើប្រព័ន្ធ...</span>
+            </div>
+            <p class="text-[11px] text-slate-500 font-medium leading-relaxed">
+                សូមរង់ចាំបន្តិច ប្រព័ន្ធកំពុងផ្ទៀងផ្ទាត់ព័ត៌មាន និងរៀបចំបើកផ្ទាំងគ្រប់គ្រង (Dashboard)...
+            </p>
+        </div>
 
         <!-- Request Registration Link -->
         <div class="pt-4 border-t border-slate-100 text-center">
@@ -174,9 +186,52 @@
     });
 
     window.addEventListener('focus', refreshCsrfToken);
+    // Form Submit Loading Feedback
+    const loginForm = document.getElementById('login-form');
+    const loginSubmitBtn = document.getElementById('login-submit-btn');
+    const btnIcon = document.getElementById('btn-icon');
+    const btnText = document.getElementById('btn-text');
+    const loadingIndicator = document.getElementById('login-loading-indicator');
+
+    function resetSubmitButton() {
+        if (loginSubmitBtn) {
+            loginSubmitBtn.disabled = false;
+            loginSubmitBtn.classList.remove('opacity-80', 'cursor-wait', 'pointer-events-none');
+            if (btnIcon) btnIcon.className = 'fa-solid fa-arrow-right-to-bracket text-sm';
+            if (btnText) btnText.textContent = 'ចូលប្រើប្រព័ន្ធ';
+        }
+        if (loadingIndicator) {
+            loadingIndicator.classList.add('hidden');
+        }
+    }
+
+    if (loginForm && loginSubmitBtn) {
+        loginForm.addEventListener('submit', function (e) {
+            if (loginSubmitBtn.disabled) {
+                e.preventDefault();
+                return;
+            }
+
+            if (!loginForm.checkValidity()) {
+                return;
+            }
+
+            // Immediately show live loading state & feedback
+            loginSubmitBtn.disabled = true;
+            loginSubmitBtn.classList.add('opacity-80', 'cursor-wait', 'pointer-events-none');
+            if (btnIcon) btnIcon.className = 'fa-solid fa-circle-notch fa-spin text-sm';
+            if (btnText) btnText.textContent = 'កំពុងចូលប្រើប្រព័ន្ធ...';
+
+            if (loadingIndicator) {
+                loadingIndicator.classList.remove('hidden');
+            }
+        });
+    }
+
     window.addEventListener('pageshow', (event) => {
         if (event.persisted) {
             refreshCsrfToken();
+            resetSubmitButton();
         }
     });
 
