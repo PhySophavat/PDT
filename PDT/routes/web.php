@@ -20,11 +20,16 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\SubjectController;
 
-// Root Redirect to Leave Request Form
-Route::get('/', fn() => redirect()->route('public.leave-request'));
+// Root URL: If logged in -> Dashboard, otherwise -> Login
+Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
+});
 
-// Disable default /login URL (Returns 404 Not Found)
-Route::any('/login', fn() => abort(404));
+// Redirect standard /login to the login route
+Route::get('/login', fn() => redirect()->route('login'));
 
 // Custom Secret Authentication URL
 Route::get('/portal-sala-access-2026', [AuthController::class, 'showLoginForm'])->name('login');
