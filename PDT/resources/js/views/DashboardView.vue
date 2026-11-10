@@ -1568,7 +1568,15 @@ const fetchTeachersForAssign = async () => {
   }
 };
 
-// Lifecycle
+// Lifecycle & Auto-Sync
+let syncTimer = null;
+
+const handleVisibilityOrFocus = () => {
+  if (document.visibilityState === 'visible') {
+    fetchDashboardData(true);
+  }
+};
+
 onMounted(async () => {
   await fetchDashboardData(true);
 
@@ -1577,19 +1585,36 @@ onMounted(async () => {
 
   window.addEventListener('pdt-data-updated', onDataUpdated);
   document.addEventListener('click', handleShareDocClick);
+
+  // Auto-Sync: Refetch immediately when screen is unlocked or tab becomes visible/focused
+  document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+  window.addEventListener('focus', handleVisibilityOrFocus);
+
+  // Auto-Sync: Poll latest real-time stats every 30 seconds if tab is active
+  syncTimer = setInterval(() => {
+    if (document.visibilityState === 'visible' && !isFetchingDashboard) {
+      fetchDashboardData(true);
+    }
+  }, 30000);
 });
 
 // Reactivate when navigating back through keep-alive
 onActivated(async () => {
-  await fetchDashboardData();
+  await fetchDashboardData(true);
   if (!teachersList.value || teachersList.value.length === 0) {
     await fetchTeachersForAssign();
   }
 });
 
 onUnmounted(() => {
+  if (syncTimer) {
+    clearInterval(syncTimer);
+    syncTimer = null;
+  }
   window.removeEventListener('pdt-data-updated', onDataUpdated);
   document.removeEventListener('click', handleShareDocClick);
+  document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+  window.removeEventListener('focus', handleVisibilityOrFocus);
 });
 
 // Actions
