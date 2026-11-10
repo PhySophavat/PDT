@@ -409,7 +409,7 @@
                 <span class="w-3 h-3 rounded-md bg-emerald-500"></span>
                 <span class="text-slate-600">មានវត្តមាន</span>
               </div>
-              <div class="flex items-center gap-1.5">
+              <div v-if="hasAnyAbsent" class="flex items-center gap-1.5">
                 <span class="w-3 h-3 rounded-md bg-rose-500"></span>
                 <span class="text-slate-600">អវត្តមាន</span>
               </div>
@@ -462,12 +462,14 @@
                 stroke-linejoin="round"
               />
 
-              <!-- Area Path: Absent -->
+              <!-- Area Path: Absent (only when there are actual absents) -->
               <path 
+                v-if="hasAnyAbsent"
                 :d="absentAreaPath" 
                 fill="url(#absentGradient)" 
               />
               <path 
+                v-if="hasAnyAbsent"
                 :d="absentLinePath" 
                 fill="none" 
                 stroke="#f43f5e" 
@@ -488,6 +490,7 @@
                   @mouseleave="hoveredDay = null"
                 />
                 <circle 
+                  v-if="hasAnyAbsent && Number(day.absent || 0) > 0"
                   :cx="getX(idx)" 
                   :cy="getYAbsent(day.present, day.absent)" 
                   r="3.5" 
@@ -1443,6 +1446,10 @@ const absentAreaPath = computed(() => {
   const lastX = getX(chartDays.value.length - 1);
   const line = absentLinePath.value;
   return `${line} L ${lastX} 165 L ${firstX} 165 Z`;
+});
+
+const hasAnyAbsent = computed(() => {
+  return chartDays.value.some(d => Number(d.absent || 0) > 0);
 });
 
 // Donut Chart Calculations (Circumference = 2 * PI * 62 = 389.55)
