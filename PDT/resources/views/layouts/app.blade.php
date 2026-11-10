@@ -67,6 +67,11 @@
     $isSuperAdmin = false;
     $studentGrade = null;
     $studentId = null;
+    $studentProfile = null;
+    $teacherProfile = null;
+    $studentName = null;
+    $studentIdCard = '';
+    $studentPhone = '';
 
     if ($authUser) {
         $isSuperAdmin = $authUser->isSuperAdmin();
