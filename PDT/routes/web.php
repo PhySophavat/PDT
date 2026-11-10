@@ -236,6 +236,7 @@ Route::middleware(['auth'])->group(function () use ($spa) {
         // Personal Profile (Student, Teacher, Admin)
         Route::get('/user/profile', [ApiController::class, 'getProfile'])->name('api.profile.get');
         Route::put('/user/profile', [ApiController::class, 'updateProfile'])->name('api.profile.update');
+        Route::post('/user/avatar', [ApiController::class, 'updateAvatar'])->name('api.profile.avatar');
 
         // System Activity Logs (Super Admin Only)
         Route::middleware(['super_admin'])->group(function () {

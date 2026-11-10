@@ -35,6 +35,7 @@ class User extends Authenticatable
         'phone',
         'position',
         'is_approved',
+        'avatar',
     ];
 
     protected $hidden = [

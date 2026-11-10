@@ -79,6 +79,7 @@
         } elseif ($authUser->hasRole('teacher') || strtolower($authUser->role ?? '') === 'teacher') {
             $roleName = 'Teacher';
             $roleKhmer = 'គ្រូបង្រៀន';
+            $teacherProfile = $authUser->teacher ?? \App\Models\Teacher::where('email', $authUser->email)->first();
         } else {
             $roleName = 'Student';
             $roleKhmer = 'សិស្សានុសិស្ស';
@@ -97,7 +98,7 @@
         'role_khmer' => $roleKhmer,
         'is_super_admin' => $isSuperAdmin,
         'email' => $authUser?->email ?? 'admin@school.edu.kh',
-        'avatar' => $authUser?->avatar ?? '',
+        'avatar' => $authUser?->avatar ?: ($studentProfile?->photo ?: ($teacherProfile?->photo ?? '')),
         'student_grade' => $studentGrade,
         'student_id' => $studentId,
         'student_name' => $studentName ?? $authUser?->name,

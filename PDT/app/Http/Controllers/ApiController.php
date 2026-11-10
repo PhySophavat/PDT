@@ -5514,4 +5514,80 @@ class ApiController extends Controller
             'message' => 'បានកែសម្រួលព័ត៌មានផ្ទាល់ខ្លួនដោយជោគជ័យ!',
         ]);
     }
+
+    /**
+     * Update user profile avatar (student, teacher, or admin)
+     */
+    public function updateAvatar(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'សូមចូលប្រើប្រព័ន្ធសិន'], 401);
+        }
+
+        $avatarData = null;
+
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            $imageContent = file_get_contents($file->getRealPath());
+            $srcImg = @imagecreatefromstring($imageContent);
+            if ($srcImg) {
+                $w = imagesx($srcImg);
+                $h = imagesy($srcImg);
+                $dim = min($w, $h);
+                $srcX = (int)(($w - $dim) / 2);
+                $srcY = (int)(($h - $dim) / 2);
+
+                $targetSize = 256;
+                $dest = imagecreatetruecolor($targetSize, $targetSize);
+                imagecopyresampled($dest, $srcImg, 0, 0, $srcX, $srcY, $targetSize, $targetSize, $dim, $dim);
+
+                ob_start();
+                imagejpeg($dest, null, 88);
+                $rawJpg = ob_get_clean();
+                imagedestroy($dest);
+                imagedestroy($srcImg);
+
+                $avatarData = 'data:image/jpeg;base64,' . base64_encode($rawJpg);
+            }
+        } elseif ($request->filled('photo')) {
+            $photo = $request->input('photo');
+            if (str_starts_with($photo, 'data:image')) {
+                $avatarData = $photo;
+            } else {
+                $avatarData = $photo;
+            }
+        }
+
+        if (!$avatarData) {
+            return response()->json(['message' => 'សូមជ្រើសរើសឯកសាររូបភាពត្រឹមត្រូវ (JPG, PNG)'], 422);
+        }
+
+        // 1. Save to users table
+        $user->avatar = $avatarData;
+        $user->save();
+
+        // 2. Sync to student profile if exists
+        $student = $user->student ?? \App\Models\Student::where('email', $user->email)->orWhere('user_id', $user->id)->first();
+        if ($student) {
+            $student->photo = $avatarData;
+            $student->save();
+        }
+
+        // 3. Sync to teacher profile if exists
+        $teacher = $user->teacher ?? \App\Models\Teacher::where('email', $user->email)->orWhere('user_id', $user->id)->first();
+        if ($teacher) {
+            $teacher->photo = $avatarData;
+            $teacher->save();
+        }
+
+        // Clear dashboard cache so new avatar reflects everywhere
+        \Illuminate\Support\Facades\Cache::forget('portal_dashboard_payload');
+
+        return response()->json([
+            'success' => true,
+            'avatar' => $avatarData,
+            'message' => 'បានប្តូររូបភាពប្រវត្តិរូប (Profile) ដោយជោគជ័យ!',
+        ]);
+    }
 }

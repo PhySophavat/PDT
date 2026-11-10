@@ -1270,6 +1270,16 @@ onMounted(() => {
     }
   });
 
+  // Listen for user avatar updates
+  window.addEventListener('pdt-user-avatar-updated', (e) => {
+    if (e.detail?.avatar) {
+      user.value.avatar = e.detail.avatar;
+      if (window.__INITIAL_USER__) {
+        window.__INITIAL_USER__.avatar = e.detail.avatar;
+      }
+    }
+  });
+
   // Listen for storage events from other tabs/windows
   window.addEventListener('storage', (e) => {
     if (e.key === 'pdt_school_logo' && e.newValue) {
