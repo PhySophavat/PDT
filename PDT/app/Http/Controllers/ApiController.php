@@ -271,115 +271,117 @@ class ApiController extends Controller
         // Dynamic Student Dashboard Payload for logged-in students
         $authUser = $request->user();
         if ($authUser) {
-            $student = $authUser->student;
-            if (!$student && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
-                $student = Student::where('user_id', $authUser->id)->orWhere('email', $authUser->email)->first();
-            }
-
-            if ($student) {
-                $myGrade = $student->grade ?: '7A';
-                $myClass = SchoolClass::with('teacher.user')->where('name', $myGrade)->first();
-                $classmatesCount = Student::where('grade', $myGrade)->count();
-
-                $today = Carbon::today();
-                $startOfMonth = $today->copy()->startOfMonth();
-
-                $attRecords = Attendance::where('student_id', $student->id)
-                    ->orWhere(function($q) use ($student, $myGrade) {
-                        $q->where('student_name', $student->name_khmer)->where('class_name', $myGrade);
-                    })->get()->keyBy(function($item) {
-                        return Carbon::parse($item->date)->toDateString();
-                    });
-
-                $leaveReqs = StudentLeaveRequest::where('student_id', $student->id)
-                    ->where('status', 'approved')
-                    ->get();
-
-                $presentDays = 0;
-                $excusedDays = 0;
-                $absentDays = 0;
-                $lateDays = 0;
-                $totalSchoolDays = 0;
-
-                for ($curr = $startOfMonth->copy(); $curr->lte($today); $curr->addDay()) {
-                    if ($curr->isSunday()) continue;
-
-                    $totalSchoolDays++;
-                    $dateStr = $curr->toDateString();
-                    $att = $attRecords->get($dateStr);
-
-                    $isLeave = $leaveReqs->contains(function($l) use ($dateStr) {
-                        return Carbon::parse($l->start_date)->toDateString() <= $dateStr && Carbon::parse($l->end_date)->toDateString() >= $dateStr;
-                    });
-
-                    if ($att && $att->status === 'absent') {
-                        $absentDays++;
-                    } elseif ($att && in_array($att->status, ['excused', 'holiday'])) {
-                        $excusedDays++;
-                    } elseif ($isLeave) {
-                        $excusedDays++;
-                    } elseif ($att && $att->status === 'late') {
-                        $lateDays++;
-                        $presentDays++;
-                    } else {
-                        $presentDays++;
-                    }
+            try {
+                $student = $authUser->student;
+                if (!$student && ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student')) {
+                    $student = Student::where('user_id', $authUser->id)->orWhere('email', $authUser->email)->first();
                 }
 
-                $totalLeaves = $excusedDays + $absentDays;
-                $attRate = $totalSchoolDays > 0 ? round((($presentDays + $excusedDays) / $totalSchoolDays) * 100, 1) : 100;
+                if ($student) {
+                    $myGrade = $student->grade ?: '7A';
+                    $myClass = SchoolClass::with('teacher.user')->where('name', $myGrade)->first();
+                    $classmatesCount = Student::where('grade', $myGrade)->count();
 
-                $payload['studentData'] = [
-                    'student_id' => $student->id,
-                    'student_name' => $student->name_khmer ?: $student->name,
-                    'student_id_card' => $student->student_id_card,
-                    'grade' => $myGrade,
-                    'class_name' => $myClass?->name ?: $myGrade,
-                    'room' => $myClass?->room ?: ('បន្ទប់ ' . $myGrade),
-                    'homeroom_teacher' => $myClass?->teacher ? ($myClass->teacher->name_khmer ?: ($myClass->teacher->name_latin ?: $myClass->teacher->user?->name)) : null,
-                    'teacher_phone' => $myClass?->teacher?->phone,
-                    'teacher_photo' => $myClass?->teacher?->photo ? (str_starts_with($myClass->teacher->photo, 'http') ? $myClass->teacher->photo : asset('storage/' . $myClass->teacher->photo)) : null,
-                    'classmates_count' => $classmatesCount,
-                    'attendance' => [
-                        'present' => $presentDays,
-                        'excused' => $excusedDays,
-                        'absent' => $absentDays,
-                        'late' => $lateDays,
-                        'total_leave' => $totalLeaves,
-                        'total' => $totalSchoolDays,
-                        'rate' => $attRate,
-                    ],
-                    'total_books' => Book::count(),
-                    'student_visible_books' => Book::where('title', 'not like', '%សៀវភៅគ្រូ%')->where('title', 'not like', '%មគ្គុទ្ទេសក៍គ្រូ%')->count(),
-                ];
-            } elseif ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student') {
-                // Fallback for student account without linked student profile
-                $myGrade = '7A';
-                $myClass = SchoolClass::with('teacher.user')->where('name', $myGrade)->first();
-                $classmatesCount = Student::where('grade', $myGrade)->count() ?: 50;
-                $payload['studentData'] = [
-                    'student_id' => $authUser->id,
-                    'student_name' => $authUser->name,
-                    'student_id_card' => 'STU-2026-7A-001',
-                    'grade' => $myGrade,
-                    'class_name' => $myClass?->name ?: $myGrade,
-                    'room' => $myClass?->room ?: ('បន្ទប់ ' . $myGrade),
-                    'homeroom_teacher' => $myClass?->teacher ? ($myClass->teacher->name_khmer ?: ($myClass->teacher->name_latin ?: $myClass->teacher->user?->name)) : null,
-                    'teacher_phone' => $myClass?->teacher?->phone,
-                    'teacher_photo' => $myClass?->teacher?->photo ? (str_starts_with($myClass->teacher->photo, 'http') ? $myClass->teacher->photo : asset('storage/' . $myClass->teacher->photo)) : null,
-                    'classmates_count' => $classmatesCount,
-                    'attendance' => [
-                        'present' => 6,
-                        'excused' => 1,
-                        'absent' => 0,
-                        'late' => 0,
-                        'total_leave' => 1,
-                        'total' => 7,
-                        'rate' => 100.0,
-                    ],
-                    'total_books' => Book::count(),
-                    'student_visible_books' => Book::where('title', 'not like', '%សៀវភៅគ្រូ%')->where('title', 'not like', '%មគ្គុទ្ទេសក៍គ្រូ%')->count(),
-                ];
+                    $today = Carbon::today();
+                    $startOfMonth = $today->copy()->startOfMonth();
+
+                    $attRecords = Attendance::where('student_id', $student->id)
+                        ->get()->keyBy(function($item) {
+                            return Carbon::parse($item->date)->toDateString();
+                        });
+
+                    $leaveReqs = StudentLeaveRequest::where('student_id', $student->id)
+                        ->where('status', 'approved')
+                        ->get();
+
+                    $presentDays = 0;
+                    $excusedDays = 0;
+                    $absentDays = 0;
+                    $lateDays = 0;
+                    $totalSchoolDays = 0;
+
+                    for ($curr = $startOfMonth->copy(); $curr->lte($today); $curr->addDay()) {
+                        if ($curr->isSunday()) continue;
+
+                        $totalSchoolDays++;
+                        $dateStr = $curr->toDateString();
+                        $att = $attRecords->get($dateStr);
+
+                        $isLeave = $leaveReqs->contains(function($l) use ($dateStr) {
+                            return Carbon::parse($l->start_date)->toDateString() <= $dateStr && Carbon::parse($l->end_date)->toDateString() >= $dateStr;
+                        });
+
+                        if ($att && $att->status === 'absent') {
+                            $absentDays++;
+                        } elseif ($att && in_array($att->status, ['excused', 'holiday'])) {
+                            $excusedDays++;
+                        } elseif ($isLeave) {
+                            $excusedDays++;
+                        } elseif ($att && $att->status === 'late') {
+                            $lateDays++;
+                            $presentDays++;
+                        } else {
+                            $presentDays++;
+                        }
+                    }
+
+                    $totalLeaves = $excusedDays + $absentDays;
+                    $attRate = $totalSchoolDays > 0 ? round((($presentDays + $excusedDays) / $totalSchoolDays) * 100, 1) : 100;
+
+                    $payload['studentData'] = [
+                        'student_id' => $student->id,
+                        'student_name' => $student->name_khmer ?: $student->name,
+                        'student_id_card' => $student->student_id_card,
+                        'grade' => $myGrade,
+                        'class_name' => $myClass?->name ?: $myGrade,
+                        'room' => $myClass?->room ?: ('បន្ទប់ ' . $myGrade),
+                        'homeroom_teacher' => $myClass?->teacher ? ($myClass->teacher->name_khmer ?: ($myClass->teacher->name_latin ?: $myClass->teacher->user?->name)) : null,
+                        'teacher_phone' => $myClass?->teacher?->phone,
+                        'teacher_photo' => $myClass?->teacher?->photo ? (str_starts_with($myClass->teacher->photo, 'http') ? $myClass->teacher->photo : asset('storage/' . $myClass->teacher->photo)) : null,
+                        'classmates_count' => $classmatesCount,
+                        'attendance' => [
+                            'present' => $presentDays,
+                            'excused' => $excusedDays,
+                            'absent' => $absentDays,
+                            'late' => $lateDays,
+                            'total_leave' => $totalLeaves,
+                            'total' => $totalSchoolDays,
+                            'rate' => $attRate,
+                        ],
+                        'total_books' => Book::count(),
+                        'student_visible_books' => Book::where('title', 'not like', '%សៀវភៅគ្រូ%')->where('title', 'not like', '%មគ្គុទ្ទេសក៍គ្រូ%')->count(),
+                    ];
+                } elseif ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student') {
+                    // Fallback for student account without linked student profile
+                    $myGrade = '7A';
+                    $myClass = SchoolClass::with('teacher.user')->where('name', $myGrade)->first();
+                    $classmatesCount = Student::where('grade', $myGrade)->count() ?: 1;
+                    $payload['studentData'] = [
+                        'student_id' => $authUser->id,
+                        'student_name' => $authUser->name,
+                        'student_id_card' => 'STU-2026-7A-001',
+                        'grade' => $myGrade,
+                        'class_name' => $myClass?->name ?: $myGrade,
+                        'room' => $myClass?->room ?: ('បន្ទប់ ' . $myGrade),
+                        'homeroom_teacher' => $myClass?->teacher ? ($myClass->teacher->name_khmer ?: ($myClass->teacher->name_latin ?: $myClass->teacher->user?->name)) : null,
+                        'teacher_phone' => $myClass?->teacher?->phone,
+                        'teacher_photo' => $myClass?->teacher?->photo ? (str_starts_with($myClass->teacher->photo, 'http') ? $myClass->teacher->photo : asset('storage/' . $myClass->teacher->photo)) : null,
+                        'classmates_count' => $classmatesCount,
+                        'attendance' => [
+                            'present' => 6,
+                            'excused' => 1,
+                            'absent' => 0,
+                            'late' => 0,
+                            'total_leave' => 1,
+                            'total' => 7,
+                            'rate' => 100.0,
+                        ],
+                        'total_books' => Book::count(),
+                        'student_visible_books' => Book::where('title', 'not like', '%សៀវភៅគ្រូ%')->where('title', 'not like', '%មគ្គុទ្ទេសក៍គ្រូ%')->count(),
+                    ];
+                }
+            } catch (\Throwable $studentErr) {
+                \Illuminate\Support\Facades\Log::error('Student dashboard payload error: ' . $studentErr->getMessage());
             }
         }
 
