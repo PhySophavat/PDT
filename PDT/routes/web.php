@@ -212,6 +212,11 @@ Route::middleware(['auth'])->group(function () use ($spa) {
         Route::put('/library/borrow/{borrow}', [ApiController::class, 'updateBorrow']);
         Route::delete('/library/borrow/{borrow}', [ApiController::class, 'deleteBorrow']);
         Route::post('/library/return/{borrow}', [ApiController::class, 'returnBook']);
+        Route::get('/library/requests', [ApiController::class, 'getBookRequests']);
+        Route::post('/library/requests', [ApiController::class, 'storeBookRequest']);
+        Route::post('/library/requests/{id}/publish', [ApiController::class, 'publishBookRequestToLibrary']);
+        Route::put('/library/requests/{id}/status', [ApiController::class, 'updateBookRequestStatus']);
+        Route::delete('/library/requests/{id}', [ApiController::class, 'deleteBookRequest']);
         Route::get('/announcements', [ApiController::class, 'announcements']);
         Route::post('/announcements', [ApiController::class, 'storeAnnouncement']);
         Route::delete('/announcements/{announcement}', [ApiController::class, 'destroyAnnouncement']);
@@ -225,6 +230,10 @@ Route::middleware(['auth'])->group(function () use ($spa) {
         Route::match(['get', 'post'], '/seed', [ApiController::class, 'seedDemoDatabase']);
         Route::get('/roles', [ApiController::class, 'roles']);
         Route::post('/roles/permissions', [ApiController::class, 'updateRolePermissions']);
+
+        // Personal Profile (Student, Teacher, Admin)
+        Route::get('/user/profile', [ApiController::class, 'getProfile'])->name('api.profile.get');
+        Route::put('/user/profile', [ApiController::class, 'updateProfile'])->name('api.profile.update');
 
         // System Activity Logs (Super Admin Only)
         Route::middleware(['super_admin'])->group(function () {
@@ -336,6 +345,10 @@ Route::middleware(['auth'])->group(function () use ($spa) {
     Route::post('/library/borrow', [LibraryController::class, 'borrowBook'])->name('library.borrow');
     Route::post('/library/borrow-book', [LibraryController::class, 'borrowBook'])->name('library.borrow_book');
     Route::post('/library/return/{borrow}', [LibraryController::class, 'returnBook'])->name('library.return');
+
+    // Requests & Feedback (សំណើ និងមតិយោបល់)
+    Route::get('/requests', $spa)->name('requests.index');
+    Route::get('/feedback', $spa);
 
     // 13. Announcements & Notifications
     Route::get('/announcements', $spa)->name('announcements.index');

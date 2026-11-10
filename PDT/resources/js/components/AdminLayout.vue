@@ -137,7 +137,7 @@
               @click="handleNavClick"
               :class="[
                 'flex items-center rounded-xl text-[13px] font-medium transition-all group',
-                sidebarOpen ? 'justify-between px-3.5 py-2.5' : 'justify-center p-2.5',
+                sidebarOpen ? 'justify-between px-3.5 py-2.5' : 'justify-center p-2.5 relative',
                 isActive(item.path) 
                   ? 'bg-[#e5ecfc] text-[#1e40af] font-semibold shadow-xs' 
                   : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
@@ -154,6 +154,17 @@
                 />
                 <span v-if="sidebarOpen" class="truncate">{{ getMenuLabel(item) }}</span>
               </div>
+              <!-- Announcement Badge on 'ដំណឹង និងសេចក្តីជូនដំណឹង' -->
+              <span 
+                v-if="sidebarOpen && item.path === '/announcements' && unreadAnnouncementCount > 0" 
+                class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white shadow-2xs shrink-0"
+              >
+                {{ unreadAnnouncementCount }}
+              </span>
+              <span 
+                v-else-if="!sidebarOpen && item.path === '/announcements' && unreadAnnouncementCount > 0" 
+                class="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white"
+              ></span>
             </router-link>
           </template>
         </div>
@@ -287,8 +298,8 @@
             </div>
 
             <!-- Profile Avatar: rounded-full ring-2 ring-blue-500/20 w-8 h-8 -->
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-full ring-2 ring-blue-500/20 overflow-hidden flex-shrink-0 bg-slate-100 shadow-2xs">
+            <router-link to="/profile" class="flex items-center gap-2 group cursor-pointer hover:opacity-85 transition" title="មើលព័ត៌មានផ្ទាល់ខ្លួន (My Profile)">
+              <div class="w-8 h-8 rounded-full ring-2 ring-blue-500/20 group-hover:ring-blue-500/40 overflow-hidden flex-shrink-0 bg-slate-100 shadow-2xs transition">
                 <img 
                   :src="user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces'" 
                   alt="User Avatar" 
@@ -296,10 +307,10 @@
                 />
               </div>
               <div class="text-left hidden md:block">
-                <h4 class="text-xs font-bold text-slate-900 leading-tight">{{ user.name || 'Phy Sophavat' }}</h4>
+                <h4 class="text-xs font-bold text-slate-900 group-hover:text-blue-700 leading-tight transition-colors">{{ user.name || 'Phy Sophavat' }}</h4>
                 <p class="text-[10px] text-slate-400 leading-tight font-medium">{{ displayRoleName }}</p>
               </div>
-            </div>
+            </router-link>
 
             <!-- Notification Bell Button with subtle unread red dot -->
             <div class="relative z-50" ref="notificationDropdownRef">
@@ -314,8 +325,10 @@
                 </svg>
                 <span 
                   v-if="unreadCount > 0" 
-                  class="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white"
-                ></span>
+                  class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center ring-2 ring-white shadow-xs"
+                >
+                  {{ unreadCount > 99 ? '99+' : unreadCount }}
+                </span>
               </button>
 
               <!-- Notifications Dropdown Menu -->
@@ -422,6 +435,16 @@
                       ]"
                     >
                       សុំច្បាប់ ({{ pendingCounts.leaves || 0 }})
+                    </button>
+                    <button
+                      type="button"
+                      @click="notificationFilter = 'book_request'"
+                      :class="[
+                        'px-2.5 py-1 rounded-lg transition font-medium whitespace-nowrap cursor-pointer',
+                        notificationFilter === 'book_request' ? 'bg-white text-indigo-700 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
+                      ]"
+                    >
+                      សំណើ/មតិ ({{ pendingCounts.book_requests || 0 }})
                     </button>
                   </div>
 
@@ -848,6 +871,7 @@ import {
   FileText, 
   Bell, 
   BookOpen, 
+  BookmarkPlus,
   Package, 
   MessageSquare, 
   BookMarked, 
@@ -857,7 +881,8 @@ import {
   Building, 
   Receipt, 
   KeyRound,
-  Users
+  Users,
+  User
 } from 'lucide-vue-next';
 import { updateFavicon } from '../utils/favicon';
 
@@ -874,9 +899,22 @@ const notificationDropdownRef = ref(null);
 const isLoadingNotifications = ref(false);
 const notificationFilter = ref('all');
 const pendingTotalCount = ref(0);
-const pendingCounts = ref({ announcements: 0, students: 0, teachers: 0, leaves: 0 });
+const pendingCounts = ref({ announcements: 0, students: 0, teachers: 0, leaves: 0, book_requests: 0 });
 const pendingNotificationItems = ref([]);
-const readNotificationIds = ref([]);
+const getStorageUserKey = () => {
+  return window.__INITIAL_USER__?.id || window.__INITIAL_USER__?.name || 'user';
+};
+
+const getInitialReadIds = () => {
+  try {
+    const raw = localStorage.getItem(`pdt_read_notifs_${getStorageUserKey()}`);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+const readNotificationIds = ref(getInitialReadIds());
 const expandedNotificationId = ref(null);
 
 const toggleNotificationExpand = (item) => {
@@ -888,17 +926,8 @@ const toggleNotificationExpand = (item) => {
   }
 };
 
-const getStorageUserKey = () => {
-  return window.__INITIAL_USER__?.id || window.__INITIAL_USER__?.name || 'user';
-};
-
 const loadReadNotificationIds = () => {
-  try {
-    const raw = localStorage.getItem(`pdt_read_notifs_${getStorageUserKey()}`);
-    readNotificationIds.value = raw ? JSON.parse(raw) : [];
-  } catch {
-    readNotificationIds.value = [];
-  }
+  readNotificationIds.value = getInitialReadIds();
 };
 
 const markAllAsRead = () => {
@@ -927,8 +956,13 @@ const markItemAsRead = (id) => {
 };
 
 const unreadCount = computed(() => {
-  if (showNotificationDropdown.value) return 0;
   return pendingNotificationItems.value.filter(item => !readNotificationIds.value.includes(item.id)).length;
+});
+
+const unreadAnnouncementCount = computed(() => {
+  return pendingNotificationItems.value.filter(
+    item => item.type === 'announcement' && !readNotificationIds.value.includes(item.id)
+  ).length;
 });
 
 // Sync PWA App Badge on mobile home screen / desktop taskbar
@@ -947,10 +981,11 @@ const filteredNotificationItems = computed(() => {
   return pendingNotificationItems.value.filter(n => n.type === notificationFilter.value);
 });
 
-const toggleNotificationDropdown = () => {
+const toggleNotificationDropdown = async () => {
   showNotificationDropdown.value = !showNotificationDropdown.value;
   if (showNotificationDropdown.value) {
-    fetchPendingNotifications();
+    markAllAsRead();
+    await fetchPendingNotifications();
     markAllAsRead();
   }
 };
@@ -959,10 +994,26 @@ const goToNotificationLink = (link, itemId = null) => {
   if (itemId) {
     markItemAsRead(itemId);
   }
+  markAllAsRead();
   showNotificationDropdown.value = false;
   router.push(link);
   window.dispatchEvent(new CustomEvent('pdt-data-updated'));
 };
+
+watch(() => route.path, (newPath) => {
+  if (newPath === '/announcements') {
+    const annIds = pendingNotificationItems.value
+      .filter(item => item.type === 'announcement')
+      .map(item => item.id);
+    if (annIds.length > 0) {
+      const combined = Array.from(new Set([...readNotificationIds.value, ...annIds]));
+      readNotificationIds.value = combined;
+      try {
+        localStorage.setItem(`pdt_read_notifs_${getStorageUserKey()}`, JSON.stringify(combined));
+      } catch (e) {}
+    }
+  }
+});
 
 let isFetchingPendingNotifs = false;
 let lastPendingCount = -1;
@@ -1320,7 +1371,9 @@ const menuItems = [
   { i18nKey: 'nav.messaging', path: '/parents', icon: MessageSquare, roles: ['Super Admin', 'Admin'] },
   { i18nKey: 'nav.feesCollection', path: '/finance', icon: BadgePercent, roles: ['Super Admin', 'Admin'] },
   { i18nKey: 'nav.library', path: '/library', icon: BookOpen, roles: ['Super Admin', 'Admin', 'Teacher', 'Student'] },
-  { i18nKey: 'nav.notice', path: '/announcements', icon: Bell, roles: ['Super Admin', 'Admin', 'Teacher', 'Student'] },
+  { nameKm: 'សំណើ និងមតិយោបល់', nameEn: 'Requests & Feedback', path: '/requests', icon: BookmarkPlus, roles: ['Super Admin', 'Admin', 'Teacher', 'Student'] },
+  { nameKm: 'ព័ត៌មានផ្ទាល់ខ្លួន', nameEn: 'My Profile', path: '/profile', icon: User, roles: ['Super Admin', 'Admin', 'Teacher', 'Student'] },
+  { i18nKey: 'nav.notice', path: '/announcements', icon: Bell, roles: ['Super Admin', 'Admin', 'Teacher'] },
   { i18nKey: 'nav.reports', path: '/reports', icon: FileText, roles: ['Super Admin', 'Admin', 'Teacher'] },
   { i18nKey: 'nav.rolesPermissions', path: '/roles', icon: ShieldCheck, roles: ['Super Admin', 'Admin'] },
   { i18nKey: 'nav.systemLogs', path: '/system-logs', icon: ShieldAlert, superAdminOnly: true, roles: ['Super Admin'] },
@@ -1364,10 +1417,13 @@ const isStudentUser = computed(() => {
 });
 
 const getMenuLabel = (item) => {
+  if (item.nameKm && item.nameEn) {
+    return currentLocale.value === 'km' ? item.nameKm : item.nameEn;
+  }
   if (item.path === '/timetables' && isStudentUser.value) {
     return currentLocale.value === 'km' ? 'កាលវិភាគសិក្សា' : 'Class Timetable';
   }
-  return t(item.i18nKey);
+  return item.i18nKey ? t(item.i18nKey) : (item.name || '');
 };
 
 const isItemVisible = (item) => {
@@ -1396,6 +1452,12 @@ const visibleMenuItems = computed(() => {
 
 const isActive = (path) => {
   if (!path) return false;
+  if (path === '/requests') {
+    return route.path === '/requests' || route.path.startsWith('/requests');
+  }
+  if (path === '/library') {
+    return route.path === '/library' || route.path.startsWith('/library');
+  }
   if (path === '/attendance') {
     return route.path === '/attendance' || route.path === '/attendance/';
   }

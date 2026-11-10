@@ -6,7 +6,136 @@
       :breadcrumb="t('nav.dashboard')" 
       :actionLabel="canCreateRecord ? t('common.createNew') : ''"
       @action="handleCreateNew"
-    />
+    >
+      <template #extraActions>
+        <div class="relative" ref="shareDropdownRef">
+          <button 
+            type="button"
+            @click.stop="toggleShareDropdown"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 sm:py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold rounded-xl shadow-xs shadow-blue-500/20 transition-all active:scale-95 cursor-pointer shrink-0"
+            title="ចែករំលែកតំណចុះឈ្មោះសាលារៀន"
+          >
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+            </svg>
+            <span class="hidden sm:inline">ចែករំលែកតំណចុះឈ្មោះ</span>
+            <span class="sm:hidden">ចែករំលែក</span>
+          </button>
+
+          <!-- Share Popover Dropdown -->
+          <transition
+            enter-active-class="transition duration-200 ease-out"
+            enter-from-class="opacity-0 translate-y-1 scale-95"
+            enter-to-class="opacity-100 translate-y-0 scale-100"
+            leave-active-class="transition duration-150 ease-in"
+            leave-from-class="opacity-100 translate-y-0 scale-100"
+            leave-to-class="opacity-0 translate-y-1 scale-95"
+          >
+            <div 
+              v-if="showShareDropdown"
+              class="absolute right-0 mt-2 w-80 sm:w-88 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 space-y-3 z-50 text-slate-800 font-khmer text-xs animate-fadeIn"
+              @click.stop
+            >
+              <!-- Header -->
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-xs">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-900 leading-tight">តំណចុះឈ្មោះសាលារៀន</h4>
+                    <p class="text-[10px] text-slate-400">ចែករំលែកដើម្បីចុះឈ្មោះចូលរៀន</p>
+                  </div>
+                </div>
+                <button 
+                  @click="showShareDropdown = false" 
+                  class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition cursor-pointer"
+                  title="បិទ"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <!-- QR Code Display Box -->
+              <div class="bg-gradient-to-b from-blue-50/60 to-slate-50 p-3 rounded-xl border border-blue-100/60 flex flex-col items-center justify-center space-y-2 text-center">
+                <div class="p-2 bg-white rounded-xl shadow-xs border border-slate-200/80">
+                  <img 
+                    :src="`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(registrationUrl)}`" 
+                    alt="Registration QR Code" 
+                    class="w-28 h-28 object-contain"
+                  />
+                </div>
+                <div>
+                  <span class="text-[11px] font-bold text-slate-800 block">ស្កេន QR Code ដើម្បីចុះឈ្មោះ</span>
+                  <span class="text-[10px] text-slate-400">ប្រើកាមេរ៉ាទូរស័ព្ទដើម្បីស្កេន</span>
+                </div>
+              </div>
+
+              <!-- Direct Link Box with 1-Click Copy -->
+              <div class="space-y-1">
+                <label class="text-[10px] font-semibold text-slate-500 block">តំណភ្ជាប់ផ្លូវការ (Direct Link)</label>
+                <div class="flex items-center gap-1.5 p-1 rounded-xl bg-slate-50 border border-slate-200">
+                  <input 
+                    type="text" 
+                    readonly 
+                    :value="registrationUrl" 
+                    class="flex-1 bg-transparent px-2 text-[10px] font-mono text-slate-700 outline-none truncate"
+                  />
+                  <button 
+                    @click="copyRegistrationLink" 
+                    type="button"
+                    class="px-2.5 py-1 text-white text-[10px] font-bold rounded-lg transition shadow-xs flex items-center gap-1 cursor-pointer shrink-0"
+                    :class="copiedRegistrationLink ? 'bg-emerald-600' : 'bg-blue-600 hover:bg-blue-700'"
+                  >
+                    <svg v-if="copiedRegistrationLink" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    <svg v-else class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>{{ copiedRegistrationLink ? 'បានចម្លង!' : 'ចម្លង' }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quick Share Action Buttons: Telegram, Facebook, Open -->
+              <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-100">
+                <a 
+                  :href="`https://t.me/share/url?url=${encodeURIComponent(registrationUrl)}&text=${encodeURIComponent('សាលារៀនជំនាន់ថ្មី PDT - តំណភ្ជាប់ចុះឈ្មោះចូលរៀន')}`" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  class="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#229ED9]/10 hover:bg-[#229ED9]/20 text-[#229ED9] transition font-bold text-[10px] gap-1 cursor-pointer"
+                  title="ចែករំលែកតាម Telegram"
+                >
+                  <i class="fa-brands fa-telegram text-sm"></i>
+                  <span>Telegram</span>
+                </a>
+
+                <a 
+                  :href="`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(registrationUrl)}`" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  class="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#1877F2]/10 hover:bg-[#1877F2]/20 text-[#1877F2] transition font-bold text-[10px] gap-1 cursor-pointer"
+                  title="ចែករំលែកតាម Facebook"
+                >
+                  <i class="fa-brands fa-facebook text-sm"></i>
+                  <span>Facebook</span>
+                </a>
+
+                <a 
+                  :href="registrationUrl" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  class="flex flex-col items-center justify-center p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition font-bold text-[10px] gap-1 cursor-pointer"
+                  title="បើកមើលតំណផ្ទាល់"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  <span>បើកមើល</span>
+                </a>
+              </div>
+            </div>
+          </transition>
+        </div>
+      </template>
+    </PageHeader>
 
     <!-- Sub Tabs (NGS Public School: Removed Finance, Added STEM & Lab) -->
     <TabNav 
@@ -1103,6 +1232,40 @@ const { t, locale } = useI18n();
 const currentLocale = computed(() => locale.value || 'km');
 const router = useRouter();
 
+// Share Registration Access Link
+const registrationUrl = 'https://sala-portal.vercel.app/portal-sala-access-2026';
+const showShareDropdown = ref(false);
+const shareDropdownRef = ref(null);
+const copiedRegistrationLink = ref(false);
+
+const toggleShareDropdown = () => {
+  showShareDropdown.value = !showShareDropdown.value;
+};
+
+const copyRegistrationLink = async () => {
+  try {
+    await navigator.clipboard.writeText(registrationUrl);
+    copiedRegistrationLink.value = true;
+    if (window.$toast?.success) {
+      window.$toast.success('បានចម្លងតំណចុះឈ្មោះសាលារៀនដោយជោគជ័យ!');
+    }
+    setTimeout(() => {
+      copiedRegistrationLink.value = false;
+    }, 2500);
+  } catch {
+    copiedRegistrationLink.value = true;
+    setTimeout(() => {
+      copiedRegistrationLink.value = false;
+    }, 2500);
+  }
+};
+
+const handleShareDocClick = (e) => {
+  if (shareDropdownRef.value && !shareDropdownRef.value.contains(e.target)) {
+    showShareDropdown.value = false;
+  }
+};
+
 const dashboardTabs = computed(() => [
   { id: 'overview', label: currentLocale.value === 'km' ? 'ទិដ្ឋភាពទូទៅ' : 'Overview' },
   { id: 'academic', label: currentLocale.value === 'km' ? 'ថ្នាក់រៀន និងកាលវិភាគ' : 'Classes & Timetables' },
@@ -1413,6 +1576,7 @@ onMounted(async () => {
   await fetchTeachersForAssign();
 
   window.addEventListener('pdt-data-updated', onDataUpdated);
+  document.addEventListener('click', handleShareDocClick);
 });
 
 // Reactivate when navigating back through keep-alive
@@ -1425,6 +1589,7 @@ onActivated(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('pdt-data-updated', onDataUpdated);
+  document.removeEventListener('click', handleShareDocClick);
 });
 
 // Actions

@@ -15,6 +15,7 @@ use App\Models\SchoolExpense;
 use App\Models\Book;
 use App\Models\BookBorrow;
 use App\Models\BookCategory;
+use App\Models\BookRequest;
 use App\Models\Announcement;
 use App\Models\SchoolParent;
 use App\Models\SystemSetting;
@@ -417,6 +418,7 @@ class ApiController extends Controller
                 'students' => 0,
                 'teachers' => 0,
                 'leaves' => 0,
+                'book_requests' => 0,
             ];
 
             // 1. Announcements (សេចក្តីជូនដំណឹង)
@@ -622,6 +624,33 @@ class ApiController extends Controller
                         }
                     }
                 }
+
+                // Student/Teacher's Book Requests updates
+                if ($authUser) {
+                    $userBookRequests = BookRequest::where('user_id', $authUser->id)
+                        ->whereIn('status', ['approved', 'rejected'])
+                        ->where('updated_at', '>=', now()->subDays(7))
+                        ->latest('updated_at')
+                        ->take(5)
+                        ->get();
+                    foreach ($userBookRequests as $ubr) {
+                        $isApproved = $ubr->status === 'approved';
+                        $notifications->push([
+                            'id' => 'user-book-request-' . $ubr->id,
+                            'type' => 'book_request',
+                            'type_label' => $isApproved ? 'បានបញ្ចូលសៀវភៅ ✓' : 'មិនទាន់អនុម័ត ✗',
+                            'name' => $ubr->title,
+                            'title' => $isApproved ? "សៀវភៅ «{$ubr->title}» ត្រូវបានដាក់ក្នុងបណ្ណាល័យ ✓" : "សំណើសុំសៀវភៅ «{$ubr->title}» មិនទាន់បានអនុម័ត",
+                            'subtitle' => $ubr->admin_feedback ?: ($isApproved ? 'អ្នកអាចចូលអានសៀវភៅនេះក្នុងបណ្ណាល័យបានហើយ' : 'សូមទាក់ទងរដ្ឋបាលសម្រាប់ព័ត៌មានបន្ថែម'),
+                            'time' => $ubr->updated_at ? $ubr->updated_at->diffForHumans() : 'ថ្មីៗនេះ',
+                            'timestamp' => $ubr->updated_at ? $ubr->updated_at->timestamp : 0,
+                            'link' => '/requests',
+                            'icon' => $isApproved ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark',
+                            'badge_color' => $isApproved ? 'bg-emerald-500' : 'bg-rose-500',
+                            'bg_color' => $isApproved ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100',
+                        ]);
+                    }
+                }
             }
 
             // 4. Admin / Super Admin Mode
@@ -727,6 +756,45 @@ class ApiController extends Controller
                         'icon' => 'fa-solid fa-calendar-minus',
                         'badge_color' => 'bg-teal-500',
                         'bg_color' => 'bg-teal-50 text-teal-700 border-teal-100',
+                    ]);
+                }
+
+                // Pending Book Requests / Feedback for Admin (unreplied requests)
+                $pendingBookRequests = BookRequest::query()
+                    ->where(function ($q) {
+                        $q->whereNull('admin_feedback')->orWhere('admin_feedback', '');
+                    })
+                    ->latest('id')
+                    ->take(20)
+                    ->get();
+                $counts['book_requests'] = BookRequest::where(function ($q) {
+                    $q->whereNull('admin_feedback')->orWhere('admin_feedback', '');
+                })->count();
+
+                foreach ($pendingBookRequests as $br) {
+                    $senderRole = $br->requested_by_role === 'teacher' ? 'លោកគ្រូ/អ្នកគ្រូ ' : ($br->requested_by_role === 'student' ? 'សិស្ស ' : '');
+                    $senderName = $br->requested_by_name ?: 'អនាមិក';
+                    if (($senderName === 'Student' || empty($senderName)) && $br->user) {
+                        if ($br->user->student) {
+                            $senderName = $br->user->student->name_khmer ?: ($br->user->student->name_latin ?: $br->user->name);
+                        } elseif ($br->user->teacher) {
+                            $senderName = $br->user->teacher->name_khmer ?: ($br->user->teacher->name_latin ?: $br->user->name);
+                        }
+                    }
+
+                    $notifications->push([
+                        'id' => 'book-request-' . $br->id,
+                        'type' => 'book_request',
+                        'type_label' => 'សំណើ & មតិយោបល់',
+                        'name' => $senderName,
+                        'title' => "សំណើ/មតិយោបល់៖ {$br->title}",
+                        'subtitle' => "{$senderRole}{$senderName} • " . ($br->grade ? 'ថ្នាក់ ' . $br->grade . ' • ' : '') . (mb_strlen($br->note ?? '') > 50 ? mb_substr($br->note, 0, 50) . '...' : ($br->note ?? '')),
+                        'time' => $br->created_at ? $br->created_at->diffForHumans() : 'ថ្មីៗនេះ',
+                        'timestamp' => $br->created_at ? $br->created_at->timestamp : 0,
+                        'link' => '/requests',
+                        'icon' => 'fa-solid fa-bookmark',
+                        'badge_color' => 'bg-indigo-500',
+                        'bg_color' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
                     ]);
                 }
             }
@@ -2367,6 +2435,281 @@ class ApiController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'បានលុបកំណត់ត្រាការខ្ចីដោយជោគជ័យ!',
+        ]);
+    }
+
+    // ==========================================
+    // BOOK REQUESTS & RESOURCE SUBMISSION
+    // ==========================================
+
+    public function getBookRequests(Request $request)
+    {
+        $authUser = Auth::user();
+        $isAdmin = $authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1);
+
+        // Security: Students and teachers cannot view the list of submitted requests
+        if (!$isAdmin) {
+            return response()->json([
+                'requests' => [],
+                'counts' => [
+                    'all' => 0,
+                    'students' => 0,
+                    'teachers' => 0,
+                    'links' => 0,
+                ],
+            ]);
+        }
+
+        $roleFilter = $request->input('role');
+        $hasLink = $request->boolean('has_link');
+
+        // Open Community Board: All teachers, students, and admins can view all feedback and requests
+        $query = BookRequest::with(['user:id,name,role', 'user.student', 'user.teacher', 'reviewer:id,name']);
+
+        if ($roleFilter && in_array($roleFilter, ['student', 'teacher', 'admin'])) {
+            $query->where('requested_by_role', $roleFilter);
+        }
+
+        if ($hasLink) {
+            $query->whereNotNull('file_url')->where('file_url', '!=', '');
+        }
+
+        $requests = $query->latest('id')->get()->map(function ($r) use ($authUser, $isAdmin) {
+            $senderName = $r->requested_by_name;
+            if ((empty($senderName) || $senderName === 'Student') && $r->user) {
+                if ($r->user->student) {
+                    $senderName = $r->user->student->name_khmer ?: ($r->user->student->name_latin ?: $r->user->name);
+                } elseif ($r->user->teacher) {
+                    $senderName = $r->user->teacher->name_khmer ?: ($r->user->teacher->name_latin ?: $r->user->name);
+                } else {
+                    $senderName = $r->user->name;
+                }
+            }
+
+            return [
+                'id' => $r->id,
+                'user_id' => $r->user_id,
+                'requested_by_name' => $senderName ?: 'អនាមិក',
+                'requested_by_role' => $r->requested_by_role,
+                'grade' => $r->grade ?: 'ទូទៅ',
+                'title' => $r->title,
+                'file_url' => $r->file_url,
+                'note' => $r->note,
+                'status' => $r->status ?: 'published',
+                'admin_feedback' => $r->admin_feedback,
+                'reviewed_by' => $r->reviewer?->name,
+                'reviewed_at' => $r->reviewed_at ? $r->reviewed_at->format('Y-m-d H:i') : null,
+                'created_at' => $r->created_at ? $r->created_at->format('Y-m-d H:i') : null,
+                'time_ago' => $r->created_at ? $r->created_at->diffForHumans() : 'ថ្មីៗ',
+                'can_delete' => $isAdmin || ($authUser && $authUser->id === $r->user_id),
+            ];
+        });
+
+        // Quick overview metrics
+        $all = BookRequest::all();
+        $counts = [
+            'all' => $all->count(),
+            'students' => $all->where('requested_by_role', 'student')->count(),
+            'teachers' => $all->where('requested_by_role', 'teacher')->count(),
+            'links' => $all->filter(fn($i) => !empty($i->file_url))->count(),
+        ];
+
+        return response()->json([
+            'requests' => $requests,
+            'counts' => $counts,
+            'is_admin' => $isAdmin,
+        ]);
+    }
+
+    public function storeBookRequest(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'grade' => 'nullable|string|max:50',
+            'file_url' => 'nullable|string|max:2000',
+            'note' => 'nullable|string|max:3000',
+            'requested_by_name' => 'nullable|string|max:255',
+        ]);
+
+        $authUser = Auth::user();
+        $role = 'student';
+        $name = !empty($validated['requested_by_name']) && $validated['requested_by_name'] !== 'Student' 
+            ? $validated['requested_by_name'] 
+            : ($authUser?->name ?? 'អនាមិក');
+        $grade = $validated['grade'] ?? null;
+
+        if ($authUser) {
+            if ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1) {
+                $role = 'admin';
+                $grade = 'រដ្ឋបាល';
+                $name = $authUser->name ?: ($name ?: 'រដ្ឋបាល');
+            } elseif ($authUser->hasRole('teacher') || strtolower($authUser->role ?? '') === 'teacher') {
+                $role = 'teacher';
+                $grade = 'គ្រូបង្រៀន';
+                $teacher = $authUser->teacher ?? \App\Models\Teacher::where('user_id', $authUser->id)->orWhere('email', $authUser->email)->first();
+                if ($teacher) {
+                    $name = $teacher->name_khmer ?: ($teacher->name_latin ?: $authUser->name);
+                }
+            } else {
+                $role = 'student';
+                $student = $authUser->student ?? \App\Models\Student::where('user_id', $authUser->id)->orWhere('email', $authUser->email)->first();
+                if ($student) {
+                    $name = $student->name_khmer ?: ($student->name_latin ?: $authUser->name);
+                    $grade = $student->grade ?? $student->class_name ?? $grade;
+                }
+                if (!$grade && !empty($authUser->grade)) {
+                    $grade = $authUser->grade;
+                }
+                if (!$grade && !empty($authUser->class_name)) {
+                    $grade = $authUser->class_name;
+                }
+                if (!$grade) {
+                    $grade = 'ទូទៅ';
+                }
+            }
+        }
+
+        $bookRequest = BookRequest::create([
+            'user_id' => $authUser?->id,
+            'requested_by_name' => $name,
+            'requested_by_role' => $role,
+            'grade' => $grade ?: 'ទូទៅ',
+            'title' => $validated['title'],
+            'file_url' => $validated['file_url'] ?? null,
+            'note' => $validated['note'] ?? null,
+            'status' => 'published',
+        ]);
+
+        Cache::increment('notif_version');
+        Cache::forget('pending_notifications_payload');
+
+        return response()->json([
+            'success' => true,
+            'message' => "បានផ្ញើសំណើ ឬមតិយោបល់ដោយជោគជ័យ!",
+            'request' => $bookRequest,
+        ]);
+    }
+
+    public function publishBookRequestToLibrary(Request $request, $id)
+    {
+        $authUser = Auth::user();
+        $isAdmin = $authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1);
+        if (!$isAdmin) {
+            return response()->json(['message' => 'អ្នកមិនមានសិទ្ធិអនុម័ត និងបញ្ចូលសៀវភៅទេ (Admin only)'], 403);
+        }
+
+        $bookRequest = BookRequest::findOrFail($id);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'author' => 'nullable|string|max:255',
+            'grade' => 'nullable|string|max:20',
+            'course_subject_id' => 'nullable|exists:course_subjects,id',
+            'book_category_id' => 'nullable|exists:book_categories,id',
+            'level' => 'nullable|string|max:50',
+            'external_pdf_url' => 'nullable|string',
+            'cover_image' => 'nullable|string|max:500',
+            'edition' => 'nullable|string|max:255',
+            'publication_year' => 'nullable|integer',
+            'admin_feedback' => 'nullable|string|max:1000',
+        ]);
+
+        $pdfUrl = $validated['external_pdf_url'] ?? ($bookRequest->file_url ?: ($bookRequest->attachment_path ? asset('storage/' . $bookRequest->attachment_path) : ''));
+
+        // Create book in library
+        $book = Book::create([
+            'title' => $validated['title'],
+            'author' => (!empty($validated['author'])) ? $validated['author'] : ($bookRequest->author ?: 'ក្រសួងអប់រំ យុវជន និងកីឡា'),
+            'grade' => (!empty($validated['grade'])) ? $validated['grade'] : ($bookRequest->grade ?: 'ទូទៅ'),
+            'course_subject_id' => $validated['course_subject_id'] ?? $bookRequest->course_subject_id,
+            'book_category_id' => $validated['book_category_id'] ?? $bookRequest->book_category_id,
+            'level' => (!empty($validated['level'])) ? $validated['level'] : ($bookRequest->level ?: 'basic'),
+            'external_pdf_url' => $pdfUrl,
+            'cover_image' => $validated['cover_image'] ?? null,
+            'edition' => (!empty($validated['edition'])) ? $validated['edition'] : 'បោះពុម្ពផ្លូវការ ក្រសួងអប់រំ',
+            'publication_year' => $validated['publication_year'] ?? 2024,
+            'quantity' => 10,
+            'available_copies' => 10,
+            'views_count' => 0,
+            'allow_download' => true,
+            'is_broken_link' => false,
+        ]);
+
+        // Update request status
+        $feedback = (!empty($validated['admin_feedback'])) ? $validated['admin_feedback'] : 'បានអនុម័ត និងដាក់បញ្ចូលទៅក្នុងបណ្ណាល័យឌីជីថលរួចរាល់ ✓';
+        $bookRequest->update([
+            'status' => 'approved',
+            'published_book_id' => $book->id,
+            'reviewed_by' => $authUser->id,
+            'reviewed_at' => now(),
+            'admin_feedback' => $feedback,
+        ]);
+
+        Cache::forget('digital_library_catalog_v2');
+        Cache::forget('pending_notifications_payload');
+
+        return response()->json([
+            'success' => true,
+            'message' => "បានបញ្ចូលសៀវភៅ «{$book->title}» ទៅក្នុងបណ្ណាល័យ និងបានអនុម័តសំណើរួចរាល់!",
+            'book' => $book->load(['category', 'subject']),
+            'request' => $bookRequest,
+        ]);
+    }
+
+    public function updateBookRequestStatus(Request $request, $id)
+    {
+        $authUser = Auth::user();
+        $isAdmin = $authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1);
+        if (!$isAdmin) {
+            return response()->json(['message' => 'អ្នកមិនមានសិទ្ធិកែប្រែស្ថានភាពសំណើទេ (Admin only)'], 403);
+        }
+
+        $bookRequest = BookRequest::findOrFail($id);
+
+        $validated = $request->validate([
+            'status' => 'required|string|in:pending,approved,rejected',
+            'admin_feedback' => 'nullable|string|max:1000',
+        ]);
+
+        $bookRequest->update([
+            'status' => $validated['status'],
+            'admin_feedback' => $validated['admin_feedback'] ?? null,
+            'reviewed_by' => $authUser->id,
+            'reviewed_at' => now(),
+        ]);
+
+        Cache::increment('notif_version');
+        Cache::forget('pending_notifications_payload');
+
+        $statusKhmer = $validated['status'] === 'approved' ? 'បានអនុម័ត' : ($validated['status'] === 'rejected' ? 'មិនអនុម័ត' : 'រង់ចាំពិនិត្យ');
+
+        return response()->json([
+            'success' => true,
+            'message' => "បានផ្លាស់ប្តូរស្ថានភាពសំណើទៅជា «{$statusKhmer}»!",
+            'request' => $bookRequest,
+        ]);
+    }
+
+    public function deleteBookRequest($id)
+    {
+        $authUser = Auth::user();
+        $isAdmin = $authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1);
+
+        $bookRequest = BookRequest::findOrFail($id);
+
+        if (!$isAdmin && (!$authUser || $bookRequest->user_id !== $authUser->id)) {
+            return response()->json(['message' => 'អ្នកអាចលុបបានតែសំណើផ្ទាល់ខ្លួនប៉ុណ្ណោះ'], 403);
+        }
+
+        $title = $bookRequest->title;
+        $bookRequest->delete();
+
+        Cache::increment('notif_version');
+        Cache::forget('pending_notifications_payload');
+
+        return response()->json([
+            'success' => true,
+            'message' => "បានលុបសំណើសុំសៀវភៅ «{$title}» ដោយជោគជ័យ!",
         ]);
     }
 
@@ -5017,5 +5360,151 @@ class ApiController extends Controller
             ['id' => 14, 'idCard' => 'TCH-2026-014', 'name' => 'អ្នកគ្រូ រស់ វណ្ណដា', 'name_khmer' => 'អ្នកគ្រូ រស់ វណ្ណដា', 'name_latin' => 'Ros Vannda', 'gender' => 'ស្រី', 'phone' => '097 555 333', 'specialization' => 'ភាសាអង់គ្លេស', 'qualification' => 'BA in English Literature', 'class_assigned' => '10B, 12A', 'status' => 'active'],
             ['id' => 15, 'idCard' => 'TCH-2026-015', 'name' => 'លោក ជា វីរៈ', 'name_khmer' => 'លោក ជា វីរៈ', 'name_latin' => 'Chea Vireak', 'gender' => 'ប្រុស', 'phone' => '078 666 999', 'specialization' => 'រូបវិទ្យា', 'qualification' => 'បរិញ្ញាបត្ររូបវិទ្យា', 'class_assigned' => '10A, 12A', 'status' => 'active'],
         ];
+    }
+
+    public function getProfile(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        $roleName = 'Student';
+        $roleKhmer = 'សិស្សានុសិស្ស';
+        $isSuperAdmin = false;
+        if (method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin()) {
+            $isSuperAdmin = true;
+            $roleName = 'Super Admin';
+            $roleKhmer = 'អគ្គអ្នកគ្រប់គ្រង';
+        } elseif ($user->hasRole('admin') || strtolower($user->role ?? '') === 'admin' || $user->id === 1) {
+            $roleName = 'Admin';
+            $roleKhmer = 'អ្នកគ្រប់គ្រង';
+        } elseif ($user->hasRole('teacher') || strtolower($user->role ?? '') === 'teacher') {
+            $roleName = 'Teacher';
+            $roleKhmer = 'គ្រូបង្រៀន';
+        }
+
+        $studentData = null;
+        $teacherData = null;
+
+        if ($roleName === 'Student' || !empty($user->student)) {
+            $student = $user->student ?? \App\Models\Student::where('email', $user->email)->first();
+            if ($student) {
+                // Get homeroom teacher
+                $homeroomTeacher = null;
+                if ($student->grade) {
+                    $homeroom = \App\Models\Teacher::where('class_assigned', 'like', '%' . $student->grade . '%')->first();
+                    $homeroomTeacher = $homeroom ? ($homeroom->name_khmer ?: ($homeroom->name_latin ?: 'គ្រូគំរូ')) : null;
+                }
+
+                $studentData = [
+                    'id' => $student->id,
+                    'name_khmer' => $student->name_khmer,
+                    'name_latin' => $student->name_latin,
+                    'student_id_card' => $student->student_id_card,
+                    'grade' => $student->grade,
+                    'gender' => $student->gender,
+                    'date_of_birth' => $student->date_of_birth,
+                    'phone' => $student->phone,
+                    'email' => $student->email ?: $user->email,
+                    'address' => $student->address ?: trim("{$student->village} {$student->commune} {$student->district} {$student->province}"),
+                    'village' => $student->village,
+                    'commune' => $student->commune,
+                    'district' => $student->district,
+                    'province' => $student->province,
+                    'parent_name' => $student->parent_name ?: $student->father_name ?: $student->mother_name,
+                    'parent_phone' => $student->parent_phone ?: $student->father_phone ?: $student->mother_phone,
+                    'parent_relationship' => $student->parent_relationship ?: 'អាណាព្យាបាល',
+                    'parent_occupation' => $student->parent_occupation,
+                    'father_name' => $student->father_name,
+                    'father_phone' => $student->father_phone,
+                    'mother_name' => $student->mother_name,
+                    'mother_phone' => $student->mother_phone,
+                    'emergency_contact' => $student->emergency_contact,
+                    'status' => $student->status ?: 'active',
+                    'photo' => $student->photo,
+                    'homeroom_teacher' => $homeroomTeacher,
+                    'enrollment_date' => $student->enrollment_date,
+                ];
+            }
+        } elseif ($roleName === 'Teacher' || !empty($user->teacher)) {
+            $teacher = $user->teacher ?? \App\Models\Teacher::where('email', $user->email)->first();
+            if ($teacher) {
+                $teacherData = [
+                    'id' => $teacher->id,
+                    'name_khmer' => $teacher->name_khmer,
+                    'name_latin' => $teacher->name_latin,
+                    'teacher_id_card' => $teacher->teacher_id_card,
+                    'gender' => $teacher->gender,
+                    'date_of_birth' => $teacher->date_of_birth,
+                    'phone' => $teacher->phone,
+                    'email' => $user->email,
+                    'subject' => $teacher->subject,
+                    'specialization' => $teacher->specialization,
+                    'qualification' => $teacher->qualification,
+                    'class_assigned' => $teacher->class_assigned,
+                    'address' => $teacher->address ?: trim("{$teacher->village} {$teacher->commune} {$teacher->district} {$teacher->province}"),
+                    'status' => $teacher->status ?: 'active',
+                    'photo' => $teacher->photo,
+                    'joining_date' => $teacher->joining_date,
+                ];
+            }
+        }
+
+        $displayName = $studentData['name_khmer'] ?? ($studentData['name_latin'] ?? ($teacherData['name_khmer'] ?? ($teacherData['name_latin'] ?? $user->name)));
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $displayName,
+                'email' => $user->email,
+                'phone' => $user->phone ?: ($studentData['phone'] ?? ($teacherData['phone'] ?? '')),
+                'role' => $roleName,
+                'role_khmer' => $roleKhmer,
+                'is_super_admin' => $isSuperAdmin,
+                'avatar' => $user->avatar ?: ($studentData['photo'] ?? ($teacherData['photo'] ?? '')),
+                'created_at' => $user->created_at ? $user->created_at->format('Y-m-d') : null,
+            ],
+            'student' => $studentData,
+            'teacher' => $teacherData,
+        ]);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        $validated = $request->validate([
+            'phone' => 'nullable|string|max:30',
+            'current_password' => 'nullable|string',
+            'new_password' => 'nullable|string|min:6|confirmed',
+        ]);
+
+        if (!empty($validated['current_password']) && !empty($validated['new_password'])) {
+            if (!Hash::check($validated['current_password'], $user->password)) {
+                return response()->json(['message' => 'លេខសម្ងាត់បច្ចុប្បន្នមិនត្រឹមត្រូវទេ'], 422);
+            }
+            $user->password = Hash::make($validated['new_password']);
+        }
+
+        if (isset($validated['phone'])) {
+            $user->phone = $validated['phone'];
+            if ($user->student) {
+                $user->student->update(['phone' => $validated['phone']]);
+            }
+            if ($user->teacher) {
+                $user->teacher->update(['phone' => $validated['phone']]);
+            }
+        }
+
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'បានកែសម្រួលព័ត៌មានផ្ទាល់ខ្លួនដោយជោគជ័យ!',
+        ]);
     }
 }

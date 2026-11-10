@@ -20,7 +20,7 @@
     $logoUrl = $cachedSettings['logoUrl'];
     $schoolName = $cachedSettings['school_name'];
     $schoolNameEn = $cachedSettings['school_name_en'];
-    $ogImage = asset('images/og-preview.jpg');
+    $ogImage = asset('images/og-preview.jpg') . '?v=' . (file_exists(public_path('images/og-preview.jpg')) ? filemtime(public_path('images/og-preview.jpg')) : '20261110');
     $currentUrl = url()->current();
     $defaultDesc = 'ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថល ' . $schoolName . ' - វត្តមាន ពិន្ទុ កាលវិភាគ និងបណ្ណាល័យអេឡិចត្រូនិច។';
   @endphp
@@ -92,7 +92,7 @@
     }
     $initialUserJson = json_encode([
         'id' => $authUser?->id,
-        'name' => $authUser?->name ?? 'portal sala',
+        'name' => ($roleName === 'Student' && !empty($studentName) && $studentName !== 'Student') ? $studentName : ($authUser?->name ?? 'portal sala'),
         'role' => $roleName,
         'role_khmer' => $roleKhmer,
         'is_super_admin' => $isSuperAdmin,

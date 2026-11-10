@@ -14,11 +14,13 @@ import ExaminationView from '../views/ExaminationView.vue';
 import ParentView from '../views/ParentView.vue';
 import FinanceView from '../views/FinanceView.vue';
 import LibraryView from '../views/LibraryView.vue';
+import FeedbackRequestView from '../views/FeedbackRequestView.vue';
 import AnnouncementView from '../views/AnnouncementView.vue';
 import ReportView from '../views/ReportView.vue';
 import SettingView from '../views/SettingView.vue';
 import RoleView from '../views/RoleView.vue';
 import SystemLogsView from '../views/SystemLogsView.vue';
+import ProfileView from '../views/ProfileView.vue';
 
 const routes = [
   { path: '/', redirect: '/dashboard' },
@@ -29,6 +31,7 @@ const routes = [
   { path: '/attendance/teachers', redirect: '/teacher-attendance' },
   { path: '/attendances/teachers', redirect: '/teacher-attendance' },
   { path: '/dashboard', name: 'Dashboard', component: DashboardView },
+  { path: '/profile', name: 'Profile', component: ProfileView },
 
   // Student routes - sub-paths redirect to list (create/edit handled by modal in future)
   { path: '/students', name: 'Students', component: StudentView },
@@ -84,6 +87,10 @@ const routes = [
 
   // Library routes
   { path: '/library', name: 'Library', component: LibraryView },
+
+  // Requests & Feedback (សំណើ និងមតិយោបល់)
+  { path: '/requests', name: 'Requests', component: FeedbackRequestView },
+  { path: '/feedback', redirect: '/requests' },
 
   // Announcements
   { path: '/announcements', name: 'Announcements', component: AnnouncementView },

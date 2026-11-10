@@ -18,8 +18,8 @@
     <meta property="og:title" content="តារាងចំណាត់ថ្នាក់ - ថ្នាក់ទី {{ $className }} - {{ $examination->title }}">
     <meta property="og:description" content="ពិនិត្យតារាងចំណាត់ថ្នាក់សិស្សប្រឡង ថ្នាក់ទី {{ $className }} ក្នុង {{ $examination->title }} ឆ្នាំសិក្សា {{ $academicYearName ?? ($academicYear ?? '២០២៥ - ២០២៦') }} នៃ{{ $schoolName }}។">
     <meta property="og:url" content="{{ url()->full() }}">
-    <meta property="og:image" content="{{ asset('images/og-preview.jpg') }}">
-    <meta property="og:image:secure_url" content="{{ asset('images/og-preview.jpg') }}">
+    <meta property="og:image" content="{{ asset('images/og-preview.jpg') }}?v=20261110">
+    <meta property="og:image:secure_url" content="{{ asset('images/og-preview.jpg') }}?v=20261110">
     <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">

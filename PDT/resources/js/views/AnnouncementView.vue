@@ -293,6 +293,7 @@ const submitNotice = async () => {
     showCreateModal.value = false;
     alert(res.data.message || 'បានផ្សាយសេចក្តីជូនដំណឹងជោគជ័យ!');
     await fetchAnnouncements();
+    window.dispatchEvent(new CustomEvent('pdt-data-updated'));
   } catch (err) {
     alert(err.response?.data?.message || 'មានបញ្ហាក្នុងការផ្សាយដំណឹង!');
   } finally {
@@ -306,6 +307,7 @@ const handleDelete = async (id) => {
     const res = await axios.delete(`/api/announcements/${id}`);
     alert(res.data.message || 'បានលុបសេចក្តីជូនដំណឹងដោយជោគជ័យ!');
     await fetchAnnouncements();
+    window.dispatchEvent(new CustomEvent('pdt-data-updated'));
   } catch (err) {
     alert(err.response?.data?.message || 'មិនអាចលុបសេចក្តីជូនដំណឹងបានទេ!');
   }
