@@ -8,6 +8,7 @@ export const isUpdatingNow = ref(false);
 let currentVersion = typeof window !== 'undefined' && window.__APP_VERSION__ 
   ? window.__APP_VERSION__ 
   : null;
+let currentDataHash = null;
 
 let isChecking = false;
 let checkInterval = null;
@@ -18,9 +19,14 @@ let lastCheckTime = 0;
  */
 export async function clearAllCaches() {
   try {
-    if (typeof window !== 'undefined' && 'caches' in window) {
-      const keys = await window.caches.keys();
-      await Promise.all(keys.map(k => window.caches.delete(k)));
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('pdt_cached_dashboard');
+      } catch (e) {}
+      if ('caches' in window) {
+        const keys = await window.caches.keys();
+        await Promise.all(keys.map(k => window.caches.delete(k)));
+      }
     }
   } catch (e) {
     console.warn('Cache clearing error:', e);
@@ -83,6 +89,18 @@ export async function checkForAppUpdate(silent = true) {
     if (res.data && res.data.version) {
       const latestVersion = res.data.version;
 
+      // Check if database data changed on server (e.g. students added/deleted)
+      if (res.data.data_hash) {
+        if (currentDataHash && res.data.data_hash !== currentDataHash) {
+          console.log(`[AutoUpdater] Live database change detected: ${res.data.data_hash}`);
+          try {
+            localStorage.removeItem('pdt_cached_dashboard');
+          } catch (e) {}
+          window.dispatchEvent(new CustomEvent('pdt-data-updated', { detail: res.data }));
+        }
+        currentDataHash = res.data.data_hash;
+      }
+
       // If this is our very first version initialization
       if (!currentVersion) {
         currentVersion = latestVersion;
@@ -128,14 +146,14 @@ export function initAutoUpdater(router) {
     checkForAppUpdate();
   }, 3000);
 
-  // 2. Periodic background check every 60 seconds
+  // 2. Periodic background check every 15 seconds for real-time sync across devices
   if (checkInterval) clearInterval(checkInterval);
   checkInterval = setInterval(() => {
     // Only check if tab is active and visible
     if (document.visibilityState === 'visible') {
       checkForAppUpdate();
     }
-  }, 60000);
+  }, 15000);
 
   // 3. Check immediately when user switches back to this tab
   document.addEventListener('visibilitychange', () => {

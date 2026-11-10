@@ -1351,7 +1351,10 @@ try {
   const cachedDashboard = localStorage.getItem('pdt_cached_dashboard');
   if (cachedDashboard) {
     const d = JSON.parse(cachedDashboard);
-    if (d.stats) stats.value = { ...stats.value, ...d.stats };
+    // Ignore stale cache if it contains old 53 dummy students
+    if (d.stats && Number(d.stats.students) !== 53) {
+      stats.value = { ...stats.value, ...d.stats };
+    }
     if (d.allClasses && d.allClasses.length) allClasses.value = sortClassesNaturally(d.allClasses);
     if (d.recentClasses && d.recentClasses.length) recentClasses.value = d.recentClasses;
     if (d.weeklyTrend && d.weeklyTrend.length) {
@@ -1505,16 +1508,22 @@ let lastDashboardFetchTime = 0;
 // Fetch Dashboard Data
 const fetchDashboardData = async (force = false) => {
   const now = Date.now();
-  if (isFetchingDashboard || (!force && now - lastDashboardFetchTime < 1500 && (allClasses.value.length > 0 || stats.value.totalStudents > 0))) {
+  if (isFetchingDashboard || (!force && now - lastDashboardFetchTime < 1500 && (allClasses.value.length > 0 || stats.value.students > 0))) {
     return;
   }
   isFetchingDashboard = true;
   lastDashboardFetchTime = now;
 
   try {
-    const params = { demo_mode: '0' };
+    const params = { demo_mode: '0', _t: now };
     if (force) params.force = 1;
-    const res = await axios.get('/api/dashboard', { params });
+    const res = await axios.get('/api/dashboard', { 
+      params,
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
     if (res.data) {
       if (res.data.currentAcademicYear) {
         activeAcademicYear.value = res.data.currentAcademicYear;
@@ -1597,12 +1606,12 @@ onMounted(async () => {
   document.addEventListener('visibilitychange', handleVisibilityOrFocus);
   window.addEventListener('focus', handleVisibilityOrFocus);
 
-  // Auto-Sync: Poll latest real-time stats every 30 seconds if tab is active
+  // Auto-Sync: Poll latest real-time stats every 10 seconds if tab is active
   syncTimer = setInterval(() => {
     if (document.visibilityState === 'visible' && !isFetchingDashboard) {
       fetchDashboardData(true);
     }
-  }, 30000);
+  }, 10000);
 });
 
 // Reactivate when navigating back through keep-alive

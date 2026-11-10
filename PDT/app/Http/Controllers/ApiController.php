@@ -48,11 +48,11 @@ class ApiController extends Controller
             session()->save();
         }
 
-        if ($request->has('force') || $request->input('refresh') === 'true') {
+        if ($request->has('force') || $request->has('_t') || $request->input('refresh') === 'true') {
             Cache::forget('portal_dashboard_payload');
         }
 
-        $payload = Cache::remember('portal_dashboard_payload', 120, function () {
+        $payload = Cache::remember('portal_dashboard_payload', 5, function () {
             // Optimized student counts: combine total and female in 1 single query
             $studentStats = Student::selectRaw('COUNT(*) as total, SUM(CASE WHEN gender IN ("ស្រី", "female") THEN 1 ELSE 0 END) as female, SUM(CASE WHEN status IN ("scholarship", "អាហារូបករណ៍") THEN 1 ELSE 0 END) as scholarship')->first();
             $totalStudents = (int) ($studentStats->total ?? 0);
@@ -381,7 +381,10 @@ class ApiController extends Controller
             }
         }
 
-        return response()->json($payload);
+        return response()->json($payload)
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     /**
@@ -807,7 +810,10 @@ class ApiController extends Controller
             ];
         });
 
-        return response()->json($payload);
+        return response()->json($payload)
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     /**
@@ -4759,7 +4765,10 @@ class ApiController extends Controller
             ];
         });
 
-        return response()->json($payload);
+        return response()->json($payload)
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     public function updateSettings(Request $request)

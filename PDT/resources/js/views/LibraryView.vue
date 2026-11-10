@@ -271,6 +271,15 @@
         >
           <!-- Card Header / Cover with Glassmorphic Badges -->
           <div class="h-44 rounded-t-2xl p-5 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-900 text-white shadow-inner">
+            <!-- Cover image background if available -->
+            <img 
+              v-if="b.cover_image" 
+              :src="b.cover_image" 
+              :alt="b.title" 
+              class="absolute inset-0 w-full h-full object-cover object-center opacity-40 group-hover:scale-105 group-hover:opacity-50 transition duration-300 pointer-events-none"
+              loading="lazy"
+            />
+            <div v-if="b.cover_image" class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/60 to-slate-900/40 pointer-events-none"></div>
             <div class="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-indigo-500/10 blur-2xl pointer-events-none"></div>
             
             <!-- Top Badges & Bookmark Toggle -->

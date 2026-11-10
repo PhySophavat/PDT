@@ -47,9 +47,11 @@ Route::get('/api/app-version', function () {
         $mtime = filemtime($manifestPath);
         $version = substr(md5_file($manifestPath), 0, 16);
     }
+    $dataHash = 'd_' . \App\Models\Student::count() . '_' . \App\Models\Book::count();
     return response()->json([
         'version' => $version,
         'timestamp' => $mtime,
+        'data_hash' => $dataHash,
         'time' => now()->toIso8601String(),
     ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
       ->header('Pragma', 'no-cache')
