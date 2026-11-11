@@ -79,38 +79,35 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|string',
+            'email' => 'required|email',
             'password' => 'required|string',
         ], [
-            'email.required' => 'សូមបញ្ចូលអ៊ីមែល ឬអត្តលេខសិស្ស (Student ID)',
+            'email.required' => 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែល (Email)',
+            'email.email' => 'ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវឡើយ (ឧ. name@example.com)',
             'password.required' => 'សូមបញ្ចូលពាក្យសម្ងាត់',
         ]);
 
-        $loginInput = trim((string) $request->input('email'));
+        $loginInput = strtolower(trim((string) $request->input('email')));
         $passwordInput = trim((string) $request->input('password'));
         $remember = $request->boolean('remember', true);
 
-        // Brute-force rate limiting: Max 5 failed attempts per minute per email/ID and IP
-        $throttleKey = Str::transliterate(Str::lower($loginInput) . '|' . $request->ip());
+        // Brute-force rate limiting: Max 5 failed attempts per 5 minutes per email and IP
+        $throttleKey = Str::transliterate($loginInput . '|' . $request->ip());
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
-            $seconds = RateLimiter::availableIn($throttleKey) ?: 60;
+            $seconds = RateLimiter::availableIn($throttleKey) ?: 300;
+            if ($seconds > 300) {
+                $seconds = 300;
+            }
+            $minutes = ceil($seconds / 60);
             return back()
                 ->withInput($request->only('email'))
                 ->with('lockout_seconds', $seconds)
-                ->with('error', 'អ្នកបានព្យាយាមចូលខុស ៥ ដងហើយ។ សូមរង់ចាំ ' . $seconds . ' វិនាទី ទៀត ទើបអាចសាកល្បងម្តងទៀត។');
+                ->with('error', 'អ្នកបានព្យាយាមចូលខុស ៥ ដងហើយ។ សូមរង់ចាំ ' . $seconds . ' វិនាទី (ប្រហែល ' . $minutes . ' នាទី) ទៀត ទើបអាចសាកល្បងម្តងទៀត។');
         }
 
-        // Find user by email (case-insensitive) or by Student ID card
-        $user = User::where('email', strtolower($loginInput))->first();
-        if (!$user) {
-            $student = Student::where('student_id_card', strtoupper($loginInput))
-                ->orWhere('student_id_card', $loginInput)
-                ->first();
-            if ($student && $student->user_id) {
-                $user = User::find($student->user_id);
-            }
-        }
+        // Find user by email (only email)
+        $user = User::where('email', $loginInput)->first();
 
         // Verify password with case flexibility (e.g. Pdt@ vs pdt@)
         $passwordValid = false;
@@ -172,12 +169,12 @@ class AuthController extends Controller
             action: 'FAILED_LOGIN',
             module: 'ចូលប្រើប្រព័ន្ធ',
             targetId: null,
-            description: "ការប៉ុនប៉ងចូលប្រើប្រព័ន្ធមិនជោគជ័យ (Login: {$loginInput}) - ពាក្យសម្ងាត់មិនត្រឹមត្រូវ"
+            description: "ការប៉ុនប៉ងចូលប្រើប្រព័ន្ធមិនជោគជ័យ (Login Email: {$loginInput}) - ពាក្យសម្ងាត់មិនត្រឹមត្រូវ"
         );
 
-        RateLimiter::hit($throttleKey, 60);
+        RateLimiter::hit($throttleKey, 300);
 
-        return back()->withInput($request->only('email'))->with('error', 'អ៊ីមែល/អត្តលេខ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវឡើយ (Invalid credentials)។ សូមពិនិត្យមើលអក្សរធំ-តូចនៃពាក្យសម្ងាត់ឡើងវិញ។');
+        return back()->withInput($request->only('email'))->with('error', 'អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវឡើយ (Invalid credentials)។ សូមពិនិត្យមើលអក្សរធំ-តូចនៃពាក្យសម្ងាត់ឡើងវិញ។');
     }
 
     public function logout(Request $request)

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ការអនុម័តចុះឈ្មោះចូលរៀន - សាលារៀន ជំនាន់ថ្មី PDT</title>
+  <title>ការអនុម័តចុះឈ្មោះចូលរៀន - សាលារៀន ជំនាន់ថ្មី </title>
   <style>
     /* Client resets */
     body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
@@ -36,10 +36,10 @@
                       <img src="{{ asset('images/logo.png') }}" alt="PDT School Logo" width="52" height="52" style="display: block; margin: auto; object-contain: contain;">
                     </div>
                     <h1 style="margin: 14px 0 4px 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">
-                      សាលារៀន ជំនាន់ថ្មី PDT
+                      សាលារៀន ជំនាន់ថ្មី
                     </h1>
                     <p style="margin: 0; color: #dbeafe; font-size: 13px; font-weight: 500;">
-                      PDT New Generation School • ប្រព័ន្ធគ្រប់គ្រងសាលារៀន
+                      New Generation School • ប្រព័ន្ធគ្រប់គ្រងសាលារៀន
                     </p>
                   </td>
                 </tr>
@@ -158,13 +158,13 @@
           <tr>
             <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 22px 24px; text-align: center;">
               <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: 700; color: #334155;">
-                សាលារៀន ជំនាន់ថ្មី PDT (PDT New Generation School)
+                សាលារៀន ជំនាន់ថ្មី ( New Generation School)
               </p>
               <p style="margin: 0 0 10px 0; font-size: 11px; color: #64748b;">
                 បណ្តុះបណ្តាលចំណេះដឹង បច្ចេកវិទ្យា និងនវានុវត្តន៍អប់រំជំនាន់ថ្មី
               </p>
               <p style="margin: 0; font-size: 10px; color: #94a3b8;">
-                &copy; {{ date('Y') }} សាលារៀន ជំនាន់ថ្មី PDT. រក្សាសិទ្ធិគ្រប់យ៉ាង។
+                &copy; {{ date('Y') }} សាលារៀន ជំនាន់ថ្មី​ រក្សាសិទ្ធិគ្រប់យ៉ាង។
               </p>
             </td>
           </tr>

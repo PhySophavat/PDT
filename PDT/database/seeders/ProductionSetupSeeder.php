@@ -57,7 +57,7 @@ class ProductionSetupSeeder extends Seeder
 
         // 3. School Settings
         $settings = [
-            'school_name' => 'សាលារៀន ជំនាន់ថ្មី PDT',
+            'school_name' => 'សាលារៀន ជំនាន់ថ្មី',
             'school_name_en' => 'PDT New Generation School',
             'school_address' => 'មហាវិថីសហព័ន្ធរុស្ស៊ី សង្កាត់ទឹកល្អក់១ ខណ្ឌទួលគោក រាជធានីភ្នំពេញ',
             'school_phone' => '023 880 880 / 012 345 678',

@@ -23,14 +23,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'leave-request/*',
             'teacher-leave-request',
             'teacher-leave-request/*',
-            'register-student',
-            'register-student/*',
             'register-teacher',
             'register-teacher/*',
             'register-parent',
             'register-parent/*',
-            'register-*',
-            'register/*',
         ]);
         $middleware->alias([
             'protect.route' => \App\Http\Middleware\ProtectRoute::class,
@@ -43,8 +39,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, \Illuminate\Http\Request $request) {
             if ($e->getStatusCode() === 429) {
                 $headers = $e->getHeaders();
-                $retryAfter = (int) ($headers['Retry-After'] ?? 60);
-                if ($retryAfter <= 0) $retryAfter = 60;
+                $retryAfter = (int) ($headers['Retry-After'] ?? 300);
+                if ($retryAfter <= 0 || $retryAfter > 300) $retryAfter = 300;
+                $minutes = ceil($retryAfter / 60);
 
                 if ($request->expectsJson()) {
                     return response()->json([
@@ -56,7 +53,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
                 return redirect()->route('login')
                     ->withInput($request->only('email'))
                     ->with('lockout_seconds', $retryAfter)
-                    ->with('error', 'អ្នកបានព្យាយាមចូលខុស ៥ ដងហើយ។ សូមរង់ចាំ ' . $retryAfter . ' វិនាទី ទៀត ទើបអាចសាកល្បងម្តងទៀត។');
+                    ->with('error', 'អ្នកបានព្យាយាមចូលខុស ៥ ដងហើយ។ សូមរង់ចាំ ' . $retryAfter . ' វិនាទី (ប្រហែល ' . $minutes . ' នាទី) ទៀត ទើបអាចសាកល្បងម្តងទៀត។');
             }
 
             if ($e->getStatusCode() === 419) {

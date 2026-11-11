@@ -504,8 +504,8 @@
             <div class="flex items-center gap-3 border-b border-white/10 pb-2.5">
               <img :src="'/images/logo.png'" alt="MoEYS" class="w-10 h-10 object-contain rounded-full bg-white p-1" />
               <div class="flex-1">
-                <h4 class="text-xs font-black tracking-tight text-amber-300">សាលារៀន ជំនាន់ថ្មី PDT</h4>
-                <p class="text-[9px] text-blue-200">PDT NEW GENERATION SCHOOL</p>
+                <h4 class="text-xs font-black tracking-tight text-amber-300">សាលារៀន ជំនាន់ថ្មី</h4>
+                <p class="text-[9px] text-blue-200">NEW GENERATION SCHOOL</p>
                 <span class="inline-block mt-0.5 text-[8px] font-bold px-1.5 py-0.2 bg-white/20 rounded text-white tracking-widest uppercase">
                   STUDENT ID CARD
                 </span>

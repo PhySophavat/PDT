@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\StudentController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\ForgotPasswordController;
 
 // Root URL: If logged in -> Dashboard, otherwise -> Login
 Route::get('/', function () {
@@ -33,7 +35,15 @@ Route::get('/login', fn() => redirect()->route('login'));
 
 // Custom Secret Authentication URL
 Route::get('/portal-sala-access-2026', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/portal-sala-access-2026', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/portal-sala-access-2026', [AuthController::class, 'login']);
+
+// Password Reset & Email OTP Routes (with Resend Countdown 60s & Max 5 Attempts)
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('/verify-otp', [ForgotPasswordController::class, 'showOtpForm'])->name('password.otp.show');
+Route::post('/verify-otp', [ForgotPasswordController::class, 'verifyOtp'])->name('password.otp.verify');
+Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.update')->middleware('throttle:5,60');
 
 Route::get('/auth/quick-login', [AuthController::class, 'directLogin'])->name('auth.quick-login');
 Route::get('/csrf-token', fn() => response()->json(['csrf_token' => csrf_token()]))->name('csrf-token');
@@ -101,7 +111,7 @@ Route::get('/health-db', function () {
 // Public Student Registration via Link & QR Code
 use App\Http\Controllers\PublicRegistrationController;
 Route::get('/register-student', [PublicRegistrationController::class, 'show'])->name('public.register-student');
-Route::post('/register-student', [PublicRegistrationController::class, 'store'])->name('public.register-student.post');
+Route::post('/register-student', [PublicRegistrationController::class, 'store'])->name('public.register-student.post')->middleware('throttle:10,60');
 
 // Public Teacher Registration via Link & QR Code
 Route::get('/register-teacher', [TeacherController::class, 'showPublicRegistration'])->name('public.register-teacher');

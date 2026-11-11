@@ -29,7 +29,7 @@ class StudentRegistrationReceivedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'ការទទួលបានពាក្យស្នើសុំចុះឈ្មោះចូលរៀន - សាលារៀន ជំនាន់ថ្មី PDT',
+            subject: 'ការទទួលបានពាក្យស្នើសុំចុះឈ្មោះចូលរៀន - សាលារៀន ជំនាន់ថ្មី',
         );
     }
 

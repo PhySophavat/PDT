@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ការទទួលបានពាក្យស្នើសុំចុះឈ្មោះចូលរៀន - សាលារៀន ជំនាន់ថ្មី PDT</title>
+  <title>ការទទួលបានពាក្យស្នើសុំចុះឈ្មោះចូលរៀន - សាលារៀន ជំនាន់ថ្មី </title>
   <style>
     /* Client resets */
     body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
@@ -36,7 +36,7 @@
                       <img src="{{ asset('images/logo.png') }}" alt="PDT School Logo" width="52" height="52" style="display: block; margin: auto; object-fit: contain;">
                     </div>
                     <h1 style="margin: 14px 0 4px 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">
-                      សាលារៀន ជំនាន់ថ្មី PDT
+                      សាលារៀន ជំនាន់ថ្មី
                     </h1>
                     <p style="margin: 0; color: #dbeafe; font-size: 13px; font-weight: 500;">
                       PDT New Generation School • ប្រព័ន្ធចុះឈ្មោះតាមអនឡាញ
@@ -62,7 +62,7 @@
                       សួស្តីប្អូន {{ $student->name_khmer ?: $student->name_latin }}!
                     </h2>
                     <p style="margin: 0 0 16px 0; font-size: 13px; color: #475569; line-height: 1.7;">
-                      សាលារៀន ជំនាន់ថ្មី PDT សូមជម្រាបជូនថា យើងបានទទួលពាក្យស្នើសុំចុះឈ្មោះចូលរៀនរបស់ប្អូនសម្រាប់ <strong>ថ្នាក់ {{ $student->grade }}</strong> តាមរយៈប្រព័ន្ធអនឡាញរួចរាល់ហើយ។
+                      សាលារៀន ជំនាន់ថ្មី  សូមជម្រាបជូនថា យើងបានទទួលពាក្យស្នើសុំចុះឈ្មោះចូលរៀនរបស់ប្អូនសម្រាប់ <strong>ថ្នាក់ {{ $student->grade }}</strong> តាមរយៈប្រព័ន្ធអនឡាញរួចរាល់ហើយ។
                     </p>
                     <p style="margin: 0 0 20px 0; font-size: 13px; color: #475569; line-height: 1.7;">
                       ព័ត៌មានដែលប្អូនបានបញ្ជូនមកត្រូវបានរក្សាទុកដោយសុវត្ថិភាពនៅក្នុងប្រព័ន្ធ។ ខាងក្រោមនេះជាសេចក្តីសង្ខេបនៃព័ត៌មានដែលបានចុះឈ្មោះ៖
@@ -148,7 +148,7 @@
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top: 1px solid #e2e8f0; padding-top: 20px;">
                 <tr>
                   <td align="center" style="font-size: 12px; color: #64748b; line-height: 1.7;">
-                    <strong style="color: #1e293b;">សាលារៀន ជំនាន់ថ្មី PDT (PDT New Generation School)</strong><br>
+                    <strong style="color: #1e293b;">សាលារៀន ជំនាន់ថ្មី  (New Generation School)</strong><br>
                     📞 ទំនាក់ទំនងផ្នែករដ្ឋបាល៖ 023 888 999 / 012 345 678<br>
                     📧 អ៊ីមែល៖ info@pdt-school.edu.kh<br>
                     🌐 គេហទំព័រ៖ {{ url('/') }}
@@ -162,7 +162,7 @@
           <!-- Footer -->
           <tr>
             <td align="center" style="background-color: #f8fafc; padding: 20px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
-              © {{ date('Y') }} សាលារៀន ជំនាន់ថ្មី PDT. រក្សាសិទ្ធិគ្រប់យ៉ាង។<br>
+              © {{ date('Y') }} សាលារៀន ជំនាន់ថ្មី . រក្សាសិទ្ធិគ្រប់យ៉ាង។<br>
               នេះជាសារអ៊ីមែលស្វ័យប្រវត្តដែលផ្ញើចេញពីប្រព័ន្ធ សូមកុំឆ្លើយតបមកកាន់អ៊ីមែលនេះដោយផ្ទាល់។
             </td>
           </tr>
