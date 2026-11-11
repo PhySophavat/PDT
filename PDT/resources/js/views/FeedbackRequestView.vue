@@ -6,23 +6,46 @@
       breadcrumb="សំណើ & មតិយោបល់" 
     />
 
-    <!-- 1. Instruction & Welcome Hero Banner (ពាក្យណែនាំពីមុខងារ) -->
-    <div class="relative overflow-hidden bg-gradient-to-br from-indigo-900 via-indigo-800 to-slate-900 rounded-3xl p-5 sm:p-6 text-white shadow-md border border-indigo-700/40">
-      <div class="relative z-10 space-y-2 max-w-3xl">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-indigo-200 text-xs font-semibold border border-white/10">
-          <i class="fa-solid fa-bullhorn text-amber-400"></i>
-          <span>ប្រអប់ទទួលសំណើ និងមតិយោបល់ផ្ទាល់ទៅកាន់គណៈគ្រប់គ្រងសាលា</span>
+    <!-- 1. Collapsible Welcome Banner (Slim Toggleable Header) -->
+    <div class="rounded-2xl bg-gradient-to-r from-indigo-950 via-indigo-900 to-slate-900 text-white shadow-xs border border-indigo-700/30 overflow-hidden transition-all duration-300">
+      <button 
+        type="button" 
+        @click="showWelcomeNotice = !showWelcomeNotice" 
+        class="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-white/5 transition cursor-pointer"
+        title="ចុចដើម្បីពង្រីក ឬបង្រួមសេចក្តីណែនាំ"
+      >
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-7 h-7 rounded-lg bg-indigo-500/25 text-amber-300 flex items-center justify-center text-xs shrink-0 border border-white/10">
+            <i class="fa-solid fa-bullhorn"></i>
+          </div>
+          <div class="truncate">
+            <h3 class="text-xs sm:text-sm font-bold text-white truncate flex items-center gap-2">
+              <span>សេចក្តីណែនាំអំពីប្រអប់ «សំណើ និងមតិយោបល់»</span>
+              <span v-if="!showWelcomeNotice" class="text-[10px] font-normal text-indigo-300 hidden sm:inline">(ចុចដើម្បីអាន)</span>
+            </h3>
+            <p v-if="!showWelcomeNotice" class="text-[10px] text-indigo-300/80 truncate sm:hidden">
+              ចុចដើម្បីអានព័ត៌មានលម្អិត...
+            </p>
+          </div>
         </div>
-        <h2 class="text-lg sm:text-xl font-black text-white tracking-tight">
-          សូមស្វាគមន៍មកកាន់ប្រអប់ «សំណើ និងមតិយោបល់»
-        </h2>
-        <p class="text-xs sm:text-sm text-indigo-100/90 leading-relaxed font-light">
-          លោកគ្រូ អ្នកគ្រូ និងប្អូនៗសិស្សានុសិស្ស អាចចែករំលែកមតិយោបល់ សំណូមពរសៀវភៅ និងតំណភ្ជាប់ឯកសារសិក្សាមានប្រយោជន៍ ដើម្បីរួមគ្នាអភិវឌ្ឍបណ្ណាល័យឌីជីថលឱ្យកាន់តែប្រសើរឡើង។ រាល់ការចូលរួមរបស់លោកអ្នក គឺមានតម្លៃសម្រាប់យើងទាំងអស់គ្នា។
+        <div class="flex items-center gap-1.5 shrink-0 ml-2 text-indigo-300">
+          <span class="text-[11px] font-medium hidden sm:inline">{{ showWelcomeNotice ? 'បង្រួម' : 'ពង្រីក' }}</span>
+          <div class="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center text-xs transition-transform duration-200" :class="{ 'rotate-180': showWelcomeNotice }">
+            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+          </div>
+        </div>
+      </button>
+
+      <!-- Collapsible Body Content -->
+      <div v-show="showWelcomeNotice" class="px-4 pb-4 pt-1 border-t border-white/10 text-xs sm:text-sm text-indigo-100/90 leading-relaxed font-light space-y-1.5 animate-fadeIn">
+        <p>
+          លោកគ្រូ អ្នកគ្រូ និងប្អូនៗសិស្សានុសិស្ស អាចចែករំលែកមតិយោបល់ សំណូមពរសៀវភៅ និងតំណភ្ជាប់ឯកសារសិក្សាមានប្រយោជន៍ ដើម្បីរួមគ្នាអភិវឌ្ឍបណ្ណាល័យឌីជីថលឱ្យកាន់តែប្រសើរឡើង។
+        </p>
+        <p class="text-[11px] text-amber-300/90 flex items-center gap-1">
+          <i class="fa-solid fa-circle-check text-[10px]"></i>
+          <span>រាល់ការចូលរួមរបស់លោកអ្នក គឺមានតម្លៃសម្រាប់យើងទាំងអស់គ្នា!</span>
         </p>
       </div>
-
-      <!-- Decorative background glow -->
-      <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
     </div>
 
     <!-- 2. Form សរសេរសំណើ និងមតិយោបល់ (Always Directly Visible Form Card) -->
@@ -101,12 +124,12 @@
           </p>
         </div>
 
-        <!-- Action buttons (Submit only - no cancel button) -->
-        <div class="pt-2 flex items-center justify-end">
+        <!-- Action button: Full-width on mobile for easy tapping, auto on desktop -->
+        <div class="pt-2">
           <button 
             type="submit" 
             :disabled="isSubmitting"
-            class="px-7 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 shadow-sm shadow-indigo-500/20 cursor-pointer disabled:opacity-50 active:scale-95"
+            class="w-full sm:w-auto sm:ml-auto px-8 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 shadow-sm shadow-indigo-600/25 cursor-pointer disabled:opacity-50"
           >
             <i v-if="isSubmitting" class="fa-solid fa-circle-notch fa-spin text-xs"></i>
             <i v-else class="fa-solid fa-paper-plane text-xs"></i>
@@ -246,15 +269,6 @@
                 </div>
               </div>
 
-              <!-- Admin delete button -->
-              <button 
-                type="button" 
-                @click="deleteRequest(req)" 
-                title="លុបសំណើនេះ"
-                class="text-slate-400 hover:text-red-600 p-1 rounded-lg hover:bg-red-50 transition cursor-pointer text-xs"
-              >
-                <i class="fa-regular fa-trash-can"></i>
-              </button>
             </div>
 
             <!-- Title & Note -->
@@ -307,12 +321,24 @@
             </div>
           </div>
 
-          <!-- Post Footer: Official Reply button for Admin -->
-          <div class="pt-3 border-t border-slate-100 flex items-center justify-end">
+          <!-- Post Footer: Action Buttons (Delete & Official Reply) with Safe Spacing & Padding -->
+          <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+            <!-- Delete Button (Left side, Red-themed with generous tap target) -->
+            <button 
+              type="button" 
+              @click="deleteRequest(req)" 
+              title="លុបសំណើនេះ"
+              class="px-3.5 py-2 text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100/80 border border-rose-200/60 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-2xs"
+            >
+              <i class="fa-regular fa-trash-can text-xs"></i>
+              <span>លុប</span>
+            </button>
+
+            <!-- Official Reply Button (Right side, Indigo-themed with generous tap target) -->
             <button
               type="button"
               @click="openReplyModal(req)"
-              class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs shadow-indigo-600/20"
             >
               <i class="fa-solid fa-reply text-xs"></i>
               <span>{{ req.admin_feedback ? 'កែសម្រួលការឆ្លើយតប' : 'ឆ្លើយតបផ្លូវការ' }}</span>
@@ -404,6 +430,9 @@ const counts = ref({ all: 0, students: 0, teachers: 0, links: 0 });
 const isLoading = ref(true);
 const roleFilter = ref('all'); // all, student, teacher, link
 const searchQuery = ref('');
+
+// Collapsible Welcome Notice State (Compact on mobile)
+const showWelcomeNotice = ref(false);
 
 // Form State
 const isSubmitting = ref(false);

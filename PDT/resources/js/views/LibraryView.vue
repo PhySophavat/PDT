@@ -29,186 +29,197 @@
     />
 
     <!-- TAB 1: Digital E-Library (Grades 7–12) -->
-    <div v-if="activeTab === 'elibrary'" class="space-y-4">
+    <div v-if="activeTab === 'elibrary'" class="space-y-3.5 sm:space-y-4">
       
-      <!-- Sleek 3-Row Dedicated Control Bar (Never Clipped) -->
-      <div class="bg-white/80 backdrop-blur-md border border-slate-200/60 rounded-2xl p-4 shadow-sm space-y-3">
-        <!-- Row 1: Search, Level dropdown & Saved/Recent Tabs -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <!-- Search input -->
-          <div class="relative w-full sm:w-80 shrink-0">
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+      <!-- STICKY COMPACT HEADER & MOBILE-FIRST FILTER SUITE WITH AUTO-HIDE ON SCROLL -->
+      <div 
+        ref="headerRef"
+        class="sticky top-0 z-30 bg-white/95 backdrop-blur-md -mx-3 sm:mx-0 px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-b-2xl sm:rounded-2xl border-b sm:border border-slate-200/70 shadow-xs sm:shadow-sm space-y-2.5 transition-transform duration-300 ease-in-out"
+        :class="{ '-translate-y-full': isHeaderHidden }"
+      >
+        <!-- Row 1: Search & Level / Quick Counts -->
+        <div class="flex items-center gap-2">
+          <!-- Search input with clear button -->
+          <div class="relative flex-1 min-w-0">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
             <input 
               v-model="searchQuery" 
               type="text" 
               placeholder="ស្វែងរកចំណងជើង, អ្នកនិពន្ធ, មុខវិជ្ជា..." 
-              class="w-full pl-8 pr-3 py-1.5 bg-slate-100/70 hover:bg-slate-100 focus:bg-white border border-slate-200/80 rounded-xl text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+              class="w-full pl-8 pr-8 py-2 bg-slate-100/80 hover:bg-slate-100 focus:bg-white border border-slate-200/80 focus:border-indigo-500 rounded-xl text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
             />
+            <button 
+              v-if="searchQuery" 
+              @click="searchQuery = ''"
+              type="button"
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs p-1 cursor-pointer"
+            >
+              <i class="fa-solid fa-xmark"></i>
+            </button>
           </div>
 
-          <!-- Level & Tab View Filters -->
-          <div class="flex items-center gap-2 shrink-0 justify-end flex-wrap">
+          <!-- Level Filter Dropdown -->
+          <div class="relative shrink-0">
             <select 
               v-model="selectedLevel" 
-              class="px-2.5 py-1.5 bg-slate-100/70 border border-slate-200/80 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              class="px-2.5 sm:px-3 py-2 bg-slate-100/80 hover:bg-slate-100 border border-slate-200/80 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition"
             >
-              <option value="">គ្រប់កម្រិត</option>
+              <option value="">📚 គ្រប់កម្រិត</option>
               <option value="basic">មូលដ្ឋាន</option>
               <option value="advanced">កម្រិតខ្ពស់</option>
               <option value="អក្សរសិល្ប៍">អក្សរសិល្ប៍</option>
             </select>
+          </div>
 
-            <div class="flex items-center gap-1 bg-slate-100/80 p-0.5 rounded-xl border border-slate-200/70">
-              <button 
-                type="button"
-                @click="subFilter = 'all'"
-                :class="[
-                  'px-2 py-1 rounded-lg text-xs font-semibold transition cursor-pointer',
-                  subFilter === 'all' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                ]"
-                title="សៀវភៅទាំងអស់"
-              >
-                ទាំងអស់
-              </button>
-              <button 
-                type="button"
-                @click="subFilter = 'bookmarks'"
-                :class="[
-                  'px-2 py-1 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1',
-                  subFilter === 'bookmarks' ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                ]"
-                title="សៀវភៅបានរក្សាទុក"
-              >
-                <i class="fa-solid fa-star text-[10px]"></i>
-                <span>({{ bookmarkedIds.length }})</span>
-              </button>
-              <button 
-                type="button"
-                @click="subFilter = 'recent'"
-                :class="[
-                  'px-2 py-1 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1',
-                  subFilter === 'recent' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                ]"
-                title="ទើបអានរួច"
-              >
-                <i class="fa-solid fa-clock-rotate-left text-[10px]"></i>
-                <span>({{ recentlyViewedIds.length }})</span>
-              </button>
-            </div>
+          <!-- Total Count Badge (Desktop) -->
+          <div class="hidden md:flex items-center gap-1.5 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-bold border border-indigo-100 shrink-0">
+            <i class="fa-solid fa-book-open text-xs"></i>
+            <span>{{ filteredELibraryBooks.length }} ក្បាល</span>
           </div>
         </div>
 
-        <!-- Row 2: Dedicated Grade Pills Row (Never Clipped) -->
-        <div class="pt-2.5 border-t border-slate-100/90 flex items-center justify-between gap-2 flex-wrap">
-          <div class="flex items-center gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] text-xs py-0.5">
-            <span class="text-[11px] font-bold text-slate-500 whitespace-nowrap flex items-center gap-1 mr-1 shrink-0">
-              <i class="fa-solid fa-layer-group text-indigo-600"></i>
-              <span>កម្រិតថ្នាក់៖</span>
-            </span>
-
+        <!-- Row 2: Horizontal Quick Tag Chips (All, Favorites, History) -->
+        <div class="flex items-center justify-between gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-0.5">
+          <div class="flex items-center gap-1.5">
             <button 
               type="button"
-              @click="selectGrade('')"
+              @click="subFilter = 'all'"
               :class="[
-                'px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0',
-                selectedGrade === '' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                'px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 shadow-2xs',
+                subFilter === 'all' 
+                  ? 'bg-indigo-600 text-white shadow-indigo-600/20' 
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
               ]"
             >
-              <span>គ្រប់ថ្នាក់ទាំងអស់</span>
-              <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="selectedGrade === '' ? 'bg-white/20' : 'bg-slate-200 text-slate-700'">{{ eLibraryBooks.length }}</span>
+              <i class="fa-solid fa-layer-group text-[10px]"></i>
+              <span>ទាំងអស់</span>
+              <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="subFilter === 'all' ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-700'">
+                {{ eLibraryBooks.length }}
+              </span>
             </button>
 
             <button 
-              v-for="g in ['7', '8', '9', '10', '11', '12']" 
-              :key="g"
               type="button"
-              @click="selectGrade(g)"
+              @click="subFilter = 'bookmarks'"
               :class="[
-                'px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0',
-                selectedGrade === g ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                'px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 shadow-2xs',
+                subFilter === 'bookmarks' 
+                  ? 'bg-amber-500 text-white shadow-amber-500/20' 
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
               ]"
             >
-              <span>ថ្នាក់ទី {{ g }}</span>
-              <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="selectedGrade === g ? 'bg-white/20' : 'bg-slate-200 text-slate-700'">
-                {{ countForGrade(g) }}
+              <i class="fa-solid fa-star text-[10px]" :class="subFilter === 'bookmarks' ? 'text-amber-100' : 'text-amber-500'"></i>
+              <span>ពេញចិត្ត</span>
+              <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="subFilter === 'bookmarks' ? 'bg-white/25 text-white' : 'bg-amber-100 text-amber-800'">
+                {{ bookmarkedIds.length }}
+              </span>
+            </button>
+
+            <button 
+              type="button"
+              @click="subFilter = 'recent'"
+              :class="[
+                'px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 shadow-2xs',
+                subFilter === 'recent' 
+                  ? 'bg-blue-600 text-white shadow-blue-600/20' 
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+              ]"
+            >
+              <i class="fa-solid fa-clock-rotate-left text-[10px]"></i>
+              <span>ទើបអាន</span>
+              <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="subFilter === 'recent' ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-700'">
+                {{ recentlyViewedIds.length }}
               </span>
             </button>
           </div>
+
+          <!-- Total Count Indicator (Mobile) -->
+          <span class="md:hidden text-[11px] text-slate-400 font-medium whitespace-nowrap shrink-0 pl-1">
+            <strong>{{ filteredELibraryBooks.length }}</strong> ក្បាល
+          </span>
         </div>
 
-        <!-- Row 3: Subject Filter Pills (Exact order: [ទាំងអស់] -> [អក្សរសិល្ប៍ (8)] -> ...) -->
-        <div class="pt-2.5 border-t border-slate-100/90 flex items-center justify-between gap-2">
-          <div class="flex-1 min-w-0 flex items-center gap-1.5">
-            <span class="text-[11px] font-bold text-slate-400 whitespace-nowrap flex items-center gap-1 mr-1 shrink-0">
-              <i class="fa-solid fa-book-bookmark text-slate-400"></i>
-              <span>មុខវិជ្ជា៖</span>
-            </span>
-
-            <!-- Scroll Left Arrow (Desktop Helper) -->
-            <button 
-              type="button" 
-              @click="scrollSubjects('left')" 
-              class="hidden sm:flex w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 items-center justify-center shrink-0 cursor-pointer text-[10px] transition shadow-2xs"
-              title="រមូរទៅឆ្វេង (Scroll Left)"
-            >
-              <i class="fa-solid fa-chevron-left"></i>
-            </button>
-
-            <!-- Scrollable Subjects Container -->
-            <div 
-              ref="subjectScrollRef" 
-              @wheel="onSubjectWheel"
-              class="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] text-xs py-0.5"
-            >
-              <button 
-                type="button"
-                @click="selectSubject('')"
-                :class="[
-                  'px-2.5 py-1 rounded-lg font-medium transition whitespace-nowrap cursor-pointer text-xs shrink-0',
-                  selectedSubjectId === '' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                ]"
-              >
-                ទាំងអស់
-              </button>
-
-              <button 
-                v-for="sub in sortedSubjectsList" 
-                :key="sub.id"
-                type="button"
-                @click="selectSubject(sub.id)"
-                :class="[
-                  'px-2.5 py-1 rounded-lg font-medium transition whitespace-nowrap cursor-pointer text-xs flex items-center gap-1.5 shrink-0',
-                  selectedSubjectId === sub.id ? 'bg-indigo-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                ]"
-              >
-                <span>{{ sub.name }}</span>
-                <span v-if="countForSubject(sub.id) > 0" class="text-[10px] opacity-75">({{ countForSubject(sub.id) }})</span>
-              </button>
-            </div>
-
-            <!-- Scroll Right Arrow (Desktop Helper) -->
-            <button 
-              type="button" 
-              @click="scrollSubjects('right')" 
-              class="hidden sm:flex w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 items-center justify-center shrink-0 cursor-pointer text-[10px] transition shadow-2xs"
-              title="រមូរទៅស្តាំ (Scroll Right)"
-            >
-              <i class="fa-solid fa-chevron-right"></i>
-            </button>
-          </div>
-
-          <span class="text-xs text-slate-400 font-medium shrink-0 hidden sm:inline-block pl-2 border-l border-slate-100">
-            បង្ហាញ <strong>{{ filteredELibraryBooks.length }}</strong> ក្បាល
+        <!-- Row 3: Smooth Horizontal Scrollable Grade Chips (ថ្នាក់ទី ៧ - ១២) -->
+        <div class="pt-2 border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-0.5">
+          <span class="text-[11px] font-bold text-slate-400 whitespace-nowrap flex items-center gap-1 mr-0.5 shrink-0">
+            <i class="fa-solid fa-graduation-cap text-indigo-500"></i>
+            <span class="hidden sm:inline">ថ្នាក់៖</span>
           </span>
+
+          <button 
+            type="button"
+            @click="selectGrade('')"
+            :class="[
+              'px-2.5 sm:px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1 shrink-0',
+              selectedGrade === '' 
+                ? 'bg-indigo-600 text-white shadow-xs' 
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+            ]"
+          >
+            <span>គ្រប់ថ្នាក់</span>
+          </button>
+
+          <button 
+            v-for="g in ['7', '8', '9', '10', '11', '12']" 
+            :key="g"
+            type="button"
+            @click="selectGrade(g)"
+            :class="[
+              'px-2.5 sm:px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1 shrink-0',
+              selectedGrade === g 
+                ? 'bg-indigo-600 text-white shadow-xs' 
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+            ]"
+          >
+            <span>ថ្នាក់ទី {{ g }}</span>
+            <span v-if="countForGrade(g) > 0" class="text-[10px] opacity-75">({{ countForGrade(g) }})</span>
+          </button>
+        </div>
+
+        <!-- Row 4: Smooth Horizontal Scrollable Subject Chips (មុខវិជ្ជា) -->
+        <div class="pt-2 border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-0.5">
+          <span class="text-[11px] font-bold text-slate-400 whitespace-nowrap flex items-center gap-1 mr-0.5 shrink-0">
+            <i class="fa-solid fa-book-bookmark text-slate-400"></i>
+            <span class="hidden sm:inline">មុខវិជ្ជា៖</span>
+          </span>
+
+          <button 
+            type="button"
+            @click="selectSubject('')"
+            :class="[
+              'px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0',
+              selectedSubjectId === '' 
+                ? 'bg-indigo-600 text-white shadow-xs font-bold' 
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+            ]"
+          >
+            ទាំងអស់
+          </button>
+
+          <button 
+            v-for="sub in sortedSubjectsList" 
+            :key="sub.id"
+            type="button"
+            @click="selectSubject(sub.id)"
+            :class="[
+              'px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1 shrink-0',
+              selectedSubjectId === sub.id 
+                ? 'bg-indigo-600 text-white shadow-xs font-bold' 
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+            ]"
+          >
+            <span>{{ sub.name }}</span>
+            <span v-if="countForSubject(sub.id) > 0" class="text-[10px] opacity-75">({{ countForSubject(sub.id) }})</span>
+          </button>
         </div>
       </div>
 
-      <!-- Book Grid / Empty State -->
-      <div v-if="filteredELibraryBooks.length === 0" class="py-14 px-4 text-center bg-white rounded-3xl border border-slate-200/80 shadow-xs">
-        <div class="w-16 h-16 rounded-2xl bg-amber-50 text-amber-500 border border-amber-100 flex items-center justify-center text-3xl mx-auto mb-3 shadow-inner">
-          <i class="fa-solid fa-book-open-reader text-2xl"></i>
+      <!-- Empty State -->
+      <div v-if="filteredELibraryBooks.length === 0" class="py-12 px-4 text-center bg-white rounded-3xl border border-slate-200/80 shadow-xs">
+        <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-500 border border-amber-100 flex items-center justify-center text-2xl mx-auto mb-3 shadow-inner">
+          <i class="fa-solid fa-book-open-reader"></i>
         </div>
-        <h4 class="font-bold text-slate-800 text-base">
+        <h4 class="font-bold text-slate-800 text-sm sm:text-base">
           <template v-if="selectedGrade && selectedSubjectId">
             មិនទាន់មានសៀវភៅមុខវិជ្ជា {{ currentSubjectName }} សម្រាប់ថ្នាក់ទី {{ selectedGrade }} នៅឡើយទេ
           </template>
@@ -222,40 +233,30 @@
             រកមិនឃើញសៀវភៅដែលត្រូវនឹងការស្វែងរកទេ
           </template>
         </h4>
-        <p class="text-xs text-slate-500 mt-1.5 max-w-md mx-auto leading-relaxed">
+        <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto leading-relaxed">
           <template v-if="selectedGrade && selectedSubjectId">
-            បច្ចុប្បន្នមុខវិជ្ជានេះមិនទាន់មានឯកសារ ឬសៀវភៅពុម្ពក្នុងថ្នាក់ទី {{ selectedGrade }} ទេ។ លោកអ្នកអាចចុចមើលមុខវិជ្ជានេះគ្រប់ថ្នាក់ ឬមើលមុខវិជ្ជាផ្សេងៗក្នុងថ្នាក់ទី {{ selectedGrade }}។
+            បច្ចុប្បន្នមុខវិជ្ជានេះមិនទាន់មានឯកសារក្នុងថ្នាក់ទី {{ selectedGrade }} ទេ។ លោកអ្នកអាចចុចមើលមុខវិជ្ជានេះគ្រប់ថ្នាក់ ឬមើលមុខវិជ្ជាផ្សេងៗក្នុងថ្នាក់ទី {{ selectedGrade }}។
           </template>
           <template v-else>
             សូមសាកល្បងផ្លាស់ប្តូរការជ្រើសរើសកម្រិតថ្នាក់ មុខវិជ្ជា ឬពាក្យគន្លឹះស្វែងរក។
           </template>
         </p>
 
-        <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
+        <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
           <button 
             v-if="selectedGrade && selectedSubjectId"
             type="button" 
             @click="selectedGrade = ''"
-            class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+            class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
           >
             <i class="fa-solid fa-layer-group text-xs"></i>
-            <span>មើល {{ currentSubjectName }} គ្រប់ថ្នាក់ទាំងអស់</span>
-          </button>
-
-          <button 
-            v-if="selectedGrade && selectedSubjectId"
-            type="button" 
-            @click="selectedSubjectId = ''"
-            class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
-          >
-            <i class="fa-solid fa-book text-xs"></i>
-            <span>មើលគ្រប់មុខវិជ្ជាក្នុងថ្នាក់ទី {{ selectedGrade }}</span>
+            <span>មើល {{ currentSubjectName }} គ្រប់ថ្នាក់</span>
           </button>
 
           <button 
             type="button" 
             @click="resetFilters"
-            class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+            class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
           >
             <i class="fa-solid fa-rotate-left text-xs"></i>
             <span>កំណត់ឡើងវិញ (Reset Filters)</span>
@@ -263,142 +264,134 @@
         </div>
       </div>
 
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+      <!-- MODERN CLEAN 2-COLUMN MOBILE / 3-5 COLUMN DESKTOP BOOK GRID -->
+      <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4.5">
         <div 
           v-for="b in filteredELibraryBooks" 
           :key="b.id"
-          class="bg-white rounded-2xl border border-slate-200/70 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col group relative"
+          class="bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-300 shadow-2xs hover:shadow-md transition-all duration-200 p-2 sm:p-2.5 flex flex-col justify-between group relative"
         >
-          <!-- Card Header / Cover with Glassmorphic Badges -->
-          <div class="h-44 rounded-t-2xl p-5 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-900 text-white shadow-inner">
-            <!-- Cover image background if available -->
+          <!-- 1. Book Cover with Aspect Ratio & Overlays -->
+          <div 
+            @click="openPdfReader(b)"
+            class="relative aspect-[3/4] w-full rounded-xl overflow-hidden bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-900 shadow-inner cursor-pointer group/cover"
+          >
+            <!-- Cover Image if present -->
             <img 
               v-if="b.cover_image" 
               :src="b.cover_image" 
               :alt="b.title" 
-              class="absolute inset-0 w-full h-full object-cover object-center opacity-40 group-hover:scale-105 group-hover:opacity-50 transition duration-300 pointer-events-none"
+              class="w-full h-full object-cover object-center group-hover/cover:scale-105 transition-transform duration-300"
               loading="lazy"
             />
-            <div v-if="b.cover_image" class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/60 to-slate-900/40 pointer-events-none"></div>
-            <div class="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-indigo-500/10 blur-2xl pointer-events-none"></div>
-            
-            <!-- Top Badges & Bookmark Toggle -->
-            <div class="flex items-center justify-between z-10">
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md text-white border border-white/20">
-                  {{ isLitBook(b) || b.grade === 'ទូទៅ' ? 'ទូទៅគ្រប់ថ្នាក់' : `ថ្នាក់ទី ${b.grade || '11'}` }}
-                </span>
-                <span v-if="isLitBook(b) || b.level === 'អក្សរសិល្ប៍'" class="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-400 text-purple-950 shadow-xs">
-                  អក្សរសិល្ប៍
-                </span>
-                <span v-else-if="b.level === 'advanced'" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-400 text-amber-950 shadow-xs">
-                  កម្រិតខ្ពស់
-                </span>
-                <span v-else class="px-2.5 py-1 rounded-full text-xs font-medium bg-white/15 backdrop-blur-md text-slate-100 border border-white/10">
-                  មូលដ្ឋាន
-                </span>
+
+            <!-- Stylized Fallback Cover when no image -->
+            <div v-else class="w-full h-full p-3 flex flex-col justify-between bg-gradient-to-br from-indigo-900 via-slate-900 to-blue-950 text-white relative">
+              <div class="w-8 h-8 rounded-lg bg-white/10 backdrop-blur-md flex items-center justify-center text-indigo-300 text-sm">
+                <i class="fa-solid fa-book-open"></i>
               </div>
-
-              <!-- Bookmark Star -->
-              <button 
-                type="button"
-                @click.stop="toggleBookmark(b.id)"
-                class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 backdrop-blur-md text-white flex items-center justify-center text-xs transition cursor-pointer"
-                :title="isBookmarked(b.id) ? 'ដកចេញពីសៀវភៅចំណាំ' : 'រក្សាទុកក្នុងសៀវភៅចំណាំ'"
-              >
-                <i :class="isBookmarked(b.id) ? 'fa-solid fa-star text-amber-300' : 'fa-regular fa-star text-white/80'"></i>
-              </button>
+              <div>
+                <p class="text-[10px] text-indigo-300 font-semibold truncate">{{ b.subject_name || 'សៀវភៅពុម្ព' }}</p>
+                <h5 class="text-xs font-bold line-clamp-3 leading-tight mt-0.5">{{ b.title }}</h5>
+              </div>
             </div>
 
-            <!-- Book Title -->
-            <div class="z-10 mt-auto">
-              <h4 class="font-bold text-sm text-white line-clamp-2 leading-relaxed drop-shadow-xs" :title="b.title">
-                {{ b.title }}
-              </h4>
-            </div>
+            <!-- Gradient overlay for text contrast if cover image present -->
+            <div v-if="b.cover_image" class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-black/30 pointer-events-none"></div>
+
+            <!-- Grade Badge (Top-Left) -->
+            <span class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-900/75 backdrop-blur-md text-white border border-white/15 shadow-xs">
+              {{ isLitBook(b) || b.grade === 'ទូទៅ' ? 'ទូទៅ' : 'ថ្នាក់ ' + (b.grade || '11') }}
+            </span>
+
+            <!-- Bookmark Star Toggle (Top-Right) -->
+            <button 
+              type="button"
+              @click.stop="toggleBookmark(b.id)"
+              class="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-slate-900/65 hover:bg-slate-900/90 backdrop-blur-md text-white flex items-center justify-center text-xs transition active:scale-90 cursor-pointer shadow-xs"
+              :title="isBookmarked(b.id) ? 'ដកចេញពីសៀវភៅចំណាំ' : 'រក្សាទុកក្នុងសៀវភៅចំណាំ'"
+            >
+              <i :class="isBookmarked(b.id) ? 'fa-solid fa-star text-amber-400' : 'fa-regular fa-star text-white/80'"></i>
+            </button>
+
+            <!-- Reading Progress indicator (Bottom-Left) -->
+            <span 
+              v-if="getLastPage(b.id)" 
+              class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-emerald-600/90 backdrop-blur-md text-white shadow-xs flex items-center gap-1"
+            >
+              <i class="fa-solid fa-bookmark text-[8px]"></i>
+              <span>ទំព័រទី {{ getLastPage(b.id) }}</span>
+            </span>
           </div>
 
-          <!-- Card Body -->
-          <div class="p-4 flex-1 flex flex-col justify-between space-y-3.5">
-            <!-- Subject Pill & ISBN row -->
-            <div class="flex items-center justify-between gap-2">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 truncate max-w-[65%]">
-                {{ b.subject_name || 'សៀវភៅពុម្ព' }}
-              </span>
-              <span class="text-xs text-slate-400 font-mono truncate text-right max-w-[35%]" :title="b.isbn">
-                {{ b.isbn || 'MoEYS' }}
-              </span>
-            </div>
+          <!-- 2. Book Info (Clean, No Noise) -->
+          <div class="mt-2 flex-1 flex flex-col">
+            <!-- Subject Pill -->
+            <span class="text-[10px] font-semibold text-indigo-600 truncate max-w-full block">
+              {{ b.subject_name || 'សៀវភៅពុម្ពជាតិ' }}
+            </span>
 
-            <!-- Metadata List -->
-            <div class="space-y-1.5 text-xs text-slate-600">
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-slate-400 text-[11px] shrink-0 flex items-center gap-1">
-                  <i class="fa-solid fa-user-pen text-slate-400 text-[10px]"></i>
-                  <span>អ្នកនិពន្ធ៖</span>
-                </span>
-                <span class="font-medium truncate text-slate-800 text-right">{{ b.author || 'ក្រសួងអប់រំ យុវជន និងកីឡា' }}</span>
-              </div>
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-slate-400 text-[11px] shrink-0 flex items-center gap-1">
-                  <i class="fa-solid fa-calendar-check text-slate-400 text-[10px]"></i>
-                  <span>បោះពុម្ព៖</span>
-                </span>
-                <span class="font-medium text-slate-700 truncate text-right">{{ b.edition || 'លើកទី១' }} ({{ b.publication_year || 2024 }})</span>
-              </div>
-              <div class="flex items-center justify-between text-[11px] pt-1.5 border-t border-slate-100/90">
-                <span class="text-slate-400 flex items-center gap-1">
-                  <i class="fa-solid fa-eye text-slate-400 text-[10px]"></i>
-                  <span>{{ b.views_count || 0 }} ដង</span>
-                </span>
-                <span v-if="getLastPage(b.id)" class="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">
-                  📖 ទំព័រទី {{ getLastPage(b.id) }}
-                </span>
-              </div>
-            </div>
+            <!-- Book Title (Clamped 2 Lines, Proper Line-Height) -->
+            <h4 
+              @click="openPdfReader(b)"
+              class="font-bold text-xs sm:text-sm text-slate-800 line-clamp-2 leading-snug sm:leading-normal hover:text-indigo-600 transition-colors cursor-pointer mt-0.5" 
+              :title="b.title"
+            >
+              {{ b.title }}
+            </h4>
 
-            <!-- Actions Row -->
-            <div class="pt-2 border-t border-slate-100/90 flex items-center gap-1.5">
-              <button 
-                type="button" 
-                @click="openPdfReader(b)"
-                class="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <i class="fa-solid fa-book-open-reader text-xs"></i>
-                <span>{{ getLastPage(b.id) ? 'បន្តអាន' : 'អានសៀវភៅ' }}</span>
-              </button>
+            <!-- Author (Single concise line) -->
+            <p class="text-[10px] sm:text-[11px] text-slate-400 truncate flex items-center gap-1 mt-1">
+              <i class="fa-solid fa-user-pen text-[9px] text-slate-300 shrink-0"></i>
+              <span class="truncate">{{ b.author || 'ក្រសួងអប់រំ យុវជន និងកីឡា' }}</span>
+            </p>
+          </div>
 
-              <a 
-                :href="getPdfViewUrl(b.external_pdf_url)" 
-                target="_blank"
-                class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs transition shrink-0"
-                title="បើកមើលក្នុង Tab ថ្មី (ពេញអេក្រង់)"
-              >
-                <i class="fa-solid fa-arrow-up-right-from-square"></i>
-              </a>
+          <!-- 3. Primary Action Buttons -->
+          <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center gap-1 w-full">
+            <!-- Read Button («អានសៀវភៅ» or «បន្តអាន») -->
+            <button 
+              type="button" 
+              @click="openPdfReader(b)"
+              class="flex-1 py-1.5 px-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 active:scale-95 text-white rounded-xl text-[11px] sm:text-xs font-bold shadow-xs transition flex items-center justify-center gap-1 cursor-pointer"
+              :title="getLastPage(b.id) ? 'បន្តអានពីទំព័រទី ' + getLastPage(b.id) : 'ចុចដើម្បីអានសៀវភៅ'"
+            >
+              <i class="fa-solid fa-book-open-reader text-[10px]"></i>
+              <span>{{ getLastPage(b.id) ? 'បន្តអាន' : 'អានសៀវភៅ' }}</span>
+            </button>
 
-              <a 
-                v-if="b.allow_download !== false || canManageLibrary"
-                :href="getPdfDownloadUrl(b.external_pdf_url)" 
-                target="_blank"
-                download
-                class="w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center text-xs transition shrink-0"
-                title="Save in phone (ទាញយកសៀវភៅ PDF ទុកក្នុងទូរស័ព្ទ)"
-              >
-                <i class="fa-solid fa-download"></i>
-              </a>
+            <!-- Open in New Tab -->
+            <a 
+              :href="getPdfViewUrl(b.external_pdf_url)" 
+              target="_blank"
+              class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center text-[10px] sm:text-xs transition shrink-0 cursor-pointer"
+              title="បើកមើលក្នុង Tab ថ្មី (ពេញអេក្រង់)"
+            >
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
 
-              <!-- Admin Edit Button -->
-              <button 
-                v-if="canManageLibrary"
-                type="button" 
-                @click="openEditBookModal(b)" 
-                class="w-8 h-8 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-200 flex items-center justify-center text-xs transition shrink-0 cursor-pointer"
-                title="កែប្រែព័ត៌មានសៀវភៅ"
-              >
-                <i class="fa-solid fa-pen"></i>
-              </button>
-            </div>
+            <!-- Download Button (If permitted) -->
+            <a 
+              v-if="b.allow_download !== false || canManageLibrary"
+              :href="getPdfDownloadUrl(b.external_pdf_url)" 
+              target="_blank"
+              download
+              class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700 border border-emerald-100 flex items-center justify-center text-[10px] sm:text-xs transition shrink-0"
+              title="ទាញយក PDF ទុកក្នុងទូរស័ព្ទ"
+            >
+              <i class="fa-solid fa-download"></i>
+            </a>
+
+            <!-- Admin Edit Button -->
+            <button 
+              v-if="canManageLibrary"
+              type="button" 
+              @click="openEditBookModal(b)" 
+              class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-700 border border-slate-200 flex items-center justify-center text-[10px] sm:text-xs transition shrink-0 cursor-pointer"
+              title="កែប្រែព័ត៌មាន"
+            >
+              <i class="fa-solid fa-pen"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -1316,7 +1309,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onActivated } from 'vue';
+import { ref, computed, onMounted, onActivated, onUnmounted, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
@@ -1931,13 +1924,83 @@ const fetchLibraryData = async () => {
   }
 };
 
+// Auto-hide Header on Scroll (Mobile-First Scroll Direction Detection)
+const headerRef = ref(null);
+const isHeaderHidden = ref(false);
+let lastScrollY = 0;
+let ticking = false;
+const SCROLL_THRESHOLD = 80;
+const MIN_DELTA = 8;
+let scrollContainer = null;
+
+const handleScroll = (e) => {
+  const target = (e?.target && e.target !== document) ? e.target : window;
+  const currentScrollY = target === window 
+    ? (window.pageYOffset || document.documentElement.scrollTop || 0)
+    : (target.scrollTop || 0);
+
+  // 1. Prevent negative scroll on iOS rubber-band bounce
+  if (currentScrollY < 0) return;
+
+  // 2. Always show header at top
+  if (currentScrollY <= SCROLL_THRESHOLD) {
+    isHeaderHidden.value = false;
+    lastScrollY = currentScrollY;
+    return;
+  }
+
+  // 3. Smooth delta check via requestAnimationFrame
+  if (!ticking) {
+    window.requestAnimationFrame(() => {
+      const delta = currentScrollY - lastScrollY;
+      if (Math.abs(delta) >= MIN_DELTA) {
+        if (delta > 0 && currentScrollY > SCROLL_THRESHOLD) {
+          // Scrolling Down -> Hide
+          isHeaderHidden.value = true;
+        } else if (delta < 0) {
+          // Scrolling Up -> Show Immediately
+          isHeaderHidden.value = false;
+        }
+      }
+      lastScrollY = currentScrollY;
+      ticking = false;
+    });
+    ticking = true;
+  }
+};
+
+const setupScrollListeners = () => {
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  if (headerRef.value) {
+    scrollContainer = headerRef.value.closest('.overflow-y-auto') || document.querySelector('.overflow-y-auto');
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    }
+  }
+};
+
+const cleanupScrollListeners = () => {
+  window.removeEventListener('scroll', handleScroll);
+  if (scrollContainer) {
+    scrollContainer.removeEventListener('scroll', handleScroll);
+  }
+};
+
 onMounted(() => {
   loadLocalStorageData();
   fetchLibraryData();
+  nextTick(() => {
+    setupScrollListeners();
+  });
+});
+
+onUnmounted(() => {
+  cleanupScrollListeners();
 });
 
 onActivated(() => {
   fetchLibraryData();
+  isHeaderHidden.value = false;
 });
 
 // PDF Reader Actions

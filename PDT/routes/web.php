@@ -130,6 +130,8 @@ Route::get('/examinations/{examination}/ranking-sheet', [ExaminationController::
 // Public Digital Library View (Telegram / Facebook Sharing & Direct Public Browsing)
 Route::get('/library', $spa)->name('library.index');
 Route::get('/api/library', [ApiController::class, 'library']);
+Route::post('/api/library/books/{id}/broken-link', [ApiController::class, 'toggleBrokenLink']);
+Route::post('/api/library/books/{id}/view', [ApiController::class, 'recordBookView']);
 
 Route::middleware(['auth'])->group(function () use ($spa) {
 

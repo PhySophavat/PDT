@@ -783,19 +783,21 @@ class ApiController extends Controller
                         }
                     }
 
+                    $isBrokenReport = str_contains($br->title, '🚨') || str_contains($br->title, 'តំណ PDF ខូច') || str_contains($br->title, 'តំណភ្ជាប់ PDF ខូច');
+
                     $notifications->push([
                         'id' => 'book-request-' . $br->id,
                         'type' => 'book_request',
-                        'type_label' => 'សំណើ & មតិយោបល់',
+                        'type_label' => $isBrokenReport ? 'តំណភ្ជាប់ PDF ខូច 🚨' : 'សំណើ & មតិយោបល់',
                         'name' => $senderName,
-                        'title' => "សំណើ/មតិយោបល់៖ {$br->title}",
-                        'subtitle' => "{$senderRole}{$senderName} • " . ($br->grade ? 'ថ្នាក់ ' . $br->grade . ' • ' : '') . (mb_strlen($br->note ?? '') > 50 ? mb_substr($br->note, 0, 50) . '...' : ($br->note ?? '')),
+                        'title' => $br->title,
+                        'subtitle' => "{$senderRole}{$senderName} • " . ($br->grade ? 'ថ្នាក់ ' . $br->grade . ' • ' : '') . (mb_strlen($br->note ?? '') > 60 ? mb_substr($br->note, 0, 60) . '...' : ($br->note ?? '')),
                         'time' => $br->created_at ? $br->created_at->diffForHumans() : 'ថ្មីៗនេះ',
                         'timestamp' => $br->created_at ? $br->created_at->timestamp : 0,
                         'link' => '/requests',
-                        'icon' => 'fa-solid fa-bookmark',
-                        'badge_color' => 'bg-indigo-500',
-                        'bg_color' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
+                        'icon' => $isBrokenReport ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-bookmark',
+                        'badge_color' => $isBrokenReport ? 'bg-rose-500' : 'bg-indigo-500',
+                        'bg_color' => $isBrokenReport ? 'bg-rose-50 text-rose-700 border-rose-100' : 'bg-indigo-50 text-indigo-700 border-indigo-100',
                     ]);
                 }
             }
@@ -2255,15 +2257,113 @@ class ApiController extends Controller
     public function toggleBrokenLink(Request $request, $id)
     {
         $book = Book::findOrFail($id);
-        $isBroken = $request->has('is_broken') ? $request->boolean('is_broken') : !$book->is_broken_link;
+        $isBroken = $request->has('is_broken') ? $request->boolean('is_broken') : true;
         $book->update(['is_broken_link' => $isBroken]);
         Cache::forget('digital_library_catalog_v2');
 
-        return response()->json([
-            'success' => true,
-            'is_broken_link' => $isBroken,
-            'message' => $isBroken ? 'បានរាយការណ៍តំណភ្ជាប់ PDF ខូច' : 'បានដោះស្រាយ និងដាក់ឱ្យដំណើរការវិញ',
-        ]);
+        $authUser = Auth::user();
+
+        if ($isBroken) {
+            // Determine reporting user identity
+            $userName = 'សិស្ស/អ្នកអាន (បណ្ណាល័យឌីជីថល)';
+            $userRole = 'student';
+            $userId = null;
+            $grade = $book->grade ?: 'ទូទៅ';
+
+            if ($authUser) {
+                $userId = $authUser->id;
+                $userRole = strtolower($authUser->role ?? 'student');
+                if ($authUser->student) {
+                    $userName = $authUser->student->name_khmer ?: ($authUser->student->name_latin ?: $authUser->name);
+                    $grade = $authUser->student->grade_level ?: ($authUser->student->class_name ?: $grade);
+                } elseif ($authUser->teacher) {
+                    $userName = $authUser->teacher->name_khmer ?: ($authUser->teacher->name_latin ?: $authUser->name);
+                    $userRole = 'teacher';
+                } else {
+                    $userName = $authUser->name;
+                }
+            }
+
+            $pageReported = $request->input('current_page');
+            $pageInfo = $pageReported ? " (ទំព័រទី {$pageReported})" : "";
+            $customReason = $request->input('reason');
+            $reasonText = $customReason ?: 'តំណភ្ជាប់ PDF ខូច ឬមើលមិនចេញ';
+
+            $reportTitle = "🚨 របាយការណ៍តំណភ្ជាប់ PDF ខូច៖ " . $book->title;
+            $reportNote = "សៀវភៅ «{$book->title}»" . ($book->grade ? " ថ្នាក់ទី {$book->grade}" : "") . " ត្រូវបានរាយការណ៍ដោយ {$userName} ({$userRole}) ថា៖ {$reasonText}{$pageInfo}។ សូម Admin និង SuperAdmin មេត្តាជួយពិនិត្យ និងកែសម្រួលតំណភ្ជាប់នេះឡើងវិញ។";
+
+            // Check if there is already an active pending report for this book
+            $existingReport = BookRequest::where('published_book_id', $book->id)
+                ->where('status', 'pending')
+                ->where('title', 'like', '%របាយការណ៍តំណ%')
+                ->first();
+
+            if ($existingReport) {
+                $existingReport->update([
+                    'note' => $reportNote,
+                    'updated_at' => now(),
+                ]);
+                $bookRequest = $existingReport;
+            } else {
+                $bookRequest = BookRequest::create([
+                    'user_id' => $userId,
+                    'requested_by_name' => $userName,
+                    'requested_by_role' => $userRole,
+                    'grade' => $grade,
+                    'title' => $reportTitle,
+                    'author' => $book->author ?: 'ក្រសួងអប់រំ យុវជន និងកីឡា',
+                    'subject_name' => $book->subject_name ?: ($book->courseSubject?->name ?: 'មុខវិជ្ជាទូទៅ'),
+                    'course_subject_id' => $book->course_subject_id,
+                    'book_category_id' => $book->book_category_id,
+                    'level' => $book->level ?: 'basic',
+                    'file_url' => $book->external_pdf_url,
+                    'note' => $reportNote,
+                    'status' => 'pending',
+                    'admin_feedback' => null, // Alert Admin & SuperAdmin in bell notification
+                    'published_book_id' => $book->id,
+                ]);
+            }
+
+            // Invalidate notification caches so Admin and SuperAdmin see it immediately
+            Cache::forget('pending_notifications_payload');
+            Cache::increment('notif_version');
+
+            if (class_exists(\App\Services\ActivityLogger::class)) {
+                \App\Services\ActivityLogger::log(
+                    'REPORT_BROKEN_LINK',
+                    'LIBRARY',
+                    $book->id,
+                    "បានរាយការណ៍តំណខូចសៀវភៅ «{$book->title}» ជូន Admin & SuperAdmin ដោយ {$userName}"
+                );
+            }
+
+            return response()->json([
+                'success' => true,
+                'is_broken_link' => true,
+                'message' => 'បានផ្ញើរាយការណ៍ជូន Admin និង SuperAdmin រួចរាល់ដោយជោគជ័យ! សូមអរគុណ។',
+                'request_id' => $bookRequest->id,
+            ]);
+        } else {
+            // Admin or Superadmin resolving the broken link
+            BookRequest::where('published_book_id', $book->id)
+                ->where('status', 'pending')
+                ->where('title', 'like', '%របាយការណ៍តំណ%')
+                ->update([
+                    'status' => 'approved',
+                    'admin_feedback' => 'បានដោះស្រាយ និងដាក់តំណភ្ជាប់ដំណើរការឡើងវិញរួចរាល់ ✓',
+                    'reviewed_by' => $authUser?->id,
+                    'reviewed_at' => now(),
+                ]);
+
+            Cache::forget('pending_notifications_payload');
+            Cache::increment('notif_version');
+
+            return response()->json([
+                'success' => true,
+                'is_broken_link' => false,
+                'message' => 'បានដោះស្រាយ និងដាក់ឱ្យដំណើរការឡើងវិញដោយជោគជ័យ ✓',
+            ]);
+        }
     }
 
     public function storeSubject(Request $request)
@@ -2449,7 +2549,8 @@ class ApiController extends Controller
     public function getBookRequests(Request $request)
     {
         $authUser = Auth::user();
-        $isAdmin = $authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1);
+        $isSuperAdmin = $authUser && ($authUser->is_super_admin || in_array(strtolower($authUser->role ?? ''), ['super_admin', 'superadmin', 'super admin']) || (method_exists($authUser, 'isSuperAdmin') && $authUser->isSuperAdmin()));
+        $isAdmin = $isSuperAdmin || ($authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1));
 
         // Security: Students and teachers cannot view the list of submitted requests
         if (!$isAdmin) {
@@ -2663,9 +2764,10 @@ class ApiController extends Controller
     public function updateBookRequestStatus(Request $request, $id)
     {
         $authUser = Auth::user();
-        $isAdmin = $authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1);
+        $isSuperAdmin = $authUser && ($authUser->is_super_admin || in_array(strtolower($authUser->role ?? ''), ['super_admin', 'superadmin', 'super admin']) || (method_exists($authUser, 'isSuperAdmin') && $authUser->isSuperAdmin()));
+        $isAdmin = $isSuperAdmin || ($authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1));
         if (!$isAdmin) {
-            return response()->json(['message' => 'អ្នកមិនមានសិទ្ធិកែប្រែស្ថានភាពសំណើទេ (Admin only)'], 403);
+            return response()->json(['message' => 'អ្នកមិនមានសិទ្ធិកែប្រែស្ថានភាពសំណើទេ (Admin & Superadmin only)'], 403);
         }
 
         $bookRequest = BookRequest::findOrFail($id);

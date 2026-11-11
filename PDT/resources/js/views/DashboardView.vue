@@ -146,220 +146,364 @@
     <!-- Tab 1: Overview Tab (Primary Dashboard) -->
     <div v-show="activeTab === 'overview'" class="space-y-6">
       <!-- 1. STUDENT DASHBOARD: 4 Personal Student Summary Cards -->
-      <div v-if="isStudent" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Student Card 1: My Class -->
-        <div class="relative overflow-hidden bg-white border border-blue-100/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all group">
+      <div v-if="isStudent" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <!-- Student Card 1: My Class (Clickable to Timetables) -->
+        <router-link 
+          to="/timetables" 
+          class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-blue-200/80 transition-all duration-200 active:scale-[0.99] cursor-pointer"
+        >
           <div class="absolute -top-10 -right-10 w-28 h-28 bg-blue-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
-          <div class="flex items-start justify-between">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
-              <i class="fa-solid fa-graduation-cap text-xl"></i>
+          
+          <div>
+            <div class="flex items-start justify-between">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform duration-200">
+                <i class="fa-solid fa-graduation-cap text-xl"></i>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100/80">
+                  {{ studentInfo.room || (currentLocale === 'km' ? ('បន្ទប់ ' + studentInfo.class_name) : ('Room ' + studentInfo.class_name)) }}
+                </span>
+                <div class="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-blue-600 group-hover:bg-blue-50 transition-colors">
+                  <i class="fa-solid fa-arrow-right text-xs transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+                </div>
+              </div>
             </div>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 ring-1 ring-blue-500/20">
-              {{ studentInfo.room || (currentLocale === 'km' ? ('បន្ទប់ ' + studentInfo.class_name) : ('Room ' + studentInfo.class_name)) }}
-            </span>
-          </div>
-          <div class="mt-4">
-            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">
-              {{ currentLocale === 'km' ? 'ថ្នាក់រៀនរបស់ខ្ញុំ' : 'My Classroom' }}
-            </h3>
-            <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                {{ currentLocale === 'km' ? ('ថ្នាក់ទី ' + studentInfo.class_name) : ('Grade ' + studentInfo.class_name) }}
-              </span>
+
+            <div class="mt-4">
+              <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                {{ currentLocale === 'km' ? 'ថ្នាក់រៀនរបស់ខ្ញុំ' : 'My Classroom' }}
+              </h3>
+              <div class="mt-1">
+                <span class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                  {{ currentLocale === 'km' ? ('ថ្នាក់ទី ' + studentInfo.class_name) : ('Grade ' + studentInfo.class_name) }}
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
+                <i class="fa-solid fa-users text-slate-400 text-[11px]"></i>
+                <span>{{ currentLocale === 'km' ? 'សិស្សរួមថ្នាក់:' : 'Classmates:' }}</span>
+                <strong class="font-bold text-slate-700">{{ studentInfo.classmates_count || 50 }} {{ currentLocale === 'km' ? 'នាក់' : '' }}</strong>
+              </p>
             </div>
-            <p class="text-[11px] text-slate-500 mt-2 font-medium">
-              {{ currentLocale === 'km' ? 'សិស្សសរុបក្នុងថ្នាក់' : 'Total students in class:' }}
-              <span class="font-bold text-slate-700">{{ studentInfo.classmates_count || 50 }}</span>
-              {{ currentLocale === 'km' ? 'នាក់' : '' }}
-            </p>
           </div>
-        </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-blue-600 group-hover:text-blue-700">
+            <span>{{ currentLocale === 'km' ? 'ពិនិត្យកាលវិភាគសិក្សា' : 'View Timetable' }}</span>
+            <i class="fa-solid fa-chevron-right text-[10px] transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+          </div>
+        </router-link>
 
         <!-- Student Card 2: Homeroom Teacher -->
-        <div class="relative overflow-hidden bg-white border border-emerald-100/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all group">
+        <div class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-emerald-200/80 transition-all duration-200">
           <div class="absolute -top-10 -right-10 w-28 h-28 bg-emerald-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
-          <div class="flex items-start justify-between">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20">
-              <i class="fa-solid fa-chalkboard-user text-xl"></i>
-            </div>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 ring-1 ring-emerald-500/20">
-              {{ currentLocale === 'km' ? 'គ្រូបន្ទុកថ្នាក់' : 'Homeroom Teacher' }}
-            </span>
-          </div>
-          <div class="mt-4">
-            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">
-              {{ currentLocale === 'km' ? 'គ្រូបន្ទុកថ្នាក់' : 'Homeroom Teacher' }}
-            </h3>
-            <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight truncate max-w-full">
-                {{ studentInfo.homeroom_teacher || (currentLocale === 'km' ? 'មិនទាន់ចាត់តាំង' : 'Unassigned') }}
+          
+          <div>
+            <div class="flex items-start justify-between">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform duration-200">
+                <i class="fa-solid fa-chalkboard-user text-xl"></i>
+              </div>
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100/80">
+                {{ currentLocale === 'km' ? 'គ្រូបន្ទុកថ្នាក់' : 'Homeroom' }}
               </span>
             </div>
-            <p class="text-[11px] text-emerald-700 mt-2 font-medium">
-              {{ currentLocale === 'km' ? 'ទំនាក់ទំនង: ' : 'Contact: ' }}<span class="font-bold">{{ studentInfo.teacher_phone || '-' }}</span>
-            </p>
+
+            <div class="mt-4">
+              <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                {{ currentLocale === 'km' ? 'គ្រូបន្ទុកថ្នាក់' : 'Homeroom Teacher' }}
+              </h3>
+              <div class="mt-1">
+                <span class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate block">
+                  {{ studentInfo.homeroom_teacher || (currentLocale === 'km' ? 'មិនទាន់ចាត់តាំង' : 'Unassigned') }}
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
+                <i class="fa-solid fa-phone text-emerald-600 text-[11px]"></i>
+                <span>{{ currentLocale === 'km' ? 'ទំនាក់ទំនង:' : 'Contact:' }}</span>
+                <strong class="font-bold text-slate-700">{{ studentInfo.teacher_phone || '-' }}</strong>
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <a 
+              v-if="studentInfo.teacher_phone && studentInfo.teacher_phone !== '-'" 
+              :href="'tel:' + studentInfo.teacher_phone" 
+              class="inline-flex items-center gap-1.5 font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+            >
+              <i class="fa-solid fa-phone text-[10px]"></i>
+              <span>{{ currentLocale === 'km' ? 'ហៅទូរស័ព្ទផ្ទាល់' : 'Call Teacher' }}</span>
+            </a>
+            <span v-else class="text-slate-400 font-medium">{{ currentLocale === 'km' ? 'ព័ត៌មានគ្រូប្រចាំថ្នាក់' : 'Homeroom Details' }}</span>
+            <i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
           </div>
         </div>
 
-        <!-- Student Card 3: Personal Attendance Rate -->
-        <div class="relative overflow-hidden bg-white border border-purple-100/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all group">
+        <!-- Student Card 3: Personal Attendance Rate (Clickable to Attendance) -->
+        <router-link 
+          to="/attendance" 
+          class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-purple-200/80 transition-all duration-200 active:scale-[0.99] cursor-pointer"
+        >
           <div class="absolute -top-10 -right-10 w-28 h-28 bg-purple-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
-          <div class="flex items-start justify-between">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-violet-500 text-white flex items-center justify-center shadow-md shadow-purple-500/20">
-              <i class="fa-solid fa-calendar-check text-xl"></i>
+          
+          <div>
+            <div class="flex items-start justify-between">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-violet-500 text-white flex items-center justify-center shadow-md shadow-purple-500/20 group-hover:scale-105 transition-transform duration-200">
+                <i class="fa-solid fa-calendar-check text-xl"></i>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-100/80">
+                  {{ currentLocale === 'km' ? 'អត្រាវត្តមាន' : 'Attendance' }}
+                </span>
+                <div class="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-purple-600 group-hover:bg-purple-50 transition-colors">
+                  <i class="fa-solid fa-arrow-right text-xs transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+                </div>
+              </div>
             </div>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800 ring-1 ring-purple-500/20">
-              {{ currentLocale === 'km' ? 'អត្រាវត្តមាន' : 'Attendance' }}
-            </span>
-          </div>
-          <div class="mt-4">
-            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">
-              {{ currentLocale === 'km' ? 'វត្តមានផ្ទាល់ខ្លួន' : 'My Attendance' }}
-            </h3>
-            <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ studentInfo.attendance?.rate ?? 100 }}%</span>
-            </div>
-            <p class="text-[11px] text-purple-700 mt-2 font-medium">
-              <template v-if="currentLocale === 'km'">
-                មានវត្តមាន <span class="font-bold text-emerald-700">{{ studentInfo.attendance?.present ?? 0 }}</span> ថ្ងៃ • ឈប់សរុប <span class="font-bold text-rose-600">{{ studentInfo.attendance?.total_leave ?? ((studentInfo.attendance?.excused || 0) + (studentInfo.attendance?.absent || 0)) }}</span> ថ្ងៃ (ច្បាប់ <span class="font-bold text-blue-600">{{ studentInfo.attendance?.excused ?? 0 }}</span> • អត់ច្បាប់ <span class="font-bold text-rose-600">{{ studentInfo.attendance?.absent ?? 0 }}</span>)
-              </template>
-              <template v-else>
-                Present <span class="font-bold text-emerald-700">{{ studentInfo.attendance?.present ?? 0 }}</span> days • Absent <span class="font-bold text-rose-600">{{ studentInfo.attendance?.total_leave ?? ((studentInfo.attendance?.excused || 0) + (studentInfo.attendance?.absent || 0)) }}</span> days (Excused <span class="font-bold text-blue-600">{{ studentInfo.attendance?.excused ?? 0 }}</span> • Unexcused <span class="font-bold text-rose-600">{{ studentInfo.attendance?.absent ?? 0 }}</span>)
-              </template>
-            </p>
-          </div>
-        </div>
 
-        <!-- Student Card 4: Learning Resources & Digital Library -->
-        <div class="relative overflow-hidden bg-white border border-amber-100/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all group">
+            <div class="mt-4">
+              <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                {{ currentLocale === 'km' ? 'វត្តមានផ្ទាល់ខ្លួន' : 'My Attendance' }}
+              </h3>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                  {{ studentInfo.attendance?.rate ?? 100 }}%
+                </span>
+                <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100/60">
+                  {{ currentLocale === 'km' ? 'វត្តមាន' : 'Present' }} {{ studentInfo.attendance?.present ?? 0 }} ថ្ងៃ
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 mt-2">
+                <template v-if="currentLocale === 'km'">
+                  ច្បាប់ <strong class="font-bold text-blue-600">{{ studentInfo.attendance?.excused ?? 0 }}</strong> ថ្ងៃ • អត់ច្បាប់ <strong class="font-bold text-rose-600">{{ studentInfo.attendance?.absent ?? 0 }}</strong> ថ្ងៃ
+                </template>
+                <template v-else>
+                  Excused <strong class="font-bold text-blue-600">{{ studentInfo.attendance?.excused ?? 0 }}</strong> • Absent <strong class="font-bold text-rose-600">{{ studentInfo.attendance?.absent ?? 0 }}</strong>
+                </template>
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-purple-600 group-hover:text-purple-700">
+            <span>{{ currentLocale === 'km' ? 'ពិនិត្យប្រវត្តិវត្តមានលម្អិត' : 'View Attendance History' }}</span>
+            <i class="fa-solid fa-chevron-right text-[10px] transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+          </div>
+        </router-link>
+
+        <!-- Student Card 4: Learning Resources & Digital Library (Clickable to Library) -->
+        <router-link 
+          to="/library" 
+          class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-amber-200/80 transition-all duration-200 active:scale-[0.99] cursor-pointer"
+        >
           <div class="absolute -top-10 -right-10 w-28 h-28 bg-amber-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
-          <div class="flex items-start justify-between">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20">
-              <i class="fa-solid fa-book-bookmark text-xl"></i>
+          
+          <div>
+            <div class="flex items-start justify-between">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform duration-200">
+                <i class="fa-solid fa-book-bookmark text-xl"></i>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100/80">
+                  {{ currentLocale === 'km' ? 'បណ្ណាល័យ' : 'Library' }}
+                </span>
+                <div class="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-amber-600 group-hover:bg-amber-50 transition-colors">
+                  <i class="fa-solid fa-arrow-right text-xs transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+                </div>
+              </div>
             </div>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 ring-1 ring-amber-500/20">
-              {{ currentLocale === 'km' ? 'បណ្ណាល័យឌីជីថល' : 'Digital Library' }}
-            </span>
-          </div>
-          <div class="mt-4">
-            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">
-              {{ currentLocale === 'km' ? 'សៀវភៅសិក្សា' : 'Textbooks' }}
-            </h3>
-            <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ studentInfo.student_visible_books || studentInfo.total_books || stats.books || 81 }}</span>
-              <span class="text-xs font-medium text-slate-400">{{ currentLocale === 'km' ? 'ក្បាល' : 'Books' }}</span>
+
+            <div class="mt-4">
+              <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                {{ currentLocale === 'km' ? 'សៀវភៅសិក្សាឌីជីថល' : 'Digital Textbooks' }}
+              </h3>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                  {{ studentInfo.student_visible_books || studentInfo.total_books || stats.books || 81 }}
+                </span>
+                <span class="text-xs font-medium text-slate-400">{{ currentLocale === 'km' ? 'ក្បាលសៀវភៅ' : 'Books' }}</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-2 truncate">
+                {{ currentLocale === 'km' ? 'សៀវភៅពុម្ព MoEYS និងឯកសារជំនួយ' : 'MoEYS Textbooks & Study Materials' }}
+              </p>
             </div>
-            <router-link to="/library" class="text-[11px] text-blue-600 hover:text-blue-800 mt-2 font-bold inline-flex items-center gap-1">
-              <span>{{ currentLocale === 'km' ? 'ចូលអានសៀវភៅពុម្ព MoEYS' : 'Read MoEYS Digital Textbooks' }}</span>
-              <i class="fa-solid fa-arrow-right text-[10px]"></i>
-            </router-link>
           </div>
-        </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-amber-600 group-hover:text-amber-700">
+            <span>{{ currentLocale === 'km' ? 'ចូលអានសៀវភៅពុម្ព MoEYS' : 'Read Digital Books' }}</span>
+            <i class="fa-solid fa-chevron-right text-[10px] transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+          </div>
+        </router-link>
       </div>
 
       <!-- 2. ADMIN/TEACHER DASHBOARD: 4 Administrative KPI Summary Cards -->
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <!-- Card 1: Total Students (Blue Theme) -->
-        <div class="relative overflow-hidden bg-white border border-blue-100/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all group">
+        <router-link 
+          to="/students" 
+          class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-blue-200/80 transition-all duration-200 active:scale-[0.99] cursor-pointer"
+        >
           <div class="absolute -top-10 -right-10 w-28 h-28 bg-blue-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
-          <div class="flex items-start justify-between">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
+          
+          <div>
+            <div class="flex items-start justify-between">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform duration-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100/80">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                  ស្រី {{ stats.students > 0 ? (stats.femaleRatio ?? 0) : 0 }}%
+                </span>
+                <div class="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-blue-600 group-hover:bg-blue-50 transition-colors">
+                  <i class="fa-solid fa-arrow-right text-xs transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+                </div>
+              </div>
             </div>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 ring-1 ring-blue-500/20">
-              <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-              ស្រី {{ stats.students > 0 ? (stats.femaleRatio ?? 0) : 0 }}%
-            </span>
-          </div>
-          <div class="mt-4">
-            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">{{ t('dashboard.totalStudents') }}</h3>
-            <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ Number(stats.students || 0).toLocaleString() }}</span>
-              <span class="text-xs font-medium text-slate-400">នាក់</span>
+
+            <div class="mt-4">
+              <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ t('dashboard.totalStudents') }}</h3>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{{ Number(stats.students || 0).toLocaleString() }}</span>
+                <span class="text-xs font-medium text-slate-400">នាក់</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-2 font-medium">
+                ប្រុស <strong class="font-bold text-slate-700">{{ stats.maleCount ?? 0 }}</strong> នាក់ • ស្រី <strong class="font-bold text-slate-700">{{ stats.femaleCount ?? 0 }}</strong> នាក់
+              </p>
             </div>
-            <p class="text-[11px] text-slate-500 mt-2 font-medium">
-              ប្រុស <span class="font-bold text-slate-700">{{ stats.maleCount ?? 0 }}</span> នាក់ • ស្រី <span class="font-bold text-slate-700">{{ stats.femaleCount ?? 0 }}</span> នាក់
-            </p>
           </div>
-        </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-blue-600 group-hover:text-blue-700">
+            <span>គ្រប់គ្រងទិន្នន័យសិស្ស</span>
+            <i class="fa-solid fa-chevron-right text-[10px] transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+          </div>
+        </router-link>
 
         <!-- Card 2: Total Teachers (Green Theme) -->
-        <div class="relative overflow-hidden bg-white border border-emerald-100/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all group">
+        <router-link 
+          to="/teachers" 
+          class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-emerald-200/80 transition-all duration-200 active:scale-[0.99] cursor-pointer"
+        >
           <div class="absolute -top-10 -right-10 w-28 h-28 bg-emerald-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
-          <div class="flex items-start justify-between">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-              </svg>
+          
+          <div>
+            <div class="flex items-start justify-between">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform duration-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                </svg>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100/80">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  វត្តមាន {{ stats.teachers > 0 ? (stats.teacherAttendanceRate ?? 0) : 0 }}%
+                </span>
+                <div class="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-emerald-600 group-hover:bg-emerald-50 transition-colors">
+                  <i class="fa-solid fa-arrow-right text-xs transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+                </div>
+              </div>
             </div>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 ring-1 ring-emerald-500/20">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              វត្តមានថ្ងៃនេះ {{ stats.teachers > 0 ? (stats.teacherAttendanceRate ?? 0) : 0 }}%
-            </span>
-          </div>
-          <div class="mt-4">
-            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">{{ t('dashboard.totalTeachers') }}</h3>
-            <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.teachers ?? 0 }}</span>
-              <span class="text-xs font-medium text-slate-400">នាក់</span>
+
+            <div class="mt-4">
+              <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ t('dashboard.totalTeachers') }}</h3>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{{ stats.teachers ?? 0 }}</span>
+                <span class="text-xs font-medium text-slate-400">នាក់</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-2 font-medium">
+                គ្រូបង្រៀនពេញម៉ោង និងឯកទេស STEM
+              </p>
             </div>
-            <p class="text-[11px] text-emerald-700 mt-2 font-medium">
-              គ្រូបង្រៀនពេញម៉ោង និងឯកទេស STEM
-            </p>
           </div>
-        </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-emerald-600 group-hover:text-emerald-700">
+            <span>គ្រប់គ្រងគ្រូបង្រៀន</span>
+            <i class="fa-solid fa-chevron-right text-[10px] transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+          </div>
+        </router-link>
 
         <!-- Card 3: Total Classes (Purple Theme) -->
-        <div class="relative overflow-hidden bg-white border border-purple-100/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all group">
+        <router-link 
+          to="/classes" 
+          class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-purple-200/80 transition-all duration-200 active:scale-[0.99] cursor-pointer"
+        >
           <div class="absolute -top-10 -right-10 w-28 h-28 bg-purple-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
-          <div class="flex items-start justify-between">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-violet-500 text-white flex items-center justify-center shadow-md shadow-purple-500/20 group-hover:scale-105 transition-transform">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
+          
+          <div>
+            <div class="flex items-start justify-between">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-violet-500 text-white flex items-center justify-center shadow-md shadow-purple-500/20 group-hover:scale-105 transition-transform duration-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-100/80">
+                  ថ្នាក់ទី ៧ - ១២
+                </span>
+                <div class="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-purple-600 group-hover:bg-purple-50 transition-colors">
+                  <i class="fa-solid fa-arrow-right text-xs transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+                </div>
+              </div>
             </div>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800 ring-1 ring-purple-500/20">
-              ថ្នាក់ទី ៧ - ១២
-            </span>
-          </div>
-          <div class="mt-4">
-            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">{{ t('dashboard.totalClasses') }}</h3>
-            <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.classes ?? 0 }}</span>
-              <span class="text-xs font-medium text-slate-400">ថ្នាក់រៀន</span>
+
+            <div class="mt-4">
+              <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ t('dashboard.totalClasses') }}</h3>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{{ stats.classes ?? 0 }}</span>
+                <span class="text-xs font-medium text-slate-400">ថ្នាក់រៀន</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-2 font-medium">
+                បន្ទប់ធម្មតា និងបន្ទប់ពិសោធន៍
+              </p>
             </div>
-            <p class="text-[11px] text-purple-700 mt-2 font-medium">
-              បន្ទប់ធម្មតា និងបន្ទប់ពិសោធន៍
-            </p>
           </div>
-        </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-purple-600 group-hover:text-purple-700">
+            <span>គ្រប់គ្រងថ្នាក់រៀន</span>
+            <i class="fa-solid fa-chevron-right text-[10px] transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+          </div>
+        </router-link>
 
         <!-- Card 4: Total Subjects (Orange Theme) -->
-        <div class="relative overflow-hidden bg-white border border-amber-100/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all group">
+        <router-link 
+          to="/course-subjects" 
+          class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-amber-200/80 transition-all duration-200 active:scale-[0.99] cursor-pointer"
+        >
           <div class="absolute -top-10 -right-10 w-28 h-28 bg-amber-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
-          <div class="flex items-start justify-between">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
+          
+          <div>
+            <div class="flex items-start justify-between">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform duration-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100/80">
+                  ជំនាន់ថ្មី
+                </span>
+                <div class="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-amber-600 group-hover:bg-amber-50 transition-colors">
+                  <i class="fa-solid fa-arrow-right text-xs transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+                </div>
+              </div>
             </div>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 ring-1 ring-amber-500/20">
-              កម្មវិធីសិក្សាជំនាន់ថ្មី
-            </span>
-          </div>
-          <div class="mt-4">
-            <h3 class="text-xs font-semibold text-slate-500 tracking-wide uppercase">{{ t('dashboard.totalSubjects') }}</h3>
-            <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.subjects ?? 0 }}</span>
-              <span class="text-xs font-medium text-slate-400">មុខវិជ្ជា</span>
+
+            <div class="mt-4">
+              <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ t('dashboard.totalSubjects') }}</h3>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{{ stats.subjects ?? 0 }}</span>
+                <span class="text-xs font-medium text-slate-400">មុខវិជ្ជា</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-2 font-medium">
+                កម្មវិធីសិក្សា និងម៉ោងបង្រៀន STEM
+              </p>
             </div>
-            <p class="text-[11px] text-amber-700 mt-2 font-medium">
-              កម្មវិធីសិក្សាជំនាន់ថ្មី
-            </p>
           </div>
-        </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-amber-600 group-hover:text-amber-700">
+            <span>គ្រប់គ្រងមុខវិជ្ជា</span>
+            <i class="fa-solid fa-chevron-right text-[10px] transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+          </div>
+        </router-link>
       </div>
 
       <!-- Academic Filters -->

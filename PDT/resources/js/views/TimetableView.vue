@@ -68,43 +68,6 @@
       <StatCard :title="$t('timetables.conflictFree')" :value="'100% ត្រឹមត្រូវ'" icon="check" iconColor="text-teal-600" bgColor="bg-teal-50" borderColor="border-teal-100" />
     </div>
 
-    <!-- Morning Shift Overview Banner -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 p-4 sm:p-5 text-white shadow-sm border border-indigo-500/30">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
-        <div>
-          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-bold mb-1.5 backdrop-blur-xs">
-            <span>🌅</span>
-            <span>វេនសិក្សាពេលព្រឹក • ថ្នាក់ {{ studentClass }}</span>
-          </div>
-          <h3 class="text-base sm:text-lg font-extrabold tracking-tight">
-            ម៉ោងសិក្សា៖ ០៧:០០ ព្រឹក - ១១:០០ ព្រឹក
-          </h3>
-          <p class="text-xs text-blue-100 mt-0.5">
-            សិក្សា ៤ ម៉ោងក្នុងមួយថ្ងៃ (៥០ នាទី/ម៉ោង) ដោយមានម៉ោងចេញលេងសម្រាក ៣០ នាទី។
-          </p>
-        </div>
-
-        <!-- 4 Quick Period Timeline Pills -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
-          <div class="bg-white/10 backdrop-blur-xs px-2.5 py-2 rounded-xl border border-white/15">
-            <div class="font-bold text-[11px]">ម៉ោងទី ១</div>
-            <div class="font-mono text-[10px] text-blue-100 mt-0.5">07:00 - 07:50</div>
-          </div>
-          <div class="bg-white/10 backdrop-blur-xs px-2.5 py-2 rounded-xl border border-white/15">
-            <div class="font-bold text-[11px]">ម៉ោងទី ២</div>
-            <div class="font-mono text-[10px] text-blue-100 mt-0.5">07:55 - 08:45</div>
-          </div>
-          <div class="bg-amber-400/20 backdrop-blur-xs px-2.5 py-2 rounded-xl border border-amber-300/30 text-amber-200">
-            <div class="font-bold text-[11px]">☕ ចេញលេង</div>
-            <div class="font-mono text-[10px] text-amber-100 mt-0.5">08:45 - 09:15</div>
-          </div>
-          <div class="bg-white/10 backdrop-blur-xs px-2.5 py-2 rounded-xl border border-white/15">
-            <div class="font-bold text-[11px]">ម៉ោងទី ៣ & ៤</div>
-            <div class="font-mono text-[10px] text-blue-100 mt-0.5">09:15 - 11:00</div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Filter Bar & View Mode Toggle -->
     <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">

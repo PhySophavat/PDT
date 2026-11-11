@@ -1451,9 +1451,20 @@ const visibleMenuItems = computed(() => {
     .filter(isItemVisible)
     .map(item => {
       if (item.children) {
+        const filteredChildren = item.children.filter(child => !child.roles || child.roles.includes(userRole.value));
+        // For Students or any role with only 1 accessible child (e.g. Student Attendance),
+        // flatten it into a direct link without a dropdown accordion!
+        if (isStudentUser.value || filteredChildren.length <= 1) {
+          const directChild = filteredChildren[0] || item.children[0];
+          return {
+            ...item,
+            path: directChild.path || '/attendance',
+            children: null
+          };
+        }
         return {
           ...item,
-          children: item.children.filter(child => !child.roles || child.roles.includes(userRole.value))
+          children: filteredChildren
         };
       }
       return item;
