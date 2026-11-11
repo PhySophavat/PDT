@@ -1029,9 +1029,13 @@ class ApiController extends Controller
         $user->remember_token = $loginToken;
         $user->save();
 
-        $baseUrl = request()->getSchemeAndHttpHost() ?: config('app.url');
-        if ((empty($baseUrl) || str_contains($baseUrl, 'localhost')) && (isset($_ENV['VERCEL']) || getenv('VERCEL'))) {
-            $baseUrl = 'https://sala-portal.vercel.app';
+        $baseUrl = config('app.url');
+        if (empty($baseUrl) || str_contains($baseUrl, 'localhost') || str_contains($baseUrl, '127.0.0.1')) {
+            if (isset($_ENV['VERCEL']) || getenv('VERCEL') || app()->environment('production')) {
+                $baseUrl = 'https://sala-portal.vercel.app';
+            } else {
+                $baseUrl = request()->getSchemeAndHttpHost() ?: url('/');
+            }
         }
         $directLoginUrl = rtrim($baseUrl, '/') . '/auth/quick-login?token=' . $loginToken;
 

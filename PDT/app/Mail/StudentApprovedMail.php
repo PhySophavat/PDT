@@ -33,7 +33,7 @@ class StudentApprovedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'ការអនុម័តចុះឈ្មោះចូលរៀនជោគជ័យ - គណនីប្រព័ន្ធសាលារៀន PDT',
+            subject: 'ការអនុម័តពាក្យស្នើសុំចុះឈ្មោះចូលរៀនជោគជ័យ - គណនីប្រព័ន្ធសាលារៀន PDT',
         );
     }
 

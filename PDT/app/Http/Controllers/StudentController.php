@@ -417,12 +417,28 @@ class StudentController extends Controller
         $student->enrollment_date = Carbon::today();
         $student->save();
 
+        // Generate secure 1-click Direct Magic Login Token (valid for 14 days)
+        $loginToken = \Illuminate\Support\Str::random(64);
+        \Illuminate\Support\Facades\Cache::put('direct_login_' . $loginToken, $user->id, now()->addDays(14));
+        $user->remember_token = $loginToken;
+        $user->save();
+
+        $baseUrl = config('app.url');
+        if (empty($baseUrl) || str_contains($baseUrl, 'localhost') || str_contains($baseUrl, '127.0.0.1')) {
+            if (isset($_ENV['VERCEL']) || getenv('VERCEL') || app()->environment('production')) {
+                $baseUrl = 'https://sala-portal.vercel.app';
+            } else {
+                $baseUrl = request()->getSchemeAndHttpHost() ?: url('/');
+            }
+        }
+        $directLoginUrl = rtrim($baseUrl, '/') . '/auth/quick-login?token=' . $loginToken;
+
         // 5. Brevo SMTP Email Sending with try/catch
         $emailSent = false;
         if (!empty($student->email)) {
             try {
                 Mail::to($student->email)
-                    ->send(new StudentApprovedMail($student, $plainPassword, route('login')));
+                    ->send(new StudentApprovedMail($student, $plainPassword, $directLoginUrl));
                 $emailSent = true;
             } catch (\Throwable $e) {
                 Log::error('Brevo SMTP failed to send StudentApprovedMail: ' . $e->getMessage());
