@@ -78,6 +78,22 @@ class PublicRegistrationController extends Controller
             ]);
         }
 
+        // Normalize Khmer digits (០-៩) to Latin digits (0-9) and trim spaces for phone numbers
+        $normalizeKhmerNumbers = function ($str) {
+            if (!is_string($str)) return $str;
+            $khmer = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
+            $latin = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            $cleaned = str_replace($khmer, $latin, $str);
+            return preg_replace('/[\s\-\.]/', '', $cleaned);
+        };
+
+        if ($request->filled('phone')) {
+            $request->merge(['phone' => $normalizeKhmerNumbers($request->input('phone'))]);
+        }
+        if ($request->filled('parent_phone')) {
+            $request->merge(['parent_phone' => $normalizeKhmerNumbers($request->input('parent_phone'))]);
+        }
+
         // 2. Strict Server-Side Input Validation & Type Enforcement
         $validated = $request->validate([
             'student_id_card' => 'nullable|string|max:50|unique:students,student_id_card',
@@ -110,7 +126,7 @@ class PublicRegistrationController extends Controller
             'date_of_birth.date' => 'ទម្រង់ថ្ងៃខែឆ្នាំកំណើតមិនត្រឹមត្រូវ',
             'date_of_birth.before' => 'ថ្ងៃខែឆ្នាំកំណើតត្រូវតែមុនកាលបរិច្ឆេទថ្ងៃនេះ',
             'phone.required' => 'សូមបញ្ចូលលេខទូរស័ព្ទសិស្ស',
-            'phone.regex' => 'លេខទូរស័ព្ទសិស្សត្រូវតែជាលេខទូរស័ព្ទកម្ពុជាត្រឹមត្រូវ ផ្ដើមដោយលេខ 0 មាន ៩ ទៅ ១០ ខ្ទង់ (ឧ. 012345678)',
+            'phone.regex' => 'លេខទូរស័ព្ទសិស្សត្រូវតែជាលេខជាភាសាអង់គ្លេស (0-9) ចាប់ផ្ដើមដោយលេខ 0 មាន 9 ទៅ 10 ខ្ទង់ (ឧ. 012345678 មិនប្រើលេខខ្មែរ ០-៩ ឡើយ)',
             'email.required' => 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែល (Email) របស់សិស្ស',
             'email.email' => 'ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវឡើយ (ឧ. name@example.com)',
             'email.max' => 'អ៊ីមែលមិនត្រូវលើសពី ២៥៥ តួអក្សរឡើយ',
@@ -130,7 +146,7 @@ class PublicRegistrationController extends Controller
             'parent_relationship.required' => 'សូមបញ្ជាក់ត្រូវជាអ្វីនឹងសិស្ស',
             'parent_occupation.max' => 'មុខរបរមិនត្រូវលើសពី ១៥០ តួអក្សរឡើយ',
             'parent_phone.required' => 'សូមបញ្ចូលលេខទូរស័ព្ទអាណាព្យាបាល',
-            'parent_phone.regex' => 'លេខទូរស័ព្ទអាណាព្យាបាលត្រូវតែជាលេខទូរស័ព្ទកម្ពុជាត្រឹមត្រូវ ផ្ដើមដោយលេខ 0 មាន ៩ ទៅ ១០ ខ្ទង់ (ឧ. 012345678)',
+            'parent_phone.regex' => 'លេខទូរស័ព្ទអាណាព្យាបាលត្រូវតែជាលេខជាភាសាអង់គ្លេស (0-9) ចាប់ផ្ដើមដោយលេខ 0 មាន 9 ទៅ 10 ខ្ទង់ (ឧ. 012345678 មិនប្រើលេខខ្មែរ ០-៩ ឡើយ)',
         ]);
 
         // 3. File Upload Security: Extension & MIME Verification + UUID Renaming

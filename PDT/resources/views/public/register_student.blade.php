@@ -344,13 +344,17 @@
                     id="phone"
                     name="phone" 
                     value="{{ old('phone') }}" 
-                    placeholder="ឧ. 012 345 678 (៩ ទៅ ១០ ខ្ទង់)"
+                    placeholder="ឧ. 012 345 678 (លេខ 0-9 មាន 9 ទៅ 10 ខ្ទង់)"
                     class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition font-mono"
                   />
                 </div>
+                <p class="text-[11px] text-slate-500 mt-1 flex items-center gap-1 font-khmer">
+                  <i class="fa-solid fa-circle-info text-blue-500 text-[10px]"></i>
+                  <span>សូមបញ្ចូលលេខជាភាសាអង់គ្លេស (0-9) ឧ. 012345678 (កុំប្រើលេខខ្មែរ ០-៩)</span>
+                </p>
                 <p id="error-phone" class="hidden text-xs text-red-500 mt-1 flex items-center gap-1 font-medium">
                   <i class="fa-solid fa-circle-exclamation text-[11px]"></i>
-                  <span>លេខទូរស័ព្ទមិនត្រឹមត្រូវ (ត្រូវមាន ៩ ទៅ ១០ ខ្ទង់ ចាប់ផ្ដើមដោយ ០)</span>
+                  <span>លេខទូរស័ព្ទមិនត្រឹមត្រូវ (សូមប្រើលេខជាភាសាអង់គ្លេស 0-9 ចាប់ផ្ដើមដោយលេខ 0 មាន 9 ទៅ 10 ខ្ទង់)</span>
                 </p>
               </div>
 
@@ -558,13 +562,17 @@
                     id="parent_phone"
                     name="parent_phone" 
                     value="{{ old('parent_phone') }}" 
-                    placeholder="ឧ. 012 888 999 (៩ ទៅ ១០ ខ្ទង់)"
+                    placeholder="ឧ. 012 888 999 (លេខ 0-9 មាន 9 ទៅ 10 ខ្ទង់)"
                     class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition font-mono"
                   />
                 </div>
+                <p class="text-[11px] text-slate-500 mt-1 flex items-center gap-1 font-khmer">
+                  <i class="fa-solid fa-circle-info text-blue-500 text-[10px]"></i>
+                  <span>សូមបញ្ចូលលេខជាភាសាអង់គ្លេស (0-9) ឧ. 012888999 (កុំប្រើលេខខ្មែរ ០-៩)</span>
+                </p>
                 <p id="error-parent_phone" class="hidden text-xs text-red-500 mt-1 flex items-center gap-1 font-medium">
                   <i class="fa-solid fa-circle-exclamation text-[11px]"></i>
-                  <span>លេខទូរស័ព្ទមិនត្រឹមត្រូវ (ត្រូវមាន ៩ ទៅ ១០ ខ្ទង់ ចាប់ផ្ដើមដោយ ០)</span>
+                  <span>លេខទូរស័ព្ទមិនត្រឹមត្រូវ (សូមប្រើលេខជាភាសាអង់គ្លេស 0-9 ចាប់ផ្ដើមដោយលេខ 0 មាន 9 ទៅ 10 ខ្ទង់)</span>
                 </p>
               </div>
 
@@ -779,6 +787,28 @@
       }
       return isValid;
     }
+
+    // Auto-convert Khmer numerals (០-៩) to English digits (0-9)
+    function convertKhmerToLatinDigits(str) {
+      if (!str) return str;
+      const khmerDigits = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
+      return str.split('').map(ch => {
+        const idx = khmerDigits.indexOf(ch);
+        return idx !== -1 ? String(idx) : ch;
+      }).join('');
+    }
+
+    ['phone', 'parent_phone'].forEach(fieldId => {
+      const el = document.getElementById(fieldId);
+      if (el) {
+        el.addEventListener('input', (e) => {
+          const converted = convertKhmerToLatinDigits(e.target.value);
+          if (converted !== e.target.value) {
+            e.target.value = converted;
+          }
+        });
+      }
+    });
 
     // Attach real-time input listeners
     Object.keys(validators).forEach(fieldId => {

@@ -239,10 +239,14 @@
                     name="phone" 
                     value="{{ old('phone') }}" 
                     required 
-                    placeholder="ឧ. 012 111 222"
-                    class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition"
+                    placeholder="ឧ. 012 111 222 (លេខ 0-9)"
+                    class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition font-mono"
                   />
                 </div>
+                <p class="text-[11px] text-slate-500 mt-1 flex items-center gap-1 font-khmer">
+                  <i class="fa-solid fa-circle-info text-emerald-600 text-[10px]"></i>
+                  <span>សូមបញ្ចូលលេខជាភាសាអង់គ្លេស (0-9) កុំប្រើលេខខ្មែរ ០-៩</span>
+                </p>
               </div>
 
               <!-- Current Address -->
