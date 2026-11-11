@@ -254,9 +254,9 @@
         <div class="flex items-start justify-between pb-1 gap-2">
             <!-- Left Side: MoEYS Logo & District & School -->
             <div class="text-center w-36 sm:w-56 flex flex-col items-center shrink-0">
-                <!-- Official MoEYS Logo -->
+                <!-- Official MoEYS Logo (Static MoEYS Emblem) -->
                 <div class="mb-1 sm:mb-1.5 flex justify-center">
-                    <img src="{{ asset('images/moeys-logo.jpg') }}" alt="Logo MoEYS" class="h-11 sm:h-16 w-auto object-contain">
+                    <img src="{{ asset('images/moeys-logo.png') }}" alt="Logo MoEYS" class="h-12 sm:h-16 w-auto object-contain">
                 </div>
                 <h4 class="font-bold text-[10px] sm:text-[12px] text-slate-800 leading-tight">
                     <span id="textDistrict" @if($canEditSheet) contenteditable="true" onblur="handleContentEdit('district', this.innerText)" class="editable-field" title="ចុចដើម្បីកែប្រែការិយាល័យ" @endif>{{ $districtOffice }}</span>
