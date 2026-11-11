@@ -256,7 +256,7 @@
             <div class="text-center w-36 sm:w-56 flex flex-col items-center shrink-0">
                 <!-- Official MoEYS Logo (Static MoEYS Central Emblem) -->
                 <div class="mb-1 sm:mb-1.5 flex justify-center">
-                    <img src="{{ asset('images/moeys-logo.png') }}" alt="Logo MoEYS" class="h-14 sm:h-18 w-auto object-contain">
+                    <img src="{{ asset('images/moeys-logo.png') }}?v={{ file_exists(public_path('images/moeys-logo.png')) ? filemtime(public_path('images/moeys-logo.png')) : time() }}" alt="Logo MoEYS" class="h-14 sm:h-18 w-auto object-contain">
                 </div>
                 <h4 class="font-bold text-[10px] sm:text-[12px] text-slate-800 leading-tight">
                     <span id="textDistrict" @if($canEditSheet) contenteditable="true" onblur="handleContentEdit('district', this.innerText)" class="editable-field" title="ចុចដើម្បីកែប្រែការិយាល័យ" @endif>{{ $districtOffice }}</span>

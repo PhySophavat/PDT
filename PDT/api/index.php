@@ -25,6 +25,19 @@ foreach ($dirs as $dir) {
     }
 }
 
+// Clear old compiled blade views across new deployments on Vercel
+$deployId = getenv('VERCEL_DEPLOYMENT_ID') ?: (getenv('VERCEL_GIT_COMMIT_SHA') ?: (string) @filemtime(__DIR__ . '/../composer.json'));
+$versionMarker = '/tmp/deploy_ver_' . substr(md5($deployId), 0, 12);
+if (!file_exists($versionMarker)) {
+    $oldViews = glob('/tmp/storage/framework/views/*.php');
+    if ($oldViews) {
+        foreach ($oldViews as $f) {
+            @unlink($f);
+        }
+    }
+    @touch($versionMarker);
+}
+
 // Copy SSL CA certificate to /tmp for TiDB Cloud MySQL connection
 $caSrc = __DIR__ . '/../storage/certs/ca.pem';
 $caDest = '/tmp/storage/certs/ca.pem';
