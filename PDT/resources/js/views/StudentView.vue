@@ -516,30 +516,61 @@
             </div>
           </div>
 
-          <!-- Brevo Email Notice -->
-          <div class="p-3 bg-blue-50 border border-blue-200/80 rounded-xl text-[11px] text-blue-800 flex items-start gap-2">
-            <span class="text-sm">📧</span>
-            <span>នៅពេលចុចយល់ព្រម ប្រព័ន្ធនឹងបង្កើតគណនី និងផ្ញើពាក្យសម្ងាត់បណ្តោះអាសន្នទៅកាន់អ៊ីមែល <strong>{{ selectedStudent.email || 'របស់សិស្ស' }}</strong> ដោយស្វ័យប្រវត្តិតាមរយៈ Brevo SMTP។</span>
+          <!-- Email Dispatch Status Banner -->
+          <div v-if="selectedStudent.email" class="p-3.5 bg-blue-50/90 border border-blue-200 rounded-2xl text-xs text-blue-900 flex items-start gap-3">
+            <div class="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 text-sm flex-shrink-0 font-bold">
+              ✉
+            </div>
+            <div class="flex-1">
+              <div class="font-bold flex items-center gap-1.5 text-blue-950">
+                <span>ផ្ញើអ៊ីមែលស្វ័យប្រវត្តិ (Auto-Send Credentials)</span>
+                <span class="px-2 py-0.5 rounded-full bg-blue-200/80 text-[10px] text-blue-800 font-semibold">1-Click Login</span>
+              </div>
+              <p class="text-[11px] text-blue-700 mt-0.5 leading-relaxed">
+                ប្រព័ន្ធនឹងផ្ញើ Student ID, ពាក្យសម្ងាត់បណ្តោះអាសន្ន និងតំណភ្ជាប់ចូលប្រព័ន្ធស្វ័យប្រវត្តិទៅកាន់ <strong>{{ selectedStudent.email }}</strong> ភ្លាមៗ។
+              </p>
+            </div>
+          </div>
+          <div v-else class="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900 flex items-start gap-3">
+            <div class="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 text-sm flex-shrink-0 font-bold">
+              ⚠️
+            </div>
+            <div class="flex-1">
+              <div class="font-bold text-amber-950">សិស្សមិនមានអ៊ីមែល (No Email)</div>
+              <p class="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
+                គណនីនឹងត្រូវបានបង្កើត ប៉ុន្តែមិនអាចផ្ញើអ៊ីមែលបានទេ។ សូមកត់ត្រាពាក្យសម្ងាត់បណ្តោះអាសន្នដើម្បីប្រគល់ជូនសិស្សដោយផ្ទាល់។
+              </p>
+            </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3 pt-2">
+          <div class="grid grid-cols-2 gap-3 pt-1">
             <div>
-              <label class="block font-semibold mb-1">អត្តលេខសិស្សផ្លូវការ <span class="text-red-500">*</span></label>
-              <input type="text" v-model="approveForm.student_id_card" class="w-full px-3.5 py-2.5 bg-emerald-50/50 border border-emerald-300 rounded-xl font-mono font-bold text-emerald-800">
+              <label class="block font-semibold mb-1 text-slate-800">អត្តលេខសិស្សផ្លូវការ <span class="text-red-500">*</span></label>
+              <input type="text" v-model="approveForm.student_id_card" class="w-full px-3.5 py-2.5 bg-emerald-50/50 border border-emerald-300 rounded-xl font-mono font-bold text-emerald-800 focus:ring-2 focus:ring-emerald-400 focus:outline-none">
             </div>
             <div>
-              <label class="block font-semibold mb-1">ថ្នាក់រៀនដែលត្រូវចាត់តាំង <span class="text-red-500">*</span></label>
-              <select v-model="approveForm.grade" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold">
+              <label class="block font-semibold mb-1 text-slate-800">ថ្នាក់រៀនដែលត្រូវចាត់តាំង <span class="text-red-500">*</span></label>
+              <select v-model="approveForm.grade" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-blue-400 focus:outline-none">
                 <option v-for="cl in availableClasses" :key="cl" :value="cl">{{ cl }}</option>
               </select>
             </div>
           </div>
 
+          <!-- Password format hint -->
+          <div class="px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between text-[11px] text-slate-600">
+            <span>🔑 ពាក្យសម្ងាត់បណ្តោះអាសន្ន៖</span>
+            <span class="font-mono font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200">Pdt@ + លេខទូរស័ព្ទ ៤ ខ្ទង់ចុងក្រោយ</span>
+          </div>
+
           <div class="p-5 bg-slate-50 border-t border-slate-200 -mx-6 -mb-6 mt-4 flex items-center justify-end gap-3">
             <button @click="showApproveModal = false" type="button" class="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-xl font-semibold transition">បោះបង់</button>
             <button :disabled="isSubmittingApproval" @click="submitApproval" type="button" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-md shadow-emerald-600/30 transition flex items-center gap-2 disabled:opacity-50">
-              <i v-if="!isSubmittingApproval" class="fa-solid fa-check"></i>
-              <span>{{ isSubmittingApproval ? 'កំពុងអនុម័ត...' : 'យល់ព្រមអនុម័ត' }}</span>
+              <svg v-if="isSubmittingApproval" class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              <i v-else class="fa-solid fa-check"></i>
+              <span>{{ isSubmittingApproval ? 'កំពុងអនុម័ត និងផ្ញើអ៊ីមែល...' : 'យល់ព្រមអនុម័ត' }}</span>
             </button>
           </div>
         </div>

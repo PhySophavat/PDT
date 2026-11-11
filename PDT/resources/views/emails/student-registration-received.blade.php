@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ការទទួលបានពាក្យស្នើសុំចុះឈ្មោះចូលរៀន - សាលារៀន ជំនាន់ថ្មី </title>
+  <title>ការទទួលបានពាក្យស្នើសុំចុះឈ្មោះចូលរៀន - សាលារៀន ជំនាន់ថ្មី PDT</title>
   <style>
     /* Client resets */
     body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
@@ -13,32 +13,44 @@
       margin: 0 !important;
       padding: 0 !important;
       background-color: #f1f5f9;
-      font-family: 'Kantumruy Pro', 'Hanuman', 'Siemreap', Arial, sans-serif;
+      font-family: 'Kantumruy Pro', 'Hanuman', 'Siemreap', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       color: #334155;
       line-height: 1.6;
+    }
+    @media only screen and (max-width: 600px) {
+      .email-container { width: 100% !important; border-radius: 0 !important; }
+      .email-padding { padding: 24px 18px !important; }
+      .header-padding { padding: 28px 18px !important; }
+      .summary-table td { display: block !important; width: 100% !important; }
+      .summary-label { padding-bottom: 2px !important; }
+      .summary-val { padding-bottom: 10px !important; }
     }
   </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f1f5f9;">
-  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 24px 12px;">
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 24px 10px;">
     <tr>
       <td align="center">
         <!-- Main Email Container -->
-        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0;">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" class="email-container" style="max-width: 600px; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 4px 10px -3px rgba(15, 23, 42, 0.04); border: 1px solid #e2e8f0;">
           
           <!-- Top Header Bar -->
           <tr>
-            <td align="center" style="background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%); padding: 36px 24px; text-align: center;">
+            <td align="center" class="header-padding" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%); padding: 36px 24px; text-align: center;">
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
                   <td align="center">
-                    <div style="display: inline-block; width: 64px; height: 64px; background-color: #ffffff; border-radius: 16px; padding: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                      <img src="{{ asset('images/logo.png') }}" alt="PDT School Logo" width="52" height="52" style="display: block; margin: auto; object-fit: contain;">
-                    </div>
-                    <h1 style="margin: 14px 0 4px 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">
-                      សាលារៀន ជំនាន់ថ្មី
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="center" style="background-color: #ffffff; border-radius: 18px; padding: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
+                          <img src="{{ asset('images/logo.png') }}" alt="PDT Logo" width="56" height="56" style="display: block; margin: 0 auto; object-fit: contain;">
+                        </td>
+                      </tr>
+                    </table>
+                    <h1 style="margin: 16px 0 4px 0; color: #ffffff; font-size: 22px; font-weight: 800; letter-spacing: -0.3px;">
+                      portal sala • សាលារៀន ជំនាន់ថ្មី
                     </h1>
-                    <p style="margin: 0; color: #dbeafe; font-size: 13px; font-weight: 500;">
+                    <p style="margin: 0; color: #bfdbfe; font-size: 13px; font-weight: 500;">
                       PDT New Generation School • ប្រព័ន្ធចុះឈ្មោះតាមអនឡាញ
                     </p>
                   </td>
@@ -49,68 +61,71 @@
 
           <!-- Main Content Body -->
           <tr>
-            <td style="padding: 32px 28px;">
+            <td class="email-padding" style="padding: 36px 32px;">
               
               <!-- Greeting & Status Badge -->
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 18px;">
                 <tr>
-                  <td>
-                    <div style="display: inline-block; background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 9999px; margin-bottom: 16px;">
-                      ⏳ ទទួលបានពាក្យស្នើសុំជោគជ័យ (កំពុងរង់ចាំការពិនិត្យ)
-                    </div>
-                    <h2 style="margin: 0 0 12px 0; color: #0f172a; font-size: 18px; font-weight: 700;">
-                      សួស្តីប្អូន {{ $student->name_khmer ?: $student->name_latin }}!
-                    </h2>
-                    <p style="margin: 0 0 16px 0; font-size: 13px; color: #475569; line-height: 1.7;">
-                      សាលារៀន ជំនាន់ថ្មី  សូមជម្រាបជូនថា យើងបានទទួលពាក្យស្នើសុំចុះឈ្មោះចូលរៀនរបស់ប្អូនសម្រាប់ <strong>ថ្នាក់ {{ $student->grade }}</strong> តាមរយៈប្រព័ន្ធអនឡាញរួចរាល់ហើយ។
-                    </p>
-                    <p style="margin: 0 0 20px 0; font-size: 13px; color: #475569; line-height: 1.7;">
-                      ព័ត៌មានដែលប្អូនបានបញ្ជូនមកត្រូវបានរក្សាទុកដោយសុវត្ថិភាពនៅក្នុងប្រព័ន្ធ។ ខាងក្រោមនេះជាសេចក្តីសង្ខេបនៃព័ត៌មានដែលបានចុះឈ្មោះ៖
-                    </p>
+                  <td style="background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 9999px;">
+                    ⏳ ទទួលបានពាក្យស្នើសុំជោគជ័យ (កំពុងរង់ចាំការពិនិត្យ)
                   </td>
                 </tr>
               </table>
 
+              <h2 style="margin: 0 0 12px 0; color: #0f172a; font-size: 20px; font-weight: 800;">
+                សួស្តីប្អូន {{ $student->name_khmer ?: $student->name_latin }}! 👋
+              </h2>
+              <p style="margin: 0 0 16px 0; font-size: 14px; color: #475569; line-height: 1.75;">
+                សាលារៀន ជំនាន់ថ្មី សូមជម្រាបជូនថា យើងបានទទួលពាក្យស្នើសុំចុះឈ្មោះចូលរៀនរបស់ប្អូនសម្រាប់ <strong style="color: #1e40af;">ថ្នាក់ {{ $student->grade }}</strong> តាមរយៈប្រព័ន្ធអនឡាញរួចរាល់ហើយ។
+              </p>
+              <p style="margin: 0 0 24px 0; font-size: 14px; color: #475569; line-height: 1.75;">
+                ព័ត៌មានដែលប្អូនបានបញ្ជូនមកត្រូវបានរក្សាទុកដោយសុវត្ថិភាពនៅក្នុងប្រព័ន្ធ។ ខាងក្រោមនេះជាសេចក្តីសង្ខេបនៃព័ត៌មានដែលបានចុះឈ្មោះ៖
+              </p>
+
               <!-- Registration Summary Box -->
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 18px; padding: 22px; margin-bottom: 24px;">
                 <tr>
                   <td>
-                    <div style="font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 14px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 8px;">
+                    <div style="font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 14px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px;">
                       📋 ព័ត៌មានសង្ខេបនៃពាក្យស្នើសុំចុះឈ្មោះ
                     </div>
 
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 13px;">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" class="summary-table" style="font-size: 13px;">
                       <tr>
-                        <td width="38%" style="padding: 6px 0; color: #64748b;">ឈ្មោះសិស្ស (ខ្មែរ/ឡាតាំង)៖</td>
-                        <td style="padding: 6px 0; font-weight: 700; color: #0f172a;">{{ $student->name_khmer }} ({{ $student->name_latin }})</td>
+                        <td width="40%" class="summary-label" style="padding: 7px 0; color: #64748b; font-weight: 600;">ឈ្មោះសិស្ស (ខ្មែរ/ឡាតាំង)៖</td>
+                        <td width="60%" class="summary-val" style="padding: 7px 0; font-weight: 800; color: #0f172a;">{{ $student->name_khmer }} ({{ $student->name_latin }})</td>
                       </tr>
                       <tr>
-                        <td style="padding: 6px 0; color: #64748b;">ភេទ៖</td>
-                        <td style="padding: 6px 0; font-weight: 600; color: #0f172a;">{{ $student->gender === 'female' ? 'ស្រី' : 'ប្រុស' }}</td>
+                        <td class="summary-label" style="padding: 7px 0; color: #64748b; font-weight: 600;">ភេទ៖</td>
+                        <td class="summary-val" style="padding: 7px 0; font-weight: 700; color: #0f172a;">{{ $student->gender === 'female' ? 'ស្រី' : 'ប្រុស' }}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 6px 0; color: #64748b;">ថ្ងៃខែឆ្នាំកំណើត៖</td>
-                        <td style="padding: 6px 0; font-weight: 600; color: #0f172a;">{{ \Carbon\Carbon::parse($student->date_of_birth)->format('d/m/Y') }}</td>
+                        <td class="summary-label" style="padding: 7px 0; color: #64748b; font-weight: 600;">ថ្ងៃខែឆ្នាំកំណើត៖</td>
+                        <td class="summary-val" style="padding: 7px 0; font-weight: 700; color: #0f172a;">{{ \Carbon\Carbon::parse($student->date_of_birth)->format('d/m/Y') }}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 6px 0; color: #64748b;">កម្រិតថ្នាក់ស្នើសុំ៖</td>
-                        <td style="padding: 6px 0; font-weight: 700; color: #2563eb;">ថ្នាក់ {{ $student->grade }}</td>
+                        <td class="summary-label" style="padding: 7px 0; color: #64748b; font-weight: 600;">កម្រិតថ្នាក់ស្នើសុំ៖</td>
+                        <td class="summary-val" style="padding: 7px 0; font-weight: 800; color: #2563eb;">
+                          <span style="background-color: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 6px;">ថ្នាក់ {{ $student->grade }}</span>
+                        </td>
                       </tr>
                       <tr>
-                        <td style="padding: 6px 0; color: #64748b;">លេខទូរស័ព្ទសិស្ស៖</td>
-                        <td style="padding: 6px 0; font-weight: 600; color: #0f172a;">{{ $student->phone }}</td>
+                        <td class="summary-label" style="padding: 7px 0; color: #64748b; font-weight: 600;">លេខទូរស័ព្ទសិស្ស៖</td>
+                        <td class="summary-val" style="padding: 7px 0; font-weight: 700; color: #0f172a; font-family: 'SF Mono', Monaco, monospace;">{{ $student->phone }}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 6px 0; color: #64748b;">អ៊ីមែលទំនាក់ទំនង៖</td>
-                        <td style="padding: 6px 0; font-weight: 600; color: #0f172a;">{{ $student->email }}</td>
+                        <td class="summary-label" style="padding: 7px 0; color: #64748b; font-weight: 600;">អ៊ីមែលទំនាក់ទំនង៖</td>
+                        <td class="summary-val" style="padding: 7px 0; font-weight: 700; color: #2563eb; word-break: break-all;">{{ $student->email }}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 6px 0; color: #64748b;">អាណាព្យាបាល៖</td>
-                        <td style="padding: 6px 0; font-weight: 600; color: #0f172a;">{{ $student->parent_name }} ({{ $student->parent_relationship }}) - {{ $student->parent_phone }}</td>
+                        <td class="summary-label" style="padding: 7px 0; color: #64748b; font-weight: 600;">អាណាព្យាបាល៖</td>
+                        <td class="summary-val" style="padding: 7px 0; font-weight: 700; color: #0f172a;">{{ $student->parent_name }} ({{ $student->parent_relationship }}) - {{ $student->parent_phone }}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 6px 0; color: #64748b;">ស្ថានភាពពាក្យស្នើសុំ៖</td>
-                        <td style="padding: 6px 0; font-weight: 700; color: #d97706;">កំពុងរង់ចាំការត្រួតពិនិត្យ (Pending)</td>
+                        <td class="summary-label" style="padding: 7px 0; color: #64748b; font-weight: 600;">ស្ថានភាពពាក្យស្នើសុំ៖</td>
+                        <td class="summary-val" style="padding: 7px 0; font-weight: 800; color: #d97706;">
+                          <span style="background-color: #fef3c7; color: #b45309; padding: 3px 8px; border-radius: 6px;">កំពុងរង់ចាំការត្រួតពិនិត្យ (Pending)</span>
+                        </td>
                       </tr>
                     </table>
                   </td>
@@ -118,40 +133,36 @@
               </table>
 
               <!-- What's Next Process Box -->
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px; padding: 18px 20px; margin-bottom: 24px;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
                 <tr>
                   <td>
-                    <div style="font-size: 13px; font-weight: 700; color: #166534; margin-bottom: 8px;">
+                    <div style="font-size: 13px; font-weight: 800; color: #166534; margin-bottom: 10px;">
                       ℹ️ ដំណើរការបន្ទាប់ពីការចុះឈ្មោះ (Next Steps)
                     </div>
-                    <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #15803d; line-height: 1.8;">
-                      <li><strong>ការពិនិត្យឯកសារ៖</strong> គណៈគ្រប់គ្រងសាលានឹងធ្វើការត្រួតពិនិត្យឯកសារ និងព័ត៌មានដែលប្អូនបានផ្ដល់ជូន។</li>
-                      <li><strong>ការផ្តល់គណនីចូលប្រព័ន្ធ៖</strong> នៅពេលសាលា <strong>អនុម័ត (Approve)</strong> ជាផ្លូវការ ប្រព័ន្ធនឹងផ្ញើ <strong>អត្តលេខសិស្ស (Student ID)</strong> និង <strong>ពាក្យសម្ងាត់បណ្តោះអាសន្ន</strong> មកកាន់អ៊ីមែលនេះដោយស្វ័យប្រវត្តិ។</li>
-                      <li><strong>មិនចាំបាច់ចុះឈ្មោះម្តងទៀត៖</strong> ប្អូនមិនចាំបាច់ដាក់ពាក្យស្នើសុំសារជាថ្មីម្តងទៀតឡើយ ដើម្បីជៀសវាងការស្ទួនទិន្នន័យ។</li>
-                    </ul>
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 12px; color: #15803d; line-height: 1.75;">
+                      <tr>
+                        <td width="24" valign="top" style="font-weight: 800;">១.</td>
+                        <td style="padding-bottom: 8px;"><strong>ការពិនិត្យឯកសារ៖</strong> គណៈគ្រប់គ្រងសាលានឹងធ្វើការត្រួតពិនិត្យឯកសារ និងព័ត៌មានដែលប្អូនបានផ្ដល់ជូន។</td>
+                      </tr>
+                      <tr>
+                        <td width="24" valign="top" style="font-weight: 800;">២.</td>
+                        <td style="padding-bottom: 8px;"><strong>ការផ្តល់គណនីចូលប្រព័ន្ធ៖</strong> នៅពេលសាលា <strong>អនុម័ត (Approve)</strong> ជាផ្លូវការ ប្រព័ន្ធនឹងផ្ញើ <strong>អត្តលេខសិស្ស (Student ID)</strong>, <strong>ពាក្យសម្ងាត់បណ្តោះអាសន្ន</strong> និង <strong>ប៊ូតុង Auto-Login</strong> មកកាន់អ៊ីមែលនេះដោយស្វ័យប្រវត្តិ។</td>
+                      </tr>
+                      <tr>
+                        <td width="24" valign="top" style="font-weight: 800;">៣.</td>
+                        <td><strong>មិនចាំបាច់ចុះឈ្មោះម្តងទៀត៖</strong> ប្អូនមិនចាំបាច់ដាក់ពាក្យស្នើសុំសារជាថ្មីម្តងទៀតឡើយ ដើម្បីជៀសវាងការស្ទួនទិន្នន័យ។</td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
 
               <!-- Notice Box -->
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px;">
                 <tr>
-                  <td>
-                    <div style="font-size: 12px; color: #92400e; line-height: 1.6;">
-                      <strong>📌 ចំណាំ៖</strong> ប្រសិនបើលោកអ្នកមានចម្ងល់ ឬត្រូវការកែប្រែព័ត៌មានណាមួយ សូមទាក់ទងមកកាន់ការិយាល័យរដ្ឋបាលសាលាដោយផ្ទាល់ ឬតាមរយៈលេខទូរស័ព្ទខាងក្រោម។
-                    </div>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Contact & Support -->
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top: 1px solid #e2e8f0; padding-top: 20px;">
-                <tr>
-                  <td align="center" style="font-size: 12px; color: #64748b; line-height: 1.7;">
-                    <strong style="color: #1e293b;">សាលារៀន ជំនាន់ថ្មី  (New Generation School)</strong><br>
-                    📞 ទំនាក់ទំនងផ្នែករដ្ឋបាល៖ 023 888 999 / 012 345 678<br>
-                    📧 អ៊ីមែល៖ info@pdt-school.edu.kh<br>
-                    🌐 គេហទំព័រ៖ {{ url('/') }}
+                  <td width="24" valign="top" style="font-size: 16px; color: #d97706; padding-right: 8px;">📌</td>
+                  <td style="font-size: 12px; color: #92400e; line-height: 1.6;">
+                    <strong>ចំណាំ៖</strong> ប្រសិនបើលោកអ្នកមានចម្ងល់ ឬត្រូវការកែប្រែព័ត៌មានណាមួយ សូមទាក់ទងមកកាន់ការិយាល័យរដ្ឋបាលសាលាដោយផ្ទាល់។
                   </td>
                 </tr>
               </table>
@@ -161,9 +172,16 @@
 
           <!-- Footer -->
           <tr>
-            <td align="center" style="background-color: #f8fafc; padding: 20px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
-              © {{ date('Y') }} សាលារៀន ជំនាន់ថ្មី . រក្សាសិទ្ធិគ្រប់យ៉ាង។<br>
-              នេះជាសារអ៊ីមែលស្វ័យប្រវត្តដែលផ្ញើចេញពីប្រព័ន្ធ សូមកុំឆ្លើយតបមកកាន់អ៊ីមែលនេះដោយផ្ទាល់។
+            <td style="background-color: #0f172a; padding: 26px 24px; text-align: center;">
+              <p style="margin: 0 0 6px 0; font-size: 13px; font-weight: 700; color: #f8fafc;">
+                portal sala • សាលារៀន ជំនាន់ថ្មី PDT
+              </p>
+              <p style="margin: 0 0 12px 0; font-size: 11px; color: #94a3b8;">
+                បណ្តុះបណ្តាលចំណេះដឹង បច្ចេកវិទ្យា និងនវានុវត្តន៍អប់រំជំនាន់ថ្មី
+              </p>
+              <p style="margin: 0; font-size: 11px; color: #64748b;">
+                &copy; {{ date('Y') }} portal sala • សាលារៀន ជំនាន់ថ្មី. Developed by Phy Sophavat.
+              </p>
             </td>
           </tr>
 
@@ -173,4 +191,3 @@
   </table>
 </body>
 </html>
-
