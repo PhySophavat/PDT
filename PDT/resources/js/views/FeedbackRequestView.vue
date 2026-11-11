@@ -423,7 +423,12 @@ const userRole = computed(() => {
   if (r.includes('teacher') || r.includes('គ្រូ')) return 'teacher';
   return 'student';
 });
-const isAdmin = computed(() => userRole.value === 'admin');
+const isAdmin = computed(() => 
+  userRole.value === 'admin' || 
+  Boolean(currentUser.value?.is_super_admin) || 
+  currentUser.value?.role_khmer === 'អគ្គអ្នកគ្រប់គ្រង' || 
+  currentUser.value?.role_khmer === 'អ្នកគ្រប់គ្រង'
+);
 
 const requestsList = ref([]);
 const counts = ref({ all: 0, students: 0, teachers: 0, links: 0 });

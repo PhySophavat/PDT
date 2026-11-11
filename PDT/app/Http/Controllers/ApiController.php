@@ -2553,8 +2553,18 @@ class ApiController extends Controller
     public function getBookRequests(Request $request)
     {
         $authUser = Auth::user();
-        $isSuperAdmin = $authUser && ($authUser->is_super_admin || in_array(strtolower($authUser->role ?? ''), ['super_admin', 'superadmin', 'super admin']) || (method_exists($authUser, 'isSuperAdmin') && $authUser->isSuperAdmin()));
-        $isAdmin = $isSuperAdmin || ($authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1));
+        $isSuperAdmin = $authUser && (
+            !empty($authUser->is_super_admin)
+            || in_array(strtolower($authUser->role ?? ''), ['super_admin', 'superadmin', 'super admin', 'super-admin'])
+            || (method_exists($authUser, 'isSuperAdmin') && $authUser->isSuperAdmin())
+            || (method_exists($authUser, 'hasRole') && ($authUser->hasRole('super_admin') || $authUser->hasRole('superadmin')))
+            || $authUser->id === 1
+        );
+        $isAdmin = $isSuperAdmin || ($authUser && (
+            (method_exists($authUser, 'hasRole') && $authUser->hasRole('admin'))
+            || str_contains(strtolower($authUser->role ?? ''), 'admin')
+            || $authUser->id === 1
+        ));
 
         // Security: Students and teachers cannot view the list of submitted requests
         if (!$isAdmin) {
@@ -2573,7 +2583,7 @@ class ApiController extends Controller
         $hasLink = $request->boolean('has_link');
 
         // Open Community Board: All teachers, students, and admins can view all feedback and requests
-        $query = BookRequest::with(['user:id,name,role', 'user.student', 'user.teacher', 'reviewer:id,name']);
+        $query = BookRequest::with(['user:id,name,email', 'user.student', 'user.teacher', 'reviewer:id,name']);
 
         if ($roleFilter && in_array($roleFilter, ['student', 'teacher', 'admin'])) {
             $query->where('requested_by_role', $roleFilter);
@@ -2599,7 +2609,7 @@ class ApiController extends Controller
                 'id' => $r->id,
                 'user_id' => $r->user_id,
                 'requested_by_name' => $senderName ?: 'អនាមិក',
-                'requested_by_role' => $r->requested_by_role,
+                'requested_by_role' => $r->requested_by_role ?: 'student',
                 'grade' => $r->grade ?: 'ទូទៅ',
                 'title' => $r->title,
                 'file_url' => $r->file_url,
@@ -2618,7 +2628,7 @@ class ApiController extends Controller
         $all = BookRequest::all();
         $counts = [
             'all' => $all->count(),
-            'students' => $all->where('requested_by_role', 'student')->count(),
+            'students' => $all->filter(fn($i) => in_array($i->requested_by_role, ['student', null, '', 'user']))->count(),
             'teachers' => $all->where('requested_by_role', 'teacher')->count(),
             'links' => $all->filter(fn($i) => !empty($i->file_url))->count(),
         ];
@@ -2768,8 +2778,18 @@ class ApiController extends Controller
     public function updateBookRequestStatus(Request $request, $id)
     {
         $authUser = Auth::user();
-        $isSuperAdmin = $authUser && ($authUser->is_super_admin || in_array(strtolower($authUser->role ?? ''), ['super_admin', 'superadmin', 'super admin']) || (method_exists($authUser, 'isSuperAdmin') && $authUser->isSuperAdmin()));
-        $isAdmin = $isSuperAdmin || ($authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1));
+        $isSuperAdmin = $authUser && (
+            !empty($authUser->is_super_admin)
+            || in_array(strtolower($authUser->role ?? ''), ['super_admin', 'superadmin', 'super admin', 'super-admin'])
+            || (method_exists($authUser, 'isSuperAdmin') && $authUser->isSuperAdmin())
+            || (method_exists($authUser, 'hasRole') && ($authUser->hasRole('super_admin') || $authUser->hasRole('superadmin')))
+            || $authUser->id === 1
+        );
+        $isAdmin = $isSuperAdmin || ($authUser && (
+            (method_exists($authUser, 'hasRole') && $authUser->hasRole('admin'))
+            || str_contains(strtolower($authUser->role ?? ''), 'admin')
+            || $authUser->id === 1
+        ));
         if (!$isAdmin) {
             return response()->json(['message' => 'អ្នកមិនមានសិទ្ធិកែប្រែស្ថានភាពសំណើទេ (Admin & Superadmin only)'], 403);
         }
@@ -2803,7 +2823,18 @@ class ApiController extends Controller
     public function deleteBookRequest($id)
     {
         $authUser = Auth::user();
-        $isAdmin = $authUser && ($authUser->hasRole('admin') || strtolower($authUser->role ?? '') === 'admin' || $authUser->id === 1);
+        $isSuperAdmin = $authUser && (
+            !empty($authUser->is_super_admin)
+            || in_array(strtolower($authUser->role ?? ''), ['super_admin', 'superadmin', 'super admin', 'super-admin'])
+            || (method_exists($authUser, 'isSuperAdmin') && $authUser->isSuperAdmin())
+            || (method_exists($authUser, 'hasRole') && ($authUser->hasRole('super_admin') || $authUser->hasRole('superadmin')))
+            || $authUser->id === 1
+        );
+        $isAdmin = $isSuperAdmin || ($authUser && (
+            (method_exists($authUser, 'hasRole') && $authUser->hasRole('admin'))
+            || str_contains(strtolower($authUser->role ?? ''), 'admin')
+            || $authUser->id === 1
+        ));
 
         $bookRequest = BookRequest::findOrFail($id);
 

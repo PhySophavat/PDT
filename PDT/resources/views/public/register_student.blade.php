@@ -344,7 +344,7 @@
                     id="phone"
                     name="phone" 
                     value="{{ old('phone') }}" 
-                    placeholder="ឧ. 012 345 678 (លេខ 0-9 មាន 9 ទៅ 10 ខ្ទង់)"
+                    placeholder="ឧ. 012 345 678 "
                     class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition font-mono"
                   />
                 </div>
@@ -397,7 +397,7 @@
                     id="student_id_card"
                     name="student_id_card" 
                     value="{{ old('student_id_card') }}" 
-                    placeholder="ឧ. STU-2026-001"
+                    placeholder="ឧ. 1234"
                     class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 uppercase focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition font-mono"
                   />
                 </div>
