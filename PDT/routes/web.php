@@ -31,7 +31,15 @@ Route::get('/', function (\Illuminate\Http\Request $request) {
 })->name('home');
 Route::post('/', [AuthController::class, 'login']);
 
-// Standard /login alias
+// Standard /login and /portal clean URLs
+Route::get('/portal', function (\Illuminate\Http\Request $request) {
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return app(AuthController::class)->showLoginForm($request);
+});
+Route::post('/portal', [AuthController::class, 'login']);
+
 Route::get('/login', function (\Illuminate\Http\Request $request) {
     if (Auth::check()) {
         return redirect()->route('dashboard');

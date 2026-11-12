@@ -1,35 +1,4 @@
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: Facebot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: TelegramBot
-Allow: /
-
-User-agent: WhatsApp
-Allow: /
-
 User-agent: *
 Allow: /
-Allow: /portal-sala-access-2026
-Allow: /login
-Allow: /examinations/
-Allow: /leave-request
-Allow: /teacher-leave-request
-Allow: /register-student
-Allow: /register-teacher
-Allow: /register-parent
-Allow: /library
 
-# Block administrative and internal API routes from search engines
-Disallow: /admin
-Disallow: /api/
-Disallow: /telescope
-Disallow: /csrf-token
-
-# Sitemap declaration
 Sitemap: https://sala-portal.vercel.app/sitemap.xml
