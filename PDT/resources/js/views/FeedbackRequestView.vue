@@ -483,7 +483,7 @@ const fetchRequests = async () => {
   }
   isLoading.value = true;
   try {
-    const res = await axios.get('/api/library/requests');
+    const res = await axios.get('/api/library/requests', { params: { _t: Date.now() } });
     if (res.data) {
       requestsList.value = res.data.requests || [];
       counts.value = res.data.counts || { all: 0, students: 0, teachers: 0, links: 0 };
@@ -551,6 +551,8 @@ const submitReply = async () => {
       admin_feedback: replyMessage.value
     });
     if (res.data?.success) {
+      window.dispatchEvent(new CustomEvent('pdt-notif-remove', { detail: { id: `book-request-${replyTargetRequest.value.id}` } }));
+      try { localStorage.setItem('pdt_sync_ts', String(Date.now())); } catch (e) {}
       showReplyModal.value = false;
       alert('បានកត់ត្រាការឆ្លើយតបដោយជោគជ័យ!');
       await fetchRequests();
@@ -569,6 +571,8 @@ const deleteRequest = async (req) => {
   try {
     const res = await axios.delete(`/api/library/requests/${req.id}`);
     if (res.data?.success) {
+      window.dispatchEvent(new CustomEvent('pdt-notif-remove', { detail: { id: `book-request-${req.id}` } }));
+      try { localStorage.setItem('pdt_sync_ts', String(Date.now())); } catch (e) {}
       await fetchRequests();
       window.dispatchEvent(new CustomEvent('pdt-data-updated'));
     }

@@ -469,7 +469,7 @@ class ApiController extends Controller
      */
     public function getPendingNotifications(Request $request)
     {
-        if (session()->isStarted()) {
+        if (config('session.driver') === 'file' && session()->isStarted()) {
             session()->save();
         }
 
@@ -478,9 +478,9 @@ class ApiController extends Controller
         $roleName = strtolower($authUser?->roles?->first()?->name ?? $authUser?->role ?? 'guest');
         $isSuperAdmin = $authUser?->is_super_admin || $roleName === 'super_admin' || $roleName === 'super admin';
         $isAdmin = $isSuperAdmin || $roleName === 'admin' || ($authUser && method_exists($authUser, 'hasRole') && ($authUser->hasRole('admin') || $authUser->hasRole('super_admin')));
-        $hasStudentProfile = !empty($authUser?->student) || ($authUser && !empty($authUser->email) && Student::where('email', $authUser->email)->exists());
+        $hasStudentProfile = !$isAdmin && (!empty($authUser?->student) || ($authUser && !empty($authUser->email) && Student::where('email', $authUser->email)->exists()));
         $isStudent = !$isAdmin && (str_contains($roleName, 'student') || ($authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('student')) || $hasStudentProfile);
-        $hasTeacherProfile = !empty($authUser?->teacher) || ($authUser && Teacher::where('user_id', $authUser->id)->exists());
+        $hasTeacherProfile = !$isAdmin && !$isStudent && (!empty($authUser?->teacher) || ($authUser && Teacher::where('user_id', $authUser->id)->exists()));
         $isTeacher = !$isAdmin && !$isStudent && (str_contains($roleName, 'teacher') || ($authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('teacher')) || $hasTeacherProfile);
 
         $version = Cache::get('notif_version', 1);
@@ -743,7 +743,7 @@ class ApiController extends Controller
                     ->latest('id')
                     ->take(20)
                     ->get();
-                $counts['students'] = Student::where('status', 'pending')->count();
+                $counts['students'] = $pendingStudents->count() < 20 ? $pendingStudents->count() : Student::where('status', 'pending')->count();
 
                 // Pending Teachers
                 $pendingTeachers = Teacher::with('user:id,name')
@@ -751,7 +751,7 @@ class ApiController extends Controller
                     ->latest('id')
                     ->take(20)
                     ->get();
-                $counts['teachers'] = Teacher::where('status', 'pending')->count();
+                $counts['teachers'] = $pendingTeachers->count() < 20 ? $pendingTeachers->count() : Teacher::where('status', 'pending')->count();
 
                 // Pending Student Leaves
                 $pendingLeaves = StudentLeaveRequest::with('student:id,name_khmer,name_latin')
@@ -759,14 +759,14 @@ class ApiController extends Controller
                     ->latest('id')
                     ->take(20)
                     ->get();
-                $studentLeaveCount = StudentLeaveRequest::where('status', 'pending')->count();
+                $studentLeaveCount = $pendingLeaves->count() < 20 ? $pendingLeaves->count() : StudentLeaveRequest::where('status', 'pending')->count();
 
                 // Pending Teacher Leaves
                 $pendingTeacherLeaves = TeacherLeaveRequest::where('status', 'pending')
                     ->latest('id')
                     ->take(20)
                     ->get();
-                $teacherLeaveCount = TeacherLeaveRequest::where('status', 'pending')->count();
+                $teacherLeaveCount = $pendingTeacherLeaves->count() < 20 ? $pendingTeacherLeaves->count() : TeacherLeaveRequest::where('status', 'pending')->count();
                 $counts['leaves'] = $studentLeaveCount + $teacherLeaveCount;
 
                 foreach ($pendingStudents as $st) {
@@ -849,9 +849,11 @@ class ApiController extends Controller
                     ->latest('id')
                     ->take(20)
                     ->get();
-                $counts['book_requests'] = BookRequest::where(function ($q) {
-                    $q->whereNull('admin_feedback')->orWhere('admin_feedback', '');
-                })->count();
+                $counts['book_requests'] = $pendingBookRequests->count() < 20
+                    ? $pendingBookRequests->count()
+                    : BookRequest::where(function ($q) {
+                        $q->whereNull('admin_feedback')->orWhere('admin_feedback', '');
+                    })->count();
 
                 foreach ($pendingBookRequests as $br) {
                     $senderRole = $br->requested_by_role === 'teacher' ? 'លោកគ្រូ/អ្នកគ្រូ ' : ($br->requested_by_role === 'student' ? 'សិស្ស ' : '');

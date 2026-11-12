@@ -305,6 +305,8 @@ const handleDelete = async (id) => {
   if (!confirm('តើអ្នកប្រាកដជាចង់លុបសេចក្តីជូនដំណឹងនេះមែនទេ?')) return;
   try {
     const res = await axios.delete(`/api/announcements/${id}`);
+    window.dispatchEvent(new CustomEvent('pdt-notif-remove', { detail: { id: `announcement-${id}` } }));
+    try { localStorage.setItem('pdt_sync_ts', String(Date.now())); } catch (e) {}
     alert(res.data.message || 'បានលុបសេចក្តីជូនដំណឹងដោយជោគជ័យ!');
     await fetchAnnouncements();
     window.dispatchEvent(new CustomEvent('pdt-data-updated'));

@@ -940,15 +940,38 @@ watch(() => route.path, (newPath) => {
 });
 
 let isFetchingPendingNotifs = false;
+let pendingRefetchQueued = false;
 let lastPendingCount = -1;
+
+const removeNotificationOptimistically = (notifId) => {
+  if (!notifId) return;
+  const idx = pendingNotificationItems.value.findIndex(item => item.id === notifId);
+  if (idx === -1) return;
+  const removed = pendingNotificationItems.value[idx];
+  pendingNotificationItems.value = pendingNotificationItems.value.filter(item => item.id !== notifId);
+  pendingTotalCount.value = Math.max(0, pendingTotalCount.value - 1);
+  if (removed?.type && typeof pendingCounts.value[removed.type] === 'number') {
+    pendingCounts.value[removed.type] = Math.max(0, pendingCounts.value[removed.type] - 1);
+  } else if (removed?.type === 'announcement') {
+    pendingCounts.value.announcements = Math.max(0, (pendingCounts.value.announcements || 0) - 1);
+  } else if (removed?.type === 'book_request') {
+    pendingCounts.value.book_requests = Math.max(0, (pendingCounts.value.book_requests || 0) - 1);
+  }
+  lastPendingCount = pendingTotalCount.value;
+};
 
 const fetchPendingNotifications = async (force = false) => {
   // Sleep / Pause polling if tab is in the background or screen is locked (Saves 80-90% server resources)
   if (!force && typeof document !== 'undefined' && document.visibilityState !== 'visible') {
     return;
   }
-  if (isFetchingPendingNotifs) return;
+  if (isFetchingPendingNotifs) {
+    // Queue a fresh re-fetch so delete/create triggers are never dropped while another fetch is in flight
+    if (force) pendingRefetchQueued = true;
+    return;
+  }
   isFetchingPendingNotifs = true;
+  pendingRefetchQueued = false;
   isLoadingNotifications.value = true;
   try {
     const res = await axios.get('/api/notifications/pending', {
@@ -960,7 +983,7 @@ const fetchPendingNotifications = async (force = false) => {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache'
       },
-      timeout: 10000
+      timeout: 20000
     });
     if (res.data) {
       const newTotal = res.data.total_count || 0;
@@ -973,10 +996,6 @@ const fetchPendingNotifications = async (force = false) => {
         markAllAsRead();
       }
 
-      // If pending count changed (e.g. new student registered), alert active views to refresh
-      if (lastPendingCount !== -1 && newTotal !== lastPendingCount) {
-        window.dispatchEvent(new CustomEvent('pdt-data-updated'));
-      }
       lastPendingCount = newTotal;
     }
   } catch (err) {
@@ -984,6 +1003,10 @@ const fetchPendingNotifications = async (force = false) => {
   } finally {
     isFetchingPendingNotifs = false;
     isLoadingNotifications.value = false;
+    if (pendingRefetchQueued) {
+      pendingRefetchQueued = false;
+      fetchPendingNotifications(true);
+    }
   }
 };
 
@@ -1243,6 +1266,9 @@ onMounted(() => {
     if (e.key === 'pdt_school_name_en' && e.newValue) {
       schoolNameEn.value = e.newValue;
     }
+    if (e.key === 'pdt_sync_ts') {
+      fetchPendingNotifications(true);
+    }
   });
 
   document.addEventListener('click', handleDocClick);
@@ -1263,14 +1289,18 @@ onMounted(() => {
   };
   document.addEventListener('visibilitychange', handleVisibilityChange);
 
-  window.addEventListener('pdt-data-updated', () => fetchPendingNotifications(true));
+  const handleDataUpdated = () => fetchPendingNotifications(true);
+  const handleNotifRemove = (e) => removeNotificationOptimistically(e?.detail?.id);
+  window.addEventListener('pdt-data-updated', handleDataUpdated);
+  window.addEventListener('pdt-notif-remove', handleNotifRemove);
 
   onUnmounted(() => {
     document.removeEventListener('click', handleDocClick);
     document.removeEventListener('keydown', handleKeydown);
     document.removeEventListener('visibilitychange', handleVisibilityChange);
     clearInterval(notifInterval);
-    window.removeEventListener('pdt-data-updated', () => fetchPendingNotifications(true));
+    window.removeEventListener('pdt-data-updated', handleDataUpdated);
+    window.removeEventListener('pdt-notif-remove', handleNotifRemove);
   });
 });
 
