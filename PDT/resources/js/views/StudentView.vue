@@ -439,8 +439,8 @@
               </select>
             </div>
             <div>
-              <label class="block font-semibold mb-1">ថ្ងៃខែឆ្នាំកំណើត</label>
-              <input type="date" v-model="createForm.date_of_birth" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+              <label class="block font-semibold mb-1">ថ្ងៃខែឆ្នាំកំណើត <span class="text-xs text-slate-400 font-normal">(យ៉ាងតិច ១០ ឆ្នាំ)</span></label>
+              <input type="date" v-model="createForm.date_of_birth" :max="maxStudentDob" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
               <label class="block font-semibold mb-1">លេខទូរស័ព្ទសិស្ស</label>
@@ -727,8 +727,8 @@
               </select>
             </div>
             <div>
-              <label class="block font-semibold mb-1">ថ្ងៃខែឆ្នាំកំណើត</label>
-              <input type="date" v-model="editForm.date_of_birth" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+              <label class="block font-semibold mb-1">ថ្ងៃខែឆ្នាំកំណើត <span class="text-xs text-slate-400 font-normal">(យ៉ាងតិច ១០ ឆ្នាំ)</span></label>
+              <input type="date" v-model="editForm.date_of_birth" :max="maxStudentDob" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
               <label class="block font-semibold mb-1">លេខទូរស័ព្ទសិស្ស</label>
@@ -1750,7 +1750,30 @@ const openCreateModal = () => {
   showCreateModal.value = true;
 };
 
+const maxStudentDob = computed(() => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 10);
+  return d.toISOString().split('T')[0];
+});
+
+const isStudentUnder10 = (dobStr) => {
+  if (!dobStr) return false;
+  const dob = new Date(dobStr);
+  if (isNaN(dob.getTime())) return false;
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+    age--;
+  }
+  return age < 10;
+};
+
 const submitCreateStudent = async () => {
+  if (createForm.value.date_of_birth && isStudentUnder10(createForm.value.date_of_birth)) {
+    alert('សិស្សត្រូវមានអាយុយ៉ាងតិច ១០ ឆ្នាំឡើងទៅ');
+    return;
+  }
   isSubmittingCreate.value = true;
   try {
     const res = await axios.post('/api/students', createForm.value);
@@ -1912,6 +1935,10 @@ const openEditModal = (st) => {
 
 const submitEditStudent = async () => {
   if (!selectedStudent.value) return;
+  if (editForm.value.date_of_birth && isStudentUnder10(editForm.value.date_of_birth)) {
+    alert('សិស្សត្រូវមានអាយុយ៉ាងតិច ១០ ឆ្នាំឡើងទៅ');
+    return;
+  }
   isSubmittingEdit.value = true;
   try {
     const res = await axios.put(`/api/students/${selectedStudent.value.id}`, editForm.value);

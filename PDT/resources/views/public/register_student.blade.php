@@ -309,9 +309,12 @@
 
               <!-- Date of Birth -->
               <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-                  ថ្ងៃខែឆ្នាំកំណើត <span class="text-red-500">*</span>
-                </label>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="block text-xs font-semibold text-slate-700">
+                    ថ្ងៃខែឆ្នាំកំណើត <span class="text-red-500">*</span>
+                  </label>
+                  <span id="dob-age-badge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+                </div>
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                     <i class="fa-regular fa-calendar text-xs"></i>
@@ -320,13 +323,18 @@
                     type="date" 
                     id="date_of_birth"
                     name="date_of_birth" 
+                    max="{{ \Carbon\Carbon::now()->subYears(10)->format('Y-m-d') }}"
                     value="{{ old('date_of_birth') }}" 
                     class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
                   />
                 </div>
                 <p id="error-date_of_birth" class="hidden text-xs text-red-500 mt-1 flex items-center gap-1 font-medium">
                   <i class="fa-solid fa-circle-exclamation text-[11px]"></i>
-                  <span>សូមជ្រើសរើសថ្ងៃខែឆ្នាំកំណើត</span>
+                  <span id="error-date_of_birth-text">សូមជ្រើសរើសថ្ងៃខែឆ្នាំកំណើត</span>
+                </p>
+                <p id="hint-date_of_birth" class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+                  <i class="fa-solid fa-circle-info text-[10px]"></i>
+                  <span>សិស្សត្រូវមានអាយុយ៉ាងតិច ១០ ឆ្នាំឡើងទៅ (កើតនៅត្រឹម ឬមុនថ្ងៃទី {{ \Carbon\Carbon::now()->subYears(10)->format('d/m/Y') }})</span>
                 </p>
               </div>
 
@@ -757,11 +765,29 @@
       document.getElementById('step-pane-3')
     ];
 
+    // Calculate Age helper
+    function calculateStudentAge(birthDateStr) {
+      if (!birthDateStr) return -1;
+      const dob = new Date(birthDateStr);
+      if (isNaN(dob.getTime())) return -1;
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+        age--;
+      }
+      return age;
+    }
+
     // Real-time Validation Rules
     const validators = {
       name_khmer: (val) => val.trim().length >= 2,
       name_latin: (val) => /^[a-zA-Z\s]{2,60}$/.test(val.trim()),
-      date_of_birth: (val) => val.trim() !== '',
+      date_of_birth: (val) => {
+        if (!val || val.trim() === '') return false;
+        const age = calculateStudentAge(val);
+        return age >= 10;
+      },
       phone: (val) => /^0[0-9]{8,9}$/.test(val.replace(/[\s-]/g, '')),
       email: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim()),
       grade: (val) => val.trim() !== '',
@@ -776,6 +802,36 @@
       if (!input || !validators[fieldId]) return true;
 
       const isValid = validators[fieldId](input.value);
+
+      if (fieldId === 'date_of_birth') {
+        const errorText = document.getElementById('error-date_of_birth-text');
+        const ageBadge = document.getElementById('dob-age-badge');
+        const val = input.value ? input.value.trim() : '';
+        if (!val) {
+          if (errorText) errorText.textContent = 'សូមជ្រើសរើសថ្ងៃខែឆ្នាំកំណើត';
+          if (ageBadge) ageBadge.classList.add('hidden');
+        } else {
+          const age = calculateStudentAge(val);
+          if (age < 0) {
+            if (errorText) errorText.textContent = 'ទម្រង់ថ្ងៃខែឆ្នាំកំណើតមិនត្រឹមត្រូវ';
+            if (ageBadge) ageBadge.classList.add('hidden');
+          } else if (age < 10) {
+            if (errorText) errorText.textContent = `សិស្សត្រូវមានអាយុយ៉ាងតិច ១០ ឆ្នាំឡើងទៅ (បច្ចុប្បន្នទើបតែ ${age} ឆ្នាំប៉ុណ្ណោះ)`;
+            if (ageBadge) {
+              ageBadge.textContent = `អាយុ៖ ${age} ឆ្នាំ (មិនទាន់គ្រប់ ១០ ឆ្នាំ)`;
+              ageBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200';
+              ageBadge.classList.remove('hidden');
+            }
+          } else {
+            if (ageBadge) {
+              ageBadge.textContent = `អាយុ៖ ${age} ឆ្នាំ ✓`;
+              ageBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200';
+              ageBadge.classList.remove('hidden');
+            }
+          }
+        }
+      }
+
       if (!isValid) {
         input.classList.add('input-error');
         input.classList.remove('input-valid');
