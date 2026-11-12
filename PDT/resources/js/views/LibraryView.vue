@@ -1274,6 +1274,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onActivated, onUnmounted, nextTick } from 'vue';
+import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import PageHeader from '../components/PageHeader.vue';
@@ -1283,6 +1284,7 @@ import FilterBar from '../components/FilterBar.vue';
 import DataTable from '../components/DataTable.vue';
 
 const { t } = useI18n();
+const route = useRoute();
 
 // Current User & Role Permissions
 const currentUser = ref(window.__INITIAL_USER__ || {});
@@ -1341,7 +1343,8 @@ const getDefaultStudentGrade = () => {
 };
 
 const searchQuery = ref('');
-const selectedGrade = ref(getDefaultStudentGrade());
+// Default to all grades ('') so that the user sees all books initially unless a query param is explicitly passed
+const selectedGrade = ref(route?.query?.grade ? String(route.query.grade) : '');
 const selectedSubjectId = ref('');
 const selectedLevel = ref('');
 const subFilter = ref('all'); // all, bookmarks, recent
@@ -1977,8 +1980,8 @@ const cleanupScrollListeners = () => {
 };
 
 onMounted(() => {
-  if (isStudent.value && !selectedGrade.value) {
-    selectedGrade.value = getDefaultStudentGrade();
+  if (route?.query?.grade) {
+    selectedGrade.value = String(route.query.grade);
   }
   loadLocalStorageData();
   fetchLibraryData();
