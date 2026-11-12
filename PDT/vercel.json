@@ -44,7 +44,7 @@
     "APP_ROUTES_CACHE": "/tmp/bootstrap/cache/routes.php",
     "APP_SERVICES_CACHE": "/tmp/bootstrap/cache/services.php",
     "VIEW_COMPILED_PATH": "/tmp/storage/framework/views",
-    "CACHE_STORE": "array",
+    "CACHE_STORE": "database",
     "SESSION_DRIVER": "database",
     "SESSION_LIFETIME": "525600",
     "SESSION_EXPIRE_ON_CLOSE": "false",

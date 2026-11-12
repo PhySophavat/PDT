@@ -226,11 +226,11 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'បានចាកចេញពីប្រព័ន្ធដោយជោគជ័យ',
-                'redirect' => route('login', ['logged_out' => 1])
+                'redirect' => route('login')
             ])->withoutCookie($sessionCookieName)->withoutCookie($recallerName);
         }
 
-        return redirect()->route('login', ['logged_out' => 1])
+        return redirect()->route('login')
             ->with('success', 'បានចាកចេញពីប្រព័ន្ធដោយជោគជ័យ។')
             ->withoutCookie($sessionCookieName)
             ->withoutCookie($recallerName);

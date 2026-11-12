@@ -478,6 +478,13 @@
             }
         }
 
+        // Clean URL to remove ?logged_out=1 or ?logout=1 from browser address bar
+        if (window.location.search && (window.location.search.includes('logged_out') || window.location.search.includes('logout'))) {
+            try {
+                window.history.replaceState(null, document.title, window.location.pathname);
+            } catch (e) {}
+        }
+
         // Auto-refresh CSRF token on mobile (Safari / Telegram in-app browser / bfcache)
         const refreshCsrfToken = () => {
             fetch('/csrf-token', { headers: { 'Accept': 'application/json' } })
