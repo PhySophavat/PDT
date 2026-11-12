@@ -75,7 +75,8 @@ Route::get('/api/app-version', function () {
       ->header('Expires', '0');
 })->name('api.app-version');
 
-// PWA Fallbacks
+// PWA Fallbacks & SEO
+Route::get('/robots.txt', fn() => response()->file(public_path('robots.txt'), ['Content-Type' => 'text/plain']));
 Route::get('/manifest.json', fn() => response()->file(public_path('manifest.json'), ['Content-Type' => 'application/manifest+json']));
 Route::get('/site.webmanifest', fn() => response()->file(public_path('site.webmanifest'), ['Content-Type' => 'application/manifest+json']));
 Route::get('/sw.js', fn() => response()->file(public_path('sw.js'), ['Content-Type' => 'application/javascript']));
