@@ -1395,7 +1395,7 @@ const currentLocale = computed(() => locale.value || 'km');
 const router = useRouter();
 
 // Share Registration Access Link
-const registrationUrl = 'https://sala-portal.vercel.app/portal-sala-access-2026';
+const registrationUrl = 'https://sala-portal.vercel.app/portal';
 const showShareDropdown = ref(false);
 const shareDropdownRef = ref(null);
 const copiedRegistrationLink = ref(false);

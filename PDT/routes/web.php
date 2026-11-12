@@ -49,7 +49,7 @@ Route::get('/portal', function (\Illuminate\Http\Request $request) {
         $html = file_get_contents(public_path('portal.html'));
         return response($html, 200)
             ->header('Content-Type', 'text/html; charset=UTF-8')
-            ->header('Cache-Control', 'public, max-age=3600, s-maxage=3600')
+            ->header('Cache-Control', 'no-cache, private')
             ->header('X-Robots-Tag', 'index, follow');
     }
 

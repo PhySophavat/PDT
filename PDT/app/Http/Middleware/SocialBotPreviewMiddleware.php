@@ -53,7 +53,7 @@ class SocialBotPreviewMiddleware
                 if (file_exists($htmlPath)) {
                     return response(file_get_contents($htmlPath), 200, [
                         'Content-Type' => 'text/html; charset=UTF-8',
-                        'Cache-Control' => 'public, max-age=3600, s-maxage=3600',
+                        'Cache-Control' => 'no-cache, private',
                         'X-Robots-Tag' => 'index, follow',
                     ]);
                 }

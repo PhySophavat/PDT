@@ -11,13 +11,6 @@
   },
   "headers": [
     {
-      "source": "/portal",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600, s-maxage=3600" },
-        { "key": "X-Robots-Tag", "value": "index, follow" }
-      ]
-    },
-    {
       "source": "/build/(.*)",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
