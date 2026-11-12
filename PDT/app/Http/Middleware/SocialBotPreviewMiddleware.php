@@ -46,6 +46,19 @@ class SocialBotPreviewMiddleware
             if ($request->isMethod('HEAD')) {
                 return response('', 200, ['Content-Type' => 'text/html; charset=utf-8']);
             }
+
+            // For /portal, /login, / → serve static portal.html OG page instantly (no DB)
+            if ($request->is('portal') || $request->is('login') || $request->is('/') || $request->is('')) {
+                $htmlPath = public_path('portal.html');
+                if (file_exists($htmlPath)) {
+                    return response(file_get_contents($htmlPath), 200, [
+                        'Content-Type' => 'text/html; charset=UTF-8',
+                        'Cache-Control' => 'public, max-age=3600, s-maxage=3600',
+                        'X-Robots-Tag' => 'index, follow',
+                    ]);
+                }
+            }
+
             // Render SPA view with dynamic Open Graph tags for the crawler
             return response()->view('spa');
         }

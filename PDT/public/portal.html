@@ -13,7 +13,7 @@
     <meta property="og:site_name" content="សាលារៀន ជំនាន់ថ្មី | portal sala">
     <meta property="og:title" content="សាលារៀន ជំនាន់ថ្មី | ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថល">
     <meta property="og:description" content="ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថល | portal sala - វត្តមាន ពិន្ទុ កាលវិភាគ និងបណ្ណាល័យអេឡិចត្រូនិច ស្តង់ដារ MoEYS ។">
-    <meta property="og:url" content="https://sala-portal.vercel.app/portal.html">
+    <meta property="og:url" content="https://sala-portal.vercel.app/portal">
     <meta property="og:image" content="https://sala-portal.vercel.app/images/og-preview-v2.jpg">
     <meta property="og:image:secure_url" content="https://sala-portal.vercel.app/images/og-preview-v2.jpg">
     <meta property="og:image:type" content="image/jpeg">
@@ -28,17 +28,11 @@
     <meta name="twitter:image" content="https://sala-portal.vercel.app/images/og-preview-v2.jpg">
 
     <!-- Canonical -->
-    <link rel="canonical" href="https://sala-portal.vercel.app/portal.html">
+    <link rel="canonical" href="https://sala-portal.vercel.app/portal">
 
-    <!-- Instant redirect for real users (browsers) - bots will read OG tags above first -->
+    <!-- Instant redirect for real user browsers -->
     <script>
-        (function() {
-            var ua = (navigator.userAgent || '').toLowerCase();
-            var isBot = /facebookexternalhit|facebot|twitterbot|telegrambot|linkedinbot|slurp|googlebot|bingbot|yandex|duckduck|baiduspider|whatsapp|viber|skype/.test(ua);
-            if (!isBot) {
-                window.location.replace('/portal-sala-access-2026');
-            }
-        })();
+        window.location.replace('/portal-sala-access-2026');
     </script>
     <noscript>
         <meta http-equiv="refresh" content="0;url=/portal-sala-access-2026">
@@ -53,7 +47,7 @@
 <body>
     <div class="loader">
         <div class="spinner"></div>
-        <p>កំពុងបញ្ជូន...</p>
+        <p style="color:#93c5fd;font-size:14px;">កំពុងបញ្ជូន...</p>
     </div>
 </body>
 </html>
