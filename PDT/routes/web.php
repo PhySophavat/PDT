@@ -22,18 +22,25 @@ use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ForgotPasswordController;
 
-// Root URL: If logged in -> Dashboard, otherwise -> Login
-Route::get('/', function () {
+// Root URL: If logged in -> Dashboard, otherwise -> Direct Login Form (HTTP 200 with OG Meta Tags for Telegram/Facebook)
+Route::get('/', function (\Illuminate\Http\Request $request) {
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
-    return redirect()->route('login');
+    return app(AuthController::class)->showLoginForm($request);
+})->name('home');
+Route::post('/', [AuthController::class, 'login']);
+
+// Standard /login alias
+Route::get('/login', function (\Illuminate\Http\Request $request) {
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return app(AuthController::class)->showLoginForm($request);
 });
+Route::post('/login', [AuthController::class, 'login']);
 
-// Redirect standard /login to the login route
-Route::get('/login', fn() => redirect()->route('login'));
-
-// Custom Secret Authentication URL
+// Custom Authentication URL
 Route::get('/portal-sala-access-2026', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/portal-sala-access-2026', [AuthController::class, 'login']);
 
