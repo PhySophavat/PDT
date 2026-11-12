@@ -20,7 +20,7 @@
     $logoUrl = $cachedSettings['logoUrl'];
     $schoolName = $cachedSettings['school_name'];
     $schoolNameEn = $cachedSettings['school_name_en'];
-    $ogImage = asset('images/og-preview.jpg') . '?v=' . (file_exists(public_path('images/og-preview.jpg')) ? filemtime(public_path('images/og-preview.jpg')) : '20261110');
+    $ogImage = asset('images/og-preview.jpg');
     $currentUrl = url()->current();
     $defaultDesc = 'ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថល ' . $schoolName . ' - វត្តមាន ពិន្ទុ កាលវិភាគ និងបណ្ណាល័យអេឡិចត្រូនិច។';
   @endphp

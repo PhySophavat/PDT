@@ -13,10 +13,34 @@
       $schoolNameEn = $sysSettings['school_name_en'] ?? 'New Generation School';
       $logoPath = $sysSettings['school_logo'] ?? '';
       $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : asset('storage/' . ltrim($logoPath, '/'))) : asset('images/logo.png');
+      $ogImage = asset('images/og-preview.jpg');
+      $pageTitle = $schoolName . ' | ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថល';
+      $pageDesc = 'ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថល ' . $schoolName . ' - វត្តមាន ពិន្ទុ កាលវិភាគ និងបណ្ណាល័យអេឡិចត្រូនិច។';
     @endphp
 
-    <title>ចូលប្រើប្រព័ន្ធ | portal sala - {{ $schoolName }}</title>
+    <title>ចូលប្រើប្រព័ន្ធ | {{ $schoolName }}</title>
     <link rel="icon" type="image/png" href="{{ $logoUrl }}">
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    <!-- Open Graph / Facebook / Telegram Sharing -->
+    <meta property="og:locale" content="km_KH">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ $schoolName }}">
+    <meta property="og:title" content="{{ $pageTitle }}">
+    <meta property="og:description" content="{{ $pageDesc }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ $ogImage }}">
+    <meta property="og:image:secure_url" content="{{ $ogImage }}">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="{{ $schoolName }}">
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $pageTitle }}">
+    <meta name="twitter:description" content="{{ $pageDesc }}">
+    <meta name="twitter:image" content="{{ $ogImage }}">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
