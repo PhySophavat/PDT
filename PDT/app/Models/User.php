@@ -164,10 +164,6 @@ class User extends Authenticatable
         $roles = array_map(fn($r) => strtolower(trim($r)), $roles);
         return empty(array_diff($roles, $cached));
     }
-    public function hasAllRoles(array $roles)
-    {
-        return $this->roles()->whereIn('name', $roles)->count() === count($roles);
-    }
 
     /**
      * Check if user has a specific permission
