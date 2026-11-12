@@ -5723,7 +5723,11 @@ class ApiController extends Controller
             if (!Hash::check($validated['current_password'], $user->password)) {
                 return response()->json(['message' => 'ពាក្យសម្ងាត់បច្ចុប្បន្នមិនត្រឹមត្រូវទេ'], 422);
             }
+            if (Hash::check($validated['new_password'], $user->password)) {
+                return response()->json(['message' => 'ពាក្យសម្ងាត់ថ្មីមិនត្រូវដូចពាក្យសម្ងាត់ចាស់ឡើយ'], 422);
+            }
             $user->password = Hash::make($validated['new_password']);
+            $user->remember_token = \Illuminate\Support\Str::random(60);
         }
 
         // 2. Name update (Admin / Super Admin only)
@@ -5799,7 +5803,26 @@ class ApiController extends Controller
         }
 
         $user->password = Hash::make($validated['new_password']);
+        $user->remember_token = \Illuminate\Support\Str::random(60);
         $user->save();
+
+        // Invalidate other active sessions for this user across devices
+        try {
+            if (config('session.driver') === 'database') {
+                \Illuminate\Support\Facades\DB::table(config('session.table', 'sessions'))
+                    ->where('user_id', $user->id)
+                    ->where('id', '!=', session()->getId())
+                    ->delete();
+            }
+        } catch (\Throwable $e) {}
+
+        \App\Services\ActivityLogger::log(
+            action: 'PASSWORD_CHANGED',
+            module: 'សុវត្ថិភាព',
+            targetId: $user->id,
+            description: "បានផ្លាស់ប្តូរពាក្យសម្ងាត់គណនី ({$user->email}) ដោយជោគជ័យ",
+            user: $user
+        );
 
         return response()->json([
             'success' => true,

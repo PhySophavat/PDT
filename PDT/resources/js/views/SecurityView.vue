@@ -50,12 +50,17 @@
             <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
               <LockKeyhole class="w-4 h-4" />
             </div>
-            <div>
-              <h3 class="text-sm sm:text-base font-bold text-slate-800">
-                {{ $t('accountSettings.changePassword', 'ប្តូរពាក្យសម្ងាត់') }}
-              </h3>
-              <p class="text-[11px] text-slate-400">
-                បញ្ចូលពាក្យសម្ងាត់បច្ចុប្បន្ន ដើម្បីកំណត់ពាក្យសម្ងាត់ថ្មី
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <h3 class="text-sm sm:text-base font-bold text-slate-800">
+                  {{ $t('accountSettings.changePassword', 'ប្តូរពាក្យសម្ងាត់') }}
+                </h3>
+                <span v-if="currentUserEmail" class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-mono border border-slate-200">
+                  {{ currentUserEmail }}
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">
+                បញ្ចូលពាក្យសម្ងាត់បច្ចុប្បន្ន ដើម្បីកំណត់ពាក្យសម្ងាត់ថ្មីសម្រាប់គណនីនេះ
               </p>
             </div>
           </div>
@@ -288,6 +293,9 @@ import {
   EyeOff 
 } from 'lucide-vue-next';
 import PageHeader from '../components/PageHeader.vue';
+
+const currentUser = computed(() => window.__INITIAL_USER__ || {});
+const currentUserEmail = computed(() => currentUser.value?.email || '');
 
 const form = ref({
   current_password: '',
