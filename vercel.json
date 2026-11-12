@@ -11,6 +11,13 @@
   },
   "headers": [
     {
+      "source": "/portal",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600, s-maxage=3600" },
+        { "key": "X-Robots-Tag", "value": "index, follow" }
+      ]
+    },
+    {
       "source": "/build/(.*)",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
@@ -38,6 +45,10 @@
     {
       "src": "/images/(.*)",
       "dest": "/PDT/public/images/$1"
+    },
+    {
+      "src": "/portal",
+      "dest": "/PDT/public/portal.html"
     },
     {
       "src": "/(.*)",
