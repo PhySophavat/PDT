@@ -733,45 +733,47 @@
       </button>
     </nav>
 
-    <!-- Logout Confirmation Modal -->
-    <div 
-      v-if="showLogoutModal" 
-      class="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs font-khmer"
-      @click.self="showLogoutModal = false"
-    >
-      <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-sm w-full p-6 text-center space-y-5 animate-in fade-in zoom-in-95 duration-200">
-        <div class="w-14 h-14 mx-auto rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-2xl shadow-sm border border-rose-100">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i>
-        </div>
+    <!-- Logout Confirmation Modal (Teleported to body for guaranteed top-level z-index on mobile & desktop) -->
+    <Teleport to="body">
+      <div 
+        v-if="showLogoutModal" 
+        class="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs font-khmer"
+        @click.self="showLogoutModal = false"
+      >
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-sm w-full p-6 text-center space-y-5 animate-in fade-in zoom-in-95 duration-200">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-2xl shadow-sm border border-rose-100">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </div>
 
-        <div class="space-y-1.5">
-          <h3 class="text-base font-bold text-slate-900">បញ្ជាក់ការចាកចេញ</h3>
-          <p class="text-xs text-slate-500 leading-relaxed">
-            តើលោកអ្នកពិតជាចង់ចាកចេញពីប្រព័ន្ធគ្រប់គ្រងសាលារៀនមែនទេ?
-          </p>
-        </div>
+          <div class="space-y-1.5">
+            <h3 class="text-base font-bold text-slate-900">បញ្ជាក់ការចាកចេញ</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              តើលោកអ្នកពិតជាចង់ចាកចេញពីប្រព័ន្ធគ្រប់គ្រងសាលារៀនមែនទេ?
+            </p>
+          </div>
 
-        <div class="grid grid-cols-2 gap-3 pt-2">
-          <button
-            type="button"
-            @click="showLogoutModal = false"
-            :disabled="isLoggingOut"
-            class="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
-          >
-            បោះបង់
-          </button>
-          <button
-            type="button"
-            @click="executeLogout"
-            :disabled="isLoggingOut"
-            class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-md shadow-rose-600/20 cursor-pointer disabled:opacity-50"
-          >
-            <i v-if="isLoggingOut" class="fa-solid fa-circle-notch fa-spin"></i>
-            <span>{{ isLoggingOut ? 'កំពុងចាកចេញ...' : 'ចាកចេញ' }}</span>
-          </button>
+          <div class="grid grid-cols-2 gap-3 pt-2">
+            <button
+              type="button"
+              @click="showLogoutModal = false"
+              :disabled="isLoggingOut"
+              class="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+            >
+              បោះបង់
+            </button>
+            <button
+              type="button"
+              @click="executeLogout"
+              :disabled="isLoggingOut"
+              class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-md shadow-rose-600/20 cursor-pointer disabled:opacity-50"
+            >
+              <i v-if="isLoggingOut" class="fa-solid fa-circle-notch fa-spin"></i>
+              <span>{{ isLoggingOut ? 'កំពុងចាកចេញ...' : 'ចាកចេញ' }}</span>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 
@@ -1020,12 +1022,40 @@ const executeLogout = async () => {
       navigator.clearAppBadge().catch(() => {});
     }
 
-    // 3. Fast asynchronous logout & instant redirect
-    await axios.post('/logout', {}, { timeout: 3000 });
-  } catch (err) {
-  } finally {
-    window.location.replace('/portal');
-  }
+    // 3. Clear Service Worker caches
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      try {
+        navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' });
+      } catch (e) {}
+    }
+    if (typeof caches !== 'undefined') {
+      try {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+      } catch (e) {}
+    }
+
+    // 4. Submit standard logout form for atomic, 100% reliable session termination and redirect
+    let form = document.getElementById('spa-logout-form');
+    if (!form) {
+      form = document.createElement('form');
+      form.id = 'spa-logout-form';
+      form.method = 'POST';
+      form.action = '/logout';
+      form.style.display = 'none';
+      const tokenInput = document.createElement('input');
+      tokenInput.type = 'hidden';
+      tokenInput.name = '_token';
+      tokenInput.value = csrfToken.value;
+      form.appendChild(tokenInput);
+      document.body.appendChild(form);
+    }
+    form.submit();
+    return;
+  } catch (err) {}
+
+  // Fallback: direct navigation to logout endpoint
+  window.location.href = '/logout';
 };
 
 // School Logo and Brand Header State

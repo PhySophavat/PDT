@@ -1,9 +1,8 @@
-// School Portal High-Performance Service Worker for PWA (v3)
-const CACHE_NAME = 'sala-portal-v3';
+// School Portal High-Performance Service Worker for PWA (v4)
+const CACHE_NAME = 'sala-portal-v4';
 
 // Core assets to pre-cache immediately on install for instant offline shell
 const PRECACHE_ASSETS = [
-  '/',
   '/manifest.json',
   '/images/icon-192.png',
   '/images/icon-512.png',
@@ -48,12 +47,15 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // 1. ALWAYS BYPASS for non-GET, API, and Authentication endpoints (Never cache login/logout)
+  // 1. ALWAYS BYPASS for non-GET, API, and Authentication endpoints (Never cache login/logout/portal)
   if (
     request.method !== 'GET' ||
     url.pathname.startsWith('/api/') ||
     url.pathname.startsWith('/login') ||
     url.pathname.startsWith('/logout') ||
+    url.pathname.startsWith('/portal') ||
+    url.pathname.startsWith('/dashboard') ||
+    url.pathname.startsWith('/s') ||
     url.pathname.startsWith('/portal-sala-access') ||
     url.pathname.startsWith('/forgot-password') ||
     url.pathname.startsWith('/reset-password') ||

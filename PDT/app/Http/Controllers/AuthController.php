@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -206,22 +207,33 @@ class AuthController extends Controller
             }
         } catch (\Throwable $e) {}
 
+        $sessionCookieName = config('session.cookie');
+        $recallerName = Auth::guard('web')->getRecallerName();
+
         try {
-            Auth::logout();
+            Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
+        } catch (\Throwable $e) {}
+
+        // Explicitly clear session & remember cookies
+        try {
+            Cookie::queue(Cookie::forget($sessionCookieName));
+            Cookie::queue(Cookie::forget($recallerName));
         } catch (\Throwable $e) {}
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
                 'message' => 'បានចាកចេញពីប្រព័ន្ធដោយជោគជ័យ',
-                'redirect' => route('login')
-            ]);
+                'redirect' => route('login', ['logged_out' => 1])
+            ])->withoutCookie($sessionCookieName)->withoutCookie($recallerName);
         }
 
-        return redirect()->route('login')
-            ->with('success', 'បានចាកចេញពីប្រព័ន្ធដោយជោគជ័យ។');
+        return redirect()->route('login', ['logged_out' => 1])
+            ->with('success', 'បានចាកចេញពីប្រព័ន្ធដោយជោគជ័យ។')
+            ->withoutCookie($sessionCookieName)
+            ->withoutCookie($recallerName);
     }
 
     protected function shouldForgetIntendedUrl(User $user, ?string $intendedUrl): bool
