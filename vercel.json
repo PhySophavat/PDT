@@ -39,16 +39,12 @@
       "dest": "/PDT/public/build/$1"
     },
     {
-      "src": "/(favicon.ico|robots.txt|sitemap.xml|manifest.json|site.webmanifest|sw.js|icon-192.png|icon-512.png|apple-touch-icon.png)",
+      "src": "/(favicon.ico|robots.txt|sitemap.xml|manifest.json|site.webmanifest|sw.js|icon-192.png|icon-512.png|apple-touch-icon.png|portal.html|og.html)",
       "dest": "/PDT/public/$1"
     },
     {
       "src": "/images/(.*)",
       "dest": "/PDT/public/images/$1"
-    },
-    {
-      "src": "/portal",
-      "dest": "/PDT/public/portal.html"
     },
     {
       "src": "/(.*)",
