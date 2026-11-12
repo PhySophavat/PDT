@@ -60,6 +60,14 @@ Route::get('/portal', function (\Illuminate\Http\Request $request) {
 })->name('login');
 Route::post('/portal', [AuthController::class, 'login']);
 
+// SHORT SHARE URL — brand new, no Facebook cache history → use this for sharing!
+Route::get('/s', function (\Illuminate\Http\Request $request) {
+    $html = file_get_contents(public_path('portal.html'));
+    return response($html, 200)
+        ->header('Content-Type', 'text/html; charset=UTF-8')
+        ->header('Cache-Control', 'public, max-age=3600, s-maxage=3600');
+});
+
 Route::get('/login', function (\Illuminate\Http\Request $request) {
     if (Auth::check()) {
         return redirect()->route('dashboard');
