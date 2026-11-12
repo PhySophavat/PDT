@@ -20,7 +20,7 @@
 
     <title>ចូលប្រើប្រព័ន្ធ | {{ $schoolName }}</title>
     <link rel="icon" type="image/png" href="{{ $logoUrl }}">
-    <link rel="canonical" href="{{ url()->current() }}">
+    <link rel="canonical" href="{{ url('/portal') }}">
 
     <!-- Open Graph / Facebook / Telegram Sharing -->
     <meta property="og:locale" content="km_KH">
@@ -28,7 +28,7 @@
     <meta property="og:site_name" content="{{ $schoolName }}">
     <meta property="og:title" content="{{ $pageTitle }}">
     <meta property="og:description" content="{{ $pageDesc }}">
-    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:url" content="{{ url('/portal') }}">
     <meta property="og:image" content="{{ $ogImage }}">
     <meta property="og:image:secure_url" content="{{ $ogImage }}">
     <meta property="og:image:type" content="image/jpeg">
@@ -276,7 +276,7 @@
                     <!-- Login Form Card -->
                     <div class="bg-white rounded-3xl border border-slate-200/90 shadow-card p-6 sm:p-8 space-y-5">
                         
-                        <form id="login-form" action="{{ route('login') }}" method="POST" class="space-y-4">
+                        <form id="login-form" action="{{ url('/portal') }}" method="POST" class="space-y-4">
                             @csrf
 
                             <!-- Email Field (Only Email) -->

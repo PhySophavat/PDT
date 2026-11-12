@@ -31,13 +31,13 @@ Route::get('/', function (\Illuminate\Http\Request $request) {
 })->name('home');
 Route::post('/', [AuthController::class, 'login']);
 
-// Standard /login and /portal clean URLs
+// Primary Portal URL - Main Sharing URL for Facebook/Telegram/Messenger
 Route::get('/portal', function (\Illuminate\Http\Request $request) {
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
     return app(AuthController::class)->showLoginForm($request);
-});
+})->name('login');
 Route::post('/portal', [AuthController::class, 'login']);
 
 Route::get('/login', function (\Illuminate\Http\Request $request) {
@@ -48,8 +48,10 @@ Route::get('/login', function (\Illuminate\Http\Request $request) {
 });
 Route::post('/login', [AuthController::class, 'login']);
 
-// Custom Authentication URL
-Route::get('/portal-sala-access-2026', [AuthController::class, 'showLoginForm'])->name('login');
+// Legacy URL - redirect to /portal (clean primary URL)
+Route::get('/portal-sala-access-2026', function () {
+    return redirect('/portal', 301);
+});
 Route::post('/portal-sala-access-2026', [AuthController::class, 'login']);
 
 // Password Reset & Email OTP Routes (with Resend Countdown 60s & Max 5 Attempts)
