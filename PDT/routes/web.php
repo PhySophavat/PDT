@@ -33,6 +33,26 @@ Route::post('/', [AuthController::class, 'login']);
 
 // Primary Portal URL - Main Sharing URL for Facebook/Telegram/Messenger
 Route::get('/portal', function (\Illuminate\Http\Request $request) {
+    // Fast path: detect social media bots → return static OG HTML instantly (no DB query, no session)
+    $ua = strtolower($request->header('User-Agent', ''));
+    $isBot = str_contains($ua, 'facebookexternalhit') ||
+             str_contains($ua, 'facebot') ||
+             str_contains($ua, 'twitterbot') ||
+             str_contains($ua, 'telegrambot') ||
+             str_contains($ua, 'linkedinbot') ||
+             str_contains($ua, 'whatsapp') ||
+             str_contains($ua, 'slurp') ||
+             str_contains($ua, 'googlebot') ||
+             str_contains($ua, 'bingbot');
+
+    if ($isBot) {
+        $html = file_get_contents(public_path('portal.html'));
+        return response($html, 200)
+            ->header('Content-Type', 'text/html; charset=UTF-8')
+            ->header('Cache-Control', 'public, max-age=3600, s-maxage=3600')
+            ->header('X-Robots-Tag', 'index, follow');
+    }
+
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
