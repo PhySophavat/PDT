@@ -13,7 +13,7 @@
       $schoolNameEn = $sysSettings['school_name_en'] ?? 'New Generation School';
       $logoPath = $sysSettings['school_logo'] ?? '';
       $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : asset('storage/' . ltrim($logoPath, '/'))) : asset('images/logo.png');
-      $ogImage = asset('images/og-preview-v2.jpg');
+      $ogImage = asset('images/og-preview-1200.jpg');
       $pageTitle = $schoolName . ' | ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថល';
       $pageDesc = 'ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថល ' . $schoolName . ' - វត្តមាន ពិន្ទុ កាលវិភាគ និងបណ្ណាល័យអេឡិចត្រូនិច។';
     @endphp
@@ -32,8 +32,9 @@
     <meta property="og:image" content="{{ $ogImage }}">
     <meta property="og:image:secure_url" content="{{ $ogImage }}">
     <meta property="og:image:type" content="image/jpeg">
-    <meta property="og:image:width" content="1024">
-    <meta property="og:image:height" content="572">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="fb:app_id" content="966242223397117">
     <meta property="og:image:alt" content="{{ $schoolName }}">
 
     <!-- Twitter / X Card -->
