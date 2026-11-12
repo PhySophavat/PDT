@@ -81,9 +81,9 @@ if (!getenv('APP_KEY')) {
     $_ENV['APP_KEY'] = 'base64:9EvsufK6IKWmF5ATdQATWq+eqjUFEp/rO/6sshb3MtI=';
 }
 
-putenv('SESSION_DRIVER=database');
-$_ENV['SESSION_DRIVER'] = 'database';
-$_SERVER['SESSION_DRIVER'] = 'database';
+putenv('SESSION_DRIVER=cookie');
+$_ENV['SESSION_DRIVER'] = 'cookie';
+$_SERVER['SESSION_DRIVER'] = 'cookie';
 
 putenv('SESSION_LIFETIME=525600');
 $_ENV['SESSION_LIFETIME'] = '525600';
@@ -101,9 +101,9 @@ putenv('SESSION_SAME_SITE=lax');
 $_ENV['SESSION_SAME_SITE'] = 'lax';
 $_SERVER['SESSION_SAME_SITE'] = 'lax';
 
-if (!getenv('CACHE_STORE')) {
-    putenv('CACHE_STORE=array');
-    $_ENV['CACHE_STORE'] = 'array';
+if (!getenv('CACHE_STORE') || getenv('CACHE_STORE') === 'array') {
+    putenv('CACHE_STORE=file');
+    $_ENV['CACHE_STORE'] = 'file';
 }
 
 if (!getenv('LOG_CHANNEL') || getenv('LOG_CHANNEL') === 'stack') {
