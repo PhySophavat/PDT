@@ -20,7 +20,7 @@
     $logoUrl = $cachedSettings['logoUrl'];
     $schoolName = $cachedSettings['school_name'];
     $schoolNameEn = $cachedSettings['school_name_en'];
-    $ogImage = asset('images/og-preview.jpg');
+    $ogImage = asset('images/og-preview-v2.jpg');
     $currentUrl = url()->current();
     $defaultDesc = 'ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថល ' . $schoolName . ' - វត្តមាន ពិន្ទុ កាលវិភាគ និងបណ្ណាល័យអេឡិចត្រូនិច។';
   @endphp
@@ -44,8 +44,8 @@
   <meta property="og:image" content="@yield('og_image', $ogImage)">
   <meta property="og:image:secure_url" content="@yield('og_image', $ogImage)">
   <meta property="og:image:type" content="image/jpeg">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
+  <meta property="og:image:width" content="1024">
+  <meta property="og:image:height" content="572">
   <meta property="og:image:alt" content="{{ $schoolName }}">
 
   <!-- Twitter / X Card -->

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="km">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,7 +13,7 @@
       $schoolNameEn = $sysSettings['school_name_en'] ?? 'New Generation School';
       $logoPath = $sysSettings['school_logo'] ?? '';
       $logoUrl = $logoPath ? (str_starts_with($logoPath, 'http') || str_starts_with($logoPath, 'data:') ? $logoPath : asset('storage/' . ltrim($logoPath, '/'))) : asset('images/logo.png');
-      $ogImage = asset('images/og-preview.jpg');
+      $ogImage = asset('images/og-preview-v2.jpg');
       $currentUrl = url()->current();
       $defaultDesc = 'ប្រព័ន្ធគ្រប់គ្រងសាលារៀន និងបណ្ណាល័យឌីជីថលកម្ពុជា ' . $schoolName . ' ផ្តល់ជូនសៀវភៅសិក្សាគោល MoEYS ពីថ្នាក់ទី ៧ ដល់ទី ១២ ការគ្រប់គ្រងវត្តមាន ពិន្ទុ និងតារាងចំណាត់ថ្នាក់សិស្ស។';
     @endphp
@@ -36,8 +37,8 @@
     <meta property="og:image" content="@yield('og_image', $ogImage)">
     <meta property="og:image:secure_url" content="@yield('og_image', $ogImage)">
     <meta property="og:image:type" content="image/jpeg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:image:width" content="1024">
+    <meta property="og:image:height" content="572">
     <meta property="og:image:alt" content="{{ $schoolName }}">
 
     <!-- Twitter / X Card -->
@@ -48,19 +49,19 @@
 
     <!-- Schema.org JSON-LD Structured Data for Google Search -->
     <script type="application/ld+json">
-    {
-      "@@context": "https://schema.org",
-      "@@type": "EducationalOrganization",
-      "name": "{{ $schoolName }}",
-      "alternateName": "{{ $schoolNameEn }}",
-      "url": "{{ url('/') }}",
-      "logo": "{{ $logoUrl }}",
-      "description": "{{ $defaultDesc }}",
-      "address": {
-        "@@type": "PostalAddress",
-        "addressCountry": "KH"
-      }
-    }
+        {
+            "@@context": "https://schema.org",
+            "@@type": "EducationalOrganization",
+            "name": "{{ $schoolName }}",
+            "alternateName": "{{ $schoolNameEn }}",
+            "url": "{{ url('/') }}",
+            "logo": "{{ $logoUrl }}",
+            "description": "{{ $defaultDesc }}",
+            "address": {
+                "@@type": "PostalAddress",
+                "addressCountry": "KH"
+            }
+        }
     </script>
 
     <!-- Progressive Web App (PWA) Meta & Links -->
@@ -113,11 +114,16 @@
         body {
             font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', sans-serif;
         }
-        input, button, select, textarea {
+
+        input,
+        button,
+        select,
+        textarea {
             font-family: inherit;
         }
     </style>
 </head>
+
 <body class="bg-gradient-to-br from-slate-100 via-blue-50/40 to-indigo-50/50 min-h-screen flex flex-col justify-between font-khmer text-slate-800 antialiased selection:bg-blue-600 selection:text-white relative overflow-x-hidden">
 
     <!-- Ambient Gradient Blobs in Background -->
@@ -128,12 +134,12 @@
     <header class="w-full px-6 py-5 flex items-center justify-between max-w-6xl mx-auto z-10">
         <a href="{{ url('/') }}" class="flex items-center gap-3 group">
             @if(!empty($logoUrl))
-                <img src="{{ $logoUrl }}" alt="Logo" class="w-10 h-10 object-contain rounded-2xl shadow-xs group-hover:scale-105 transition-transform flex-shrink-0" onerror="this.onerror=null; this.src='/images/logo.png';">
+            <img src="{{ $logoUrl }}" alt="Logo" class="w-10 h-10 object-contain rounded-2xl shadow-xs group-hover:scale-105 transition-transform flex-shrink-0" onerror="this.onerror=null; this.src='/images/logo.png';">
             @else
-                <!-- Brand Mark Circle -->
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#1e3a8a] to-[#2563eb] flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform flex-shrink-0">
-                    <i class="fa-solid fa-graduation-cap text-lg"></i>
-                </div>
+            <!-- Brand Mark Circle -->
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#1e3a8a] to-[#2563eb] flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform flex-shrink-0">
+                <i class="fa-solid fa-graduation-cap text-lg"></i>
+            </div>
             @endif
             <div>
                 <span class="text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-blue-700 transition">portal sala</span>
@@ -164,4 +170,5 @@
     @include('partials.pwa-prompt')
     @stack('scripts')
 </body>
+
 </html>
