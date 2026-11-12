@@ -291,7 +291,7 @@
                       </span>
                       <button 
                         type="button" 
-                        @click="fetchPendingNotifications" 
+                        @click="fetchPendingNotifications(true)" 
                         class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition text-[11px] cursor-pointer" 
                         title="ផ្ទុកឡើងវិញ"
                       >
@@ -909,8 +909,7 @@ const filteredNotificationItems = computed(() => {
 const toggleNotificationDropdown = async () => {
   showNotificationDropdown.value = !showNotificationDropdown.value;
   if (showNotificationDropdown.value) {
-    markAllAsRead();
-    await fetchPendingNotifications();
+    await fetchPendingNotifications(true);
     markAllAsRead();
   }
 };
@@ -952,11 +951,21 @@ const fetchPendingNotifications = async (force = false) => {
   isFetchingPendingNotifs = true;
   isLoadingNotifications.value = true;
   try {
-    const res = await axios.get('/api/notifications/pending');
+    const res = await axios.get('/api/notifications/pending', {
+      params: { 
+        _t: Date.now(),
+        ...(force ? { force: 1 } : {})
+      },
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      },
+      timeout: 10000
+    });
     if (res.data) {
       const newTotal = res.data.total_count || 0;
       pendingTotalCount.value = newTotal;
-      pendingCounts.value = res.data.counts || { announcements: 0, students: 0, teachers: 0, leaves: 0 };
+      pendingCounts.value = res.data.counts || { announcements: 0, students: 0, teachers: 0, leaves: 0, book_requests: 0 };
       pendingNotificationItems.value = res.data.notifications || [];
 
       // If dropdown is currently open when new items arrive, mark them as read

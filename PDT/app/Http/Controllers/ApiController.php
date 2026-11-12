@@ -478,13 +478,15 @@ class ApiController extends Controller
         $roleName = strtolower($authUser?->roles?->first()?->name ?? $authUser?->role ?? 'guest');
         $isSuperAdmin = $authUser?->is_super_admin || $roleName === 'super_admin' || $roleName === 'super admin';
         $isAdmin = $isSuperAdmin || $roleName === 'admin';
-        $isStudent = str_contains($roleName, 'student') || ($authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('student')) || !empty($authUser?->student);
-        $isTeacher = !$isStudent && (str_contains($roleName, 'teacher') || ($authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('teacher')) || !empty($authUser?->teacher));
+        $hasStudentProfile = !empty($authUser?->student) || ($authUser && Student::where('email', $authUser->email)->exists());
+        $isStudent = str_contains($roleName, 'student') || ($authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('student')) || $hasStudentProfile;
+        $hasTeacherProfile = !empty($authUser?->teacher) || ($authUser && Teacher::where('email', $authUser->email)->exists());
+        $isTeacher = !$isStudent && (str_contains($roleName, 'teacher') || ($authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('teacher')) || $hasTeacherProfile);
 
         $version = Cache::get('notif_version', 1);
         $cacheKey = "user_notifs_v{$version}_{$userId}_{$roleName}";
 
-        if ($request->has('force')) {
+        if ($request->has('force') || $request->has('_t')) {
             Cache::forget($cacheKey);
             Cache::forget('pending_notifications_payload');
         }
@@ -511,12 +513,14 @@ class ApiController extends Controller
             if ($isStudent) {
                 $announcementQuery->where(function ($q) {
                     $q->whereNull('target_audience')
-                      ->orWhereIn(DB::raw('LOWER(target_audience)'), ['all', 'students', 'all_users', 'សិស្ស', 'ទាំងអស់គ្នា', 'ទូទៅ']);
+                      ->orWhere('target_audience', '')
+                      ->orWhereIn(DB::raw('LOWER(target_audience)'), ['all', 'students', 'all_users', 'សិស្ស', 'សិស្សានុសិស្ស', 'ទាំងអស់គ្នា', 'ទូទៅ']);
                 });
             } elseif ($isTeacher) {
                 $announcementQuery->where(function ($q) {
                     $q->whereNull('target_audience')
-                      ->orWhereIn(DB::raw('LOWER(target_audience)'), ['all', 'teachers', 'all_users', 'គ្រូ', 'ទាំងអស់គ្នា', 'ទូទៅ']);
+                      ->orWhere('target_audience', '')
+                      ->orWhereIn(DB::raw('LOWER(target_audience)'), ['all', 'teachers', 'all_users', 'គ្រូ', 'លោកគ្រូ/អ្នកគ្រូ', 'ទាំងអស់គ្នា', 'ទូទៅ']);
                 });
             }
 
