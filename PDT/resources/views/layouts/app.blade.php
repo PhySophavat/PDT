@@ -85,7 +85,7 @@
         } elseif ($authUser->hasRole('teacher') || strtolower($authUser->role ?? '') === 'teacher') {
             $roleName = 'Teacher';
             $roleKhmer = 'គ្រូបង្រៀន';
-            $teacherProfile = $authUser->teacher ?? \App\Models\Teacher::where('email', $authUser->email)->first();
+            $teacherProfile = $authUser->teacher ?? \App\Models\Teacher::where('user_id', $authUser->id)->first();
         } else {
             $roleName = 'Student';
             $roleKhmer = 'សិស្សានុសិស្ស';

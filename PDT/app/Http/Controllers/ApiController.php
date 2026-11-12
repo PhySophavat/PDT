@@ -477,11 +477,11 @@ class ApiController extends Controller
         $userId = $authUser ? $authUser->id : 0;
         $roleName = strtolower($authUser?->roles?->first()?->name ?? $authUser?->role ?? 'guest');
         $isSuperAdmin = $authUser?->is_super_admin || $roleName === 'super_admin' || $roleName === 'super admin';
-        $isAdmin = $isSuperAdmin || $roleName === 'admin';
-        $hasStudentProfile = !empty($authUser?->student) || ($authUser && Student::where('email', $authUser->email)->exists());
-        $isStudent = str_contains($roleName, 'student') || ($authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('student')) || $hasStudentProfile;
-        $hasTeacherProfile = !empty($authUser?->teacher) || ($authUser && Teacher::where('email', $authUser->email)->exists());
-        $isTeacher = !$isStudent && (str_contains($roleName, 'teacher') || ($authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('teacher')) || $hasTeacherProfile);
+        $isAdmin = $isSuperAdmin || $roleName === 'admin' || ($authUser && method_exists($authUser, 'hasRole') && ($authUser->hasRole('admin') || $authUser->hasRole('super_admin')));
+        $hasStudentProfile = !empty($authUser?->student) || ($authUser && !empty($authUser->email) && Student::where('email', $authUser->email)->exists());
+        $isStudent = !$isAdmin && (str_contains($roleName, 'student') || ($authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('student')) || $hasStudentProfile);
+        $hasTeacherProfile = !empty($authUser?->teacher) || ($authUser && Teacher::where('user_id', $authUser->id)->exists());
+        $isTeacher = !$isAdmin && !$isStudent && (str_contains($roleName, 'teacher') || ($authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('teacher')) || $hasTeacherProfile);
 
         $version = Cache::get('notif_version', 1);
         $cacheKey = "user_notifs_v{$version}_{$userId}_{$roleName}";
@@ -653,7 +653,7 @@ class ApiController extends Controller
             // 3. Teacher Mode
             elseif ($isTeacher && $authUser) {
                 // Pending student leave requests for teacher to review
-                $teacherProfile = $authUser->teacher ?? Teacher::where('email', $authUser->email)->first();
+                $teacherProfile = $authUser->teacher ?? Teacher::where('user_id', $authUser->id)->first();
                 $assignedClasses = $teacherProfile?->class_assigned ? array_map('trim', explode(',', $teacherProfile->class_assigned)) : [];
 
                 $pendingStudentLeavesQuery = StudentLeaveRequest::where('status', 'pending');
@@ -2746,7 +2746,7 @@ class ApiController extends Controller
             } elseif ($authUser->hasRole('teacher') || strtolower($authUser->role ?? '') === 'teacher') {
                 $role = 'teacher';
                 $grade = 'គ្រូបង្រៀន';
-                $teacher = $authUser->teacher ?? \App\Models\Teacher::where('user_id', $authUser->id)->orWhere('email', $authUser->email)->first();
+                $teacher = $authUser->teacher ?? \App\Models\Teacher::where('user_id', $authUser->id)->first();
                 if ($teacher) {
                     $name = $teacher->name_khmer ?: ($teacher->name_latin ?: $authUser->name);
                 }
@@ -5653,7 +5653,7 @@ class ApiController extends Controller
                 ];
             }
         } elseif ($roleName === 'Teacher' || !empty($user->teacher)) {
-            $teacher = $user->teacher ?? \App\Models\Teacher::where('email', $user->email)->first();
+            $teacher = $user->teacher ?? \App\Models\Teacher::where('user_id', $user->id)->first();
             if ($teacher) {
                 $teacherData = [
                     'id' => $teacher->id,
@@ -5882,7 +5882,7 @@ class ApiController extends Controller
         }
 
         // 3. Sync to teacher profile if exists
-        $teacher = $user->teacher ?? \App\Models\Teacher::where('email', $user->email)->orWhere('user_id', $user->id)->first();
+        $teacher = $user->teacher ?? \App\Models\Teacher::where('user_id', $user->id)->first();
         if ($teacher) {
             $teacher->photo = $avatarData;
             $teacher->save();
