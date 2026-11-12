@@ -1020,23 +1020,12 @@ const executeLogout = async () => {
       navigator.clearAppBadge().catch(() => {});
     }
 
-    // 3. Clear Service Worker caches
-    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      try {
-        navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' });
-      } catch (e) {}
-    }
-
-    // 4. Submit standard logout form for atomic, 100% reliable session termination and redirect
-    const form = document.getElementById('spa-logout-form');
-    if (form) {
-      form.submit();
-      return;
-    }
-  } catch (err) {}
-
-  // Fallback: direct navigation to logout endpoint
-  window.location.href = '/logout';
+    // 3. Fast asynchronous logout & instant redirect
+    await axios.post('/logout', {}, { timeout: 3000 });
+  } catch (err) {
+  } finally {
+    window.location.replace('/portal');
+  }
 };
 
 // School Logo and Brand Header State

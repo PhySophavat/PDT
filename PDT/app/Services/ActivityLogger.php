@@ -132,26 +132,36 @@ class ActivityLogger
             return 'ភ្ញៀវ (Guest)';
         }
 
+        $name = trim((string) ($user->name ?? ''));
+
+        // For Admin / Super Admin, use name directly without hitting student/teacher tables
+        if (method_exists($user, 'hasRole') && ($user->hasRole('admin') || $user->hasRole('super_admin'))) {
+            return $name ?: ($user->email ?? 'Admin');
+        }
+
         try {
-            // 1. If student profile exists, use Khmer name and student ID if available
-            if (method_exists($user, 'student') && $user->student) {
-                $nameKh = trim((string) ($user->student->name_khmer ?? ''));
-                $cardId = trim((string) ($user->student->student_id_card ?? ''));
-                if ($nameKh !== '') {
-                    return $cardId !== '' ? "{$nameKh} ({$cardId})" : $nameKh;
+            // Only check student if user has student role or relation is loaded
+            if (method_exists($user, 'student') && ($user->relationLoaded('student') || (method_exists($user, 'hasRole') && $user->hasRole('student')))) {
+                if ($user->student) {
+                    $nameKh = trim((string) ($user->student->name_khmer ?? ''));
+                    $cardId = trim((string) ($user->student->student_id_card ?? ''));
+                    if ($nameKh !== '') {
+                        return $cardId !== '' ? "{$nameKh} ({$cardId})" : $nameKh;
+                    }
                 }
             }
 
-            // 2. If teacher profile exists, use Khmer name if available
-            if (method_exists($user, 'teacher') && $user->teacher) {
-                $nameKh = trim((string) ($user->teacher->name_khmer ?? ''));
-                if ($nameKh !== '') {
-                    return "គ្រូ " . $nameKh;
+            // Only check teacher if user has teacher role or relation is loaded
+            if (method_exists($user, 'teacher') && ($user->relationLoaded('teacher') || (method_exists($user, 'hasRole') && $user->hasRole('teacher')))) {
+                if ($user->teacher) {
+                    $nameKh = trim((string) ($user->teacher->name_khmer ?? ''));
+                    if ($nameKh !== '') {
+                        return "គ្រូ " . $nameKh;
+                    }
                 }
             }
         } catch (\Throwable $e) {}
 
-        $name = trim((string) ($user->name ?? ''));
         if ($name !== '' && !in_array(strtolower($name), ['student', 'teacher', 'user'])) {
             return $name;
         }

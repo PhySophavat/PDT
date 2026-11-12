@@ -192,57 +192,15 @@ class AuthController extends Controller
     {
         try {
             if ($user = Auth::user()) {
-                $loginAtIso = $request->session()->get('login_time');
-                $durationText = 'តិចជាង ១ នាទី';
-                $durationMinutes = 0;
-                $loginTimeKh = null;
-                $loginDateKh = null;
-
-                if ($loginAtIso) {
-                    try {
-                        $loginAt = \Carbon\Carbon::parse($loginAtIso);
-                        $loginTimeKh = $loginAt->format('H:i');
-                        $loginDateKh = $loginAt->format('d/m/Y');
-                        $diffMinutes = (int) $loginAt->diffInMinutes(now());
-                        $durationMinutes = max(1, $diffMinutes);
-                        $hours = intdiv($durationMinutes, 60);
-                        $mins = $durationMinutes % 60;
-                        if ($hours > 0) {
-                            $durationText = "{$hours} ម៉ោង {$mins} នាទី";
-                        } else {
-                            $durationText = "{$mins} នាទី";
-                        }
-                    } catch (\Throwable $e) {}
-                }
-
+                $displayName = ActivityLogger::determineUserName($user);
                 $logoutTimeKh = now()->format('H:i');
                 $logoutDateKh = now()->format('d/m/Y');
-                $displayName = ActivityLogger::determineUserName($user);
-
-                $description = "{$displayName} បានចាកចេញពីប្រព័ន្ធ";
-                if ($loginTimeKh) {
-                    $description .= " (ចូល: {$loginTimeKh} • ចេញ: {$logoutTimeKh} • រយៈពេលប្រើប្រាស់: {$durationText})";
-                } else {
-                    $description .= " (ចេញម៉ោង: {$logoutTimeKh} ថ្ងៃទី {$logoutDateKh})";
-                }
 
                 ActivityLogger::log(
                     action: 'LOGOUT',
                     module: 'ចូលប្រើប្រព័ន្ធ',
                     targetId: $user->id,
-                    description: $description,
-                    oldValues: null,
-                    newValues: [
-                        'user_name' => $displayName,
-                        'login_at' => $loginAtIso,
-                        'login_time' => $loginTimeKh,
-                        'login_date' => $loginDateKh,
-                        'logout_at' => now()->toIso8601String(),
-                        'logout_time' => $logoutTimeKh,
-                        'logout_date' => $logoutDateKh,
-                        'duration_minutes' => $durationMinutes,
-                        'duration_text' => $durationText,
-                    ],
+                    description: "{$displayName} បានចាកចេញពីប្រព័ន្ធ [ម៉ោង {$logoutTimeKh} ថ្ងៃទី {$logoutDateKh}]",
                     user: $user
                 );
             }
@@ -259,60 +217,20 @@ class AuthController extends Controller
                 'success' => true,
                 'message' => 'បានចាកចេញពីប្រព័ន្ធដោយជោគជ័យ',
                 'redirect' => route('login')
-            ])->header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
-              ->header('Pragma', 'no-cache');
+            ]);
         }
 
-        $sessionCookieName = config('session.cookie') ?: 'laravel_session';
         return redirect()->route('login')
-            ->with('success', 'បានចាកចេញពីប្រព័ន្ធដោយជោគជ័យ។')
-            ->header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
-            ->header('Pragma', 'no-cache')
-            ->header('Clear-Site-Data', '"cache", "storage"')
-            ->withCookie(\Illuminate\Support\Facades\Cookie::forget($sessionCookieName));
+            ->with('success', 'បានចាកចេញពីប្រព័ន្ធដោយជោគជ័យ។');
     }
 
     protected function shouldForgetIntendedUrl(User $user, ?string $intendedUrl): bool
     {
-        if ($user->hasRole('admin')) {
-            return false;
-        }
-
-        $intendedPath = trim((string) parse_url((string) $intendedUrl, PHP_URL_PATH), '/');
-
-        return $intendedPath === 'dashboard';
+        return true;
     }
 
     protected function defaultRedirectPath(User $user): string
     {
-        if ($user->hasRole('admin') || $user->hasRole('super_admin')) {
-            return route('dashboard');
-        }
-
-        if ($user->hasRole('teacher')) {
-            return route('dashboard');
-        }
-
-        if ($user->hasRole('student')) {
-            return route('dashboard');
-        }
-
-        if ($user->canManageTeachers()) {
-            return route('teacher.index');
-        }
-
-        if ($user->canViewStudents()) {
-            return route('students.index');
-        }
-
-        if ($user->canAccessClassesOverview()) {
-            return route('class.index');
-        }
-
-        if ($user->canAccessResultsOverview()) {
-            return route('examinations.index');
-        }
-
         return route('dashboard');
     }
 }

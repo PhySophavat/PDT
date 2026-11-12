@@ -100,6 +100,23 @@ class User extends Authenticatable
     }
 
     /**
+     * In-memory cache for user role names to avoid repeated remote database calls.
+     */
+    protected ?array $cachedRoleNames = null;
+
+    public function getCachedRoleNames(): array
+    {
+        if ($this->cachedRoleNames === null) {
+            if ($this->relationLoaded('roles')) {
+                $this->cachedRoleNames = $this->roles->pluck('name')->map(fn($n) => strtolower(trim($n)))->toArray();
+            } else {
+                $this->cachedRoleNames = $this->roles()->pluck('name')->map(fn($n) => strtolower(trim($n)))->toArray();
+            }
+        }
+        return $this->cachedRoleNames;
+    }
+
+    /**
      * Check if user has a specific role
      * 
      * @param string|array $role
@@ -107,11 +124,13 @@ class User extends Authenticatable
      */
     public function hasRole($role)
     {
+        $cached = $this->getCachedRoleNames();
         if (is_array($role)) {
-            return $this->roles()->whereIn('name', $role)->exists();
+            $roles = array_map(fn($r) => strtolower(trim($r)), $role);
+            return !empty(array_intersect($roles, $cached));
         }
         
-        return $this->roles()->where('name', $role)->exists();
+        return in_array(strtolower(trim($role)), $cached, true);
     }
 
     /**
@@ -130,7 +149,7 @@ class User extends Authenticatable
      */
     public function hasAnyRole(array $roles)
     {
-        return $this->roles()->whereIn('name', $roles)->exists();
+        return $this->hasRole($roles);
     }
 
     /**
@@ -139,6 +158,12 @@ class User extends Authenticatable
      * @param array $roles
      * @return bool
      */
+    public function hasAllRoles(array $roles)
+    {
+        $cached = $this->getCachedRoleNames();
+        $roles = array_map(fn($r) => strtolower(trim($r)), $roles);
+        return empty(array_diff($roles, $cached));
+    }
     public function hasAllRoles(array $roles)
     {
         return $this->roles()->whereIn('name', $roles)->count() === count($roles);
