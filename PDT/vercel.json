@@ -36,7 +36,7 @@
     "APP_NAME": "portal sala",
     "APP_URL": "https://sala-portal.vercel.app",
     "APP_ENV": "production",
-    "APP_DEBUG": "true",
+    "APP_DEBUG": "false",
     "APP_KEY": "base64:9EvsufK6IKWmF5ATdQATWq+eqjUFEp/rO/6sshb3MtI=",
     "APP_CONFIG_CACHE": "/tmp/bootstrap/cache/config.php",
     "APP_EVENTS_CACHE": "/tmp/bootstrap/cache/events.php",
