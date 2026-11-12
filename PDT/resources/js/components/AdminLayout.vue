@@ -114,7 +114,7 @@
                   :class="[
                     'flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all',
                     isActive(sub.path)
-                      ? 'bg-blue-50 text-blue-700 font-bold shadow-xs'
+                      ? 'bg-blue-50 text-blue-700 font-semibold shadow-xs'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                   ]"
                 >
@@ -166,6 +166,12 @@
                 class="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white"
               ></span>
             </router-link>
+
+            <!-- Subtle horizontal divider below "សំណើ និងមតិយោបល់" -->
+            <div 
+              v-if="item.path === '/requests' || item.dividerAfter" 
+              class="my-2 border-t border-slate-200/80 mx-1"
+            ></div>
           </template>
         </div>
 
@@ -175,21 +181,16 @@
             type="button"
             @click="promptLogout"
             :class="[
-              'w-full flex items-center rounded-xl text-[13px] font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50/60 transition group cursor-pointer',
-              sidebarOpen ? 'justify-between px-3.5 py-2.5' : 'justify-center p-2.5'
+              'w-full flex items-center rounded-xl text-[13px] font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 active:bg-red-100 transition-colors group cursor-pointer',
+              sidebarOpen ? 'justify-start px-3.5 py-2.5 gap-2.5' : 'justify-center p-2.5'
             ]"
             :title="!sidebarOpen ? t('common.logout') : ''"
           >
             <div class="flex items-center gap-2.5">
-              <svg class="w-4 h-4 flex-shrink-0 text-slate-400 group-hover:text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 flex-shrink-0 text-slate-400 group-hover:text-red-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
               </svg>
               <span v-if="sidebarOpen">{{ t('common.logout') }}</span>
-            </div>
-            <div v-if="sidebarOpen" class="w-5 h-5 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 group-hover:border-rose-300 group-hover:text-rose-600 transition">
-              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-              </svg>
             </div>
           </button>
           <form id="spa-logout-form" action="/logout" method="POST" class="hidden">
@@ -216,102 +217,19 @@
               </svg>
             </button>
 
-            <!-- Mobile Brand Title with School Logo -->
-            <div class="flex items-center gap-2.5 md:hidden min-w-0">
+            <!-- Brand Title with School Logo (Visible on all screens) -->
+            <div class="flex items-center gap-2.5 min-w-0">
               <div class="w-8 h-8 rounded-xl overflow-hidden border border-slate-100 bg-white p-0.5 shadow-2xs flex-shrink-0 flex items-center justify-center">
                 <img :src="schoolLogo || '/images/logo.png'" alt="Logo" class="w-full h-full object-contain" />
               </div>
-              <span class="text-xs font-bold text-slate-800 truncate max-w-[155px] sm:max-w-none leading-tight">
+              <span class="text-xs sm:text-sm font-bold text-slate-800 truncate max-w-[200px] sm:max-w-none leading-tight font-khmer">
                 {{ currentLocale === 'en' ? (schoolNameEn || 'New Generation School PDT') : (schoolName || 'សាលារៀន ជំនាន់ថ្មី PDT') }}
               </span>
             </div>
-
-            <!-- Search Bar (Desktop/Tablet Only) -->
-            <div class="hidden md:block relative w-44 sm:w-64 lg:w-80 transition-all">
-              <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
-                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-              </span>
-              <input 
-                type="text" 
-                :placeholder="t('common.searchPlaceholder')" 
-                class="w-full pl-9 pr-4 py-2 bg-slate-100/80 border-none rounded-xl text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition font-khmer"
-              />
-            </div>
           </div>
 
-          <!-- Right: Cleanly Aligned Actions Group -->
+          <!-- Right: Cleanly Aligned Actions Group (Only Notification Bell) -->
           <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-            <!-- Fullscreen Toggle Button (Large Screen Only) -->
-            <button 
-              @click="toggleFullscreen" 
-              class="hidden lg:flex w-8 h-8 rounded-full bg-slate-100 text-slate-600 hover:text-blue-600 hover:bg-blue-50 items-center justify-center transition" 
-              :title="isFullscreen ? 'ចាកចេញពីពេញអេក្រង់' : 'ពង្រីកពេញអេក្រង់'"
-            >
-              <svg v-if="!isFullscreen" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
-              </svg>
-              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 4v4H5m10-4v4h4M9 20v-4H5m10 4v-4h4"/>
-              </svg>
-            </button>
-
-            <!-- Language Switcher: Mobile Compact Toggle (rounded-full bg-slate-100 text-slate-700 text-xs px-2.5 py-1) -->
-            <button 
-              @click="switchLanguage(currentLocale === 'km' ? 'en' : 'km')"
-              class="sm:hidden rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-2.5 py-1 transition flex items-center gap-1 font-semibold border border-slate-200/60 shadow-2xs"
-              :title="currentLocale === 'km' ? 'Switch to English' : 'ប្តូរជាភាសាខ្មែរ'"
-            >
-              <span class="text-xs">{{ currentLocale === 'km' ? '🇰🇭' : '🇬🇧' }}</span>
-              <span>{{ currentLocale === 'km' ? 'ខ្មែរ' : 'EN' }}</span>
-            </button>
-
-            <!-- Language Switcher: Desktop Dual Buttons -->
-            <div class="hidden sm:flex relative items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold">
-              <button 
-                @click="switchLanguage('km')" 
-                :class="[
-                  'px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5',
-                  currentLocale === 'km' 
-                    ? 'bg-white text-blue-700 shadow-xs font-bold' 
-                    : 'text-slate-500 hover:text-slate-800'
-                ]"
-                title="ប្តូរជាភាសាខ្មែរ"
-              >
-                <span>🇰🇭</span>
-                <span>ខ្មែរ</span>
-              </button>
-              <button 
-                @click="switchLanguage('en')" 
-                :class="[
-                  'px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5',
-                  currentLocale === 'en' 
-                    ? 'bg-white text-blue-700 shadow-xs font-bold' 
-                    : 'text-slate-500 hover:text-slate-800'
-                ]"
-                title="Switch to English"
-              >
-                <span>🇬🇧</span>
-                <span>EN</span>
-              </button>
-            </div>
-
-            <!-- Profile Avatar: rounded-full ring-2 ring-blue-500/20 w-8 h-8 -->
-            <router-link to="/profile" class="flex items-center gap-2 group cursor-pointer hover:opacity-85 transition" title="មើលព័ត៌មានផ្ទាល់ខ្លួន (My Profile)">
-              <div class="w-8 h-8 rounded-full ring-2 ring-blue-500/20 group-hover:ring-blue-500/40 overflow-hidden flex-shrink-0 bg-slate-100 shadow-2xs transition">
-                <img 
-                  :src="user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces'" 
-                  alt="User Avatar" 
-                  class="w-full h-full object-cover"
-                />
-              </div>
-              <div class="text-left hidden md:block">
-                <h4 class="text-xs font-bold text-slate-900 group-hover:text-blue-700 leading-tight transition-colors">{{ user.name || 'Phy Sophavat' }}</h4>
-                <p class="text-[10px] text-slate-400 leading-tight font-medium">{{ displayRoleName }}</p>
-              </div>
-            </router-link>
-
             <!-- Notification Bell Button with subtle unread red dot -->
             <div class="relative z-50" ref="notificationDropdownRef">
               <button 
@@ -811,7 +729,7 @@
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
-        <span>{{ currentLocale === 'km' ? 'ម៉ឺនុយ' : 'Menu' }}</span>
+        <span>{{ currentLocale === 'km' ? 'មុខងារ' : 'Modules' }}</span>
       </button>
     </nav>
 
@@ -866,6 +784,7 @@ import { setLocale } from '../i18n';
 import { 
   LayoutDashboard, 
   Settings, 
+  SlidersHorizontal,
   GraduationCap, 
   CalendarCheck, 
   FileText, 
@@ -882,7 +801,11 @@ import {
   Receipt, 
   KeyRound,
   Users,
-  User
+  User,
+  UserRound,
+  LockKeyhole,
+  Languages,
+  ChevronRight
 } from 'lucide-vue-next';
 import { updateFavicon } from '../utils/favicon';
 
@@ -891,7 +814,7 @@ const route = useRoute();
 const router = useRouter();
 const sidebarOpen = ref(true);
 const isFullscreen = ref(false);
-const openDropdowns = ref(['attendance']);
+const openDropdowns = ref(['attendance', 'account_settings']);
 
 // Notification System (Pending Students, Teachers, and Leave Requests)
 const showNotificationDropdown = ref(false);
@@ -1060,6 +983,12 @@ const handleDocClick = (e) => {
   }
 };
 
+const handleKeydown = (e) => {
+  if (e.key === 'Escape') {
+    showNotificationDropdown.value = false;
+  }
+};
+
 // Logout Confirmation Modal State & Handlers
 const showLogoutModal = ref(false);
 const isLoggingOut = ref(false);
@@ -1091,34 +1020,23 @@ const executeLogout = async () => {
       navigator.clearAppBadge().catch(() => {});
     }
 
-    // 3. Fast logout call with strict 1.2s timeout so the user NEVER hangs for 10s
-    let targetUrl = '/portal-sala-access-2026';
-    try {
-      const logoutPromise = axios.post('/logout', {}, {
-        headers: {
-          'X-CSRF-TOKEN': csrfToken.value,
-          'Accept': 'application/json'
-        },
-        timeout: 2000
-      });
-
-      const res = await Promise.race([
-        logoutPromise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1200))
-      ]);
-      if (res?.data?.redirect) {
-        targetUrl = res.data.redirect;
-      }
-    } catch (e) {
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon('/logout');
-      }
+    // 3. Clear Service Worker caches
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      try {
+        navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' });
+      } catch (e) {}
     }
 
-    window.location.href = targetUrl;
-  } catch (err) {
-    window.location.href = '/portal-sala-access-2026';
-  }
+    // 4. Submit standard logout form for atomic, 100% reliable session termination and redirect
+    const form = document.getElementById('spa-logout-form');
+    if (form) {
+      form.submit();
+      return;
+    }
+  } catch (err) {}
+
+  // Fallback: direct navigation to logout endpoint
+  window.location.href = '/logout';
 };
 
 // School Logo and Brand Header State
@@ -1203,6 +1121,11 @@ watch(() => route.path, (newPath) => {
   if (newPath && (newPath.includes('attendance') || newPath.includes('teacher-attendance'))) {
     if (!openDropdowns.value.includes('attendance')) {
       openDropdowns.value.push('attendance');
+    }
+  }
+  if (newPath && (newPath === '/profile' || newPath === '/security' || newPath === '/language' || newPath.startsWith('/settings/'))) {
+    if (!openDropdowns.value.includes('account_settings')) {
+      openDropdowns.value.push('account_settings');
     }
   }
 }, { immediate: true });
@@ -1295,6 +1218,7 @@ onMounted(() => {
   });
 
   document.addEventListener('click', handleDocClick);
+  document.addEventListener('keydown', handleKeydown);
   loadReadNotificationIds();
   fetchPendingNotifications(true);
 
@@ -1315,6 +1239,7 @@ onMounted(() => {
 
   onUnmounted(() => {
     document.removeEventListener('click', handleDocClick);
+    document.removeEventListener('keydown', handleKeydown);
     document.removeEventListener('visibilitychange', handleVisibilityChange);
     clearInterval(notifInterval);
     window.removeEventListener('pdt-data-updated', () => fetchPendingNotifications(true));
@@ -1381,8 +1306,37 @@ const menuItems = [
   { i18nKey: 'nav.messaging', path: '/parents', icon: MessageSquare, roles: ['Super Admin', 'Admin'] },
   { i18nKey: 'nav.feesCollection', path: '/finance', icon: BadgePercent, roles: ['Super Admin', 'Admin'] },
   { i18nKey: 'nav.library', path: '/library', icon: BookOpen, roles: ['Super Admin', 'Admin', 'Teacher', 'Student'] },
-  { nameKm: 'សំណើ និងមតិយោបល់', nameEn: 'Requests & Feedback', path: '/requests', icon: BookmarkPlus, roles: ['Super Admin', 'Admin', 'Teacher', 'Student'] },
-  { nameKm: 'ព័ត៌មានផ្ទាល់ខ្លួន', nameEn: 'My Profile', path: '/profile', icon: User, roles: ['Super Admin', 'Admin', 'Teacher', 'Student'] },
+  { nameKm: 'សំណើ និងមតិយោបល់', nameEn: 'Requests & Feedback', path: '/requests', icon: BookmarkPlus, roles: ['Super Admin', 'Admin', 'Teacher', 'Student'], dividerAfter: true },
+  { 
+    id: 'account_settings',
+    nameKm: 'គណនី និងការកំណត់', 
+    nameEn: 'Account & Settings', 
+    icon: UserRound,
+    roles: ['Super Admin', 'Admin', 'Teacher', 'Student'],
+    children: [
+      { 
+        nameKm: 'ព័ត៌មានផ្ទាល់ខ្លួន', 
+        nameEn: 'Personal Info', 
+        path: '/profile', 
+        icon: UserRound,
+        roles: ['Super Admin', 'Admin', 'Teacher', 'Student']
+      },
+      { 
+        nameKm: 'សុវត្ថិភាព', 
+        nameEn: 'Security', 
+        path: '/security', 
+        icon: ShieldCheck,
+        roles: ['Super Admin', 'Admin', 'Teacher', 'Student']
+      },
+      { 
+        nameKm: 'ភាសា', 
+        nameEn: 'Language', 
+        path: '/language', 
+        icon: Languages,
+        roles: ['Super Admin', 'Admin', 'Teacher', 'Student']
+      },
+    ]
+  },
   { i18nKey: 'nav.notice', path: '/announcements', icon: Bell, roles: ['Super Admin', 'Admin', 'Teacher'] },
   { i18nKey: 'nav.reports', path: '/reports', icon: FileText, roles: ['Super Admin', 'Admin', 'Teacher'] },
   { i18nKey: 'nav.rolesPermissions', path: '/roles', icon: ShieldCheck, roles: ['Super Admin', 'Admin'] },
@@ -1454,7 +1408,7 @@ const visibleMenuItems = computed(() => {
         const filteredChildren = item.children.filter(child => !child.roles || child.roles.includes(userRole.value));
         // For Students or any role with only 1 accessible child (e.g. Student Attendance),
         // flatten it into a direct link without a dropdown accordion!
-        if (isStudentUser.value || filteredChildren.length <= 1) {
+        if (item.id === 'attendance' && (isStudentUser.value || filteredChildren.length <= 1)) {
           const directChild = filteredChildren[0] || item.children[0];
           return {
             ...item,

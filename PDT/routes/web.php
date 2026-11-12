@@ -248,6 +248,8 @@ Route::middleware(['auth'])->group(function () use ($spa) {
         // Personal Profile (Student, Teacher, Admin)
         Route::get('/user/profile', [ApiController::class, 'getProfile'])->name('api.profile.get');
         Route::put('/user/profile', [ApiController::class, 'updateProfile'])->name('api.profile.update');
+        Route::post('/user/password', [ApiController::class, 'updatePassword'])->name('api.profile.password');
+        Route::post('/user/language', [ApiController::class, 'updateLanguage'])->name('api.profile.language');
         Route::post('/user/avatar', [ApiController::class, 'updateAvatar'])->name('api.profile.avatar');
 
         // System Activity Logs (Super Admin Only)
@@ -256,9 +258,11 @@ Route::middleware(['auth'])->group(function () use ($spa) {
         });
     });
 
-    // 1. Dashboard & Profile (Vue 3 Master Attendance UI)
+    // 1. Dashboard, Profile, Security & Language (Account Settings)
     Route::get('/dashboard', $spa)->name('dashboard');
     Route::get('/profile', $spa)->name('auth.profile');
+    Route::get('/security', $spa)->name('auth.security');
+    Route::get('/language', $spa)->name('auth.language');
 
     // 2. Student Management (Vue 3 UI + Backend API/Actions)
     Route::get('/students/export', [StudentController::class, 'export'])->name('students.export');

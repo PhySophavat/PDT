@@ -358,5 +358,30 @@
     "friday": "Friday",
     "saturday": "Saturday",
     "sunday": "Sunday"
+  },
+  "accountSettings": {
+    "title": "Account Settings",
+    "subtitle": "Manage personal info, security, and language preferences",
+    "personalInfo": "Personal Information",
+    "personalInfoDesc": "View and edit personal details",
+    "security": "Security",
+    "securityDesc": "Manage password and account security",
+    "language": "Language",
+    "languageDesc": "Choose system language",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "passwordStrength": "Password Strength",
+    "saveChanges": "Save Changes",
+    "cancel": "Cancel",
+    "editProfile": "Edit Profile",
+    "phone": "Phone Number",
+    "fullName": "Full Name",
+    "email": "Email Address",
+    "role": "Role",
+    "khmer": "ភាសាខ្មែរ (Khmer)",
+    "english": "English",
+    "selectedLanguage": "Selected Language"
   }
 }

@@ -1,26 +1,28 @@
-// School Portal Service Worker for PWA
-const CACHE_NAME = 'sala-portal-v2';
-const STATIC_ASSETS = [
+// School Portal High-Performance Service Worker for PWA (v3)
+const CACHE_NAME = 'sala-portal-v3';
+
+// Core assets to pre-cache immediately on install for instant offline shell
+const PRECACHE_ASSETS = [
+  '/',
   '/manifest.json',
-  '/site.webmanifest',
   '/images/icon-192.png',
   '/images/icon-512.png',
   '/images/apple-touch-icon.png',
-  '/images/logo.png'
+  '/images/logo.png',
+  '/images/moeys-logo.png'
 ];
 
-// Install Event
+// Install Event - Pre-cache core shell assets & activate immediately
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch(() => {
-        // Continue even if some optional asset fails
-      });
-    }).then(() => self.skipWaiting())
+      return cache.addAll(PRECACHE_ASSETS).catch(() => {});
+    })
   );
 });
 
-// Activate Event - Clean old caches
+// Activate Event - Clean old caches & claim clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -41,41 +43,84 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// Fetch Event - Network First for APIs & Live data, Cache Fallback for static assets
+// Fetch Event - Instant Load Strategy
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // Skip non-GET and sensitive endpoints (Auth, APIs, CSRF)
-  if (request.method !== 'GET' || 
-      url.pathname.startsWith('/api/') || 
-      url.pathname.startsWith('/login') || 
-      url.pathname.startsWith('/logout') || 
-      url.pathname === '/csrf-token') {
+  // 1. ALWAYS BYPASS for non-GET, API, and Authentication endpoints (Never cache login/logout)
+  if (
+    request.method !== 'GET' ||
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/login') ||
+    url.pathname.startsWith('/logout') ||
+    url.pathname.startsWith('/portal-sala-access') ||
+    url.pathname.startsWith('/forgot-password') ||
+    url.pathname.startsWith('/reset-password') ||
+    url.pathname.startsWith('/verify-otp') ||
+    url.pathname === '/csrf-token' ||
+    url.pathname === '/up' ||
+    url.pathname === '/health-db'
+  ) {
     return;
   }
 
-  // Network first strategy
-  event.respondWith(
-    fetch(request)
-      .then((response) => {
-        // Clone and cache successful static asset responses
-        if (response && response.status === 200 && response.type === 'basic') {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            // Only cache images, css, js, fonts
-            if (url.pathname.match(/\.(png|jpg|jpeg|svg|css|js|woff2|woff|ttf)$/)) {
-              cache.put(request, responseToCache);
-            }
-          });
+  // 2. CACHE-FIRST for Immutable Vite Bundles (/build/assets/*) & Static Fonts/Images
+  // Vite assets have content hashes in their filename; they are completely immutable!
+  const isViteAsset = url.pathname.startsWith('/build/assets/');
+  const isStaticImage = url.pathname.match(/\.(png|jpg|jpeg|svg|webp|ico)$/i);
+  const isFont = url.pathname.match(/\.(woff2|woff|ttf|otf)$/i) || url.hostname.includes('fonts.gstatic.com');
+  const isCdn = url.hostname.includes('cdnjs.cloudflare.com') || url.hostname.includes('fonts.googleapis.com');
+
+  if (isViteAsset || isStaticImage || isFont || isCdn) {
+    event.respondWith(
+      caches.match(request).then((cachedResponse) => {
+        if (cachedResponse) {
+          // If it's not an immutable Vite asset, revalidate in background
+          if (!isViteAsset) {
+            fetch(request).then((networkResponse) => {
+              if (networkResponse && networkResponse.status === 200) {
+                caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse));
+              }
+            }).catch(() => {});
+          }
+          return cachedResponse;
         }
-        return response;
+
+        // If not in cache, fetch from network and cache for next time
+        return fetch(request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
+          return networkResponse;
+        });
       })
-      .catch(() => {
-        // Fallback to cache if network fails (offline support)
-        return caches.match(request);
-      })
-  );
+    );
+    return;
+  }
+
+  // 3. NETWORK-FIRST for HTML Navigation with Fast Cache Fallback
+  if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match(request).then((cachedHtml) => {
+            return cachedHtml || caches.match('/');
+          });
+        })
+    );
+    return;
+  }
 });
 
 // Push Notification Event (Background Push when app is closed)

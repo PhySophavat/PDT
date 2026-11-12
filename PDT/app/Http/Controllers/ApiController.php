@@ -273,22 +273,91 @@ class ApiController extends Controller
                     $student = Student::where('user_id', $authUser->id)->orWhere('email', $authUser->email)->first();
                 }
 
-                if ($student) {
-                    $myGrade = $student->grade ?: '7A';
+                $isStudentUser = !empty($student) || $authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student';
+
+                if ($isStudentUser) {
+                    $myGrade = $student?->grade ?: '7A';
                     $myClass = SchoolClass::with('teacher.user')->where('name', $myGrade)->first();
-                    $classmatesCount = Student::where('grade', $myGrade)->count();
+                    $classStudents = Student::where('grade', $myGrade)->get();
+                    $classTotalStudents = $classStudents->count() ?: 51;
+                    $classFemaleStudents = $classStudents->whereIn('gender', ['ស្រី', 'female'])->count();
+                    $classMaleStudents = max(0, $classTotalStudents - $classFemaleStudents);
+                    $classFemaleRatio = $classTotalStudents > 0 ? round(($classFemaleStudents / $classTotalStudents) * 100) : 0;
+                    $classMaleRatio = 100 - $classFemaleRatio;
 
                     $today = Carbon::today();
+                    $todayDate = $today->toDateString();
                     $startOfMonth = $today->copy()->startOfMonth();
 
-                    $attRecords = Attendance::where('student_id', $student->id)
-                        ->get()->keyBy(function($item) {
-                            return Carbon::parse($item->date)->toDateString();
+                    // Class attendance today
+                    $todayClassAtt = Attendance::where('class_name', $myGrade)->whereDate('date', $todayDate)->get();
+                    $todayClassTotal = $todayClassAtt->count();
+                    $todayClassPresent = $todayClassAtt->whereIn('status', ['present', 'late'])->count();
+                    $todayClassAbsent = $todayClassAtt->whereIn('status', ['absent', 'excused'])->count();
+                    $classAttendanceRate = $todayClassTotal > 0 ? round(($todayClassPresent / $todayClassTotal) * 100, 1) : 100.0;
+
+                    // Class weekly attendance trend (Mon - Sat)
+                    $daysOfWeek = [
+                        ['day' => 'ចន្ទ', 'dayEn' => 'Mon'],
+                        ['day' => 'អង្គារ', 'dayEn' => 'Tue'],
+                        ['day' => 'ពុធ', 'dayEn' => 'Wed'],
+                        ['day' => 'ព្រហស្បតិ៍', 'dayEn' => 'Thu'],
+                        ['day' => 'សុក្រ', 'dayEn' => 'Fri'],
+                        ['day' => 'សៅរ៍', 'dayEn' => 'Sat'],
+                    ];
+                    $startOfWeek = Carbon::now()->startOfWeek()->toDateString();
+                    $endOfWeek = Carbon::now()->startOfWeek()->addDays(5)->toDateString();
+                    $weeklyClassAtt = Attendance::where('class_name', $myGrade)
+                        ->whereBetween('date', [$startOfWeek, $endOfWeek])
+                        ->get();
+
+                    $classWeeklyTrend = [];
+                    $start = Carbon::now()->startOfWeek();
+                    foreach ($daysOfWeek as $index => $d) {
+                        $targetDate = $start->copy()->addDays($index)->toDateString();
+                        $dayRecords = $weeklyClassAtt->filter(function($item) use ($targetDate) {
+                            return Carbon::parse($item->date)->toDateString() === $targetDate;
                         });
 
-                    $leaveReqs = StudentLeaveRequest::where('student_id', $student->id)
+                        $pCount = $dayRecords->whereIn('status', ['present', 'late'])->count();
+                        $aCount = $dayRecords->whereIn('status', ['absent', 'excused'])->count();
+                        $tot = $pCount + $aCount;
+
+                        if ($tot === 0 && $classTotalStudents > 0) {
+                            $pCount = $classTotalStudents;
+                            $aCount = 0;
+                            $rate = 100.0;
+                        } else {
+                            $rate = $tot > 0 ? round(($pCount / $tot) * 100, 1) : 100.0;
+                        }
+
+                        $classWeeklyTrend[] = [
+                            'day' => $d['day'],
+                            'date' => Carbon::parse($targetDate)->format('d/m'),
+                            'present' => $pCount,
+                            'absent' => $aCount,
+                            'total' => $classTotalStudents,
+                            'rate' => $rate,
+                        ];
+                    }
+
+                    if ($todayClassTotal === 0 && count($weeklyClassAtt) > 0) {
+                        $weekPresentSum = $weeklyClassAtt->whereIn('status', ['present', 'late'])->count();
+                        $weekTotalSum = $weeklyClassAtt->count();
+                        if ($weekTotalSum > 0) {
+                            $classAttendanceRate = round(($weekPresentSum / $weekTotalSum) * 100, 1);
+                        }
+                    }
+
+                    // Personal attendance for logged in student
+                    $attRecords = $student ? Attendance::where('student_id', $student->id)
+                        ->get()->keyBy(function($item) {
+                            return Carbon::parse($item->date)->toDateString();
+                        }) : collect();
+
+                    $leaveReqs = $student ? StudentLeaveRequest::where('student_id', $student->id)
                         ->where('status', 'approved')
-                        ->get();
+                        ->get() : collect();
 
                     $presentDays = 0;
                     $excusedDays = 0;
@@ -324,17 +393,53 @@ class ApiController extends Controller
                     $totalLeaves = $excusedDays + $absentDays;
                     $attRate = $totalSchoolDays > 0 ? round((($presentDays + $excusedDays) / $totalSchoolDays) * 100, 1) : 100;
 
+                    // Restrict top-level metrics strictly to student's own class
+                    $payload['isStudent'] = true;
+                    $payload['class_id'] = $myClass?->id;
+                    $payload['class_name'] = $myGrade;
+                    $payload['stats']['students'] = $classTotalStudents;
+                    $payload['stats']['femaleCount'] = $classFemaleStudents;
+                    $payload['stats']['maleCount'] = $classMaleStudents;
+                    $payload['stats']['femaleRatio'] = $classFemaleRatio;
+                    $payload['stats']['attendanceRate'] = $classAttendanceRate;
+                    $payload['genderDistribution'] = [
+                        'female' => $classFemaleStudents,
+                        'male' => $classMaleStudents,
+                        'femaleRatio' => $classFemaleRatio,
+                        'maleRatio' => $classMaleRatio,
+                        'total' => $classTotalStudents,
+                    ];
+                    $payload['weeklyTrend'] = $classWeeklyTrend;
+                    $payload['topClasses'] = [];
+                    $payload['allClasses'] = $myClass ? [
+                        [
+                            'id' => $myClass->id,
+                            'name' => $myClass->name,
+                            'grade_level' => '7',
+                            'room' => $myClass->room ?: ('បន្ទប់ ' . $myClass->name),
+                            'teacher' => $myClass->teacher ? ($myClass->teacher->name_khmer ?: ($myClass->teacher->user?->name ?: null)) : null,
+                            'teacher_photo' => $myClass->teacher?->photo ?: '',
+                            'teacher_id' => $myClass->teacher_id,
+                            'students' => $classTotalStudents,
+                            'present' => $todayClassPresent,
+                            'absent' => $todayClassAbsent,
+                            'rate' => $classAttendanceRate,
+                        ]
+                    ] : [];
+                    $payload['recentClasses'] = $payload['allClasses'];
+
                     $payload['studentData'] = [
-                        'student_id' => $student->id,
-                        'student_name' => $student->name_khmer ?: $student->name,
-                        'student_id_card' => $student->student_id_card,
+                        'student_id' => $student?->id ?? $authUser->id,
+                        'student_name' => $student ? ($student->name_khmer ?: $student->name) : $authUser->name,
+                        'student_id_card' => $student?->student_id_card ?? 'STU-2026-7A-001',
                         'grade' => $myGrade,
+                        'class_id' => $myClass?->id,
                         'class_name' => $myClass?->name ?: $myGrade,
                         'room' => $myClass?->room ?: ('បន្ទប់ ' . $myGrade),
                         'homeroom_teacher' => $myClass?->teacher ? ($myClass->teacher->name_khmer ?: ($myClass->teacher->name_latin ?: $myClass->teacher->user?->name)) : null,
                         'teacher_phone' => $myClass?->teacher?->phone,
                         'teacher_photo' => $myClass?->teacher?->photo ? (str_starts_with($myClass->teacher->photo, 'http') ? $myClass->teacher->photo : asset('storage/' . $myClass->teacher->photo)) : null,
-                        'classmates_count' => $classmatesCount,
+                        'classmates_count' => $classTotalStudents,
                         'attendance' => [
                             'present' => $presentDays,
                             'excused' => $excusedDays,
@@ -343,34 +448,6 @@ class ApiController extends Controller
                             'total_leave' => $totalLeaves,
                             'total' => $totalSchoolDays,
                             'rate' => $attRate,
-                        ],
-                        'total_books' => Book::count(),
-                        'student_visible_books' => Book::where('title', 'not like', '%សៀវភៅគ្រូ%')->where('title', 'not like', '%មគ្គុទ្ទេសក៍គ្រូ%')->count(),
-                    ];
-                } elseif ($authUser->hasRole('student') || strtolower($authUser->role ?? '') === 'student') {
-                    // Fallback for student account without linked student profile
-                    $myGrade = '7A';
-                    $myClass = SchoolClass::with('teacher.user')->where('name', $myGrade)->first();
-                    $classmatesCount = Student::where('grade', $myGrade)->count() ?: 1;
-                    $payload['studentData'] = [
-                        'student_id' => $authUser->id,
-                        'student_name' => $authUser->name,
-                        'student_id_card' => 'STU-2026-7A-001',
-                        'grade' => $myGrade,
-                        'class_name' => $myClass?->name ?: $myGrade,
-                        'room' => $myClass?->room ?: ('បន្ទប់ ' . $myGrade),
-                        'homeroom_teacher' => $myClass?->teacher ? ($myClass->teacher->name_khmer ?: ($myClass->teacher->name_latin ?: $myClass->teacher->user?->name)) : null,
-                        'teacher_phone' => $myClass?->teacher?->phone,
-                        'teacher_photo' => $myClass?->teacher?->photo ? (str_starts_with($myClass->teacher->photo, 'http') ? $myClass->teacher->photo : asset('storage/' . $myClass->teacher->photo)) : null,
-                        'classmates_count' => $classmatesCount,
-                        'attendance' => [
-                            'present' => 6,
-                            'excused' => 1,
-                            'absent' => 0,
-                            'late' => 0,
-                            'total_leave' => 1,
-                            'total' => 7,
-                            'rate' => 100.0,
                         ],
                         'total_books' => Book::count(),
                         'student_visible_books' => Book::where('title', 'not like', '%សៀវភៅគ្រូ%')->where('title', 'not like', '%មគ្គុទ្ទេសក៍គ្រូ%')->count(),
@@ -5618,30 +5695,59 @@ class ApiController extends Controller
     {
         $user = Auth::user();
         if (!$user) {
-            return response()->json(['message' => 'Unauthenticated'], 401);
+            return response()->json(['message' => 'សូមចូលប្រើប្រព័ន្ធសិន (Unauthenticated)'], 401);
         }
 
         $validated = $request->validate([
+            'name' => 'nullable|string|max:100',
             'phone' => 'nullable|string|max:30',
+            'address' => 'nullable|string|max:255',
+            'emergency_contact' => 'nullable|string|max:50',
             'current_password' => 'nullable|string',
             'new_password' => 'nullable|string|min:6|confirmed',
+        ], [
+            'name.max' => 'ឈ្មោះមិនត្រូវលើសពី ១០០ តួអក្សរឡើយ',
+            'phone.max' => 'លេខទូរស័ព្ទមិនត្រឹមត្រូវ',
+            'new_password.min' => 'ពាក្យសម្ងាត់ថ្មីត្រូវមានយ៉ាងតិច ៦ តួអក្សរ',
+            'new_password.confirmed' => 'ការបញ្ជាក់ពាក្យសម្ងាត់មិនត្រូវគ្នាឡើយ',
         ]);
 
+        // 1. Password update if supplied
         if (!empty($validated['current_password']) && !empty($validated['new_password'])) {
             if (!Hash::check($validated['current_password'], $user->password)) {
-                return response()->json(['message' => 'លេខសម្ងាត់បច្ចុប្បន្នមិនត្រឹមត្រូវទេ'], 422);
+                return response()->json(['message' => 'ពាក្យសម្ងាត់បច្ចុប្បន្នមិនត្រឹមត្រូវទេ'], 422);
             }
             $user->password = Hash::make($validated['new_password']);
         }
 
+        // 2. Name update (Admin / Super Admin only)
+        $isAdmin = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin() || $user->hasRole('admin') || $user->id === 1;
+        if (!empty($validated['name']) && $isAdmin) {
+            $user->name = trim($validated['name']);
+        }
+
+        // 3. Phone update
         if (isset($validated['phone'])) {
-            $user->phone = $validated['phone'];
+            $user->phone = trim($validated['phone']);
             if ($user->student) {
-                $user->student->update(['phone' => $validated['phone']]);
+                $user->student->update(['phone' => trim($validated['phone'])]);
             }
             if ($user->teacher) {
-                $user->teacher->update(['phone' => $validated['phone']]);
+                $user->teacher->update(['phone' => trim($validated['phone'])]);
             }
+        }
+
+        // 4. Address & Emergency contact updates
+        if (isset($validated['address'])) {
+            if ($user->student) {
+                $user->student->update(['address' => trim($validated['address'])]);
+            }
+            if ($user->teacher) {
+                $user->teacher->update(['address' => trim($validated['address'])]);
+            }
+        }
+        if (isset($validated['emergency_contact']) && $user->student) {
+            $user->student->update(['emergency_contact' => trim($validated['emergency_contact'])]);
         }
 
         $user->save();
@@ -5649,6 +5755,66 @@ class ApiController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'បានកែសម្រួលព័ត៌មានផ្ទាល់ខ្លួនដោយជោគជ័យ!',
+        ]);
+    }
+
+    /**
+     * Dedicated Secure Password Update
+     */
+    public function updatePassword(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'សូមចូលប្រើប្រព័ន្ធសិន (Unauthenticated)'], 401);
+        }
+
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:6|confirmed',
+        ], [
+            'current_password.required' => 'សូមបញ្ចូលពាក្យសម្ងាត់បច្ចុប្បន្ន',
+            'new_password.required' => 'សូមបញ្ចូលពាក្យសម្ងាត់ថ្មី',
+            'new_password.min' => 'ពាក្យសម្ងាត់ថ្មីត្រូវមានយ៉ាងតិច ៦ តួអក្សរ',
+            'new_password.confirmed' => 'ការបញ្ជាក់ពាក្យសម្ងាត់ថ្មីមិនត្រូវគ្នាឡើយ',
+        ]);
+
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return response()->json([
+                'message' => 'ពាក្យសម្ងាត់បច្ចុប្បន្នមិនត្រឹមត្រូវទេ! សូមពិនិត្យឡើងវិញ។',
+                'errors' => ['current_password' => ['ពាក្យសម្ងាត់បច្ចុប្បន្នមិនត្រឹមត្រូវទេ']]
+            ], 422);
+        }
+
+        if (Hash::check($validated['new_password'], $user->password)) {
+            return response()->json([
+                'message' => 'ពាក្យសម្ងាត់ថ្មីមិនត្រូវដូចពាក្យសម្ងាត់ចាស់ឡើយ!',
+                'errors' => ['new_password' => ['ពាក្យសម្ងាត់ថ្មីមិនត្រូវដូចពាក្យសម្ងាត់ចាស់ឡើយ']]
+            ], 422);
+        }
+
+        $user->password = Hash::make($validated['new_password']);
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'បានផ្លាស់ប្តូរពាក្យសម្ងាត់ដោយជោគជ័យ!',
+        ]);
+    }
+
+    /**
+     * Update User Language Preference
+     */
+    public function updateLanguage(Request $request)
+    {
+        $lang = $request->input('locale', 'km');
+        if (!in_array($lang, ['km', 'en'])) {
+            $lang = 'km';
+        }
+        session(['locale' => $lang]);
+        return response()->json([
+            'success' => true,
+            'locale' => $lang,
+            'message' => 'បានរក្សាទុកចំណូលចិត្តភាសារួចរាល់!',
         ]);
     }
 

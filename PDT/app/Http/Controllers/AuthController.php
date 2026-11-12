@@ -15,13 +15,24 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
-    public function showLoginForm()
+    public function showLoginForm(Request $request)
     {
+        if ($request->has('logout') || $request->has('logged_out')) {
+            try {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            } catch (\Throwable $e) {}
+        }
+
         if (Auth::check()) {
             return redirect()->intended($this->defaultRedirectPath(Auth::user()));
         }
 
-        return view('auth.login');
+        return response()->view('auth.login')
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     /**
@@ -248,10 +259,17 @@ class AuthController extends Controller
                 'success' => true,
                 'message' => 'បានចាកចេញពីប្រព័ន្ធដោយជោគជ័យ',
                 'redirect' => route('login')
-            ]);
+            ])->header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
+              ->header('Pragma', 'no-cache');
         }
 
-        return redirect()->route('login')->with('success', 'បានចាកចេញពីប្រព័ន្ធដោយជោគជ័យ។');
+        $sessionCookieName = config('session.cookie') ?: 'laravel_session';
+        return redirect()->route('login')
+            ->with('success', 'បានចាកចេញពីប្រព័ន្ធដោយជោគជ័យ។')
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('Clear-Site-Data', '"cache", "storage"')
+            ->withCookie(\Illuminate\Support\Facades\Cookie::forget($sessionCookieName));
     }
 
     protected function shouldForgetIntendedUrl(User $user, ?string $intendedUrl): bool

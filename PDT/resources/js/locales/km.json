@@ -358,5 +358,30 @@
     "friday": "សុក្រ",
     "saturday": "សៅរ៍",
     "sunday": "អាទិត្យ"
+  },
+  "accountSettings": {
+    "title": "ការកំណត់គណនី",
+    "subtitle": "គ្រប់គ្រងព័ត៌មានផ្ទាល់ខ្លួន សុវត្ថិភាព និងភាសាប្រព័ន្ធ",
+    "personalInfo": "ព័ត៌មានផ្ទាល់ខ្លួន",
+    "personalInfoDesc": "មើល និងកែប្រែព័ត៌មានផ្ទាល់ខ្លួន",
+    "security": "សុវត្ថិភាព",
+    "securityDesc": "គ្រប់គ្រងពាក្យសម្ងាត់ និងសុវត្ថិភាពគណនី",
+    "language": "ភាសា",
+    "languageDesc": "ជ្រើសរើសភាសាប្រព័ន្ធ",
+    "changePassword": "ប្តូរពាក្យសម្ងាត់",
+    "currentPassword": "ពាក្យសម្ងាត់បច្ចុប្បន្ន",
+    "newPassword": "ពាក្យសម្ងាត់ថ្មី",
+    "confirmPassword": "ផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់ថ្មី",
+    "passwordStrength": "កម្រិតសុវត្ថិភាពពាក្យសម្ងាត់",
+    "saveChanges": "រក្សាទុកការកែប្រែ",
+    "cancel": "បោះបង់",
+    "editProfile": "កែប្រែព័ត៌មាន",
+    "phone": "លេខទូរស័ព្ទ",
+    "fullName": "ឈ្មោះពេញ",
+    "email": "អ៊ីមែល",
+    "role": "តួនាទី",
+    "khmer": "ភាសាខ្មែរ",
+    "english": "English",
+    "selectedLanguage": "ភាសាដែលបានជ្រើសរើស"
   }
 }

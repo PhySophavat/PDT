@@ -2,8 +2,8 @@
   <div class="space-y-4 font-khmer pb-16 max-w-7xl mx-auto">
     <!-- Compact Page Header -->
     <PageHeader 
-      :title="t('nav.myProfile', 'ព័ត៌មានផ្ទាល់ខ្លួន')" 
-      :breadcrumb="t('nav.myProfile', 'ព័ត៌មានផ្ទាល់ខ្លួន')"
+      :title="t('accountSettings.personalInfo', 'ព័ត៌មានផ្ទាល់ខ្លួន')" 
+      :breadcrumb="t('accountSettings.personalInfo', 'ព័ត៌មានផ្ទាល់ខ្លួន')"
     >
       <template #extraActions>
         <button 
@@ -36,8 +36,8 @@
     <!-- Loading State Skeleton -->
     <div v-if="loading && !profile" class="animate-pulse space-y-4">
       <div class="h-28 bg-slate-200 rounded-2xl"></div>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div class="h-64 bg-slate-200 rounded-2xl lg:col-span-2"></div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="h-64 bg-slate-200 rounded-2xl"></div>
         <div class="h-64 bg-slate-200 rounded-2xl"></div>
       </div>
     </div>
@@ -114,10 +114,10 @@
         </div>
       </div>
 
-      <!-- 2. MAIN BENTO GRID (Clean Modern List Style, No bulky gray boxes) -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <!-- COLUMN 1 & 2: PERSONAL INFORMATION SECTIONS -->
-        <div class="lg:col-span-2 space-y-4">
+      <!-- 2. MAIN BENTO GRID (Clean Modern 2-Column Responsive Layout) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- COLUMN 1: OFFICIAL IDENTITY & ACADEMIC DETAILS -->
+        <div>
           
           <!-- Card A: Information Details (សិស្ស ឬ គ្រូ ឬ អ្នកគ្រប់គ្រង) -->
           <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-2xs space-y-3">
@@ -252,7 +252,10 @@
               </div>
             </div>
           </div>
+        </div>
 
+        <!-- COLUMN 2: CONTACT, ADDRESS & FAMILY INFORMATION -->
+        <div class="space-y-4">
           <!-- Card B: Contact & Address Information (Clean List Rows) -->
           <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-2xs space-y-3">
             <div class="flex items-center gap-2 pb-2.5 border-b border-slate-100">
@@ -359,123 +362,6 @@
                 <span class="font-mono font-bold">{{ profile.student.emergency_contact }}</span>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- COLUMN 3: ACCOUNT SECURITY & UPDATE FORM (Compact sleek style) -->
-        <div class="space-y-4">
-          <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-2xs space-y-3.5">
-            <div class="flex items-center gap-2 pb-2.5 border-b border-slate-100">
-              <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                </svg>
-              </div>
-              <div>
-                <h3 class="text-xs sm:text-sm font-bold text-slate-800 leading-tight">សុវត្ថិភាពគណនី</h3>
-                <p class="text-[10px] text-slate-400">កែប្រែលេខទូរស័ព្ទ និងពាក្យសម្ងាត់</p>
-              </div>
-            </div>
-
-            <form @submit.prevent="handleUpdateProfile" class="space-y-3">
-              <!-- Phone Input -->
-              <div class="space-y-1">
-                <label class="block text-[11px] font-semibold text-slate-700">លេខទូរស័ព្ទ (Phone)</label>
-                <input 
-                  v-model="form.phone" 
-                  type="text" 
-                  class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
-                  placeholder="ឧទាហរណ៍៖ 012 345 678"
-                />
-              </div>
-
-              <!-- Password Section -->
-              <div class="pt-2 border-t border-slate-100 space-y-2.5">
-                <div>
-                  <span class="text-xs font-bold text-slate-700 block">ប្តូរពាក្យសម្ងាត់ (Change Password)</span>
-                  <p class="text-[10px] text-slate-400">ទុកទំនេរ ប្រសិនបើមិនចង់ប្តូរ</p>
-                </div>
-
-                <!-- Current Password -->
-                <div class="space-y-1">
-                  <label class="block text-[10px] font-medium text-slate-500">ពាក្យសម្ងាត់បច្ចុប្បន្ន (Current)</label>
-                  <div class="relative">
-                    <input 
-                      v-model="form.current_password" 
-                      :type="showCurrentPassword ? 'text' : 'password'"
-                      class="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-9"
-                      placeholder="ពាក្យសម្ងាត់ចាស់"
-                    />
-                    <button 
-                      type="button" 
-                      @click="showCurrentPassword = !showCurrentPassword"
-                      class="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 text-xs p-0.5"
-                    >
-                      <i :class="showCurrentPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- New Password -->
-                <div class="space-y-1">
-                  <label class="block text-[10px] font-medium text-slate-500">ពាក្យសម្ងាត់ថ្មី (New)</label>
-                  <div class="relative">
-                    <input 
-                      v-model="form.new_password" 
-                      :type="showNewPassword ? 'text' : 'password'"
-                      class="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-9"
-                      placeholder="យ៉ាងតិច ៦ តួអក្សរ"
-                    />
-                    <button 
-                      type="button" 
-                      @click="showNewPassword = !showNewPassword"
-                      class="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 text-xs p-0.5"
-                    >
-                      <i :class="showNewPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Confirm New Password -->
-                <div class="space-y-1">
-                  <label class="block text-[10px] font-medium text-slate-500">ផ្ទៀងផ្ទាត់ (Confirm)</label>
-                  <input 
-                    v-model="form.new_password_confirmation" 
-                    type="password"
-                    class="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="វាយម្តងទៀត"
-                  />
-                </div>
-              </div>
-
-              <!-- Submit Button -->
-              <div class="pt-1.5">
-                <button 
-                  type="submit" 
-                  :disabled="saving"
-                  class="w-full py-2 px-3 bg-[#1e40af] hover:bg-[#1e3a8a] text-white text-xs font-bold rounded-xl shadow-xs transition-all active:scale-98 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                >
-                  <svg v-if="saving" class="w-3.5 h-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                  </svg>
-                  <span>{{ saving ? 'កំពុងរក្សាទុក...' : 'រក្សាទុកការកែប្រែ' }}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Compact Tip Card -->
-          <div class="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-100 text-[11px] text-blue-900 space-y-1">
-            <div class="flex items-center gap-1.5 font-bold text-blue-800">
-              <svg class="w-3.5 h-3.5 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              <span>ចំណាំ</span>
-            </div>
-            <p class="leading-relaxed text-blue-800/80">
-              ប្រសិនបើមានការផ្លាស់ប្តូរឈ្មោះ ឬថ្នាក់រៀន សូមទាក់ទងមកកាន់គណៈគ្រប់គ្រងសាលា ឬផ្ញើសំណើតាមរយៈម៉ឺនុយ <strong>«សំណើ និងមតិយោបល់»</strong>។
-            </p>
           </div>
         </div>
       </div>
@@ -591,20 +477,9 @@ const { t } = useI18n();
 const { success, error, info } = useToast();
 
 const loading = ref(true);
-const saving = ref(false);
 const errorMsg = ref('');
 const profile = ref(null);
 const showIdCardModal = ref(false);
-
-const showCurrentPassword = ref(false);
-const showNewPassword = ref(false);
-
-const form = ref({
-  phone: '',
-  current_password: '',
-  new_password: '',
-  new_password_confirmation: '',
-});
 
 const isStudent = computed(() => {
   const role = (profile.value?.user?.role || '').toLowerCase();
@@ -756,56 +631,12 @@ const fetchProfile = async () => {
     const res = await axios.get('/api/user/profile');
     if (res.data) {
       profile.value = res.data;
-      form.value.phone = displayPhone.value || '';
     }
   } catch (err) {
     console.error('Failed to load profile:', err);
     errorMsg.value = err.response?.data?.message || 'មិនអាចទាញយកព័ត៌មានផ្ទាល់ខ្លួនបានទេ';
   } finally {
     loading.value = false;
-  }
-};
-
-const handleUpdateProfile = async () => {
-  if (form.value.new_password) {
-    if (!form.value.current_password) {
-      error('សូមបញ្ចូលពាក្យសម្ងាត់បច្ចុប្បន្នដើម្បីផ្ទៀងផ្ទាត់!');
-      return;
-    }
-    if (form.value.new_password.length < 6) {
-      error('ពាក្យសម្ងាត់ថ្មីត្រូវមានយ៉ាងតិច ៦ តួអក្សរ!');
-      return;
-    }
-    if (form.value.new_password !== form.value.new_password_confirmation) {
-      error('ពាក្យសម្ងាត់ថ្មី និងការផ្ទៀងផ្ទាត់មិនត្រូវគ្នាទេ!');
-      return;
-    }
-  }
-
-  saving.value = true;
-  try {
-    const payload = {
-      phone: form.value.phone || null,
-    };
-    if (form.value.current_password && form.value.new_password) {
-      payload.current_password = form.value.current_password;
-      payload.new_password = form.value.new_password;
-      payload.new_password_confirmation = form.value.new_password_confirmation;
-    }
-
-    const res = await axios.put('/api/user/profile', payload);
-    if (res.data?.success) {
-      success(res.data.message || 'បានកែប្រែព័ត៌មានផ្ទាល់ខ្លួនដោយជោគជ័យ!');
-      form.value.current_password = '';
-      form.value.new_password = '';
-      form.value.new_password_confirmation = '';
-      await fetchProfile();
-    }
-  } catch (err) {
-    console.error('Update profile error:', err);
-    error(err.response?.data?.message || 'មានបញ្ហាក្នុងការកែប្រែព័ត៌មាន');
-  } finally {
-    saving.value = false;
   }
 };
 

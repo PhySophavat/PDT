@@ -1085,43 +1085,7 @@
         </div>
 
         <!-- Page Bookmark Toolbar (Remember Last Reading Page) -->
-        <div class="px-3 sm:px-5 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-xs shrink-0 flex-wrap gap-2">
-          <div class="flex items-center gap-2">
-            <span class="text-slate-600 font-semibold flex items-center gap-1">
-              <i class="fa-solid fa-bookmark text-blue-600"></i>
-              <span>ទំព័រដែលកំពុងអាន៖</span>
-            </span>
-            <input 
-              v-model.number="currentPageInput" 
-              type="number" 
-              min="1" 
-              class="w-16 px-2 py-0.5 bg-white border border-slate-300 rounded-lg text-xs text-center font-bold"
-            />
-            <button 
-              type="button" 
-              @click="saveCurrentPageBookmark" 
-              class="px-2.5 py-0.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-bold cursor-pointer"
-            >
-              ចំណាំទំព័រនេះ
-            </button>
-            <span v-if="pageSavedMessage" class="text-emerald-600 font-bold text-[11px] animate-fade-in">
-              {{ pageSavedMessage }}
-            </span>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button 
-              type="button" 
-              @click="toggleReportBrokenLink" 
-              class="text-[11px] text-slate-400 hover:text-rose-600 flex items-center gap-1 cursor-pointer"
-              title="រាយការណ៍ថាឯកសារ PDF នេះបើកមិនចេញ"
-            >
-              <i class="fa-solid fa-flag"></i>
-              <span>រាយការណ៍តំណខូច</span>
-            </button>
-          </div>
-        </div>
-
+       
         <!-- Mobile Scroll Tip Bar -->
         <div class="sm:hidden px-3 py-1.5 bg-gradient-to-r from-blue-900 to-indigo-900 text-white flex items-center justify-between text-[11px] shrink-0 border-b border-indigo-800">
           <div class="flex items-center gap-1.5 text-blue-100">
@@ -1350,8 +1314,34 @@ const availableTabs = computed(() => {
   }
   return tabs;
 });
+
+// Helper to extract grade number (7 to 12) from student's grade/class (e.g., '7A' -> '7')
+const extractStudentGradeNumber = (str) => {
+  if (!str) return '';
+  const match = String(str).match(/\d+/);
+  if (match) {
+    const num = match[0];
+    if (['7', '8', '9', '10', '11', '12'].includes(num)) {
+      return num;
+    }
+  }
+  const khmerMap = { '៧': '7', '៨': '8', '៩': '9', '១០': '10', '១១': '11', '១២': '12' };
+  for (const [k, v] of Object.entries(khmerMap)) {
+    if (String(str).includes(k)) return v;
+  }
+  return '';
+};
+
+// Automatically pre-select the student's grade level (e.g. '7' for Grade 7 student)
+const getDefaultStudentGrade = () => {
+  if (!isStudent.value) return '';
+  const gStr = currentUser.value?.student_grade || currentUser.value?.grade || currentUser.value?.class_name;
+  const num = extractStudentGradeNumber(gStr);
+  return num || '7';
+};
+
 const searchQuery = ref('');
-const selectedGrade = ref('');
+const selectedGrade = ref(getDefaultStudentGrade());
 const selectedSubjectId = ref('');
 const selectedLevel = ref('');
 const subFilter = ref('all'); // all, bookmarks, recent
@@ -1987,6 +1977,9 @@ const cleanupScrollListeners = () => {
 };
 
 onMounted(() => {
+  if (isStudent.value && !selectedGrade.value) {
+    selectedGrade.value = getDefaultStudentGrade();
+  }
   loadLocalStorageData();
   fetchLibraryData();
   nextTick(() => {

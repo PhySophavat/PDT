@@ -21,6 +21,8 @@ import SettingView from '../views/SettingView.vue';
 import RoleView from '../views/RoleView.vue';
 import SystemLogsView from '../views/SystemLogsView.vue';
 import ProfileView from '../views/ProfileView.vue';
+import SecurityView from '../views/SecurityView.vue';
+import LanguageView from '../views/LanguageView.vue';
 
 const routes = [
   { path: '/', redirect: '/dashboard' },
@@ -32,6 +34,11 @@ const routes = [
   { path: '/attendances/teachers', redirect: '/teacher-attendance' },
   { path: '/dashboard', name: 'Dashboard', component: DashboardView },
   { path: '/profile', name: 'Profile', component: ProfileView },
+  { path: '/security', name: 'Security', component: SecurityView },
+  { path: '/language', name: 'Language', component: LanguageView },
+  { path: '/settings/personal', redirect: '/profile' },
+  { path: '/settings/security', redirect: '/security' },
+  { path: '/settings/language', redirect: '/language' },
 
   // Student routes - sub-paths redirect to list (create/edit handled by modal in future)
   { path: '/students', name: 'Students', component: StudentView },

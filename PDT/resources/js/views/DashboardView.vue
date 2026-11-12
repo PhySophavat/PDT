@@ -137,8 +137,9 @@
       </template>
     </PageHeader>
 
-    <!-- Sub Tabs (NGS Public School: Removed Finance, Added STEM & Lab) -->
+    <!-- Sub Tabs (Admin & Teachers Only - Hidden for Students to Keep Focus Strictly on Their Class) -->
     <TabNav 
+      v-if="!isStudent"
       v-model="activeTab" 
       :tabs="dashboardTabs"
     />
@@ -544,7 +545,9 @@
                 </svg>
                 ចរន្តវត្តមានសិស្សប្រចាំសប្តាហ៍
               </h2>
-              <p class="text-xs text-slate-400 mt-0.5">ការប្រៀបធៀបសិស្សមានវត្តមាន និងអវត្តមាន ចាប់ពីថ្ងៃច័ន្ទ ដល់ ថ្ងៃសៅរ៍</p>
+              <p class="text-xs text-slate-400 mt-0.5">
+                {{ isStudent ? ('ការប្រៀបធៀបសិស្សមានវត្តមាន និងអវត្តមានក្នុងថ្នាក់ទី ' + (studentInfo.class_name || '7A') + ' ចាប់ពីថ្ងៃច័ន្ទ ដល់ ថ្ងៃសៅរ៍') : 'ការប្រៀបធៀបសិស្សមានវត្តមាន និងអវត្តមាន ចាប់ពីថ្ងៃច័ន្ទ ដល់ ថ្ងៃសៅរ៍' }}
+              </p>
             </div>
 
             <!-- Legend -->
@@ -581,16 +584,24 @@
               </defs>
 
               <!-- Grid Lines -->
-              <line x1="30" y1="20" x2="590" y2="20" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="4"/>
-              <line x1="30" y1="65" x2="590" y2="65" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="4"/>
-              <line x1="30" y1="110" x2="590" y2="110" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="4"/>
-              <line x1="30" y1="155" x2="590" y2="155" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="4"/>
+              <line x1="38" y1="20" x2="590" y2="20" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="4"/>
+              <line x1="38" y1="65" x2="590" y2="65" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="4"/>
+              <line x1="38" y1="110" x2="590" y2="110" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="4"/>
+              <line x1="38" y1="155" x2="590" y2="155" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="4"/>
 
               <!-- Grid Labels (Y-axis) -->
-              <text x="22" y="24" text-anchor="end" class="text-[10px] fill-slate-400 font-medium">100%</text>
-              <text x="22" y="69" text-anchor="end" class="text-[10px] fill-slate-400 font-medium">75%</text>
-              <text x="22" y="114" text-anchor="end" class="text-[10px] fill-slate-400 font-medium">50%</text>
-              <text x="22" y="159" text-anchor="end" class="text-[10px] fill-slate-400 font-medium">25%</text>
+              <template v-if="isStudent">
+                <text x="34" y="24" text-anchor="end" class="text-[10px] fill-slate-400 font-medium font-khmer">{{ maxClassStudents }} នាក់</text>
+                <text x="34" y="69" text-anchor="end" class="text-[10px] fill-slate-400 font-medium font-khmer">{{ Math.round(maxClassStudents * 0.75) }} នាក់</text>
+                <text x="34" y="114" text-anchor="end" class="text-[10px] fill-slate-400 font-medium font-khmer">{{ Math.round(maxClassStudents * 0.5) }} នាក់</text>
+                <text x="34" y="159" text-anchor="end" class="text-[10px] fill-slate-400 font-medium font-khmer">{{ Math.round(maxClassStudents * 0.25) }} នាក់</text>
+              </template>
+              <template v-else>
+                <text x="34" y="24" text-anchor="end" class="text-[10px] fill-slate-400 font-medium font-khmer">100%</text>
+                <text x="34" y="69" text-anchor="end" class="text-[10px] fill-slate-400 font-medium font-khmer">75%</text>
+                <text x="34" y="114" text-anchor="end" class="text-[10px] fill-slate-400 font-medium font-khmer">50%</text>
+                <text x="34" y="159" text-anchor="end" class="text-[10px] fill-slate-400 font-medium font-khmer">25%</text>
+              </template>
 
               <!-- Area Path: Present -->
               <path 
@@ -665,14 +676,14 @@
             <!-- Floating Tooltip on Hover -->
             <div 
               v-if="hoveredDay" 
-              class="absolute top-2 right-4 bg-slate-900/95 backdrop-blur-xs text-white text-xs rounded-xl px-3.5 py-2 shadow-xl border border-slate-700 pointer-events-none transition-all z-10"
+              class="absolute top-2 right-4 bg-slate-900/95 backdrop-blur-xs text-white text-xs rounded-xl px-3.5 py-2 shadow-xl border border-slate-700 pointer-events-none transition-all z-10 font-khmer"
             >
               <div class="font-bold text-slate-200 border-b border-slate-800 pb-1 mb-1">
                 ថ្ងៃ{{ hoveredDay.day }} ({{ hoveredDay.date }})
               </div>
               <div class="flex items-center justify-between gap-4 text-emerald-400 font-semibold">
                 <span>មានវត្តមាន:</span>
-                <span>{{ hoveredDay.present }} នាក់ ({{ hoveredDay.rate }}%)</span>
+                <span>{{ hoveredDay.present }} នាក់{{ !isStudent ? ` (${hoveredDay.rate}%)` : '' }}</span>
               </div>
               <div class="flex items-center justify-between gap-4 text-rose-400 font-semibold mt-0.5">
                 <span>អវត្តមាន:</span>
@@ -692,7 +703,9 @@
               </svg>
               សមាមាត្រសិស្សប្រុស-ស្រី
             </h2>
-            <p class="text-xs text-slate-400 mt-0.5">ការបែងចែកយេនឌ័រក្នុងចំណោមសិស្សសរុប</p>
+            <p class="text-xs text-slate-400 mt-0.5">
+              {{ isStudent ? ('ការបែងចែកយេនឌ័រក្នុងថ្នាក់ទី ' + (studentInfo.class_name || '7A')) : 'ការបែងចែកយេនឌ័រក្នុងចំណោមសិស្សសរុប' }}
+            </p>
           </div>
 
           <!-- Donut SVG -->
@@ -738,7 +751,9 @@
             <!-- Center Text -->
             <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
               <span class="text-2xl font-black text-slate-800 tracking-tight">{{ stats.students }}</span>
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">សិស្សសរុប</span>
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-khmer">
+                {{ isStudent ? 'សិស្សក្នុងថ្នាក់' : 'សិស្សសរុប' }}
+              </span>
             </div>
           </div>
 
@@ -1094,8 +1109,8 @@
 
         <!-- 4. Side Widget for "Live Activity & Top Classes" (xl:col-span-1) -->
         <div class="xl:col-span-1 space-y-6">
-          <!-- Widget 1: Top Attendance Classes Leaderboard -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs">
+          <!-- Widget 1: Top Attendance Classes Leaderboard (Admin & Teachers Only - Hidden for Students) -->
+          <div v-if="!isStudent" class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
               <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <span class="text-base">🏆</span>
@@ -1497,7 +1512,9 @@ try {
     const d = JSON.parse(cachedDashboard);
     // Ignore stale cache if it contains old 53 dummy students
     if (d.stats && Number(d.stats.students) !== 53) {
-      stats.value = { ...stats.value, ...d.stats };
+      if (!isStudent.value || d.isStudent || d.studentData) {
+        stats.value = { ...stats.value, ...d.stats };
+      }
     }
     if (d.allClasses && d.allClasses.length) allClasses.value = sortClassesNaturally(d.allClasses);
     if (d.recentClasses && d.recentClasses.length) recentClasses.value = d.recentClasses;
@@ -1505,7 +1522,7 @@ try {
       const hasRealData = d.weeklyTrend.some(x => (x.present || 0) + (x.absent || 0) > 0);
       if (hasRealData) chartDays.value = d.weeklyTrend;
     }
-    if (d.topClasses && d.topClasses.length) displayTopClasses.value = d.topClasses;
+    if (d.topClasses && d.topClasses.length && !isStudent.value) displayTopClasses.value = d.topClasses;
     if (d.recentActivities && d.recentActivities.length) displayActivities.value = d.recentActivities;
     if (d.currentAcademicYear) activeAcademicYear.value = d.currentAcademicYear;
     if (d.academicYears && d.academicYears.length) academicYearsList.value = d.academicYears;
@@ -1535,15 +1552,25 @@ const filteredClasses = computed(() => {
   return list;
 });
 
-// Area Chart Coordinate calculations (ViewBox 0 0 600 200)
-// Margins: left=50, right=20, top=20, bottom=55 -> width=530, height=135
+const maxClassStudents = computed(() => {
+  return Number(studentInfo.value.classmates_count) || Number(stats.value.students) || 51;
+});
+
+// Area Chart Coordinate calculations (ViewBox 0 0 600 215)
+// Margins: left=50, right=20, top=20, bottom=55 -> width=530, height=140
 const getX = (index) => {
-  const startX = 65;
-  const stepX = 100;
+  const startX = 70;
+  const stepX = 98;
   return startX + (index * stepX);
 };
 
 const getYPresent = (present, absent) => {
+  if (isStudent.value) {
+    const max = maxClassStudents.value || 51;
+    const p = Math.min(max, Math.max(0, Number(present || 0)));
+    // Map count [0 -> max] to Y [160 -> 20]
+    return 160 - ((p / max) * 140);
+  }
   const total = (present + absent);
   if (!total || total === 0) return 160;
   const rate = (present / total) * 100;
@@ -1552,6 +1579,12 @@ const getYPresent = (present, absent) => {
 };
 
 const getYAbsent = (present, absent) => {
+  if (isStudent.value) {
+    const max = maxClassStudents.value || 51;
+    const a = Math.min(max, Math.max(0, Number(absent || 0)));
+    // Map count [0 -> max] to Y [160 -> 20]
+    return 160 - ((a / max) * 140);
+  }
   const total = (present + absent);
   if (!total || total === 0) return 160;
   const rate = (absent / total) * 100;
@@ -1575,7 +1608,7 @@ const presentAreaPath = computed(() => {
   const firstX = getX(0);
   const lastX = getX(chartDays.value.length - 1);
   const line = presentLinePath.value;
-  return `${line} L ${lastX} 165 L ${firstX} 165 Z`;
+  return `${line} L ${lastX} 160 L ${firstX} 160 Z`;
 });
 
 const absentLinePath = computed(() => {
@@ -1592,7 +1625,7 @@ const absentAreaPath = computed(() => {
   const firstX = getX(0);
   const lastX = getX(chartDays.value.length - 1);
   const line = absentLinePath.value;
-  return `${line} L ${lastX} 165 L ${firstX} 165 Z`;
+  return `${line} L ${lastX} 160 L ${firstX} 160 Z`;
 });
 
 const hasAnyAbsent = computed(() => {
@@ -1688,8 +1721,10 @@ const fetchDashboardData = async (force = false) => {
       if (res.data.weeklyTrend && res.data.weeklyTrend.length) {
         chartDays.value = res.data.weeklyTrend;
       }
-      if (res.data.topClasses && res.data.topClasses.length) {
+      if (res.data.topClasses && res.data.topClasses.length && !isStudent.value) {
         displayTopClasses.value = res.data.topClasses;
+      } else {
+        displayTopClasses.value = [];
       }
       if (res.data.recentActivities && res.data.recentActivities.length) {
         displayActivities.value = res.data.recentActivities;

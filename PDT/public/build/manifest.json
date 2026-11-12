@@ -4,7 +4,7 @@
     "name": "vendor-xlsx"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DlaM-GxJ.css",
+    "file": "assets/app-D0VNfJRT.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -13,7 +13,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-Gb1jF9Ar.js",
+    "file": "assets/app-DAsUNT0a.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -21,7 +21,7 @@
       "_vendor-xlsx-BojT3SgY.js"
     ],
     "css": [
-      "assets/app-Cd7pjZ2_.css"
+      "assets/app-C_wuZhst.css"
     ]
   }
 }

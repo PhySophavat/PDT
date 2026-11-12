@@ -22,44 +22,63 @@
       ]"
     />
 
-    <!-- 4 Statistics Summary Cards -->
-    <div v-if="isStudent" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      <StatCard 
-        title="ម៉ោងសិក្សាសរុប" 
-        :value="studentWeeklyHours + ' ម៉ោង'" 
-        subtitle="ក្នុងមួយសប្តាហ៍"
-        icon="clock" 
-        iconColor="text-blue-600" 
-        bgColor="bg-blue-50" 
-        borderColor="border-blue-100" 
-      />
-      <StatCard 
-        title="មុខវិជ្ជាសរុប" 
-        :value="studentTotalSubjects + ' មុខវិជ្ជា'" 
-        subtitle="កម្មវិធីសិក្សា"
-        icon="book" 
-        iconColor="text-emerald-600" 
-        bgColor="bg-emerald-50" 
-        borderColor="border-emerald-100" 
-      />
-      <StatCard 
-        title="ថ្នាក់រៀន" 
-        :value="'ថ្នាក់ ' + studentClass" 
-        subtitle="វេនពេលព្រឹក"
-        icon="graduation" 
-        iconColor="text-indigo-600" 
-        bgColor="bg-indigo-50" 
-        borderColor="border-indigo-100" 
-      />
-      <StatCard 
-        title="ម៉ោងរៀនថ្ងៃនេះ" 
-        :value="studentTodayHours + ' ម៉ោង'" 
-        :subtitle="'ថ្ងៃ' + todayKhmerDay"
-        icon="calendar" 
-        iconColor="text-amber-600" 
-        bgColor="bg-amber-50" 
-        borderColor="border-amber-100" 
-      />
+    <!-- 4 Statistics Summary Cards (Compact & Responsive on Mobile to save vertical space) -->
+    <div v-if="isStudent" class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+      <!-- Card 1: ម៉ោងសិក្សាសរុប -->
+      <div class="bg-white rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border border-slate-200/90 shadow-2xs flex items-center justify-between hover:border-slate-300 transition-colors">
+        <div class="min-w-0 pr-1">
+          <p class="text-[11px] sm:text-xs font-medium text-slate-500 truncate">ម៉ោងសិក្សាសរុប</p>
+          <h3 class="text-base sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight truncate">{{ studentWeeklyHours }} ម៉ោង</h3>
+          <p class="hidden sm:block text-[11px] text-slate-400 mt-0.5 font-medium truncate">ក្នុងមួយសប្តាហ៍</p>
+        </div>
+        <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-2xl flex items-center justify-center border text-xs sm:text-base shadow-xs shrink-0 bg-blue-50 border-blue-100 text-blue-600">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Card 2: មុខវិជ្ជាសរុប -->
+      <div class="bg-white rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border border-slate-200/90 shadow-2xs flex items-center justify-between hover:border-slate-300 transition-colors">
+        <div class="min-w-0 pr-1">
+          <p class="text-[11px] sm:text-xs font-medium text-slate-500 truncate">មុខវិជ្ជាសរុប</p>
+          <h3 class="text-base sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight truncate">{{ studentTotalSubjects }} មុខ</h3>
+          <p class="hidden sm:block text-[11px] text-slate-400 mt-0.5 font-medium truncate">កម្មវិធីសិក្សា</p>
+        </div>
+        <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-2xl flex items-center justify-center border text-xs sm:text-base shadow-xs shrink-0 bg-emerald-50 border-emerald-100 text-emerald-600">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Card 3: ថ្នាក់រៀន -->
+      <div class="bg-white rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border border-slate-200/90 shadow-2xs flex items-center justify-between hover:border-slate-300 transition-colors">
+        <div class="min-w-0 pr-1">
+          <p class="text-[11px] sm:text-xs font-medium text-slate-500 truncate">ថ្នាក់រៀន</p>
+          <h3 class="text-base sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight truncate">ថ្នាក់ {{ studentClass }}</h3>
+          <p class="hidden sm:block text-[11px] text-slate-400 mt-0.5 font-medium truncate">វេនពេលព្រឹក</p>
+        </div>
+        <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-2xl flex items-center justify-center border text-xs sm:text-base shadow-xs shrink-0 bg-indigo-50 border-indigo-100 text-indigo-600">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Card 4: ម៉ោងរៀនថ្ងៃនេះ -->
+      <div class="bg-white rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border border-slate-200/90 shadow-2xs flex items-center justify-between hover:border-slate-300 transition-colors">
+        <div class="min-w-0 pr-1">
+          <p class="text-[11px] sm:text-xs font-medium text-slate-500 truncate">ម៉ោងរៀនថ្ងៃនេះ</p>
+          <h3 class="text-base sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight truncate">{{ studentTodayHours }} ម៉ោង</h3>
+          <p class="hidden sm:block text-[11px] text-slate-400 mt-0.5 font-medium truncate">ថ្ងៃ{{ todayKhmerDay }}</p>
+        </div>
+        <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-2xl flex items-center justify-center border text-xs sm:text-base shadow-xs shrink-0 bg-amber-50 border-amber-100 text-amber-600">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+      </div>
     </div>
     <div v-else class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       <StatCard :title="$t('timetables.period')" :value="filteredTimetables.length + ' ម៉ោង'" icon="clock" iconColor="text-blue-600" bgColor="bg-blue-50" borderColor="border-blue-100" />
@@ -70,19 +89,9 @@
 
 
     <!-- Filter Bar & View Mode Toggle -->
-    <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
-      <!-- For Student: Clean Badge showing assigned class -->
-      <div v-if="isStudent" class="flex items-center gap-2.5">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-blue-50 text-blue-700 rounded-xl font-bold text-xs border border-blue-200/60 shadow-xs">
-          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-          </svg>
-          <span>ថ្នាក់រៀនរបស់អ្នក៖ ថ្នាក់ {{ studentClass }}</span>
-        </div>
-      </div>
-
+    <div class="bg-white border border-slate-200/80 rounded-2xl p-2.5 sm:p-4 shadow-2xs flex flex-wrap items-center justify-between gap-2 sm:gap-3">
       <!-- For Admin/Teacher: Dropdown selector -->
-      <div v-else class="flex items-center gap-3">
+      <div v-if="!isStudent" class="flex items-center gap-3">
         <label class="text-xs font-bold text-slate-700">ជ្រើសរើសថ្នាក់រៀន:</label>
         <select 
           v-model="selectedClass" 
@@ -93,42 +102,47 @@
         </select>
       </div>
 
-      <!-- View Mode Buttons (Cards, Weekly Matrix, List) -->
-      <div class="flex items-center gap-2.5 flex-wrap">
-        <div class="inline-flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200/80 text-xs">
+      <!-- View Mode Buttons (Responsive: 2 options on mobile "ទម្រង់កាត" & "តារាង", 3 options on desktop) -->
+      <div class="flex items-center gap-2.5 flex-wrap justify-between sm:justify-end w-full sm:w-auto">
+        <div class="inline-flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200/80 text-xs w-full sm:w-auto">
+          <!-- Option 1: Cards View -->
           <button 
             type="button" 
             @click="viewMode = 'cards'"
             :class="[
-              'px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 cursor-pointer',
+              'flex-1 sm:flex-initial px-3 sm:px-3.5 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer',
               viewMode === 'cards' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
             ]"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
             </svg>
-            <span>ទម្រង់កាតម៉ោង</span>
+            <span class="sm:hidden">ទម្រង់កាត</span>
+            <span class="hidden sm:inline">ទម្រង់កាតម៉ោង</span>
           </button>
 
+          <!-- Option 2: Table/Grid View -->
           <button 
             type="button" 
             @click="viewMode = 'grid'"
             :class="[
-              'px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 cursor-pointer',
+              'flex-1 sm:flex-initial px-3 sm:px-3.5 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer',
               viewMode === 'grid' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
             ]"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
             </svg>
-            <span>តារាងសប្តាហ៍</span>
+            <span class="sm:hidden">តារាង</span>
+            <span class="hidden sm:inline">តារាងសប្តាហ៍</span>
           </button>
 
+          <!-- Option 3: List View (Desktop only) -->
           <button 
             type="button" 
             @click="viewMode = 'list'"
             :class="[
-              'px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 cursor-pointer',
+              'hidden sm:flex px-3.5 py-1.5 rounded-lg font-bold transition items-center gap-1.5 cursor-pointer',
               viewMode === 'list' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
             ]"
           >
@@ -139,7 +153,7 @@
           </button>
         </div>
 
-        <span class="text-xs text-slate-500 font-medium">
+        <span class="text-xs text-slate-500 font-medium hidden sm:inline">
           សរុប៖ <strong>{{ filteredTimetables.length }}</strong> ម៉ោង
         </span>
       </div>
@@ -154,22 +168,41 @@
       <div 
         v-for="dayGroup in groupedByDay" 
         :key="dayGroup.day" 
-        class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-4"
+        class="bg-white rounded-2xl p-4 sm:p-5 shadow-xs space-y-4 transition-all"
+        :class="[
+          dayGroup.day === todayKhmerDay 
+            ? 'border-2 border-blue-500/80 shadow-md shadow-blue-500/10 ring-4 ring-blue-500/5' 
+            : 'border border-slate-200/80'
+        ]"
       >
         <!-- Day Header -->
         <div class="flex items-center justify-between pb-3 border-b border-slate-100">
           <div class="flex items-center gap-2.5">
-            <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
+            <span 
+              class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm"
+              :class="dayGroup.day === todayKhmerDay ? 'bg-blue-600 text-white shadow-xs' : 'bg-blue-50 text-blue-600'"
+            >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
             </span>
             <div>
-              <h3 class="text-sm font-bold text-slate-900">ថ្ងៃ{{ dayGroup.day }}</h3>
-              <p class="text-[11px] text-slate-500">វេនព្រឹក ០៧:០០ - ១១:០០ (៤ ម៉ោងសិក្សា)</p>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-bold text-slate-900">ថ្ងៃ{{ dayGroup.day }}</h3>
+                <span 
+                  v-if="dayGroup.day === todayKhmerDay" 
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white shadow-xs animate-pulse"
+                >
+                  ★ ថ្ងៃនេះ
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-500">វេនព្រឹក ០៧:០០ - ១១:០០ ({{ dayGroup.slots.length }} ម៉ោងសិក្សា)</p>
             </div>
           </div>
-          <span class="px-2.5 py-1 bg-slate-100 rounded-full text-[11px] font-semibold text-slate-600">
+          <span 
+            class="px-2.5 py-1 rounded-full text-[11px] font-semibold"
+            :class="dayGroup.day === todayKhmerDay ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/60' : 'bg-slate-100 text-slate-600'"
+          >
             {{ dayGroup.slots.length }} ម៉ោងរៀន
           </span>
         </div>
@@ -179,7 +212,7 @@
           <template v-for="(slot, idx) in dayGroup.slots" :key="slot.id">
             <!-- Period Card -->
             <div 
-              class="relative p-4 rounded-xl border transition-all hover:shadow-md flex flex-col justify-between group"
+              class="relative p-3.5 sm:p-4 rounded-xl border transition-all hover:shadow-md flex flex-col justify-between group"
               :class="getSubjectCardStyle(slot.subject)"
             >
               <div>
@@ -202,15 +235,18 @@
                   <span>{{ slot.subject }}</span>
                 </h4>
 
-                <!-- Class & Room -->
-                <p class="text-[11px] opacity-80 flex items-center gap-2">
-                  <span>ថ្នាក់ {{ slot.class || slot.class_name }}</span>
-                  <span v-if="slot.room_number || slot.room">• {{ slot.room_number || slot.room }}</span>
+                <!-- Room (Cleaned up: only room alongside teacher, removing redundant class for students) -->
+                <p class="text-[11px] opacity-80 flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 opacity-70 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  <span>{{ slot.room_number || slot.room || 'បន្ទប់ 101' }}</span>
+                  <span v-if="!isStudent" class="opacity-60">• ថ្នាក់ {{ slot.class || slot.class_name }}</span>
                 </p>
               </div>
 
               <!-- Teacher Name -->
-              <div class="pt-3 mt-3 border-t border-black/5 flex items-center justify-between text-xs">
+              <div class="pt-2.5 mt-2.5 border-t border-black/5 flex items-center justify-between text-xs">
                 <span class="flex items-center gap-1.5 opacity-90 truncate font-medium">
                   <svg class="w-3.5 h-3.5 opacity-60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -251,8 +287,16 @@
           <thead>
             <tr class="bg-slate-100/90 text-slate-800 border-b border-slate-200">
               <th class="py-3 px-3 font-bold w-40 border-r border-slate-200 text-center">ម៉ោងសិក្សា</th>
-              <th v-for="d in ['ច័ន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍']" :key="d" class="py-3 px-3 font-bold text-center border-r border-slate-200 last:border-r-0">
-                ថ្ងៃ{{ d }}
+              <th 
+                v-for="d in ['ច័ន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍']" 
+                :key="d" 
+                class="py-3 px-3 font-bold text-center border-r border-slate-200 last:border-r-0 transition-colors"
+                :class="d === todayKhmerDay ? 'bg-blue-50/80 text-blue-700' : ''"
+              >
+                <div class="flex items-center justify-center gap-1.5">
+                  <span>ថ្ងៃ{{ d }}</span>
+                  <span v-if="d === todayKhmerDay" class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-blue-600 text-white">ថ្ងៃនេះ</span>
+                </div>
               </th>
             </tr>
           </thead>
