@@ -95,14 +95,37 @@ Route::get('/csrf-token', fn() => response()->json(['csrf_token' => csrf_token()
 
 // Real-Time App Build Version Endpoint for Production Auto-Updater
 Route::get('/api/app-version', function () {
+    $versionFile = public_path('version.json');
     $manifestPath = public_path('build/manifest.json');
-    $version = 'v1';
-    $mtime = 0;
-    if (file_exists($manifestPath)) {
+    
+    $version = env('VERCEL_GIT_COMMIT_SHA') ?: (env('VERCEL_DEPLOYMENT_ID') ?: 'v1');
+    $mtime = time();
+
+    if (file_exists($versionFile)) {
+        $vData = json_decode(@file_get_contents($versionFile), true);
+        if (!empty($vData['version'])) {
+            $version = $vData['version'] . (!empty($vData['commit']) ? ('_' . substr($vData['commit'], 0, 7)) : '');
+        }
+    } elseif (file_exists($manifestPath)) {
         $mtime = filemtime($manifestPath);
         $version = substr(md5_file($manifestPath), 0, 16);
     }
-    $dataHash = 'd_' . \App\Models\Student::count() . '_' . \App\Models\Book::count();
+
+    // Comprehensive real-time data hash: any change to students, scores, announcements, settings triggers auto-update!
+    try {
+        $stMax = \App\Models\Student::max('updated_at') ?? '';
+        $stCnt = \App\Models\Student::count();
+        $scMax = \App\Models\ExaminationScore::max('updated_at') ?? '';
+        $scCnt = \App\Models\ExaminationScore::count();
+        $anMax = \App\Models\Announcement::max('updated_at') ?? '';
+        $anCnt = \App\Models\Announcement::count();
+        $setVal = \App\Models\SystemSetting::max('updated_at') ?? '';
+        $actId = \App\Models\ActivityLog::max('id') ?? 0;
+        $dataHash = md5("{$stCnt}_{$stMax}_{$scCnt}_{$scMax}_{$anCnt}_{$anMax}_{$setVal}_{$actId}");
+    } catch (\Throwable $e) {
+        $dataHash = 'd_' . time();
+    }
+
     return response()->json([
         'version' => $version,
         'timestamp' => $mtime,
@@ -182,6 +205,7 @@ $spa = fn() => view('spa');
 // Public Examination Ranking Sheet View (Telegram / Facebook Sharing & Direct Parent/Student View)
 Route::get('/examinations/ranking-sheet', [ExaminationController::class, 'rankingSheet'])->name('examinations.ranking-sheet.default');
 Route::get('/examinations/{examination}/ranking-sheet', [ExaminationController::class, 'rankingSheet'])->where('examination', '.*')->name('examinations.ranking-sheet');
+Route::get('/api/examinations/ranking-sheet/sync', [ExaminationController::class, 'rankingSheetSync'])->name('examinations.ranking-sheet.sync');
 
 // Public Digital Library View (Telegram / Facebook Sharing & Direct Public Browsing)
 Route::get('/library', $spa)->name('library.index');

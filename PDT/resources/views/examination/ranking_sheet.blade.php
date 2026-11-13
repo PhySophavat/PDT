@@ -178,6 +178,10 @@
                     <span class="text-[10px] sm:text-[11px] text-slate-500 hidden sm:block">ពិនិត្យលទ្ធផលចំណាត់ថ្នាក់សិស្សផ្លូវការប្រចាំខែ</span>
                     @endif
                 </div>
+                <div id="liveSyncBadge" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span>Live Auto-Sync</span>
+                </div>
             </div>
             <div class="flex items-center gap-1.5 sm:gap-2">
                 @if($canEditSheet)
@@ -186,16 +190,14 @@
                     <span>កំណត់ព័ត៌មាន</span>
                 </button>
                 @endif
+                <button type="button" onclick="savePdfStudent()" id="btnStudentSave" class="btn-save-pdf text-[11px] sm:text-xs" title="រក្សាទុកតារាងចំណាត់ថ្នាក់ជា PDF លើទូរស័ព្ទ ឬកុំព្យូទ័រ">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>រក្សាទុក PDF (Save)</span>
+                </button>
                 <button type="button" onclick="window.print()" class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] sm:text-xs shadow-md transition flex items-center gap-1.5 sm:gap-2">
                     <i class="fa-solid fa-print text-[10px] sm:text-xs"></i>
                     <span>បោះពុម្ព / PDF</span>
                 </button>
-                @if($isStudent)
-                <button type="button" onclick="savePdfStudent()" id="btnStudentSave" class="btn-save-pdf text-[11px] sm:text-xs">
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    <span>រក្សាទុក PDF</span>
-                </button>
-                @endif
                 <button type="button" onclick="window.close()" class="px-2.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[11px] sm:text-xs transition">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -481,10 +483,15 @@
     @if($canEditSheet)
     <!-- Interactive Script for Two-way Editing and Local Storage Persistence (Only for Admin/Teacher) -->
     <script>
-        const STORAGE_KEY = 'ranking_sheet_settings_{{ $className }}';
+        const STORAGE_KEY = 'ranking_sheet_settings_v3_{{ $examination->id }}_{{ $className }}';
 
         // Load saved settings from LocalStorage if available
         document.addEventListener('DOMContentLoaded', () => {
+            // Remove legacy un-scoped cache that caused outdated date to persist
+            try {
+                localStorage.removeItem('ranking_sheet_settings_{{ $className }}');
+            } catch(e) {}
+
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 try {
@@ -494,7 +501,10 @@
                     if (data.district) syncField('district', data.district);
                     if (data.school) syncField('school', data.school);
                     if (data.academicYear) syncField('academicYear', data.academicYear);
-                    if (data.date) syncField('date', data.date);
+                    // Only restore date if it does not contain a stale month
+                    if (data.date && !data.date.includes('កុម្ភៈ')) {
+                        syncField('date', data.date);
+                    }
                 } catch(e) {
                     console.error('Failed to parse localStorage settings', e);
                 }
@@ -556,7 +566,10 @@
         }
 
         function resetToDefaults() {
-            localStorage.removeItem(STORAGE_KEY);
+            try {
+                localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem('ranking_sheet_settings_{{ $className }}');
+            } catch(e) {}
             window.location.reload();
         }
 
@@ -600,25 +613,85 @@
     </script>
     @endif
 
-    @if($isStudent)
-    {{-- Student Save PDF Script --}}
+    <!-- Universal Scripts: Save PDF & Real-Time Auto-Update Poller (No Manual Refresh Needed) -->
     <script>
+        // Save as PDF Function for Students, Teachers & Parents
         function savePdfStudent() {
             const btn = document.getElementById('btnStudentSave');
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>កំពុងរៀបចំ...</span>';
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>កំពុងរៀបចំ PDF...</span>';
             }
-            // Small delay so button update is visible, then trigger browser print-to-PDF
+            // Small delay then trigger browser print-to-PDF
             setTimeout(() => {
                 window.print();
                 if (btn) {
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> <span>រក្សាទុក PDF</span>';
+                    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> <span>រក្សាទុក PDF (Save)</span>';
                 }
             }, 300);
         }
+
+        // Live Auto-Update: Periodically checks server sync hash. If score or settings change, sheet auto-updates!
+        (function initRankingSheetLiveSync() {
+            const syncUrl = '{{ route('examinations.ranking-sheet.sync') }}?exam={{ $examination->id }}&class={{ urlencode($className) }}';
+            let currentSyncHash = null;
+            let isChecking = false;
+
+            async function checkUpdates() {
+                if (isChecking || document.hidden) return;
+
+                // Do not auto-reload while user is actively typing or editing
+                const active = document.activeElement;
+                if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
+                    return;
+                }
+
+                try {
+                    isChecking = true;
+                    const res = await fetch(syncUrl + '&_t=' + Date.now(), {
+                        headers: { 'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache' }
+                    });
+                    if (!res.ok) return;
+                    const data = await res.json();
+
+                    if (data && data.sync_hash) {
+                        if (currentSyncHash === null) {
+                            currentSyncHash = data.sync_hash;
+                            return;
+                        }
+                        if (data.sync_hash !== currentSyncHash) {
+                            console.log('[RankingSheet] Live update detected on server! Auto-refreshing sheet now...');
+                            currentSyncHash = data.sync_hash;
+
+                            const badge = document.getElementById('liveSyncBadge');
+                            if (badge) {
+                                badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-blue-500 animate-spin"></span><span>ទិន្នន័យថ្មី! កំពុងអាប់ដេត...</span>';
+                                badge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200';
+                            }
+
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 500);
+                        }
+                    }
+                } catch (e) {
+                    // Silently ignore offline network drops
+                } finally {
+                    isChecking = false;
+                }
+            }
+
+            // Check every 6 seconds
+            setInterval(checkUpdates, 6000);
+
+            // Check immediately when user switches tabs back
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    checkUpdates();
+                }
+            });
+        })();
     </script>
-    @endif
 </body>
 </html>

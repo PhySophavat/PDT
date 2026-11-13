@@ -425,4 +425,39 @@ class ExaminationController extends Controller
             'message' => 'បានរក្សាទុកព័ត៌មានដោយជោគជ័យ'
         ]);
     }
+
+    /**
+     * Real-time sync hash endpoint for ranking sheet (Enables auto-updates without manual refresh).
+     */
+    public function rankingSheetSync(Request $request)
+    {
+        $examId = $request->query('exam');
+        $className = $request->query('class', '7A');
+
+        $lastScore = ExaminationScore::where('examination_id', $examId)
+            ->where('class_name', $className)
+            ->max('updated_at') ?? '';
+        $scoreCount = ExaminationScore::where('examination_id', $examId)
+            ->where('class_name', $className)
+            ->count();
+        $studentCount = Student::where('grade', $className)->count();
+        $studentLastUpdate = Student::where('grade', $className)->max('updated_at') ?? '';
+        $settingsLastUpdate = SystemSetting::max('updated_at') ?? '';
+
+        $versionFile = public_path('version.json');
+        $buildVersion = file_exists($versionFile) ? filemtime($versionFile) : (file_exists(public_path('build/manifest.json')) ? filemtime(public_path('build/manifest.json')) : 0);
+
+        $hashPayload = "{$examId}_{$className}_{$lastScore}_{$scoreCount}_{$studentCount}_{$studentLastUpdate}_{$settingsLastUpdate}_{$buildVersion}";
+        $syncHash = md5($hashPayload);
+
+        return response()->json([
+            'status' => 'ok',
+            'sync_hash' => $syncHash,
+            'exam_id' => $examId,
+            'class' => $className,
+            'count' => $scoreCount,
+            'time' => now()->toIso8601String(),
+        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+          ->header('Pragma', 'no-cache');
+    }
 }

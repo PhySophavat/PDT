@@ -4,7 +4,7 @@
     "type": "module",
     "scripts": {
         "postinstall": "node node_modules/esbuild/install.js || true",
-        "build": "vite build",
+        "build": "node -e \"const fs=require('fs'); fs.writeFileSync('public/version.json', JSON.stringify({version: Date.now().toString(36), time: new Date().toISOString(), commit: process.env.VERCEL_GIT_COMMIT_SHA || ''}));\" && vite build",
         "dev": "vite"
     },
     "allowScripts": {

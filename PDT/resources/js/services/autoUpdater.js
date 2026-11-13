@@ -72,8 +72,8 @@ export async function checkForAppUpdate(silent = true) {
   if (isChecking) return;
 
   const now = Date.now();
-  // Throttle checks to at most once every 10 seconds
-  if (now - lastCheckTime < 10000 && silent) return;
+  // Throttle checks to at most once every 4 seconds
+  if (now - lastCheckTime < 4000 && silent) return;
   lastCheckTime = now;
 
   isChecking = true;
@@ -146,14 +146,14 @@ export function initAutoUpdater(router) {
     checkForAppUpdate();
   }, 3000);
 
-  // 2. Periodic background check every 15 seconds for real-time sync across devices
+  // 2. Periodic background check every 7 seconds for real-time sync across devices
   if (checkInterval) clearInterval(checkInterval);
   checkInterval = setInterval(() => {
     // Only check if tab is active and visible
     if (document.visibilityState === 'visible') {
       checkForAppUpdate();
     }
-  }, 15000);
+  }, 7000);
 
   // 3. Check immediately when user switches back to this tab
   document.addEventListener('visibilitychange', () => {
