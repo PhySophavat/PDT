@@ -48,6 +48,30 @@
             margin: 6mm 7mm 6mm 7mm;
         }
 
+        /* Save as PDF button for students */
+        .btn-save-pdf {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+            color: #fff;
+            font-weight: 700;
+            border-radius: 10px;
+            padding: 8px 18px;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(37,99,235,0.18);
+            transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+            text-decoration: none;
+        }
+        .btn-save-pdf:hover {
+            background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+            box-shadow: 0 4px 14px rgba(37,99,235,0.28);
+            transform: translateY(-1px);
+        }
+        .btn-save-pdf:active { transform: translateY(0); }
+
         @media print {
             .no-print { display: none !important; }
             body { 
@@ -166,6 +190,12 @@
                     <i class="fa-solid fa-print text-[10px] sm:text-xs"></i>
                     <span>បោះពុម្ព / PDF</span>
                 </button>
+                @if($isStudent)
+                <button type="button" onclick="savePdfStudent()" id="btnStudentSave" class="btn-save-pdf text-[11px] sm:text-xs">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>រក្សាទុក PDF</span>
+                </button>
+                @endif
                 <button type="button" onclick="window.close()" class="px-2.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[11px] sm:text-xs transition">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -280,7 +310,14 @@
         <!-- Document Title -->
         <div class="text-center my-1.5 sm:my-2 space-y-0.5">
             <h1 class="font-moul text-[12px] sm:text-[15px] text-blue-900 leading-tight">
-                <span id="textTitle" @if($canEditSheet) contenteditable="true" class="editable-field" title="ចុចដើម្បីកែប្រែចំណងជើង" @endif>តារាងចំណាត់ថ្នាក់ប្រចាំខែ {{ str_contains($examination->title, 'កុម្ភៈ') ? 'កុម្ភៈ' : (str_contains($examination->title, 'មករា') ? 'មករា' : $examination->title) }}</span>
+                <span id="textTitle" @if($canEditSheet) contenteditable="true" class="editable-field" title="ចុចដើម្បីកែប្រែចំណងជើង" @endif>តារាងចំណាត់ថ្នាក់ប្រចាំខែ {{ (function() use ($examination) {
+                    $title = $examination->title;
+                    $months = ['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'];
+                    foreach ($months as $m) {
+                        if (str_contains($title, $m)) return $m;
+                    }
+                    return $title;
+                })() }}</span>
             </h1>
             <p class="font-bold text-[11px] sm:text-[13px] text-blue-800">
                 ថ្នាក់ទី {{ $className }} &nbsp;&bull;&nbsp; ឆ្នាំសិក្សា <span id="textAcademicYear" @if($canEditSheet) contenteditable="true" onblur="handleContentEdit('academicYear', this.innerText)" class="editable-field" title="ចុចដើម្បីកែប្រែឆ្នាំសិក្សា" @endif>{{ $academicYearName }}</span>
@@ -559,6 +596,27 @@
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> រក្សាទុកជាលំនាំដើមក្នុងប្រព័ន្ធ';
             }
+        }
+    </script>
+    @endif
+
+    @if($isStudent)
+    {{-- Student Save PDF Script --}}
+    <script>
+        function savePdfStudent() {
+            const btn = document.getElementById('btnStudentSave');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>កំពុងរៀបចំ...</span>';
+            }
+            // Small delay so button update is visible, then trigger browser print-to-PDF
+            setTimeout(() => {
+                window.print();
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> <span>រក្សាទុក PDF</span>';
+                }
+            }, 300);
         }
     </script>
     @endif

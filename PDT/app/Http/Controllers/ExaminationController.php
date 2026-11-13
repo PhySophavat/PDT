@@ -335,7 +335,35 @@ class ExaminationController extends Controller
         $academicYearName = $request->input('academic_year', $examination->academicYear?->name ?? '២០២៥ - ២០២៦');
         $principalName = $request->input('principal', SystemSetting::get('principal_name', 'សន វ៉ែន'));
         $teacherName = $request->input('teacher', SystemSetting::get('homeroom_teacher_' . $className, SystemSetting::get('teacher_name', 'ប៊ុន សុភា')));
-        $sheetDate = $request->input('date', 'ថ្ងៃសៅរ៍ ទី២៨ ខែកុម្ភៈ ឆ្នាំ២០២៦');
+
+        // Auto-generate Khmer date from examination title or current month
+        $defaultDate = (function () use ($examination) {
+            $khmerMonths = [
+                1  => 'មករា',    2  => 'កុម្ភៈ',   3  => 'មីនា',
+                4  => 'មេសា',   5  => 'ឧសភា',    6  => 'មិថុនា',
+                7  => 'កក្កដា',  8  => 'សីហា',     9  => 'កញ្ញា',
+                10 => 'តុលា',   11 => 'វិច្ឆិកា', 12 => 'ធ្នូ',
+            ];
+            $khmerDays = ['អាទិត្យ','ច័ន្ទ','អង្គារ','ពុធ','ព្រហស្បតិ៍','សុក្រ','សៅរ៍'];
+            // Try to extract month from exam title first
+            $title = $examination->title ?? '';
+            foreach ($khmerMonths as $num => $name) {
+                if (str_contains($title, $name)) {
+                    // Use end_date of exam or today as reference for the day
+                    $ref = $examination->end_date ? \Carbon\Carbon::parse($examination->end_date) : \Carbon\Carbon::now();
+                    $dayName = $khmerDays[$ref->dayOfWeek];
+                    $kDay = $ref->day;
+                    $kYear = $ref->year + 543; // Buddhist era optional — use Gregorian for school docs
+                    return "ថ្ងៃ{$dayName} ទី{$kDay} ខែ{$name} ឆ្នាំ{$ref->year}";
+                }
+            }
+            // Fallback: use current date
+            $now = \Carbon\Carbon::now();
+            $dayName = $khmerDays[$now->dayOfWeek];
+            $monthName = $khmerMonths[$now->month];
+            return "ថ្ងៃ{$dayName} ទី{$now->day} ខែ{$monthName} ឆ្នាំ{$now->year}";
+        })();
+        $sheetDate = $request->input('date', $defaultDate);
 
         return view('examination.ranking_sheet', compact(
             'examination',
