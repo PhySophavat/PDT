@@ -312,7 +312,7 @@
         <!-- Document Title -->
         <div class="text-center my-1.5 sm:my-2 space-y-0.5">
             <h1 class="font-moul text-[12px] sm:text-[15px] text-blue-900 leading-tight">
-                <span id="textTitle" @if($canEditSheet) contenteditable="true" class="editable-field" title="ចុចដើម្បីកែប្រែចំណងជើង" @endif>តារាងចំណាត់ថ្នាក់ប្រចាំខែ {{ (function() use ($examination) {
+                <span id="textTitle" @if($canEditSheet) contenteditable="true" class="editable-field" title="ចុចដើម្បីកែប្រែចំណងជើង" @endif>តារាងចំណាត់ថ្នាក់{{ (function() use ($examination) {
                     $title = $examination->title;
                     $months = ['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'];
                     foreach ($months as $m) {

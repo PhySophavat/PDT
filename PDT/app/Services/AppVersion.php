@@ -32,3 +32,4 @@ class AppVersion
         return self::$cachedVersion = 'v1';
     }
 }
+
