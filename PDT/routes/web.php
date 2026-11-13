@@ -93,43 +93,13 @@ Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'
 Route::get('/auth/quick-login', [AuthController::class, 'directLogin'])->name('auth.quick-login');
 Route::get('/csrf-token', fn() => response()->json(['csrf_token' => csrf_token()]))->name('csrf-token');
 
-// Real-Time App Build Version Endpoint for Production Auto-Updater
+// Real-Time App Build Version Endpoint for Production Auto-Updater (Updates ONLY on new deploy)
 Route::get('/api/app-version', function () {
-    $versionFile = public_path('version.json');
-    $manifestPath = public_path('build/manifest.json');
-    
-    $version = env('VERCEL_GIT_COMMIT_SHA') ?: (env('VERCEL_DEPLOYMENT_ID') ?: 'v1');
-    $mtime = time();
-
-    if (file_exists($versionFile)) {
-        $vData = json_decode(@file_get_contents($versionFile), true);
-        if (!empty($vData['version'])) {
-            $version = $vData['version'] . (!empty($vData['commit']) ? ('_' . substr($vData['commit'], 0, 7)) : '');
-        }
-    } elseif (file_exists($manifestPath)) {
-        $mtime = filemtime($manifestPath);
-        $version = substr(md5_file($manifestPath), 0, 16);
-    }
-
-    // Comprehensive real-time data hash: any change to students, scores, announcements, settings triggers auto-update!
-    try {
-        $stMax = \App\Models\Student::max('updated_at') ?? '';
-        $stCnt = \App\Models\Student::count();
-        $scMax = \App\Models\ExaminationScore::max('updated_at') ?? '';
-        $scCnt = \App\Models\ExaminationScore::count();
-        $anMax = \App\Models\Announcement::max('updated_at') ?? '';
-        $anCnt = \App\Models\Announcement::count();
-        $setVal = \App\Models\SystemSetting::max('updated_at') ?? '';
-        $actId = \App\Models\ActivityLog::max('id') ?? 0;
-        $dataHash = md5("{$stCnt}_{$stMax}_{$scCnt}_{$scMax}_{$anCnt}_{$anMax}_{$setVal}_{$actId}");
-    } catch (\Throwable $e) {
-        $dataHash = 'd_' . time();
-    }
+    $version = \App\Services\AppVersion::get();
 
     return response()->json([
         'version' => $version,
-        'timestamp' => $mtime,
-        'data_hash' => $dataHash,
+        'deploy' => $version,
         'time' => now()->toIso8601String(),
     ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
       ->header('Pragma', 'no-cache')

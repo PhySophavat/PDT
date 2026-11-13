@@ -33,21 +33,35 @@ export async function clearAllCaches() {
   }
 }
 
+const LAST_RELOAD_KEY = 'pdt_last_auto_reload_ts';
+
 /**
  * Trigger smooth reload to load latest version
  */
 export async function applyUpdateNow() {
   if (isUpdatingNow.value) return;
+
+  // Safeguard: Prevent reload loop within 30 seconds
+  try {
+    const lastReload = sessionStorage.getItem(LAST_RELOAD_KEY);
+    if (lastReload && Date.now() - parseInt(lastReload, 10) < 30000) {
+      console.warn('[AutoUpdater] Loop blocked: already updated less than 30s ago.');
+      isUpdateAvailable.value = false;
+      return;
+    }
+    sessionStorage.setItem(LAST_RELOAD_KEY, Date.now().toString());
+  } catch (e) {}
+
   isUpdatingNow.value = true;
 
   try {
     await clearAllCaches();
   } catch (e) {}
 
-  // Hard reload from server bypassing browser cache
+  // Reload from server bypassing browser cache
   setTimeout(() => {
     window.location.reload(true);
-  }, 100);
+  }, 200);
 }
 
 /**
@@ -72,8 +86,8 @@ export async function checkForAppUpdate(silent = true) {
   if (isChecking) return;
 
   const now = Date.now();
-  // Throttle checks to at most once every 4 seconds
-  if (now - lastCheckTime < 4000 && silent) return;
+  // Throttle checks to at most once every 15 seconds
+  if (now - lastCheckTime < 15000 && silent) return;
   lastCheckTime = now;
 
   isChecking = true;
@@ -89,27 +103,21 @@ export async function checkForAppUpdate(silent = true) {
     if (res.data && res.data.version) {
       const latestVersion = res.data.version;
 
-      // Check if database data changed on server (e.g. students added/deleted)
-      if (res.data.data_hash) {
-        if (currentDataHash && res.data.data_hash !== currentDataHash) {
-          console.log(`[AutoUpdater] Live database change detected: ${res.data.data_hash}`);
-          try {
-            localStorage.removeItem('pdt_cached_dashboard');
-          } catch (e) {}
-          window.dispatchEvent(new CustomEvent('pdt-data-updated', { detail: res.data }));
-        }
-        currentDataHash = res.data.data_hash;
-      }
-
       // If this is our very first version initialization
       if (!currentVersion) {
         currentVersion = latestVersion;
         return;
       }
 
+      // If versions match -> everything is up to date!
+      if (latestVersion === currentVersion) {
+        isUpdateAvailable.value = false;
+        return;
+      }
+
       // If server version is DIFFERENT from running client version -> NEW DEPLOYMENT DETECTED!
       if (latestVersion !== currentVersion) {
-        console.log(`[AutoUpdater] New version detected: ${latestVersion} (current: ${currentVersion})`);
+        console.log(`[AutoUpdater] New deployment detected: ${latestVersion} (current: ${currentVersion})`);
         newVersionInfo.value = res.data;
         isUpdateAvailable.value = true;
 
@@ -117,14 +125,12 @@ export async function checkForAppUpdate(silent = true) {
           detail: { currentVersion, latestVersion, resData: res.data }
         }));
 
-        // If user is NOT editing, auto-reload seamlessly after a short gentle delay
+        // If user is NOT editing, auto-reload once smoothly
         if (!isUserActivelyEditing()) {
-          console.log('[AutoUpdater] User is idle. Seamlessly applying update in 1.5s...');
+          console.log('[AutoUpdater] Applying new deployment update in 2s...');
           setTimeout(() => {
             applyUpdateNow();
-          }, 1500);
-        } else {
-          console.log('[AutoUpdater] User is actively typing. Displaying update notification banner.');
+          }, 2000);
         }
       }
     }
@@ -141,19 +147,18 @@ export async function checkForAppUpdate(silent = true) {
 export function initAutoUpdater(router) {
   if (typeof window === 'undefined') return;
 
-  // 1. Initial check shortly after app mounts
+  // 1. Initial check 5s after app mounts
   setTimeout(() => {
     checkForAppUpdate();
-  }, 3000);
+  }, 5000);
 
-  // 2. Periodic background check every 7 seconds for real-time sync across devices
+  // 2. Periodic background check every 30 seconds for new deployments
   if (checkInterval) clearInterval(checkInterval);
   checkInterval = setInterval(() => {
-    // Only check if tab is active and visible
     if (document.visibilityState === 'visible') {
       checkForAppUpdate();
     }
-  }, 7000);
+  }, 30000);
 
   // 3. Check immediately when user switches back to this tab
   document.addEventListener('visibilitychange', () => {
