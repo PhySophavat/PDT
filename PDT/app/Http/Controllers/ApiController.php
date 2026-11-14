@@ -2102,6 +2102,56 @@ class ApiController extends Controller
         ]);
     }
 
+    /**
+     * Stream or proxy external PDF files (e.g. MoEYS Digital Library) inline with caching
+     */
+    public function proxyPdf(Request $request)
+    {
+        $url = $request->query('url');
+        if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
+            abort(400, 'Invalid PDF URL');
+        }
+
+        // Cache directory in storage
+        $cacheDir = storage_path('app/pdf_cache');
+        if (!is_dir($cacheDir)) {
+            @mkdir($cacheDir, 0755, true);
+        }
+
+        $cacheKey = md5($url);
+        $cachedFile = $cacheDir . DIRECTORY_SEPARATOR . $cacheKey . '.pdf';
+
+        if (!file_exists($cachedFile) || filesize($cachedFile) === 0) {
+            try {
+                $response = Http::withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Referer' => 'https://sala.moeys.gov.kh/',
+                    'Accept' => 'application/pdf,*/*',
+                ])->withoutVerifying()->timeout(30)->get($url);
+
+                if ($response->successful() && strlen($response->body()) > 100) {
+                    file_put_contents($cachedFile, $response->body());
+                } else {
+                    return redirect()->away($url);
+                }
+            } catch (\Throwable $e) {
+                return redirect()->away($url);
+            }
+        }
+
+        $isDownload = $request->query('download') == '1';
+        $disposition = $isDownload ? 'attachment' : 'inline';
+        $filename = basename(parse_url($url, PHP_URL_PATH) ?? 'document.pdf');
+        if (!str_ends_with(strtolower($filename), '.pdf')) {
+            $filename .= '.pdf';
+        }
+
+        return response()->file($cachedFile, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => "{$disposition}; filename=\"{$filename}\"",
+            'Cache-Control' => 'public, max-age=604800',
+        ]);
+    }
 
     public function library()
     {
@@ -2120,8 +2170,8 @@ class ApiController extends Controller
         $cachedLibrary = Cache::remember('digital_library_catalog_v2', 3600, function () {
             $khmerToArabic = ['៧' => '7', '៨' => '8', '៩' => '9', '១០' => '10', '១១' => '11', '១២' => '12'];
 
-            // Fetch only required relations and columns
-            $booksCollection = Book::with(['category:id,name', 'subject:id,name,code'])->latest()->get();
+            // Fetch only required relations and columns (ordered descending so newly added books appear on top)
+            $booksCollection = Book::with(['category:id,name', 'subject:id,name,code'])->orderByDesc('id')->get();
             $subjectsCollection = CourseSubject::all();
             $categories = BookCategory::all();
 
@@ -2131,11 +2181,14 @@ class ApiController extends Controller
             $totalSubjectsCount = $subjectsCollection->count();
             $brokenLinksCount = $booksCollection->filter(fn ($b) => (bool) $b->is_broken_link)->count();
 
-            $booksByGrade = ['7' => 0, '8' => 0, '9' => 0, '10' => 0, '11' => 0, '12' => 0];
+            $booksByGrade = ['7' => 0, '8' => 0, '9' => 0, '10' => 0, '11' => 0, '12' => 0, 'បាក់ឌុប' => 0];
             $books = $booksCollection->map(function ($b) use ($khmerToArabic, &$booksByGrade) {
                 $rawGrade = trim((string) ($b->grade ?? ''));
                 if ($rawGrade === '' || $rawGrade === 'ទូទៅ' || $rawGrade === 'general' || $b->subject?->name === 'អក្សរសិល្ប៍' || $b->level === 'អក្សរសិល្ប៍') {
                     $grade = 'ទូទៅ';
+                } elseif ($rawGrade === 'បាក់ឌុប' || str_contains($rawGrade, 'បាក់ឌុប')) {
+                    $grade = 'បាក់ឌុប';
+                    $booksByGrade['បាក់ឌុប'] = ($booksByGrade['បាក់ឌុប'] ?? 0) + 1;
                 } else {
                     $grade = $khmerToArabic[$rawGrade] ?? $rawGrade;
                     if (isset($booksByGrade[$grade])) {

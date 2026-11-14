@@ -174,6 +174,23 @@
             <span>ថ្នាក់ទី {{ g }}</span>
             <span v-if="countForGrade(g) > 0" class="text-[10px] opacity-75">({{ countForGrade(g) }})</span>
           </button>
+
+          <!-- Dedicated BacII Exam Papers Chip (វិញ្ញាសាបាក់ឌុប) -->
+          <button 
+            type="button"
+            @click="selectGrade('បាក់ឌុប')"
+            :class="[
+              'px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 shadow-2xs',
+              selectedGrade === 'បាក់ឌុប' 
+                ? 'bg-gradient-to-r from-amber-600 to-rose-600 text-white shadow-amber-500/25 ring-2 ring-amber-400/50' 
+                : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200'
+            ]"
+            title="កម្រងវិញ្ញាសា និងឯកសារត្រៀមប្រឡងបាក់ឌុប"
+          >
+            <i class="fa-solid fa-award text-amber-500 text-[11px]" :class="selectedGrade === 'បាក់ឌុប' ? 'text-white' : 'text-amber-600'"></i>
+            <span>វិញ្ញាសាបាក់ឌុប</span>
+            <span v-if="countForGrade('បាក់ឌុប') > 0" class="text-[10px] px-1.5 py-0.2 rounded-full font-bold" :class="selectedGrade === 'បាក់ឌុប' ? 'bg-white/25 text-white' : 'bg-amber-200 text-amber-900'">{{ countForGrade('បាក់ឌុប') }}</span>
+          </button>
         </div>
 
         <!-- Row 4: Smooth Horizontal Scrollable Subject Chips (មុខវិជ្ជា) -->
@@ -221,10 +238,10 @@
         </div>
         <h4 class="font-bold text-slate-800 text-sm sm:text-base">
           <template v-if="selectedGrade && selectedSubjectId">
-            មិនទាន់មានសៀវភៅមុខវិជ្ជា {{ currentSubjectName }} សម្រាប់ថ្នាក់ទី {{ selectedGrade }} នៅឡើយទេ
+            មិនទាន់មានសៀវភៅមុខវិជ្ជា {{ currentSubjectName }} សម្រាប់{{ selectedGrade === 'បាក់ឌុប' ? 'វិញ្ញាសាបាក់ឌុប' : 'ថ្នាក់ទី ' + selectedGrade }} នៅឡើយទេ
           </template>
           <template v-else-if="selectedGrade">
-            មិនទាន់មានសៀវភៅសម្រាប់ថ្នាក់ទី {{ selectedGrade }} នៅឡើយទេ
+            មិនទាន់មានសៀវភៅសម្រាប់{{ selectedGrade === 'បាក់ឌុប' ? 'វិញ្ញាសាបាក់ឌុប' : 'ថ្នាក់ទី ' + selectedGrade }} នៅឡើយទេ
           </template>
           <template v-else-if="selectedSubjectId">
             មិនទាន់មានសៀវភៅសម្រាប់មុខវិជ្ជា {{ currentSubjectName }} នៅឡើយទេ
@@ -276,32 +293,66 @@
             @click="openPdfReader(b)"
             class="relative aspect-[3/4] w-full rounded-xl overflow-hidden bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-900 shadow-inner cursor-pointer group/cover"
           >
-            <!-- Cover Image if present -->
+            <!-- Cover Image if present and not failed -->
             <img 
-              v-if="b.cover_image" 
+              v-if="b.cover_image && !failedCovers.has(b.id)" 
               :src="b.cover_image" 
               :alt="b.title" 
+              @error="onCoverImageError(b.id)"
               class="w-full h-full object-cover object-center group-hover/cover:scale-105 transition-transform duration-300"
               loading="lazy"
             />
 
-            <!-- Stylized Fallback Cover when no image -->
-            <div v-else class="w-full h-full p-3 flex flex-col justify-between bg-gradient-to-br from-indigo-900 via-slate-900 to-blue-950 text-white relative">
-              <div class="w-8 h-8 rounded-lg bg-white/10 backdrop-blur-md flex items-center justify-center text-indigo-300 text-sm">
-                <i class="fa-solid fa-book-open"></i>
+            <!-- Stylized Fallback Cover when no image or image failed -->
+            <div 
+              v-else 
+              class="w-full h-full p-2.5 sm:p-3 flex flex-col justify-between bg-gradient-to-br border-l-[4px] border-white/20 shadow-inner relative overflow-hidden group-hover/cover:brightness-105 transition-all duration-300"
+              :class="getFallbackCoverMeta(b).gradient"
+            >
+              <!-- Background Decorative Watermark Icon -->
+              <i 
+                :class="'fa-solid ' + getFallbackCoverMeta(b).icon" 
+                class="absolute -right-2 -bottom-2 text-white/[0.08] text-6xl sm:text-7xl pointer-events-none transform -rotate-12"
+              ></i>
+
+              <!-- Top header: Subject Icon & Ministry Code -->
+              <div class="flex items-center justify-between relative z-10">
+                <div class="w-6 h-6 rounded-md bg-white/15 backdrop-blur-md border border-white/10 flex items-center justify-center text-[11px]" :class="getFallbackCoverMeta(b).accent">
+                  <i :class="'fa-solid ' + getFallbackCoverMeta(b).icon"></i>
+                </div>
+                <span class="text-[8px] font-bold tracking-wider uppercase text-white/50">MoEYS</span>
               </div>
-              <div>
-                <p class="text-[10px] text-indigo-300 font-semibold truncate">{{ b.subject_name || 'សៀវភៅពុម្ព' }}</p>
-                <h5 class="text-xs font-bold line-clamp-3 leading-tight mt-0.5">{{ b.title }}</h5>
+
+              <!-- Center/Bottom: Subject Badge & Book Title -->
+              <div class="relative z-10 mt-auto pt-2">
+                <span 
+                  class="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold border mb-1 truncate max-w-full"
+                  :class="getFallbackCoverMeta(b).badgeBg"
+                >
+                  {{ b.subject_name || getFallbackCoverMeta(b).pattern }}
+                </span>
+                <h5 class="text-xs sm:text-[13px] font-extrabold text-white line-clamp-3 leading-snug drop-shadow-xs">
+                  {{ b.title }}
+                </h5>
+                <p class="text-[9px] text-white/60 truncate mt-1 flex items-center gap-1">
+                  <i class="fa-solid fa-feather text-[8px]"></i>
+                  <span>{{ b.author || 'ក្រសួងអប់រំ យុវជន និងកីឡា' }}</span>
+                </p>
               </div>
+
+              <!-- Subtle spine highlight -->
+              <div class="absolute top-0 bottom-0 left-0 w-1 bg-white/15 pointer-events-none"></div>
             </div>
 
             <!-- Gradient overlay for text contrast if cover image present -->
-            <div v-if="b.cover_image" class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-black/30 pointer-events-none"></div>
+            <div v-if="b.cover_image && !failedCovers.has(b.id)" class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-black/30 pointer-events-none"></div>
 
             <!-- Grade Badge (Top-Left) -->
-            <span class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-900/75 backdrop-blur-md text-white border border-white/15 shadow-xs">
-              {{ isLitBook(b) || b.grade === 'ទូទៅ' ? 'ទូទៅ' : 'ថ្នាក់ ' + (b.grade || '11') }}
+            <span 
+              class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold backdrop-blur-md border shadow-xs"
+              :class="b.grade === 'បាក់ឌុប' ? 'bg-amber-600/90 text-amber-50 border-amber-300/40 shadow-amber-900/30' : 'bg-slate-900/75 text-white border-white/15'"
+            >
+              {{ isLitBook(b) || b.grade === 'ទូទៅ' ? 'ទូទៅ' : (b.grade === 'បាក់ឌុប' ? '★ បាក់ឌុប' : 'ថ្នាក់ ' + (b.grade || '11')) }}
             </span>
 
             <!-- Bookmark Star Toggle (Top-Right) -->
@@ -1484,7 +1535,9 @@ const showStudentSuggestions = ref(false);
 
 // Filter and Computed Logic
 const eLibraryBooks = computed(() => {
-  return booksList.value.filter(b => b.external_pdf_url && b.external_pdf_url.trim() !== '');
+  return [...booksList.value]
+    .filter(b => b.external_pdf_url && b.external_pdf_url.trim() !== '')
+    .sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
 });
 
 const brokenBooks = computed(() => {
@@ -1568,6 +1621,105 @@ const isLitBook = (b) => {
   return b.grade === 'ទូទៅ' || b.level === 'អក្សរសិល្ប៍' || (b.subject_name && b.subject_name === 'អក្សរសិល្ប៍');
 };
 
+const failedCovers = ref(new Set());
+const onCoverImageError = (bookId) => {
+  failedCovers.value.add(bookId);
+};
+
+const getFallbackCoverMeta = (b) => {
+  const title = (b.title || '').toLowerCase();
+  const subj = (b.subject_name || '').toLowerCase();
+
+  if (title.includes('គណិត') || subj.includes('គណិត')) {
+    return {
+      gradient: 'from-blue-700 via-indigo-900 to-slate-950',
+      accent: 'text-blue-300',
+      badgeBg: 'bg-blue-500/20 text-blue-200 border-blue-400/30',
+      icon: 'fa-calculator',
+      pattern: 'គណិតវិទ្យា'
+    };
+  }
+  if (title.includes('រូបវិទ្យា') || subj.includes('រូប')) {
+    return {
+      gradient: 'from-purple-700 via-violet-900 to-slate-950',
+      accent: 'text-purple-300',
+      badgeBg: 'bg-purple-500/20 text-purple-200 border-purple-400/30',
+      icon: 'fa-atom',
+      pattern: 'រូបវិទ្យា'
+    };
+  }
+  if (title.includes('គីមី') || subj.includes('គីមី')) {
+    return {
+      gradient: 'from-teal-600 via-cyan-900 to-slate-950',
+      accent: 'text-teal-300',
+      badgeBg: 'bg-teal-500/20 text-teal-200 border-teal-400/30',
+      icon: 'fa-flask-vial',
+      pattern: 'គីមីវិទ្យា'
+    };
+  }
+  if (title.includes('ជីវវិទ្យា') || subj.includes('ជីវ')) {
+    return {
+      gradient: 'from-emerald-700 via-green-950 to-slate-950',
+      accent: 'text-emerald-300',
+      badgeBg: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/30',
+      icon: 'fa-dna',
+      pattern: 'ជីវវិទ្យា'
+    };
+  }
+  if (title.includes('ផែនដី') || subj.includes('ផែនដី')) {
+    return {
+      gradient: 'from-amber-700 via-stone-900 to-slate-950',
+      accent: 'text-amber-300',
+      badgeBg: 'bg-amber-500/20 text-amber-200 border-amber-400/30',
+      icon: 'fa-earth-asia',
+      pattern: 'ផែនដីវិទ្យា'
+    };
+  }
+  if (title.includes('ប្រវត្តិ') || subj.includes('ប្រវត្តិ')) {
+    return {
+      gradient: 'from-orange-800 via-amber-950 to-stone-950',
+      accent: 'text-amber-300',
+      badgeBg: 'bg-orange-500/20 text-orange-200 border-orange-400/30',
+      icon: 'fa-landmark',
+      pattern: 'ប្រវត្តិវិទ្យា'
+    };
+  }
+  if (title.includes('ភូមិ') || subj.includes('ភូមិ')) {
+    return {
+      gradient: 'from-cyan-700 via-teal-950 to-slate-950',
+      accent: 'text-cyan-300',
+      badgeBg: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/30',
+      icon: 'fa-map-location-dot',
+      pattern: 'ភូមិវិទ្យា'
+    };
+  }
+  if (title.includes('ខ្មែរ') || title.includes('រឿង') || subj.includes('ខ្មែរ') || subj.includes('អក្សរសិល្ប៍')) {
+    return {
+      gradient: 'from-rose-700 via-pink-950 to-slate-950',
+      accent: 'text-rose-300',
+      badgeBg: 'bg-rose-500/20 text-rose-200 border-rose-400/30',
+      icon: 'fa-feather-pointed',
+      pattern: 'អក្សរសាស្ត្រ'
+    };
+  }
+  if (title.includes('អង់គ្លេស') || title.includes('english') || subj.includes('អង់គ្លេស')) {
+    return {
+      gradient: 'from-sky-600 via-blue-950 to-slate-950',
+      accent: 'text-sky-300',
+      badgeBg: 'bg-sky-500/20 text-sky-200 border-sky-400/30',
+      icon: 'fa-language',
+      pattern: 'English'
+    };
+  }
+  return {
+    gradient: 'from-indigo-800 via-slate-900 to-slate-950',
+    accent: 'text-indigo-300',
+    badgeBg: 'bg-indigo-500/20 text-indigo-200 border-indigo-400/30',
+    icon: 'fa-book-open',
+    pattern: 'សៀវភៅពុម្ព'
+  };
+};
+
 const currentSubjectName = computed(() => {
   if (!selectedSubjectId.value) return '';
   return getSubjectName(selectedSubjectId.value);
@@ -1610,15 +1762,6 @@ const resetFilters = () => {
 
 const filteredELibraryBooks = computed(() => {
   let list = eLibraryBooks.value;
-
-  // Filter out teacher guides if role is student
-  if (isStudent.value) {
-    list = list.filter(b => {
-      const t = (b.title || '').toLowerCase();
-      const cat = (b.category_name || '').toLowerCase();
-      return !t.includes('សៀវភៅគ្រូ') && !t.includes('មគ្គុទ្ទេសក៍គ្រូ') && !cat.includes('គ្រូ');
-    });
-  }
 
   // Sub filter
   if (subFilter.value === 'bookmarks') {
@@ -1669,9 +1812,10 @@ const filteredELibraryBooks = computed(() => {
 });
 
 const filteredBooks = computed(() => {
-  if (!searchQuery.value) return booksList.value;
+  const sorted = [...booksList.value].sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+  if (!searchQuery.value) return sorted;
   const q = searchQuery.value.toLowerCase().trim();
-  return booksList.value.filter(b => 
+  return sorted.filter(b => 
     b.title.toLowerCase().includes(q) || 
     b.author.toLowerCase().includes(q) || 
     (b.subject_name && b.subject_name.toLowerCase().includes(q)) ||
@@ -1805,6 +1949,11 @@ const isEmbeddableUrl = (url) => {
   return false;
 };
 
+const isDirectPdf = (url) => {
+  if (!url) return false;
+  return url.includes('saladigital.org') || url.includes('weteka.org') || !!url.match(/\.pdf(\?.*)?$/i);
+};
+
 const readerIframeUrl = computed(() => {
   if (!currentPdfUrl.value) return '';
   const url = currentPdfUrl.value;
@@ -1814,9 +1963,9 @@ const readerIframeUrl = computed(() => {
     if (!url.includes('/preview')) return `${url.replace(/\/+$/, '')}/preview`;
     return url;
   }
-  // Direct PDF files: embed via Google Drive viewer
-  if (url.match(/\.pdf(\?.*)?$/i)) {
-    return `https://drive.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(url)}`;
+  // Direct PDF files: stream locally via fast cached proxy (eliminates Google Viewer CORS / blocking)
+  if (isDirectPdf(url)) {
+    return `/api/library/pdf-proxy?url=${encodeURIComponent(url)}`;
   }
   // Embeddable HTML5 Flipbooks (FlipHTML5, eLibrary Cambodia)
   if (url.includes('fliphtml5.com') || url.includes('elibraryofcambodia.org')) {
@@ -1837,6 +1986,9 @@ const currentPdfViewUrl = computed(() => {
   if (currentPdfFileId.value) {
     return `https://drive.google.com/file/d/${currentPdfFileId.value}/view`;
   }
+  if (isDirectPdf(currentPdfUrl.value)) {
+    return `/api/library/pdf-proxy?url=${encodeURIComponent(currentPdfUrl.value)}`;
+  }
   return currentPdfUrl.value;
 });
 
@@ -1845,19 +1997,26 @@ const currentPdfDownloadUrl = computed(() => {
   if (currentPdfFileId.value) {
     return `https://drive.google.com/uc?export=download&id=${currentPdfFileId.value}`;
   }
+  if (isDirectPdf(currentPdfUrl.value)) {
+    return `/api/library/pdf-proxy?url=${encodeURIComponent(currentPdfUrl.value)}&download=1`;
+  }
   return currentPdfUrl.value;
 });
 
 const getPdfDownloadUrl = (url) => {
   if (!url) return '#';
   const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]{20,})/i) || url.match(/id=([a-zA-Z0-9_-]{20,})/i);
-  return m ? `https://drive.google.com/uc?export=download&id=${m[1]}` : url;
+  if (m) return `https://drive.google.com/uc?export=download&id=${m[1]}`;
+  if (isDirectPdf(url)) return `/api/library/pdf-proxy?url=${encodeURIComponent(url)}&download=1`;
+  return url;
 };
 
 const getPdfViewUrl = (url) => {
   if (!url) return '#';
   const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]{20,})/i) || url.match(/id=([a-zA-Z0-9_-]{20,})/i);
-  return m ? `https://drive.google.com/file/d/${m[1]}/view` : url;
+  if (m) return `https://drive.google.com/file/d/${m[1]}/view`;
+  if (isDirectPdf(url)) return `/api/library/pdf-proxy?url=${encodeURIComponent(url)}`;
+  return url;
 };
 
 const subjectScrollRef = ref(null);

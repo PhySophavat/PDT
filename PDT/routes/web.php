@@ -180,6 +180,7 @@ Route::get('/api/examinations/ranking-sheet/sync', [ExaminationController::class
 // Public Digital Library View (Telegram / Facebook Sharing & Direct Public Browsing)
 Route::get('/library', $spa)->name('library.index');
 Route::get('/api/library', [ApiController::class, 'library']);
+Route::get('/api/library/pdf-proxy', [ApiController::class, 'proxyPdf'])->name('library.pdf_proxy');
 Route::post('/api/library/books/{id}/broken-link', [ApiController::class, 'toggleBrokenLink']);
 Route::post('/api/library/books/{id}/view', [ApiController::class, 'recordBookView']);
 
