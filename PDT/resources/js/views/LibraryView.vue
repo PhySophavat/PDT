@@ -1967,6 +1967,14 @@ const readerIframeUrl = computed(() => {
   if (isDirectPdf(url)) {
     return `/api/library/pdf-proxy?url=${encodeURIComponent(url)}`;
   }
+  // Scribd Embed Player
+  if (url.includes('scribd.com')) {
+    const m = url.match(/\/document\/(\d+)/i) || url.match(/\/embeds\/(\d+)/i);
+    if (m) {
+      return `https://www.scribd.com/embeds/${m[1]}/content?start_page=1&view_mode=scroll`;
+    }
+    return url;
+  }
   // Embeddable HTML5 Flipbooks (FlipHTML5, eLibrary Cambodia)
   if (url.includes('fliphtml5.com') || url.includes('elibraryofcambodia.org')) {
     return url;
@@ -2015,6 +2023,11 @@ const getPdfViewUrl = (url) => {
   if (!url) return '#';
   const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]{20,})/i) || url.match(/id=([a-zA-Z0-9_-]{20,})/i);
   if (m) return `https://drive.google.com/file/d/${m[1]}/view`;
+  if (url.includes('scribd.com')) {
+    const sm = url.match(/\/embeds\/(\d+)/i) || url.match(/\/document\/(\d+)/i);
+    if (sm) return `https://www.scribd.com/document/${sm[1]}`;
+    return url;
+  }
   if (isDirectPdf(url)) return `/api/library/pdf-proxy?url=${encodeURIComponent(url)}`;
   return url;
 };
