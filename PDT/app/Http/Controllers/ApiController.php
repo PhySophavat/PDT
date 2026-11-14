@@ -2166,8 +2166,13 @@ class ApiController extends Controller
         }
         $canManage = in_array($userRole, ['admin', 'teacher']);
 
+        if (request()->has('refresh') || request()->has('_t')) {
+            Cache::forget('digital_library_catalog_v3');
+            Cache::forget('digital_library_catalog_v2');
+        }
+
         // High-Performance Cached Catalog (Books, Subjects, Categories & Base Stats)
-        $cachedLibrary = Cache::remember('digital_library_catalog_v2', 3600, function () {
+        $cachedLibrary = Cache::remember('digital_library_catalog_v3', 300, function () {
             $khmerToArabic = ['៧' => '7', '៨' => '8', '៩' => '9', '១០' => '10', '១១' => '11', '១២' => '12'];
 
             // Fetch only required relations and columns (ordered descending so newly added books appear on top)

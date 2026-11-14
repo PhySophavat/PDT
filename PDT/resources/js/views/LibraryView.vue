@@ -1436,7 +1436,7 @@ const loadLocalStorageData = () => {
     if (savedPages) readingPagesMap.value = JSON.parse(savedPages);
 
     // Instant SWR Cache: Render books and subjects in 0.001s without any waiting!
-    const cachedLib = localStorage.getItem('pdt_library_cache_v2');
+    const cachedLib = localStorage.getItem('pdt_library_cache_v3');
     if (cachedLib) {
       const parsed = JSON.parse(cachedLib);
       if (parsed.books && parsed.books.length > 0) {
@@ -2054,7 +2054,7 @@ const fetchLibraryData = async () => {
     isLoading.value = true;
   }
   try {
-    const res = await axios.get('/api/library');
+    const res = await axios.get('/api/library', { params: { _t: Date.now() } });
     if (res.data) {
       if (res.data.user) {
         currentUser.value = { ...currentUser.value, ...res.data.user };
@@ -2068,7 +2068,7 @@ const fetchLibraryData = async () => {
 
       // Save to localStorage SWR cache so future page visits render instantly
       try {
-        localStorage.setItem('pdt_library_cache_v2', JSON.stringify({
+        localStorage.setItem('pdt_library_cache_v3', JSON.stringify({
           books: booksList.value,
           subjects: subjectsList.value,
           categories: categoriesList.value,
