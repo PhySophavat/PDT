@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen w-screen bg-[#f8fafc] flex font-khmer antialiased text-slate-800 overflow-hidden relative">
+  <div class="h-screen w-screen bg-[#f8fafc] dark:bg-neutral-950 flex font-khmer antialiased text-slate-800 dark:text-neutral-100 overflow-hidden relative">
     <!-- Mobile Backdrop Overlay when sidebar is expanded -->
     <div 
       v-if="sidebarOpen" 
@@ -8,32 +8,32 @@
     ></div>
 
     <!-- Master App Canvas Container (100% Full Screen Edge-to-Edge) -->
-    <div class="w-full h-full bg-white flex overflow-hidden">
+    <div class="w-full h-full bg-white dark:bg-neutral-950 flex overflow-hidden">
       
       <!-- 1. LEFT SIDEBAR (Shows Icon Rail when collapsed, Full Sidebar when open) -->
       <aside 
         :class="[
-          'bg-white border-r border-slate-100 flex flex-col justify-between transition-all duration-300 flex-shrink-0',
+          'bg-white dark:bg-[#121214] border-r border-slate-100 dark:border-neutral-800 flex flex-col justify-between transition-all duration-300 flex-shrink-0',
           sidebarOpen 
             ? 'fixed md:static inset-y-0 left-0 w-72 shadow-2xl md:shadow-none z-50 md:z-30 translate-x-0' 
             : 'fixed md:static inset-y-0 left-0 -translate-x-full md:translate-x-0 w-16 lg:w-20 z-50 md:z-30'
         ]"
       >
         <!-- Logo Header -->
-        <div class="h-16 sm:h-20 px-2 sm:px-4 md:px-5 flex items-center justify-between border-b border-slate-50">
+        <div class="h-16 sm:h-20 px-2 sm:px-4 md:px-5 flex items-center justify-between border-b border-slate-50 dark:border-neutral-800/80">
           <router-link to="/attendance" @click="handleNavClick" class="flex items-center gap-3 group min-w-0" :class="{ 'mx-auto': !sidebarOpen }">
             <!-- School Brand Logo -->
             <div 
-              class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-slate-100 bg-white flex items-center justify-center p-1 shadow-xs group-hover:scale-105 transition-transform flex-shrink-0"
+              class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex items-center justify-center p-1 shadow-xs group-hover:scale-105 transition-transform flex-shrink-0"
             >
               <img :src="schoolLogo || '/images/logo.png'" alt="School Logo" class="w-full h-full object-contain" @error="schoolLogo = '/images/logo.png'" />
             </div>
 
             <div v-if="sidebarOpen" class="flex flex-col truncate">
-              <span class="text-base font-extrabold tracking-tight text-[#1e293b] leading-tight truncate">
+              <span class="text-base font-extrabold tracking-tight text-[#1e293b] dark:text-white leading-tight truncate">
                 {{ currentLocale === 'en' ? (schoolNameEn || 'New Generation School PDT') : (schoolName || 'សាលារៀន ជំនាន់ថ្មី') }}
               </span>
-              <span class="text-[10px] text-slate-400 font-medium truncate leading-none mt-0.5">
+              <span class="text-[10px] text-slate-400 dark:text-neutral-400 font-medium truncate leading-none mt-0.5">
                 {{ schoolNameEn || 'New Generation School' }}
               </span>
             </div>
@@ -43,7 +43,7 @@
           <button 
             v-if="sidebarOpen"
             @click="sidebarOpen = false"
-            class="md:hidden w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition flex-shrink-0 ml-2 cursor-pointer"
+            class="md:hidden w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-slate-500 hover:text-slate-800 dark:text-neutral-300 dark:hover:text-white flex items-center justify-center transition flex-shrink-0 ml-2 cursor-pointer"
             title="បិទម៉ឺនុយ"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,7 +55,7 @@
           <button 
             v-if="sidebarOpen"
             @click="sidebarOpen = false"
-            class="hidden md:flex w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-700 items-center justify-center transition flex-shrink-0 ml-1 cursor-pointer"
+            class="hidden md:flex w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-neutral-800/80 dark:hover:bg-neutral-700 text-slate-400 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-white items-center justify-center transition flex-shrink-0 ml-1 cursor-pointer"
             title="បង្រួមម៉ឺនុយ"
           >
             <i class="fa-solid fa-chevron-left text-xs"></i>
@@ -74,8 +74,8 @@
                   'w-full flex items-center rounded-xl text-[13px] font-medium transition-all group cursor-pointer',
                   sidebarOpen ? 'justify-between px-3.5 py-2.5' : 'justify-center p-2.5',
                   isChildActive(item) 
-                    ? 'bg-[#e5ecfc] text-[#1e40af] font-semibold shadow-xs' 
-                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                    ? 'bg-[#e5ecfc] text-[#1e40af] dark:bg-blue-900/40 dark:text-blue-300 font-semibold shadow-xs' 
+                    : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100 hover:bg-slate-50 dark:hover:bg-neutral-800/60'
                 ]"
                 :title="!sidebarOpen ? getMenuLabel(item) : ''"
               >
@@ -84,7 +84,7 @@
                     :is="item.icon" 
                     :class="[
                       'w-5 h-5 flex-shrink-0 transition-colors',
-                      isChildActive(item) ? 'text-[#1e40af]' : 'text-slate-400 group-hover:text-slate-600'
+                      isChildActive(item) ? 'text-[#1e40af] dark:text-blue-400' : 'text-slate-400 dark:text-neutral-400 group-hover:text-slate-600 dark:group-hover:text-neutral-200'
                     ]"
                   />
                   <span v-if="sidebarOpen" class="truncate">{{ getMenuLabel(item) }}</span>
@@ -92,7 +92,7 @@
                 <svg 
                   v-if="sidebarOpen" 
                   class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200 flex-shrink-0"
-                  :class="{ 'rotate-180 text-blue-600': openDropdowns.includes(item.id) }"
+                  :class="{ 'rotate-180 text-blue-600 dark:text-blue-400': openDropdowns.includes(item.id) }"
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
@@ -104,7 +104,7 @@
               <!-- Dropdown Children Sub-items -->
               <div 
                 v-if="sidebarOpen && openDropdowns.includes(item.id)" 
-                class="pl-4 pr-1 py-1 space-y-1 border-l-2 border-blue-100 ml-4.5 transition-all"
+                class="pl-4 pr-1 py-1 space-y-1 border-l-2 border-blue-100 dark:border-slate-800 ml-4.5 transition-all"
               >
                 <router-link
                   v-for="sub in item.children"
@@ -112,21 +112,39 @@
                   :to="sub.path"
                   @click="handleNavClick"
                   :class="[
-                    'flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all',
+                    'flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all group/sub',
                     isActive(sub.path)
-                      ? 'bg-blue-50 text-blue-700 font-semibold shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 font-semibold shadow-xs'
+                      : 'text-slate-600 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-neutral-800/60'
                   ]"
                 >
-                  <component 
-                    :is="sub.icon" 
-                    :class="[
-                      'w-4 h-4 flex-shrink-0 transition-colors',
-                      isActive(sub.path) ? 'text-blue-600' : 'text-slate-400'
-                    ]"
-                  />
-                  <span class="truncate">{{ currentLocale === 'km' ? sub.nameKm : sub.nameEn }}</span>
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <component 
+                      :is="sub.icon" 
+                      :class="[
+                        'w-4 h-4 flex-shrink-0 transition-colors',
+                        isActive(sub.path) ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-neutral-400 group-hover/sub:text-blue-600 dark:group-hover/sub:text-blue-400'
+                      ]"
+                    />
+                    <span class="truncate">{{ currentLocale === 'km' ? sub.nameKm : sub.nameEn }}</span>
+                  </div>
+                  <!-- Right Chevron arrow (>) e.g. for Display settings item -->
+                  <svg 
+                    v-if="sub.hasChevron" 
+                    class="w-3.5 h-3.5 text-slate-400 group-hover/sub:text-slate-600 dark:text-neutral-500 group-hover/sub:translate-x-0.5 transition-all shrink-0 ml-1.5" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                  </svg>
                 </router-link>
+
+                <!-- Language Toggle Switch (inside "គណនី និងការកំណត់" dropdown) -->
+                <LanguageToggleSwitch 
+                  v-if="item.id === 'account_settings'" 
+                  :is-sub-item="true" 
+                />
               </div>
             </div>
 
@@ -139,8 +157,8 @@
                 'flex items-center rounded-xl text-[13px] font-medium transition-all group',
                 sidebarOpen ? 'justify-between px-3.5 py-2.5' : 'justify-center p-2.5 relative',
                 isActive(item.path) 
-                  ? 'bg-[#e5ecfc] text-[#1e40af] font-semibold shadow-xs' 
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                  ? 'bg-[#e5ecfc] text-[#1e40af] dark:bg-blue-900/40 dark:text-blue-300 font-semibold shadow-xs' 
+                  : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100 hover:bg-slate-50 dark:hover:bg-neutral-800/60'
               ]"
               :title="!sidebarOpen ? getMenuLabel(item) : ''"
             >
@@ -149,7 +167,7 @@
                   :is="item.icon" 
                   :class="[
                     'w-5 h-5 flex-shrink-0 transition-colors',
-                    isActive(item.path) ? 'text-[#1e40af]' : 'text-slate-400 group-hover:text-slate-600'
+                    isActive(item.path) ? 'text-[#1e40af] dark:text-blue-400' : 'text-slate-400 dark:text-neutral-400 group-hover:text-slate-600 dark:group-hover:text-neutral-200'
                   ]"
                 />
                 <span v-if="sidebarOpen" class="truncate">{{ getMenuLabel(item) }}</span>
@@ -170,18 +188,19 @@
             <!-- Subtle horizontal divider below "សំណើ និងមតិយោបល់" -->
             <div 
               v-if="item.path === '/requests' || item.dividerAfter" 
-              class="my-2 border-t border-slate-200/80 mx-1"
+              class="my-2 border-t border-slate-200/80 dark:border-neutral-800/80 mx-1"
             ></div>
           </template>
         </div>
 
-        <!-- Bottom Logout Button -->
-        <div class="p-3 border-t border-slate-50">
+        <!-- Bottom Sidebar Section: Logout Button -->
+        <div class="p-2 sm:p-2.5 border-t border-slate-100 dark:border-neutral-800 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <!-- Logout Button -->
           <button 
             type="button"
             @click="promptLogout"
             :class="[
-              'w-full flex items-center rounded-xl text-[13px] font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 active:bg-red-100 transition-colors group cursor-pointer',
+              'w-full flex items-center rounded-xl text-[13px] font-medium text-slate-600 dark:text-neutral-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 active:bg-red-100 transition-colors group cursor-pointer',
               sidebarOpen ? 'justify-start px-3.5 py-2.5 gap-2.5' : 'justify-center p-2.5'
             ]"
             :title="!sidebarOpen ? t('common.logout') : ''"
@@ -200,16 +219,16 @@
       </aside>
 
       <!-- 2. MAIN CONTENT AREA -->
-      <main class="flex-1 flex flex-col min-w-0 bg-[#fbfcff] overflow-hidden">
+      <main class="flex-1 flex flex-col min-w-0 bg-[#fbfcff] dark:bg-[#0d0d0e] overflow-hidden">
         <!-- Top Navbar: Clean Frosted Glass Style -->
-        <header class="relative z-40 h-16 px-4 py-3 sm:px-6 md:px-8 flex items-center justify-between border-b border-slate-100 bg-white/90 backdrop-blur-md flex-shrink-0 transition-all shadow-2xs">
+        <header class="relative z-40 h-16 px-4 py-3 sm:px-6 md:px-8 flex items-center justify-between border-b border-slate-100 dark:border-neutral-800 bg-white/90 dark:bg-[#121214]/90 backdrop-blur-md flex-shrink-0 transition-all shadow-2xs">
           <!-- Left Section: Menu Toggle, Brand / School Logo -->
           <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <!-- Sidebar / Menu Toggle Button (Desktop & Laptop only, hidden on mobile) -->
             <button 
               type="button" 
               @click="sidebarOpen = !sidebarOpen" 
-              class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 items-center justify-center transition shadow-2xs cursor-pointer shrink-0"
+              class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-slate-600 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-white items-center justify-center transition shadow-2xs cursor-pointer shrink-0"
               :title="sidebarOpen ? 'បង្រួមម៉ឺនុយ' : 'ពង្រីកម៉ឺនុយ (Menu)'"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,10 +238,10 @@
 
             <!-- Brand Title with School Logo (Visible on all screens) -->
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-xl overflow-hidden border border-slate-100 bg-white p-0.5 shadow-2xs flex-shrink-0 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-xl overflow-hidden border border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-0.5 shadow-2xs flex-shrink-0 flex items-center justify-center">
                 <img :src="schoolLogo || '/images/logo.png'" alt="Logo" class="w-full h-full object-contain" />
               </div>
-              <span class="text-xs sm:text-sm font-bold text-slate-800 truncate max-w-[200px] sm:max-w-none leading-tight font-khmer">
+              <span class="text-xs sm:text-sm font-bold text-slate-800 dark:text-neutral-100 truncate max-w-[200px] sm:max-w-none leading-tight font-khmer">
                 {{ currentLocale === 'en' ? (schoolNameEn || 'New Generation School PDT') : (schoolName || 'សាលារៀន ជំនាន់ថ្មី PDT') }}
               </span>
             </div>
@@ -235,7 +254,7 @@
               <button 
                 type="button"
                 @click.stop="toggleNotificationDropdown"
-                class="relative w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 flex items-center justify-center transition shadow-2xs cursor-pointer"
+                class="relative w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-slate-600 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition shadow-2xs cursor-pointer"
                 title="ការជូនដំណឹង"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -621,7 +640,8 @@
 
     <!-- 3. MOBILE BOTTOM NAVIGATION BAR (Sticky thumb-friendly navigation on phones) -->
     <nav 
-      class="md:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200/90 px-3 py-1.5 z-40 flex items-center justify-around shadow-[0_-4px_25px_rgba(0,0,0,0.06)]"
+      v-show="!sidebarOpen"
+      class="md:hidden fixed bottom-0 inset-x-0 bg-white/95 dark:bg-[#121214]/95 backdrop-blur-md border-t border-slate-200/90 dark:border-neutral-800 px-3 py-1.5 z-40 flex items-center justify-around shadow-[0_-4px_25px_rgba(0,0,0,0.06)]"
       style="padding-bottom: max(0.375rem, env(safe-area-inset-bottom));"
       aria-label="Mobile Bottom Navigation"
     >
@@ -631,7 +651,7 @@
         @click="sidebarOpen = false"
         :class="[
           'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
-          isActive('/dashboard') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+          isActive('/dashboard') ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100'
         ]"
       >
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -646,7 +666,7 @@
         @click="sidebarOpen = false"
         :class="[
           'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
-          isActive('/attendance') || isActive('/teacher-attendance') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+          isActive('/attendance') || isActive('/teacher-attendance') ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100'
         ]"
       >
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -662,7 +682,7 @@
         @click="sidebarOpen = false"
         :class="[
           'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
-          isActive('/timetables') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+          isActive('/timetables') ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100'
         ]"
       >
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -677,7 +697,7 @@
         @click="sidebarOpen = false"
         :class="[
           'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
-          isActive('/students') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+          isActive('/students') ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100'
         ]"
       >
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -693,7 +713,7 @@
         @click="sidebarOpen = false"
         :class="[
           'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
-          isActive('/library') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+          isActive('/library') ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100'
         ]"
       >
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -708,7 +728,7 @@
         @click="sidebarOpen = false"
         :class="[
           'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
-          isActive('/teachers') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+          isActive('/teachers') ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100'
         ]"
       >
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -723,7 +743,7 @@
         @click="sidebarOpen = !sidebarOpen" 
         :class="[
           'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px] cursor-pointer',
-          sidebarOpen ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+          sidebarOpen ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100'
         ]"
       >
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -807,9 +827,11 @@ import {
   UserRound,
   LockKeyhole,
   Languages,
+  SunMoon,
   ChevronRight
 } from 'lucide-vue-next';
 import { updateFavicon } from '../utils/favicon';
+import LanguageToggleSwitch from './LanguageToggleSwitch.vue';
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -1174,7 +1196,7 @@ watch(() => route.path, (newPath) => {
       openDropdowns.value.push('attendance');
     }
   }
-  if (newPath && (newPath === '/profile' || newPath === '/security' || newPath === '/language' || newPath.startsWith('/settings/'))) {
+  if (newPath && (newPath === '/profile' || newPath === '/security' || newPath === '/display' || newPath.startsWith('/settings/'))) {
     if (!openDropdowns.value.includes('account_settings')) {
       openDropdowns.value.push('account_settings');
     }
@@ -1387,12 +1409,13 @@ const menuItems = [
         roles: ['Super Admin', 'Admin', 'Teacher', 'Student']
       },
       { 
-        nameKm: 'ភាសា', 
-        nameEn: 'Language', 
-        path: '/language', 
-        icon: Languages,
+        nameKm: 'ផ្ទៃបង្ហាញ (Display)', 
+        nameEn: 'Display', 
+        path: '/display', 
+        icon: SunMoon,
+        hasChevron: true,
         roles: ['Super Admin', 'Admin', 'Teacher', 'Student']
-      },
+      }
     ]
   },
   { i18nKey: 'nav.notice', path: '/announcements', icon: Bell, roles: ['Super Admin', 'Admin', 'Teacher'] },

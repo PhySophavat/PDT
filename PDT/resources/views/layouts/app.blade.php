@@ -134,6 +134,30 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/images/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/images/icon-512.png">
   
+  <!-- Zero-latency Dark / Light Theme Initializer to prevent white flash -->
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('pdt_theme') || 'system';
+        var isDark = false;
+        if (saved === 'dark') {
+          isDark = true;
+        } else if (saved === 'light') {
+          isDark = false;
+        } else {
+          isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch(e) {}
+    })();
+  </script>
+
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 
   <script>
@@ -142,7 +166,7 @@
     window.__INITIAL_SETTINGS__ = {!! $initialSettingsJson !!};
   </script>
 </head>
-<body class="bg-white sm:bg-[#dce4f7] min-h-screen p-0 sm:p-3 lg:p-6 flex items-center justify-center antialiased text-slate-800">
+<body class="bg-white sm:bg-[#dce4f7] dark:bg-neutral-950 min-h-screen p-0 sm:p-3 lg:p-6 flex items-center justify-center antialiased text-slate-800 dark:text-neutral-100">
   <!-- Vue.js 3 Master Single Page Application Mount Point -->
   <div id="app" class="w-full h-full min-h-screen flex items-center justify-center">
     <!-- Instant Loading Indicator while JS Chunks Mount -->
