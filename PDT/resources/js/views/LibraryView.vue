@@ -1534,10 +1534,101 @@ const studentSearchQuery = ref('');
 const showStudentSuggestions = ref(false);
 
 // Filter and Computed Logic
+const normalizeGrade = (g) => {
+  if (!g) return '';
+  const s = String(g).trim();
+  const map = { '៧': '7', '៨': '8', '៩': '9', '១០': '10', '១១': '11', '១២': '12' };
+  return map[s] || s;
+};
+
+const isLitBook = (b) => {
+  if (!b) return false;
+  return b.grade === 'ទូទៅ' || b.level === 'អក្សរសិល្ប៍' || (b.subject_name && b.subject_name === 'អក្សរសិល្ប៍') || (b.subject_code && b.subject_code === 'LIT-01');
+};
+
+const CANONICAL_SUBJECT_ORDER = {
+  'KHM-01': 1,
+  'អក្សរសាស្ត្រខ្មែរ': 1,
+  'LIT-01': 2,
+  'អក្សរសិល្ប៍': 2,
+  'MTH-01': 3,
+  'គណិតវិទ្យា': 3,
+  'PHY-01': 4,
+  'រូបវិទ្យា': 4,
+  'CHM-01': 5,
+  'គីមីវិទ្យា': 5,
+  'BIO-01': 6,
+  'ជីវវិទ្យា': 6,
+  'EES-01': 7,
+  'ផែនដី និងបរិស្ថានវិទ្យា': 7,
+  'HIS-01': 8,
+  'ប្រវត្តិវិទ្យា': 8,
+  'GEO-01': 9,
+  'ភូមិវិទ្យា': 9,
+  'ETH-01': 10,
+  'សីលធម៌-ពលរដ្ឋវិជ្ជា': 10,
+  'ENG-01': 11,
+  'ភាសាអង់គ្លេស': 11,
+  'ICT-01': 12,
+  'ព័ត៌មានវិទ្យា (ICT & Coding)': 12,
+  'SPO-01': 13,
+  'អប់រំកាយ និងកីឡា': 13,
+};
+
+const getSubjectSortPriority = (item) => {
+  if (!item) return 99;
+  if (isLitBook(item)) return 2;
+  const code = item.code || item.subject_code || '';
+  const name = item.name || item.subject_name || '';
+  if (CANONICAL_SUBJECT_ORDER[code]) return CANONICAL_SUBJECT_ORDER[code];
+  if (CANONICAL_SUBJECT_ORDER[name]) return CANONICAL_SUBJECT_ORDER[name];
+  if (name.includes('ខ្មែរ')) return 1;
+  if (name.includes('អក្សរសិល្ប៍')) return 2;
+  if (name.includes('គណិត')) return 3;
+  if (name.includes('រូប')) return 4;
+  if (name.includes('គីមី')) return 5;
+  if (name.includes('ជីវ')) return 6;
+  if (name.includes('ផែនដី')) return 7;
+  if (name.includes('ប្រវត្តិ')) return 8;
+  if (name.includes('ភូមិ')) return 9;
+  if (name.includes('សីលធម៌') || name.includes('សេដ្ឋកិច្ច')) return 10;
+  if (name.includes('អង់គ្លេស') || (typeof name === 'string' && name.toLowerCase().includes('english'))) return 11;
+  if (name.includes('ព័ត៌មានវិទ្យា') || (typeof name === 'string' && name.toLowerCase().includes('ict'))) return 12;
+  if (name.includes('អប់រំកាយ') || name.includes('កីឡា')) return 13;
+  return 99;
+};
+
+const getGradeSortPriority = (grade) => {
+  const g = normalizeGrade(grade);
+  const map = { '7': 7, '8': 8, '9': 9, '10': 10, '11': 11, '12': 12, 'បាក់ឌុប': 13, 'ទូទៅ': 14 };
+  return map[g] || 99;
+};
+
+const sortBooksCanonically = (books) => {
+  return [...books].sort((a, b) => {
+    // When a specific subject filter is selected, books share subject, so sort primarily by grade
+    if (selectedSubjectId.value) {
+      const gDiff = getGradeSortPriority(a.grade) - getGradeSortPriority(b.grade);
+      if (gDiff !== 0) return gDiff;
+      return (a.title || '').localeCompare(b.title || '', 'km');
+    }
+
+    // Default & Grade view: group strictly by Subject first (MoEYS canonical priority)
+    const sDiff = getSubjectSortPriority(a) - getSubjectSortPriority(b);
+    if (sDiff !== 0) return sDiff;
+
+    // Within same subject: sort by Grade (7 -> 12 -> បាក់ឌុប -> ទូទៅ)
+    const gDiff = getGradeSortPriority(a.grade) - getGradeSortPriority(b.grade);
+    if (gDiff !== 0) return gDiff;
+
+    // Finally by Khmer title
+    return (a.title || '').localeCompare(b.title || '', 'km');
+  });
+};
+
 const eLibraryBooks = computed(() => {
-  return [...booksList.value]
-    .filter(b => b.external_pdf_url && b.external_pdf_url.trim() !== '')
-    .sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+  const valid = booksList.value.filter(b => b.external_pdf_url && b.external_pdf_url.trim() !== '');
+  return sortBooksCanonically(valid);
 });
 
 const brokenBooks = computed(() => {
@@ -1551,64 +1642,10 @@ const mostViewedBooks = computed(() => {
     .slice(0, 8);
 });
 
-const normalizeGrade = (g) => {
-  if (!g) return '';
-  const s = String(g).trim();
-  const map = { '៧': '7', '៨': '8', '៩': '9', '១០': '10', '១១': '11', '១២': '12' };
-  return map[s] || s;
-};
-
-const countForGrade = (grade) => {
-  const target = normalizeGrade(grade);
-  if (selectedSubjectId.value && !isLiteratureSubject(selectedSubjectId.value)) {
-    return eLibraryBooks.value.filter(b => 
-      normalizeGrade(b.grade) === target && 
-      (String(b.course_subject_id) === String(selectedSubjectId.value) || b.subject_name === getSubjectName(selectedSubjectId.value))
-    ).length;
-  }
-  return eLibraryBooks.value.filter(b => normalizeGrade(b.grade) === target).length;
-};
-
 const getSubjectName = (subjectId) => {
   const s = subjectsList.value.find(sub => String(sub.id) === String(subjectId));
   return s ? s.name : '';
 };
-
-const countForSubject = (subjectId) => {
-  if (isLiteratureSubject(subjectId)) {
-    return eLibraryBooks.value.filter(b => isLitBook(b)).length;
-  }
-  const subName = getSubjectName(subjectId);
-  if (selectedGrade.value) {
-    const target = normalizeGrade(selectedGrade.value);
-    return eLibraryBooks.value.filter(b => 
-      normalizeGrade(b.grade) === target && 
-      (String(b.course_subject_id) === String(subjectId) || (subName && b.subject_name === subName))
-    ).length;
-  }
-  return eLibraryBooks.value.filter(b => 
-    String(b.course_subject_id) === String(subjectId) || (subName && b.subject_name === subName)
-  ).length;
-};
-
-// Sort subjects so "អក្សរសិល្ប៍" is ALWAYS the very first subject right after "ទាំងអស់"
-const sortedSubjectsList = computed(() => {
-  return [...subjectsList.value].sort((a, b) => {
-    const isLitA = a.name === 'អក្សរសិល្ប៍' || a.code === 'LIT-01';
-    const isLitB = b.name === 'អក្សរសិល្ប៍' || b.code === 'LIT-01';
-    if (isLitA) return -1;
-    if (isLitB) return 1;
-    const isKhA = a.name === 'អក្សរសាស្ត្រខ្មែរ' || a.code === 'KHM-01';
-    const isKhB = b.name === 'អក្សរសាស្ត្រខ្មែរ' || b.code === 'KHM-01';
-    if (isKhA) return -1;
-    if (isKhB) return 1;
-    const isMathA = a.name === 'គណិតវិទ្យា' || a.code === 'MTH-01';
-    const isMathB = b.name === 'គណិតវិទ្យា' || b.code === 'MTH-01';
-    if (isMathA) return -1;
-    if (isMathB) return 1;
-    return 0;
-  });
-});
 
 const isLiteratureSubject = (subjId) => {
   if (!subjId) return false;
@@ -1616,10 +1653,43 @@ const isLiteratureSubject = (subjId) => {
   return s ? (s.name === 'អក្សរសិល្ប៍' || s.code === 'LIT-01') : false;
 };
 
-const isLitBook = (b) => {
-  if (!b) return false;
-  return b.grade === 'ទូទៅ' || b.level === 'អក្សរសិល្ប៍' || (b.subject_name && b.subject_name === 'អក្សរសិល្ប៍');
+const countForGrade = (grade) => {
+  const target = normalizeGrade(grade);
+  if (selectedSubjectId.value && !isLiteratureSubject(selectedSubjectId.value)) {
+    const subName = getSubjectName(selectedSubjectId.value);
+    return eLibraryBooks.value.filter(b => 
+      normalizeGrade(b.grade) === target && 
+      (String(b.course_subject_id) === String(selectedSubjectId.value) || 
+       (subName && b.subject_name === subName) ||
+       (b.id === 997 && (subName.includes('ជីវ') || subName.includes('រូប') || subName.includes('ប្រវត្តិ'))))
+    ).length;
+  }
+  return eLibraryBooks.value.filter(b => normalizeGrade(b.grade) === target).length;
 };
+
+const countForSubject = (subjectId) => {
+  if (isLiteratureSubject(subjectId)) {
+    return eLibraryBooks.value.filter(b => isLitBook(b)).length;
+  }
+  const subName = getSubjectName(subjectId);
+  const matchesSub = (b) => (
+    String(b.course_subject_id) === String(subjectId) || 
+    (subName && b.subject_name === subName) ||
+    (b.id === 997 && (subName.includes('ជីវ') || subName.includes('រូប') || subName.includes('ប្រវត្តិ')))
+  );
+  if (selectedGrade.value) {
+    const target = normalizeGrade(selectedGrade.value);
+    return eLibraryBooks.value.filter(b => normalizeGrade(b.grade) === target && matchesSub(b)).length;
+  }
+  return eLibraryBooks.value.filter(matchesSub).length;
+};
+
+// Sort subjects according to MoEYS national curriculum canonical order
+const sortedSubjectsList = computed(() => {
+  return [...subjectsList.value].sort((a, b) => {
+    return getSubjectSortPriority(a) - getSubjectSortPriority(b);
+  });
+});
 
 const failedCovers = ref(new Set());
 const onCoverImageError = (bookId) => {
@@ -1708,7 +1778,7 @@ const getFallbackCoverMeta = (b) => {
       accent: 'text-sky-300',
       badgeBg: 'bg-sky-500/20 text-sky-200 border-sky-400/30',
       icon: 'fa-language',
-      pattern: 'English'
+      pattern: 'ភាសាអង់គ្លេស'
     };
   }
   return {
@@ -1778,7 +1848,8 @@ const filteredELibraryBooks = computed(() => {
       const subName = getSubjectName(selectedSubjectId.value);
       list = list.filter(b => 
         String(b.course_subject_id) === String(selectedSubjectId.value) || 
-        (subName && b.subject_name === subName)
+        (subName && b.subject_name === subName) ||
+        (b.id === 997 && (subName.includes('ជីវ') || subName.includes('រូប') || subName.includes('ប្រវត្តិ')))
       );
     }
   }
@@ -1808,7 +1879,7 @@ const filteredELibraryBooks = computed(() => {
     );
   }
 
-  return list;
+  return sortBooksCanonically(list);
 });
 
 const filteredBooks = computed(() => {

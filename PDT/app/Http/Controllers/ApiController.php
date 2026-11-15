@@ -2225,11 +2225,49 @@ class ApiController extends Controller
                 ];
             });
 
-            $subjects = $subjectsCollection->sortBy(function ($s) {
-                if ($s->name === 'អក្សរសិល្ប៍' || $s->code === 'LIT-01') return 0;
-                if ($s->name === 'អក្សរសាស្ត្រខ្មែរ' || $s->code === 'KHM-01') return 1;
-                if ($s->name === 'គណិតវិទ្យា' || $s->code === 'MTH-01') return 2;
-                return 10 + $s->id;
+            $subjectPriorityMap = [
+                'KHM-01' => 1,
+                'LIT-01' => 2,
+                'MTH-01' => 3,
+                'PHY-01' => 4,
+                'CHM-01' => 5,
+                'BIO-01' => 6,
+                'EES-01' => 7,
+                'HIS-01' => 8,
+                'GEO-01' => 9,
+                'ETH-01' => 10,
+                'ENG-01' => 11,
+                'ICT-01' => 12,
+                'SPO-01' => 13,
+            ];
+
+            $gradePriorityMap = [
+                '7' => 7,
+                '8' => 8,
+                '9' => 9,
+                '10' => 10,
+                '11' => 11,
+                '12' => 12,
+                'បាក់ឌុប' => 13,
+                'ទូទៅ' => 14,
+            ];
+
+            $books = $books->sort(function ($a, $b) use ($subjectPriorityMap, $gradePriorityMap) {
+                $subA = $subjectPriorityMap[$a['subject_code']] ?? 99;
+                $subB = $subjectPriorityMap[$b['subject_code']] ?? 99;
+                if ($subA !== $subB) {
+                    return $subA <=> $subB;
+                }
+                $grA = $gradePriorityMap[$a['grade']] ?? 99;
+                $grB = $gradePriorityMap[$b['grade']] ?? 99;
+                if ($grA !== $grB) {
+                    return $grA <=> $grB;
+                }
+                return strcmp($a['title'], $b['title']);
+            })->values();
+
+            $subjects = $subjectsCollection->sortBy(function ($s) use ($subjectPriorityMap) {
+                return $subjectPriorityMap[$s->code] ?? 99;
             })->values()->map(fn ($s) => [
                 'id' => $s->id,
                 'code' => $s->code,

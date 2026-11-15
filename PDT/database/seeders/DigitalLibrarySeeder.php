@@ -13,10 +13,9 @@ class DigitalLibrarySeeder extends Seeder
     {
         // 1. Ensure National Curriculum Subjects
         $subjectsData = [
-            ['code' => 'LIT-01', 'name' => 'អក្សរសិល្ប៍', 'grade_level' => 'ទូទៅ', 'description' => 'ស្នាដៃអក្សរសិល្ប៍ខ្មែរល្បីៗ និងរឿងប្រលោមលោកបុរាណ-ទំនើប'],
             ['code' => 'KHM-01', 'name' => 'អក្សរសាស្ត្រខ្មែរ', 'grade_level' => '7-12', 'description' => 'ភាសាខ្មែរ និងអក្សរសាស្ត្រជាតិ'],
+            ['code' => 'LIT-01', 'name' => 'អក្សរសិល្ប៍', 'grade_level' => 'ទូទៅ', 'description' => 'ស្នាដៃអក្សរសិល្ប៍ខ្មែរល្បីៗ និងរឿងប្រលោមលោកបុរាណ-ទំនើប'],
             ['code' => 'MTH-01', 'name' => 'គណិតវិទ្យា', 'grade_level' => '7-12', 'description' => 'ពិជគណិត ធរណីមាត្រ ត្រីកោណមាត្រ និងគណិតវិទ្យាអនុវត្ត'],
-            ['code' => 'ENG-01', 'name' => 'ភាសាអង់គ្លេស', 'grade_level' => '7-12', 'description' => 'English for Secondary & High School'],
             ['code' => 'PHY-01', 'name' => 'រូបវិទ្យា', 'grade_level' => '7-12', 'description' => 'មេកានិច អគ្គិសនី អុបទិក និងរូបវិទ្យាទំនើប'],
             ['code' => 'CHM-01', 'name' => 'គីមីវិទ្យា', 'grade_level' => '7-12', 'description' => 'គីមីសរីរាង្គ អសរីរាង្គ និងគីមីអនុវត្ត'],
             ['code' => 'BIO-01', 'name' => 'ជីវវិទ្យា', 'grade_level' => '7-12', 'description' => 'ជីវវិទ្យាកោសិកា ហ្សែន និងប្រព័ន្ធជីវសាស្ត្រ'],
@@ -24,6 +23,7 @@ class DigitalLibrarySeeder extends Seeder
             ['code' => 'HIS-01', 'name' => 'ប្រវត្តិវិទ្យា', 'grade_level' => '7-12', 'description' => 'ប្រវត្តិសាស្ត្រខ្មែរ និងប្រវត្តិសាស្ត្រពិភពលោក'],
             ['code' => 'GEO-01', 'name' => 'ភូមិវិទ្យា', 'grade_level' => '7-12', 'description' => 'ភូមិវិទ្យាកម្ពុជា និងភូមិវិទ្យាតំបន់'],
             ['code' => 'ETH-01', 'name' => 'សីលធម៌-ពលរដ្ឋវិជ្ជា', 'grade_level' => '7-12', 'description' => 'សីលធម៌ សិទ្ធិមនុស្ស និងច្បាប់ពលរដ្ឋ'],
+            ['code' => 'ENG-01', 'name' => 'ភាសាអង់គ្លេស', 'grade_level' => '7-12', 'description' => 'English for Secondary & High School'],
             ['code' => 'ICT-01', 'name' => 'ព័ត៌មានវិទ្យា (ICT & Coding)', 'grade_level' => '7-12', 'description' => 'បច្ចេកវិទ្យាព័ត៌មាន ការសរសេរកូដ និង AI'],
             ['code' => 'SPO-01', 'name' => 'អប់រំកាយ និងកីឡា', 'grade_level' => '7-12', 'description' => 'សុខភាព អនាម័យ និងកីឡា'],
         ];
