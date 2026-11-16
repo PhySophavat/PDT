@@ -2139,6 +2139,12 @@ class ApiController extends Controller
             }
         }
 
+        // On serverless environments (like Vercel) or when the file exceeds 4MB,
+        // redirect directly to the external source to avoid Vercel's 4.5MB payload limit (500 FUNCTION_RESPONSE_PAYLOAD_TOO_LARGE).
+        if (filesize($cachedFile) > 4 * 1024 * 1024 || env('VERCEL') || isset($_SERVER['VERCEL'])) {
+            return redirect()->away($url);
+        }
+
         $isDownload = $request->query('download') == '1';
         $disposition = $isDownload ? 'attachment' : 'inline';
         $filename = basename(parse_url($url, PHP_URL_PATH) ?? 'document.pdf');

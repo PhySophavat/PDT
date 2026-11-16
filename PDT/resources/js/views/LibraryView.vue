@@ -2034,9 +2034,11 @@ const readerIframeUrl = computed(() => {
     if (!url.includes('/preview')) return `${url.replace(/\/+$/, '')}/preview`;
     return url;
   }
-  // Direct PDF files: stream locally via fast cached proxy (eliminates Google Viewer CORS / blocking)
+  // Direct PDF files: embed via Google Docs Viewer
+  // Bypasses Vercel Serverless 4.5MB payload limit (FUNCTION_RESPONSE_PAYLOAD_TOO_LARGE)
+  // and renders any size PDF smoothly on both mobile & desktop.
   if (isDirectPdf(url)) {
-    return `/api/library/pdf-proxy?url=${encodeURIComponent(url)}`;
+    return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
   }
   // Scribd Embed Player
   if (url.includes('scribd.com')) {
@@ -2066,7 +2068,7 @@ const currentPdfViewUrl = computed(() => {
     return `https://drive.google.com/file/d/${currentPdfFileId.value}/view`;
   }
   if (isDirectPdf(currentPdfUrl.value)) {
-    return `/api/library/pdf-proxy?url=${encodeURIComponent(currentPdfUrl.value)}`;
+    return `https://docs.google.com/viewer?url=${encodeURIComponent(currentPdfUrl.value)}`;
   }
   return currentPdfUrl.value;
 });
@@ -2076,9 +2078,6 @@ const currentPdfDownloadUrl = computed(() => {
   if (currentPdfFileId.value) {
     return `https://drive.google.com/uc?export=download&id=${currentPdfFileId.value}`;
   }
-  if (isDirectPdf(currentPdfUrl.value)) {
-    return `/api/library/pdf-proxy?url=${encodeURIComponent(currentPdfUrl.value)}&download=1`;
-  }
   return currentPdfUrl.value;
 });
 
@@ -2086,7 +2085,6 @@ const getPdfDownloadUrl = (url) => {
   if (!url) return '#';
   const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]{20,})/i) || url.match(/id=([a-zA-Z0-9_-]{20,})/i);
   if (m) return `https://drive.google.com/uc?export=download&id=${m[1]}`;
-  if (isDirectPdf(url)) return `/api/library/pdf-proxy?url=${encodeURIComponent(url)}&download=1`;
   return url;
 };
 
@@ -2099,7 +2097,7 @@ const getPdfViewUrl = (url) => {
     if (sm) return `https://www.scribd.com/document/${sm[1]}`;
     return url;
   }
-  if (isDirectPdf(url)) return `/api/library/pdf-proxy?url=${encodeURIComponent(url)}`;
+  if (isDirectPdf(url)) return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}`;
   return url;
 };
 
