@@ -1600,7 +1600,7 @@ class DigitalLibrarySeeder extends Seeder
                 'edition' => 'បោះពុម្ពឆ្នាំ ២០២០',
                 'publication_year' => 2020,
                 'cover_image' => 'https://api.saladigital.org/public/orgs/68873df78e26fc80ea7b5013/images/a5451266-71c9-4ad9-af90-839d0a3b8744.jpg',
-                'external_pdf_url' => 'https://api.saladigital.org/public/orgs/68873df78e26fc80ea7b5013/pdf/d7213e1e-3f1d-469a-bfb1-84b598815741.pdf',
+                'external_pdf_url' => 'https://drive.google.com/file/d/1czDAV8Z23dJDjRSIlKFP-gnU00ql-eqp/preview',
                 'publisher' => 'ក្រសួងអប់រំ យុវជន និងកីឡា',
                 'isbn' => '978-99950-01-7200',
                 'category_id' => $catRef->id,
