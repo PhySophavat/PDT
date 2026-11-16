@@ -1,15 +1,18 @@
 <template>
-  <div class="flex items-center justify-between gap-2.5 sm:gap-4">
+  <div 
+    class="justify-between gap-2.5 sm:gap-4"
+    :class="stackOnMobile ? 'flex flex-col sm:flex-row sm:items-center' : 'flex items-center'"
+  >
     <div class="min-w-0 flex-1">
-      <h1 class="text-base sm:text-2xl font-bold text-slate-900 tracking-tight truncate">{{ title }}</h1>
-      <nav class="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-400 mt-0.5 truncate">
+      <h1 class="text-base sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight leading-snug truncate">{{ title }}</h1>
+      <nav class="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-400 dark:text-neutral-400 mt-0.5 truncate">
         <span>{{ $t('common.home') }}</span>
         <span>&raquo;</span>
-        <span class="text-indigo-600 font-medium truncate">{{ breadcrumb || title }}</span>
+        <span class="text-indigo-600 dark:text-indigo-400 font-medium truncate">{{ breadcrumb || title }}</span>
       </nav>
     </div>
 
-    <div v-if="actionLabel || $slots.extraActions" class="flex items-center gap-2 shrink-0">
+    <div v-if="actionLabel || $slots.extraActions" class="flex items-center gap-2 shrink-0" :class="{ 'self-start sm:self-center': stackOnMobile }">
       <slot name="extraActions"></slot>
       <button 
         v-if="actionLabel"
@@ -39,6 +42,10 @@ defineProps({
   actionLabel: {
     type: String,
     default: ''
+  },
+  stackOnMobile: {
+    type: Boolean,
+    default: false
   }
 });
 

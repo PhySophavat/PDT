@@ -246,14 +246,14 @@
       <!-- 2. MAIN CONTENT AREA -->
       <main class="flex-1 flex flex-col min-w-0 bg-[#fbfcff] dark:bg-[#0d0d0e] overflow-hidden">
         <!-- Top Navbar: Clean Frosted Glass Style -->
-        <header class="relative z-40 h-16 px-4 py-3 sm:px-6 md:px-8 flex items-center justify-between border-b border-slate-100 dark:border-neutral-800 bg-white/90 dark:bg-[#121214]/90 backdrop-blur-md flex-shrink-0 transition-all shadow-2xs">
+        <header class="relative z-40 h-16 px-4 py-3 sm:px-6 md:px-8 flex items-center justify-between border-b border-slate-200/80 dark:border-white/10 bg-white/80 dark:bg-slate-950/75 backdrop-blur-xl flex-shrink-0 transition-all shadow-xs dark:shadow-[inset_0_-1px_0_0_rgba(255,255,255,0.08)]">
           <!-- Left Section: Menu Toggle, Brand / School Logo -->
           <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <!-- Sidebar / Menu Toggle Button (Desktop & Laptop only, hidden on mobile) -->
             <button 
               type="button" 
               @click="sidebarOpen = !sidebarOpen" 
-              class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-slate-600 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-white items-center justify-center transition shadow-2xs cursor-pointer shrink-0"
+              class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-transparent dark:border-white/10 text-slate-600 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-white items-center justify-center active:scale-95 transition-all shadow-2xs cursor-pointer shrink-0"
               :title="sidebarOpen ? 'បង្រួមម៉ឺនុយ' : 'ពង្រីកម៉ឺនុយ (Menu)'"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -263,8 +263,8 @@
 
             <!-- Brand Title with School Logo (Visible on all screens) -->
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-xl overflow-hidden border border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-0.5 shadow-2xs flex-shrink-0 flex items-center justify-center">
-                <img :src="schoolLogo || '/images/logo.png'" alt="Logo" class="w-full h-full object-contain" />
+              <div class="w-8 h-8 rounded-xl overflow-hidden border border-slate-100 dark:border-white/10 bg-white dark:bg-slate-900 p-0.5 ring-2 ring-blue-500/30 shadow-lg shadow-blue-500/10 flex-shrink-0 flex items-center justify-center transition-transform duration-300 hover:scale-105">
+                <img :src="schoolLogo || '/images/logo.png'" alt="Logo" class="w-full h-full object-contain transition-transform duration-300 hover:scale-105" />
               </div>
               <span class="text-xs sm:text-sm font-bold text-slate-800 dark:text-neutral-100 truncate max-w-[200px] sm:max-w-none leading-tight font-khmer">
                 {{ currentLocale === 'en' ? (schoolNameEn || 'New Generation School PDT') : (schoolName || 'សាលារៀន ជំនាន់ថ្មី PDT') }}
@@ -279,17 +279,18 @@
               <button 
                 type="button"
                 @click.stop="toggleNotificationDropdown"
-                class="relative w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-slate-600 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition shadow-2xs cursor-pointer"
+                class="group/bell relative w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-600 dark:text-neutral-200 hover:text-slate-900 dark:hover:text-white flex items-center justify-center active:scale-90 transition-all duration-200 shadow-2xs cursor-pointer backdrop-blur-md"
                 title="ការជូនដំណឹង"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 transition-transform duration-300 group-hover/bell:rotate-[15deg] group-hover/bell:-translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                 </svg>
-                <span 
-                  v-if="unreadCount > 0" 
-                  class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center ring-2 ring-white shadow-xs"
-                >
-                  {{ unreadCount > 99 ? '99+' : unreadCount }}
+                <!-- Animated pulsing unread notification badge -->
+                <span v-if="unreadCount > 0" class="absolute -top-1 -right-1 flex h-4 min-w-[16px] px-1 items-center justify-center">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                  <span class="relative inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-black shadow-xs ring-1 ring-white dark:ring-slate-900">
+                    {{ unreadCount > 99 ? '99+' : unreadCount }}
+                  </span>
                 </span>
               </button>
 
@@ -666,8 +667,8 @@
     <!-- 3. MOBILE BOTTOM NAVIGATION BAR (Sticky thumb-friendly navigation on phones) -->
     <nav 
       v-show="!sidebarOpen"
-      class="md:hidden fixed bottom-0 inset-x-0 bg-white/95 dark:bg-[#121214]/95 backdrop-blur-md border-t border-slate-200/90 dark:border-neutral-800 px-3 py-1.5 z-40 flex items-center justify-around shadow-[0_-4px_25px_rgba(0,0,0,0.06)]"
-      style="padding-bottom: max(0.375rem, env(safe-area-inset-bottom));"
+      class="md:hidden fixed bottom-0 inset-x-0 bg-white/80 dark:bg-slate-950/75 backdrop-blur-xl border-t border-slate-200/80 dark:border-white/10 px-2 py-1.5 z-40 flex items-center justify-around shadow-[0_-4px_25px_rgba(0,0,0,0.12)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]"
+      style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom));"
       aria-label="Mobile Bottom Navigation"
     >
       <!-- 1. Dashboard -->
@@ -675,14 +676,28 @@
         to="/dashboard" 
         @click="sidebarOpen = false"
         :class="[
-          'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
-          isActive('/dashboard') ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100'
+          'relative flex flex-col items-center justify-center py-1.5 px-2.5 rounded-2xl transition-all duration-300 ease-out text-[10px] min-w-[58px] active:scale-90 cursor-pointer select-none',
+          isActive('/dashboard') 
+            ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold shadow-[0_0_15px_rgba(59,130,246,0.25)]' 
+            : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'
         ]"
       >
-        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Top glowing indicator dot when active -->
+        <span 
+          v-if="isActive('/dashboard')"
+          class="absolute -top-1 w-5 h-1 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] animate-in fade-in zoom-in duration-200"
+        ></span>
+
+        <svg 
+          class="w-5 h-5 mb-0.5 transition-transform duration-300 ease-out"
+          :class="isActive('/dashboard') ? '-translate-y-0.5 scale-110' : ''"
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
         </svg>
-        <span>{{ currentLocale === 'km' ? 'ផ្ទាំងដើម' : 'Home' }}</span>
+        <span class="tracking-tight">{{ currentLocale === 'km' ? 'ផ្ទាំងដើម' : 'Home' }}</span>
       </router-link>
 
       <!-- 2. Attendance (Clipboard-Check Icon) -->
@@ -690,14 +705,28 @@
         to="/attendance" 
         @click="sidebarOpen = false"
         :class="[
-          'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
-          isActive('/attendance') || isActive('/teacher-attendance') ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100'
+          'relative flex flex-col items-center justify-center py-1.5 px-2.5 rounded-2xl transition-all duration-300 ease-out text-[10px] min-w-[58px] active:scale-90 cursor-pointer select-none',
+          (isActive('/attendance') || isActive('/teacher-attendance')) 
+            ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold shadow-[0_0_15px_rgba(59,130,246,0.25)]' 
+            : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'
         ]"
       >
-        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Top glowing indicator dot when active -->
+        <span 
+          v-if="isActive('/attendance') || isActive('/teacher-attendance')"
+          class="absolute -top-1 w-5 h-1 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] animate-in fade-in zoom-in duration-200"
+        ></span>
+
+        <svg 
+          class="w-5 h-5 mb-0.5 transition-transform duration-300 ease-out"
+          :class="(isActive('/attendance') || isActive('/teacher-attendance')) ? '-translate-y-0.5 scale-110' : ''"
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
         </svg>
-        <span>{{ currentLocale === 'km' ? 'វត្តមាន' : 'Attendance' }}</span>
+        <span class="tracking-tight">{{ currentLocale === 'km' ? 'វត្តមាន' : 'Attendance' }}</span>
       </router-link>
 
       <!-- 3. Timetables (for Students: Calendar-Clock Icon) OR Students (for Admin / Teacher) -->
@@ -706,14 +735,27 @@
         to="/timetables" 
         @click="sidebarOpen = false"
         :class="[
-          'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
-          isActive('/timetables') ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100'
+          'relative flex flex-col items-center justify-center py-1.5 px-2.5 rounded-2xl transition-all duration-300 ease-out text-[10px] min-w-[58px] active:scale-90 cursor-pointer select-none',
+          isActive('/timetables') 
+            ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold shadow-[0_0_15px_rgba(59,130,246,0.25)]' 
+            : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'
         ]"
       >
-        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span 
+          v-if="isActive('/timetables')"
+          class="absolute -top-1 w-5 h-1 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] animate-in fade-in zoom-in duration-200"
+        ></span>
+
+        <svg 
+          class="w-5 h-5 mb-0.5 transition-transform duration-300 ease-out"
+          :class="isActive('/timetables') ? '-translate-y-0.5 scale-110' : ''"
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
-        <span>{{ currentLocale === 'km' ? 'កាលវិភាគ' : 'Timetable' }}</span>
+        <span class="tracking-tight">{{ currentLocale === 'km' ? 'កាលវិភាគ' : 'Timetable' }}</span>
       </router-link>
 
       <router-link 
@@ -721,14 +763,27 @@
         to="/students" 
         @click="sidebarOpen = false"
         :class="[
-          'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
-          isActive('/students') ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100'
+          'relative flex flex-col items-center justify-center py-1.5 px-2.5 rounded-2xl transition-all duration-300 ease-out text-[10px] min-w-[58px] active:scale-90 cursor-pointer select-none',
+          isActive('/students') 
+            ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold shadow-[0_0_15px_rgba(59,130,246,0.25)]' 
+            : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'
         ]"
       >
-        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span 
+          v-if="isActive('/students')"
+          class="absolute -top-1 w-5 h-1 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] animate-in fade-in zoom-in duration-200"
+        ></span>
+
+        <svg 
+          class="w-5 h-5 mb-0.5 transition-transform duration-300 ease-out"
+          :class="isActive('/students') ? '-translate-y-0.5 scale-110' : ''"
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/>
         </svg>
-        <span>{{ currentLocale === 'km' ? 'សិស្ស' : 'Students' }}</span>
+        <span class="tracking-tight">{{ currentLocale === 'km' ? 'សិស្ស' : 'Students' }}</span>
       </router-link>
 
       <!-- 4. Teachers (for Admin / Teacher) OR Library (for Students) -->
@@ -737,14 +792,27 @@
         to="/library" 
         @click="sidebarOpen = false"
         :class="[
-          'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
-          isActive('/library') ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100'
+          'relative flex flex-col items-center justify-center py-1.5 px-2.5 rounded-2xl transition-all duration-300 ease-out text-[10px] min-w-[58px] active:scale-90 cursor-pointer select-none',
+          isActive('/library') 
+            ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold shadow-[0_0_15px_rgba(59,130,246,0.25)]' 
+            : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'
         ]"
       >
-        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span 
+          v-if="isActive('/library')"
+          class="absolute -top-1 w-5 h-1 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] animate-in fade-in zoom-in duration-200"
+        ></span>
+
+        <svg 
+          class="w-5 h-5 mb-0.5 transition-transform duration-300 ease-out"
+          :class="isActive('/library') ? '-translate-y-0.5 scale-110' : ''"
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
         </svg>
-        <span>{{ currentLocale === 'km' ? 'បណ្ណាល័យ' : 'Library' }}</span>
+        <span class="tracking-tight">{{ currentLocale === 'km' ? 'បណ្ណាល័យ' : 'Library' }}</span>
       </router-link>
 
       <router-link 
@@ -752,14 +820,27 @@
         to="/teachers" 
         @click="sidebarOpen = false"
         :class="[
-          'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px]',
-          isActive('/teachers') ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100'
+          'relative flex flex-col items-center justify-center py-1.5 px-2.5 rounded-2xl transition-all duration-300 ease-out text-[10px] min-w-[58px] active:scale-90 cursor-pointer select-none',
+          isActive('/teachers') 
+            ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold shadow-[0_0_15px_rgba(59,130,246,0.25)]' 
+            : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'
         ]"
       >
-        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span 
+          v-if="isActive('/teachers')"
+          class="absolute -top-1 w-5 h-1 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] animate-in fade-in zoom-in duration-200"
+        ></span>
+
+        <svg 
+          class="w-5 h-5 mb-0.5 transition-transform duration-300 ease-out"
+          :class="isActive('/teachers') ? '-translate-y-0.5 scale-110' : ''"
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
         </svg>
-        <span>{{ currentLocale === 'km' ? 'គ្រូ' : 'Teachers' }}</span>
+        <span class="tracking-tight">{{ currentLocale === 'km' ? 'គ្រូ' : 'Teachers' }}</span>
       </router-link>
 
       <!-- 5. All Menu (Opens full drawer) -->
@@ -767,14 +848,27 @@
         type="button" 
         @click="sidebarOpen = !sidebarOpen" 
         :class="[
-          'flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[10px] font-medium min-w-[56px] cursor-pointer',
-          sidebarOpen ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100'
+          'relative flex flex-col items-center justify-center py-1.5 px-2.5 rounded-2xl transition-all duration-300 ease-out text-[10px] min-w-[58px] active:scale-90 cursor-pointer select-none',
+          sidebarOpen 
+            ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold shadow-[0_0_15px_rgba(59,130,246,0.25)]' 
+            : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'
         ]"
       >
-        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span 
+          v-if="sidebarOpen"
+          class="absolute -top-1 w-5 h-1 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] animate-in fade-in zoom-in duration-200"
+        ></span>
+
+        <svg 
+          class="w-5 h-5 mb-0.5 transition-transform duration-300 ease-out"
+          :class="sidebarOpen ? '-translate-y-0.5 scale-110' : ''"
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
-        <span>{{ currentLocale === 'km' ? 'មុខងារ' : 'Modules' }}</span>
+        <span class="tracking-tight">{{ currentLocale === 'km' ? 'មុខងារ' : 'Modules' }}</span>
       </button>
     </nav>
 

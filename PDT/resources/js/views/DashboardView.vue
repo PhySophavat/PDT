@@ -8,14 +8,14 @@
       @action="handleCreateNew"
     >
       <template #extraActions>
-        <div>
+        <div class="flex items-center shrink-0">
           <button 
             type="button"
             @click="showShareDropdown = true"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 sm:py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold rounded-xl shadow-xs shadow-blue-500/20 transition-all active:scale-95 cursor-pointer shrink-0"
             title="ចែករំលែកតំណចុះឈ្មោះសាលារៀន"
           >
-            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
             </svg>
             <span class="hidden sm:inline">ចែករំលែកតំណចុះឈ្មោះ</span>
@@ -140,84 +140,90 @@
     <!-- Tab 1: Overview Tab (Primary Dashboard) -->
     <div v-show="activeTab === 'overview'" class="space-y-6">
       <!-- 1. STUDENT DASHBOARD: 4 Personal Student Summary Cards -->
-      <div v-if="isStudent" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+      <div v-if="isStudent" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         <!-- Student Card 1: My Class (Clickable to Timetables) -->
         <router-link 
           to="/timetables" 
-          class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-blue-200/80 transition-all duration-200 active:scale-[0.99] cursor-pointer"
+          class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-3.5 sm:p-5 shadow-sm hover:shadow-md hover:border-blue-200/80 transition-all duration-200 active:scale-[0.99] cursor-pointer"
         >
           <div class="absolute -top-10 -right-10 w-28 h-28 bg-blue-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
           
-          <div>
-            <div class="flex items-start justify-between">
-              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform duration-200">
-                <i class="fa-solid fa-graduation-cap text-xl"></i>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100/80">
-                  {{ studentInfo.room || (currentLocale === 'km' ? ('បន្ទប់ ' + studentInfo.class_name) : ('Room ' + studentInfo.class_name)) }}
-                </span>
-                <div class="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-blue-600 group-hover:bg-blue-50 transition-colors">
-                  <i class="fa-solid fa-arrow-right text-xs transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
-                </div>
-              </div>
+          <div class="flex items-start gap-3 sm:gap-3.5">
+            <!-- Icon Box -->
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform duration-200 shrink-0">
+              <i class="fa-solid fa-graduation-cap text-base sm:text-xl"></i>
             </div>
 
-            <div class="mt-4">
-              <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                {{ currentLocale === 'km' ? 'ថ្នាក់រៀនរបស់ខ្ញុំ' : 'My Classroom' }}
-              </h3>
-              <div class="mt-1">
-                <span class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-1.5">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">
+                  {{ currentLocale === 'km' ? 'ថ្នាក់រៀនរបស់ខ្ញុំ' : 'My Classroom' }}
+                </h3>
+                <div class="flex items-center gap-1 shrink-0">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100/80">
+                    {{ studentInfo.room || (currentLocale === 'km' ? ('បន្ទប់ ' + studentInfo.class_name) : ('Room ' + studentInfo.class_name)) }}
+                  </span>
+                  <div class="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-blue-600 group-hover:bg-blue-50 transition-colors">
+                    <i class="fa-solid fa-arrow-right text-[10px] transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-0.5 sm:mt-1">
+                <span class="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight leading-tight block">
                   {{ currentLocale === 'km' ? ('ថ្នាក់ទី ' + studentInfo.class_name) : ('Grade ' + studentInfo.class_name) }}
                 </span>
+                <p class="text-xs text-slate-500 mt-1 flex items-center gap-1.5 truncate">
+                  <i class="fa-solid fa-users text-slate-400 text-[10px]"></i>
+                  <span>{{ currentLocale === 'km' ? 'សិស្សរួមថ្នាក់:' : 'Classmates:' }}</span>
+                  <strong class="font-bold text-slate-700">{{ studentInfo.classmates_count || 50 }} {{ currentLocale === 'km' ? 'នាក់' : '' }}</strong>
+                </p>
               </div>
-              <p class="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
-                <i class="fa-solid fa-users text-slate-400 text-[11px]"></i>
-                <span>{{ currentLocale === 'km' ? 'សិស្សរួមថ្នាក់:' : 'Classmates:' }}</span>
-                <strong class="font-bold text-slate-700">{{ studentInfo.classmates_count || 50 }} {{ currentLocale === 'km' ? 'នាក់' : '' }}</strong>
-              </p>
             </div>
           </div>
 
-          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-blue-600 group-hover:text-blue-700">
+          <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-blue-600 group-hover:text-blue-700">
             <span>{{ currentLocale === 'km' ? 'ពិនិត្យកាលវិភាគសិក្សា' : 'View Timetable' }}</span>
             <i class="fa-solid fa-chevron-right text-[10px] transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
           </div>
         </router-link>
 
         <!-- Student Card 2: Homeroom Teacher -->
-        <div class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-emerald-200/80 transition-all duration-200">
+        <div class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-3.5 sm:p-5 shadow-sm hover:shadow-md hover:border-emerald-200/80 transition-all duration-200">
           <div class="absolute -top-10 -right-10 w-28 h-28 bg-emerald-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
           
-          <div>
-            <div class="flex items-start justify-between">
-              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform duration-200">
-                <i class="fa-solid fa-chalkboard-user text-xl"></i>
-              </div>
-              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100/80">
-                {{ currentLocale === 'km' ? 'គ្រូបន្ទុកថ្នាក់' : 'Homeroom' }}
-              </span>
+          <div class="flex items-start gap-3 sm:gap-3.5">
+            <!-- Icon Box -->
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform duration-200 shrink-0">
+              <i class="fa-solid fa-chalkboard-user text-base sm:text-xl"></i>
             </div>
 
-            <div class="mt-4">
-              <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                {{ currentLocale === 'km' ? 'គ្រូបន្ទុកថ្នាក់' : 'Homeroom Teacher' }}
-              </h3>
-              <div class="mt-1">
-                <span class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate block">
-                  {{ studentInfo.homeroom_teacher || (currentLocale === 'km' ? 'មិនទាន់ចាត់តាំង' : 'Unassigned') }}
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-1.5">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">
+                  {{ currentLocale === 'km' ? 'គ្រូបន្ទុកថ្នាក់' : 'Homeroom Teacher' }}
+                </h3>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100/80 shrink-0">
+                  {{ currentLocale === 'km' ? 'គ្រូបន្ទុកថ្នាក់' : 'Homeroom' }}
                 </span>
               </div>
-              <p class="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
-                <i class="fa-solid fa-phone text-emerald-600 text-[11px]"></i>
-                <span>{{ currentLocale === 'km' ? 'ទំនាក់ទំនង:' : 'Contact:' }}</span>
-                <strong class="font-bold text-slate-700">{{ studentInfo.teacher_phone || '-' }}</strong>
-              </p>
+
+              <div class="mt-0.5 sm:mt-1">
+                <span class="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight leading-tight truncate block">
+                  {{ studentInfo.homeroom_teacher || (currentLocale === 'km' ? 'មិនទាន់ចាត់តាំង' : 'Unassigned') }}
+                </span>
+                <p class="text-xs text-slate-500 mt-1 flex items-center gap-1.5 truncate">
+                  <i class="fa-solid fa-phone text-emerald-600 text-[10px]"></i>
+                  <span>{{ currentLocale === 'km' ? 'ទំនាក់ទំនង:' : 'Contact:' }}</span>
+                  <strong class="font-bold text-slate-700">{{ studentInfo.teacher_phone || '-' }}</strong>
+                </p>
+              </div>
             </div>
           </div>
 
-          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+          <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
             <a 
               v-if="studentInfo.teacher_phone && studentInfo.teacher_phone !== '-'" 
               :href="'tel:' + studentInfo.teacher_phone" 
@@ -234,49 +240,54 @@
         <!-- Student Card 3: Personal Attendance Rate (Clickable to Attendance) -->
         <router-link 
           to="/attendance" 
-          class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-purple-200/80 transition-all duration-200 active:scale-[0.99] cursor-pointer"
+          class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-3.5 sm:p-5 shadow-sm hover:shadow-md hover:border-purple-200/80 transition-all duration-200 active:scale-[0.99] cursor-pointer"
         >
           <div class="absolute -top-10 -right-10 w-28 h-28 bg-purple-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
           
-          <div>
-            <div class="flex items-start justify-between">
-              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-violet-500 text-white flex items-center justify-center shadow-md shadow-purple-500/20 group-hover:scale-105 transition-transform duration-200">
-                <i class="fa-solid fa-calendar-check text-xl"></i>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-100/80">
-                  {{ currentLocale === 'km' ? 'អត្រាវត្តមាន' : 'Attendance' }}
-                </span>
-                <div class="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-purple-600 group-hover:bg-purple-50 transition-colors">
-                  <i class="fa-solid fa-arrow-right text-xs transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
-                </div>
-              </div>
+          <div class="flex items-start gap-3 sm:gap-3.5">
+            <!-- Icon Box -->
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-purple-600 to-violet-500 text-white flex items-center justify-center shadow-md shadow-purple-500/20 group-hover:scale-105 transition-transform duration-200 shrink-0">
+              <i class="fa-solid fa-calendar-check text-base sm:text-xl"></i>
             </div>
 
-            <div class="mt-4">
-              <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                {{ currentLocale === 'km' ? 'វត្តមានផ្ទាល់ខ្លួន' : 'My Attendance' }}
-              </h3>
-              <div class="flex items-baseline gap-2 mt-1">
-                <span class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                  {{ studentInfo.attendance?.rate ?? 100 }}%
-                </span>
-                <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100/60">
-                  {{ currentLocale === 'km' ? 'វត្តមាន' : 'Present' }} {{ studentInfo.attendance?.present ?? 0 }} ថ្ងៃ
-                </span>
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-1.5">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">
+                  {{ currentLocale === 'km' ? 'វត្តមានផ្ទាល់ខ្លួន' : 'My Attendance' }}
+                </h3>
+                <div class="flex items-center gap-1 shrink-0">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-100/80">
+                    {{ currentLocale === 'km' ? 'អត្រាវត្តមាន' : 'Attendance' }}
+                  </span>
+                  <div class="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-purple-600 group-hover:bg-purple-50 transition-colors">
+                    <i class="fa-solid fa-arrow-right text-[10px] transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+                  </div>
+                </div>
               </div>
-              <p class="text-xs text-slate-500 mt-2">
-                <template v-if="currentLocale === 'km'">
-                  ច្បាប់ <strong class="font-bold text-blue-600">{{ studentInfo.attendance?.excused ?? 0 }}</strong> ថ្ងៃ • អត់ច្បាប់ <strong class="font-bold text-rose-600">{{ studentInfo.attendance?.absent ?? 0 }}</strong> ថ្ងៃ
-                </template>
-                <template v-else>
-                  Excused <strong class="font-bold text-blue-600">{{ studentInfo.attendance?.excused ?? 0 }}</strong> • Absent <strong class="font-bold text-rose-600">{{ studentInfo.attendance?.absent ?? 0 }}</strong>
-                </template>
-              </p>
+
+              <div class="mt-0.5 sm:mt-1">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight leading-tight">
+                    {{ studentInfo.attendance?.rate ?? 100 }}%
+                  </span>
+                  <span class="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded-full border border-emerald-100/60">
+                    {{ currentLocale === 'km' ? 'វត្តមាន' : 'Present' }} {{ studentInfo.attendance?.present ?? 0 }} ថ្ងៃ
+                  </span>
+                </div>
+                <p class="text-xs text-slate-500 mt-1 truncate">
+                  <template v-if="currentLocale === 'km'">
+                    ច្បាប់ <strong class="font-bold text-blue-600">{{ studentInfo.attendance?.excused ?? 0 }}</strong> ថ្ងៃ • អត់ច្បាប់ <strong class="font-bold text-rose-600">{{ studentInfo.attendance?.absent ?? 0 }}</strong> ថ្ងៃ
+                  </template>
+                  <template v-else>
+                    Excused <strong class="font-bold text-blue-600">{{ studentInfo.attendance?.excused ?? 0 }}</strong> • Absent <strong class="font-bold text-rose-600">{{ studentInfo.attendance?.absent ?? 0 }}</strong>
+                  </template>
+                </p>
+              </div>
             </div>
           </div>
 
-          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-purple-600 group-hover:text-purple-700">
+          <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-purple-600 group-hover:text-purple-700">
             <span>{{ currentLocale === 'km' ? 'ពិនិត្យប្រវត្តិវត្តមានលម្អិត' : 'View Attendance History' }}</span>
             <i class="fa-solid fa-chevron-right text-[10px] transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
           </div>
@@ -285,42 +296,47 @@
         <!-- Student Card 4: Learning Resources & Digital Library (Clickable to Library) -->
         <router-link 
           to="/library" 
-          class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-amber-200/80 transition-all duration-200 active:scale-[0.99] cursor-pointer"
+          class="group relative flex flex-col justify-between overflow-hidden bg-white border border-gray-100 rounded-2xl p-3.5 sm:p-5 shadow-sm hover:shadow-md hover:border-amber-200/80 transition-all duration-200 active:scale-[0.99] cursor-pointer"
         >
           <div class="absolute -top-10 -right-10 w-28 h-28 bg-amber-500/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
           
-          <div>
-            <div class="flex items-start justify-between">
-              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform duration-200">
-                <i class="fa-solid fa-book-bookmark text-xl"></i>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100/80">
-                  {{ currentLocale === 'km' ? 'បណ្ណាល័យ' : 'Library' }}
-                </span>
-                <div class="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-amber-600 group-hover:bg-amber-50 transition-colors">
-                  <i class="fa-solid fa-arrow-right text-xs transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
-                </div>
-              </div>
+          <div class="flex items-start gap-3 sm:gap-3.5">
+            <!-- Icon Box -->
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform duration-200 shrink-0">
+              <i class="fa-solid fa-book-bookmark text-base sm:text-xl"></i>
             </div>
 
-            <div class="mt-4">
-              <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                {{ currentLocale === 'km' ? 'សៀវភៅសិក្សាឌីជីថល' : 'Digital Textbooks' }}
-              </h3>
-              <div class="flex items-baseline gap-2 mt-1">
-                <span class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                  {{ studentInfo.student_visible_books || studentInfo.total_books || stats.books || 81 }}
-                </span>
-                <span class="text-xs font-medium text-slate-400">{{ currentLocale === 'km' ? 'ក្បាលសៀវភៅ' : 'Books' }}</span>
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-1.5">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">
+                  {{ currentLocale === 'km' ? 'សៀវភៅសិក្សាឌីជីថល' : 'Digital Textbooks' }}
+                </h3>
+                <div class="flex items-center gap-1 shrink-0">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100/80">
+                    {{ currentLocale === 'km' ? 'បណ្ណាល័យ' : 'Library' }}
+                  </span>
+                  <div class="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-amber-600 group-hover:bg-amber-50 transition-colors">
+                    <i class="fa-solid fa-arrow-right text-[10px] transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
+                  </div>
+                </div>
               </div>
-              <p class="text-xs text-slate-500 mt-2 truncate">
-                {{ currentLocale === 'km' ? 'សៀវភៅពុម្ព MoEYS និងឯកសារជំនួយ' : 'MoEYS Textbooks & Study Materials' }}
-              </p>
+
+              <div class="mt-0.5 sm:mt-1">
+                <div class="flex items-baseline gap-1.5">
+                  <span class="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight leading-tight">
+                    {{ studentInfo.student_visible_books || studentInfo.total_books || stats.books || 81 }}
+                  </span>
+                  <span class="text-xs font-medium text-slate-400">{{ currentLocale === 'km' ? 'ក្បាលសៀវភៅ' : 'Books' }}</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-1 truncate">
+                  {{ currentLocale === 'km' ? 'សៀវភៅពុម្ព MoEYS និងឯកសារជំនួយ' : 'MoEYS Textbooks & Study Materials' }}
+                </p>
+              </div>
             </div>
           </div>
 
-          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-amber-600 group-hover:text-amber-700">
+          <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-amber-600 group-hover:text-amber-700">
             <span>{{ currentLocale === 'km' ? 'ចូលអានសៀវភៅពុម្ព MoEYS' : 'Read Digital Books' }}</span>
             <i class="fa-solid fa-chevron-right text-[10px] transform group-hover:translate-x-0.5 transition-transform duration-200"></i>
           </div>

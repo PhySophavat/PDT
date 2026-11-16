@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 pb-28 md:pb-8">
     <!-- Header -->
     <PageHeader 
       title="បណ្ណាល័យឌីជីថល និងសៀវភៅពុម្ព (Digital Library)" 
@@ -34,7 +34,7 @@
       <!-- STICKY COMPACT HEADER & MOBILE-FIRST FILTER SUITE WITH AUTO-HIDE ON SCROLL -->
       <div 
         ref="headerRef"
-        class="sticky top-0 z-30 bg-white/95 backdrop-blur-md -mx-3 sm:mx-0 px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-b-2xl sm:rounded-2xl border-b sm:border border-slate-200/70 shadow-xs sm:shadow-sm space-y-2.5 transition-transform duration-300 ease-in-out"
+        class="sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md -mx-3 sm:mx-0 px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-b-2xl sm:rounded-2xl border-b sm:border border-slate-200/70 dark:border-slate-800 shadow-xs sm:shadow-sm space-y-2.5 transition-transform duration-300 ease-in-out"
         :class="{ '-translate-y-full': isHeaderHidden }"
       >
         <!-- Row 1: Search & Level / Quick Counts -->
@@ -46,7 +46,7 @@
               v-model="searchQuery" 
               type="text" 
               placeholder="ស្វែងរកចំណងជើង, អ្នកនិពន្ធ, មុខវិជ្ជា..." 
-              class="w-full pl-8 pr-8 py-2 bg-slate-100/80 hover:bg-slate-100 focus:bg-white border border-slate-200/80 focus:border-indigo-500 rounded-xl text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
+              class="w-full pl-8 pr-8 py-2 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 border border-slate-200/80 dark:border-slate-700 focus:border-indigo-500 rounded-xl text-xs text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
             />
             <button 
               v-if="searchQuery" 
@@ -62,7 +62,7 @@
           <div class="relative shrink-0">
             <select 
               v-model="selectedLevel" 
-              class="px-2.5 sm:px-3 py-2 bg-slate-100/80 hover:bg-slate-100 border border-slate-200/80 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition"
+              class="px-2.5 sm:px-3 py-2 bg-slate-100/80 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition"
             >
               <option value="">📚 គ្រប់កម្រិត</option>
               <option value="basic">មូលដ្ឋាន</option>
@@ -72,7 +72,7 @@
           </div>
 
           <!-- Total Count Badge (Desktop) -->
-          <div class="hidden md:flex items-center gap-1.5 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-bold border border-indigo-100 shrink-0">
+          <div class="hidden md:flex items-center gap-1.5 px-3 py-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 rounded-xl text-xs font-bold border border-indigo-100 dark:border-indigo-800/50 shrink-0">
             <i class="fa-solid fa-book-open text-xs"></i>
             <span>{{ filteredELibraryBooks.length }} ក្បាល</span>
           </div>
@@ -88,12 +88,12 @@
                 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 shadow-2xs',
                 subFilter === 'all' 
                   ? 'bg-indigo-600 text-white shadow-indigo-600/20' 
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                  : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
               ]"
             >
               <i class="fa-solid fa-layer-group text-[10px]"></i>
               <span>ទាំងអស់</span>
-              <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="subFilter === 'all' ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-700'">
+              <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="subFilter === 'all' ? 'bg-white/25 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'">
                 {{ eLibraryBooks.length }}
               </span>
             </button>
@@ -105,12 +105,12 @@
                 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 shadow-2xs',
                 subFilter === 'bookmarks' 
                   ? 'bg-amber-500 text-white shadow-amber-500/20' 
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                  : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
               ]"
             >
               <i class="fa-solid fa-star text-[10px]" :class="subFilter === 'bookmarks' ? 'text-amber-100' : 'text-amber-500'"></i>
               <span>ពេញចិត្ត</span>
-              <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="subFilter === 'bookmarks' ? 'bg-white/25 text-white' : 'bg-amber-100 text-amber-800'">
+              <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="subFilter === 'bookmarks' ? 'bg-white/25 text-white' : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'">
                 {{ bookmarkedIds.length }}
               </span>
             </button>
@@ -122,25 +122,25 @@
                 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 shadow-2xs',
                 subFilter === 'recent' 
                   ? 'bg-blue-600 text-white shadow-blue-600/20' 
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                  : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
               ]"
             >
               <i class="fa-solid fa-clock-rotate-left text-[10px]"></i>
               <span>ទើបអាន</span>
-              <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="subFilter === 'recent' ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-700'">
+              <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="subFilter === 'recent' ? 'bg-white/25 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'">
                 {{ recentlyViewedIds.length }}
               </span>
             </button>
           </div>
 
           <!-- Total Count Indicator (Mobile) -->
-          <span class="md:hidden text-[11px] text-slate-400 font-medium whitespace-nowrap shrink-0 pl-1">
+          <span class="md:hidden text-[11px] text-slate-400 dark:text-slate-400 font-medium whitespace-nowrap shrink-0 pl-1">
             <strong>{{ filteredELibraryBooks.length }}</strong> ក្បាល
           </span>
         </div>
 
         <!-- Row 3: Smooth Horizontal Scrollable Grade Chips (ថ្នាក់ទី ៧ - ១២) -->
-        <div class="pt-2 border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-0.5">
+        <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-0.5">
           <span class="text-[11px] font-bold text-slate-400 whitespace-nowrap flex items-center gap-1 mr-0.5 shrink-0">
             <i class="fa-solid fa-graduation-cap text-indigo-500"></i>
             <span class="hidden sm:inline">ថ្នាក់៖</span>
@@ -153,7 +153,7 @@
               'px-2.5 sm:px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1 shrink-0',
               selectedGrade === '' 
                 ? 'bg-indigo-600 text-white shadow-xs' 
-                : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
             ]"
           >
             <span>គ្រប់ថ្នាក់</span>
@@ -168,7 +168,7 @@
               'px-2.5 sm:px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1 shrink-0',
               selectedGrade === g 
                 ? 'bg-indigo-600 text-white shadow-xs' 
-                : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
             ]"
           >
             <span>ថ្នាក់ទី {{ g }}</span>
@@ -183,18 +183,18 @@
               'px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 shadow-2xs',
               selectedGrade === 'បាក់ឌុប' 
                 ? 'bg-gradient-to-r from-amber-600 to-rose-600 text-white shadow-amber-500/25 ring-2 ring-amber-400/50' 
-                : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200'
+                : 'bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60'
             ]"
             title="កម្រងវិញ្ញាសា និងឯកសារត្រៀមប្រឡងបាក់ឌុប"
           >
             <i class="fa-solid fa-award text-amber-500 text-[11px]" :class="selectedGrade === 'បាក់ឌុប' ? 'text-white' : 'text-amber-600'"></i>
             <span>វិញ្ញាសាបាក់ឌុប</span>
-            <span v-if="countForGrade('បាក់ឌុប') > 0" class="text-[10px] px-1.5 py-0.2 rounded-full font-bold" :class="selectedGrade === 'បាក់ឌុប' ? 'bg-white/25 text-white' : 'bg-amber-200 text-amber-900'">{{ countForGrade('បាក់ឌុប') }}</span>
+            <span v-if="countForGrade('បាក់ឌុប') > 0" class="text-[10px] px-1.5 py-0.2 rounded-full font-bold" :class="selectedGrade === 'បាក់ឌុប' ? 'bg-white/25 text-white' : 'bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-200'">{{ countForGrade('បាក់ឌុប') }}</span>
           </button>
         </div>
 
         <!-- Row 4: Smooth Horizontal Scrollable Subject Chips (មុខវិជ្ជា) -->
-        <div class="pt-2 border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-0.5">
+        <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-0.5">
           <span class="text-[11px] font-bold text-slate-400 whitespace-nowrap flex items-center gap-1 mr-0.5 shrink-0">
             <i class="fa-solid fa-book-bookmark text-slate-400"></i>
             <span class="hidden sm:inline">មុខវិជ្ជា៖</span>
@@ -207,7 +207,7 @@
               'px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0',
               selectedSubjectId === '' 
                 ? 'bg-indigo-600 text-white shadow-xs font-bold' 
-                : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
             ]"
           >
             ទាំងអស់
@@ -222,7 +222,7 @@
               'px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1 shrink-0',
               selectedSubjectId === sub.id 
                 ? 'bg-indigo-600 text-white shadow-xs font-bold' 
-                : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
             ]"
           >
             <span>{{ sub.name }}</span>
@@ -282,16 +282,16 @@
       </div>
 
       <!-- MODERN CLEAN 2-COLUMN MOBILE / 3-5 COLUMN DESKTOP BOOK GRID -->
-      <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4.5">
+      <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4.5 pb-28 md:pb-8">
         <div 
           v-for="b in filteredELibraryBooks" 
           :key="b.id"
-          class="bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-300 shadow-2xs hover:shadow-md transition-all duration-200 p-2 sm:p-2.5 flex flex-col justify-between group relative"
+          class="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/70 dark:border-slate-700/80 hover:border-indigo-300 dark:hover:border-indigo-500 shadow-2xs hover:shadow-md transition-all duration-200 p-2 sm:p-2.5 flex flex-col justify-between group relative"
         >
           <!-- 1. Book Cover with Aspect Ratio & Overlays -->
           <div 
             @click="openPdfReader(b)"
-            class="relative aspect-[3/4] w-full rounded-xl overflow-hidden bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-900 shadow-inner cursor-pointer group/cover"
+            class="relative aspect-[4/5] sm:aspect-[3/4] w-full rounded-xl overflow-hidden bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-900 shadow-inner cursor-pointer group/cover"
           >
             <!-- Cover Image if present and not failed -->
             <img 
@@ -306,7 +306,7 @@
             <!-- Stylized Fallback Cover when no image or image failed -->
             <div 
               v-else 
-              class="w-full h-full p-2.5 sm:p-3 flex flex-col justify-between bg-gradient-to-br border-l-[4px] border-white/20 shadow-inner relative overflow-hidden group-hover/cover:brightness-105 transition-all duration-300"
+              class="w-full h-full p-2.5 sm:p-3 flex flex-col items-center justify-center bg-gradient-to-br border-l-[4px] border-white/20 shadow-inner relative overflow-hidden group-hover/cover:brightness-105 transition-all duration-300 text-center"
               :class="getFallbackCoverMeta(b).gradient"
             >
               <!-- Background Decorative Watermark Icon -->
@@ -315,29 +315,17 @@
                 class="absolute -right-2 -bottom-2 text-white/[0.08] text-6xl sm:text-7xl pointer-events-none transform -rotate-12"
               ></i>
 
-              <!-- Top header: Subject Icon & Ministry Code -->
-              <div class="flex items-center justify-between relative z-10">
-                <div class="w-6 h-6 rounded-md bg-white/15 backdrop-blur-md border border-white/10 flex items-center justify-center text-[11px]" :class="getFallbackCoverMeta(b).accent">
+              <!-- Centered Subject Icon & Subject Tag -->
+              <div class="relative z-10 flex flex-col items-center justify-center my-auto transition-transform duration-300 group-hover/cover:scale-105">
+                <div 
+                  class="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-lg sm:text-xl shadow-inner mb-1.5"
+                  :class="getFallbackCoverMeta(b).accent"
+                >
                   <i :class="'fa-solid ' + getFallbackCoverMeta(b).icon"></i>
                 </div>
-                <span class="text-[8px] font-bold tracking-wider uppercase text-white/50">MoEYS</span>
-              </div>
-
-              <!-- Center/Bottom: Subject Badge & Book Title -->
-              <div class="relative z-10 mt-auto pt-2">
-                <span 
-                  class="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold border mb-1 truncate max-w-full"
-                  :class="getFallbackCoverMeta(b).badgeBg"
-                >
+                <span class="text-[10px] sm:text-xs font-bold text-white/85 tracking-wide px-2 py-0.5 rounded-full bg-black/20 border border-white/10 backdrop-blur-xs">
                   {{ b.subject_name || getFallbackCoverMeta(b).pattern }}
                 </span>
-                <h5 class="text-xs sm:text-[13px] font-extrabold text-white line-clamp-3 leading-snug drop-shadow-xs">
-                  {{ b.title }}
-                </h5>
-                <p class="text-[9px] text-white/60 truncate mt-1 flex items-center gap-1">
-                  <i class="fa-solid fa-feather text-[8px]"></i>
-                  <span>{{ b.author || 'ក្រសួងអប់រំ យុវជន និងកីឡា' }}</span>
-                </p>
               </div>
 
               <!-- Subtle spine highlight -->
@@ -349,7 +337,7 @@
 
             <!-- Grade Badge (Top-Left) -->
             <span 
-              class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold backdrop-blur-md border shadow-xs"
+              class="absolute top-2.5 left-2.5 z-10 px-2 py-0.5 rounded-md text-[10px] font-bold backdrop-blur-md border shadow-xs"
               :class="b.grade === 'បាក់ឌុប' ? 'bg-amber-600/90 text-amber-50 border-amber-300/40 shadow-amber-900/30' : 'bg-slate-900/75 text-white border-white/15'"
             >
               {{ isLitBook(b) || b.grade === 'ទូទៅ' ? 'ទូទៅ' : (b.grade === 'បាក់ឌុប' ? '★ បាក់ឌុប' : 'ថ្នាក់ ' + (b.grade || '11')) }}
@@ -359,7 +347,7 @@
             <button 
               type="button"
               @click.stop="toggleBookmark(b.id)"
-              class="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-slate-900/65 hover:bg-slate-900/90 backdrop-blur-md text-white flex items-center justify-center text-xs transition active:scale-90 cursor-pointer shadow-xs"
+              class="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-slate-900/60 hover:bg-slate-900/85 backdrop-blur-sm text-white flex items-center justify-center text-xs transition active:scale-90 cursor-pointer shadow-sm border border-white/10"
               :title="isBookmarked(b.id) ? 'ដកចេញពីសៀវភៅចំណាំ' : 'រក្សាទុកក្នុងសៀវភៅចំណាំ'"
             >
               <i :class="isBookmarked(b.id) ? 'fa-solid fa-star text-amber-400' : 'fa-regular fa-star text-white/80'"></i>
@@ -368,7 +356,7 @@
             <!-- Reading Progress indicator (Bottom-Left) -->
             <span 
               v-if="getLastPage(b.id)" 
-              class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-emerald-600/90 backdrop-blur-md text-white shadow-xs flex items-center gap-1"
+              class="absolute bottom-2 left-2 z-10 px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-emerald-600/90 backdrop-blur-md text-white shadow-xs flex items-center gap-1"
             >
               <i class="fa-solid fa-bookmark text-[8px]"></i>
               <span>ទំព័រទី {{ getLastPage(b.id) }}</span>
@@ -376,30 +364,37 @@
           </div>
 
           <!-- 2. Book Info (Clean, No Noise) -->
-          <div class="mt-2 flex-1 flex flex-col">
-            <!-- Subject Pill -->
-            <span class="text-[10px] font-semibold text-indigo-600 truncate max-w-full block">
-              {{ b.subject_name || 'សៀវភៅពុម្ពជាតិ' }}
-            </span>
+          <div class="mt-2 flex-1 flex flex-col justify-between">
+            <div>
+              <!-- Subject Pill & MoEYS Badge -->
+              <div class="flex items-center justify-between gap-1.5 min-w-0">
+                <span class="text-[10px] sm:text-[11px] font-bold text-indigo-600 dark:text-indigo-400 truncate">
+                  {{ b.subject_name || 'សៀវភៅពុម្ពជាតិ' }}
+                </span>
+                <span class="text-[8px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700/70 text-slate-500 dark:text-slate-300 uppercase tracking-wider shrink-0">
+                  MoEYS
+                </span>
+              </div>
 
-            <!-- Book Title (Clamped 2 Lines, Proper Line-Height) -->
-            <h4 
-              @click="openPdfReader(b)"
-              class="font-bold text-xs sm:text-sm text-slate-800 line-clamp-2 leading-snug sm:leading-normal hover:text-indigo-600 transition-colors cursor-pointer mt-0.5" 
-              :title="b.title"
-            >
-              {{ b.title }}
-            </h4>
+              <!-- Book Title (Clamped 2 Lines, Proper Line-Height) -->
+              <h4 
+                @click="openPdfReader(b)"
+                class="font-bold text-xs sm:text-sm text-slate-800 dark:text-white line-clamp-2 leading-snug sm:leading-normal hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer mt-1" 
+                :title="b.title"
+              >
+                {{ b.title }}
+              </h4>
+            </div>
 
             <!-- Author (Single concise line) -->
-            <p class="text-[10px] sm:text-[11px] text-slate-400 truncate flex items-center gap-1 mt-1">
-              <i class="fa-solid fa-user-pen text-[9px] text-slate-300 shrink-0"></i>
+            <p class="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-400 truncate flex items-center gap-1 mt-1">
+              <i class="fa-solid fa-feather text-[9px] text-slate-400 shrink-0"></i>
               <span class="truncate">{{ b.author || 'ក្រសួងអប់រំ យុវជន និងកីឡា' }}</span>
             </p>
           </div>
 
           <!-- 3. Primary Action Buttons -->
-          <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center gap-1 w-full">
+          <div class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center gap-1 w-full">
             <!-- Read Button («អានសៀវភៅ» or «បន្តអាន») -->
             <button 
               type="button" 
@@ -415,7 +410,7 @@
             <a 
               :href="getPdfViewUrl(b.external_pdf_url)" 
               target="_blank"
-              class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center text-[10px] sm:text-xs transition shrink-0 cursor-pointer"
+              class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white flex items-center justify-center text-[10px] sm:text-xs transition shrink-0 cursor-pointer"
               title="បើកមើលក្នុង Tab ថ្មី (ពេញអេក្រង់)"
             >
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
@@ -427,7 +422,7 @@
               :href="getPdfDownloadUrl(b.external_pdf_url)" 
               target="_blank"
               download
-              class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700 border border-emerald-100 flex items-center justify-center text-[10px] sm:text-xs transition shrink-0"
+              class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 border border-emerald-100 dark:border-emerald-800/60 flex items-center justify-center text-[10px] sm:text-xs transition shrink-0"
               title="ទាញយក PDF ទុកក្នុងទូរស័ព្ទ"
             >
               <i class="fa-solid fa-download"></i>
@@ -438,7 +433,7 @@
               v-if="canManageLibrary"
               type="button" 
               @click="openEditBookModal(b)" 
-              class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-700 border border-slate-200 flex items-center justify-center text-[10px] sm:text-xs transition shrink-0 cursor-pointer"
+              class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-400 dark:text-slate-300 hover:text-slate-700 dark:hover:text-white border border-slate-200 dark:border-slate-600 flex items-center justify-center text-[10px] sm:text-xs transition shrink-0 cursor-pointer"
               title="កែប្រែព័ត៌មាន"
             >
               <i class="fa-solid fa-pen"></i>
