@@ -1,10 +1,11 @@
 <template>
-  <div class="space-y-6 font-khmer">
+  <div class="space-y-4 sm:space-y-6 font-khmer max-w-full min-w-0">
     <!-- Header -->
     <PageHeader 
       title="តួនាទី និងសិទ្ធិប្រើប្រាស់ប្រព័ន្ធ" 
       breadcrumb="សន្តិសុខ និងការកំណត់សិទ្ធិ" 
       actionLabel="💾 រក្សាទុកការផ្លាស់ប្តូរ"
+      :stackOnMobile="true"
       @action="handleSave"
     />
 
@@ -19,7 +20,7 @@
     />
 
     <!-- 4 Statistics Summary Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       <StatCard title="តួនាទីសរុប" :value="rolesList.length" />
       <StatCard title="មុខងារប្រព័ន្ធ" :value="systemModules.length" />
       <StatCard title="អ្នកប្រើប្រាស់សកម្ម" :value="totalActiveUsers" />
@@ -27,7 +28,7 @@
     </div>
 
     <!-- Alert Success / Info Message -->
-    <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center justify-between animate-fade-in shadow-2xs">
+    <div v-if="successMessage" class="p-3.5 sm:p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center justify-between animate-fade-in shadow-2xs">
       <div class="flex items-center gap-2">
         <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
         <span>{{ successMessage }}</span>
@@ -36,23 +37,23 @@
     </div>
 
     <!-- TAB 1: Permissions Matrix -->
-    <div v-show="activeTab === 'matrix'" class="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-2xs space-y-6">
+    <div v-show="activeTab === 'matrix'" class="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-2xs space-y-4 sm:space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
         <div class="flex items-center gap-3">
-          <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-base shadow-2xs">
+          <span class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-base shadow-2xs shrink-0">
             <i class="fa-solid fa-shield-halved"></i>
           </span>
-          <div>
-            <h2 class="text-sm font-bold text-slate-900">តារាងបែងចែកសិទ្ធិប្រើប្រាស់តាមតួនាទី</h2>
-            <p class="text-[11px] text-slate-500">កំណត់សិទ្ធិមើល បន្ថែម និងកែប្រែទិន្នន័យសម្រាប់គ្រូបង្រៀន គណនេយ្យករ និងសិស្ស/អាណាព្យាបាល</p>
+          <div class="min-w-0">
+            <h2 class="text-sm font-bold text-slate-900 leading-snug">តារាងបែងចែកសិទ្ធិប្រើប្រាស់តាមតួនាទី</h2>
+            <p class="text-[11px] text-slate-500 mt-0.5">កំណត់សិទ្ធិមើល បន្ថែម និងកែប្រែទិន្នន័យសម្រាប់គ្រូបង្រៀន គណនេយ្យករ និងសិស្ស/អាណាព្យាបាល</p>
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 self-start sm:self-center">
           <button 
             type="button" 
             @click="resetToDefaults"
-            class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
+            class="px-3.5 py-1.5 sm:px-4 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
           >
             🔄 កំណត់ឡើងវិញ
           </button>
@@ -60,7 +61,7 @@
             type="button" 
             @click="handleSave"
             :disabled="isSaving"
-            class="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 transition flex items-center gap-2 cursor-pointer"
+            class="px-4 py-1.5 sm:px-5 sm:py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 transition flex items-center gap-1.5 sm:gap-2 cursor-pointer"
           >
             <i v-if="isSaving" class="fa-solid fa-spinner fa-spin"></i>
             <i v-else class="fa-solid fa-floppy-disk"></i>
@@ -70,33 +71,33 @@
       </div>
 
       <!-- Matrix Table -->
-      <div class="overflow-x-auto border border-slate-200/90 rounded-2xl">
-        <table class="w-full text-left text-xs border-collapse">
+      <div class="overflow-x-auto border border-slate-200/90 rounded-2xl [scrollbar-width:thin]">
+        <table class="w-full min-w-[620px] text-left text-xs border-collapse">
           <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
             <tr>
-              <th class="py-3.5 px-4 font-bold text-slate-800">មុខងារប្រព័ន្ធ</th>
-              <th class="py-3.5 px-3 text-center w-36">
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-bold text-[11px]">
-                  <i class="fa-solid fa-crown text-[10px]"></i>
+              <th class="py-3.5 px-4 font-bold text-slate-800 min-w-[170px]">មុខងារប្រព័ន្ធ</th>
+              <th class="py-3.5 px-2.5 sm:px-3 text-center w-28 sm:w-36">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-blue-100 text-blue-800 font-bold text-[10px] sm:text-[11px] whitespace-nowrap">
+                  <i class="fa-solid fa-crown text-[9px] sm:text-[10px]"></i>
                   អ្នកគ្រប់គ្រង
                 </span>
               </th>
-              <th class="py-3.5 px-3 text-center w-36">
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-bold text-[11px]">
-                  <i class="fa-solid fa-chalkboard-user text-[10px]"></i>
+              <th class="py-3.5 px-2.5 sm:px-3 text-center w-28 sm:w-36">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-indigo-100 text-indigo-800 font-bold text-[10px] sm:text-[11px] whitespace-nowrap">
+                  <i class="fa-solid fa-chalkboard-user text-[9px] sm:text-[10px]"></i>
                   គ្រូបង្រៀន
                 </span>
               </th>
-              <th class="py-3.5 px-3 text-center w-36">
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-[11px]">
-                  <i class="fa-solid fa-calculator text-[10px]"></i>
+              <th class="py-3.5 px-2.5 sm:px-3 text-center w-28 sm:w-36">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-[10px] sm:text-[11px] whitespace-nowrap">
+                  <i class="fa-solid fa-calculator text-[9px] sm:text-[10px]"></i>
                   គណនេយ្យករ
                 </span>
               </th>
-              <th class="py-3.5 px-3 text-center w-36">
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 font-bold text-[11px]">
-                  <i class="fa-solid fa-users text-[10px]"></i>
-                  សិស្ស / អាណាព្យាបាល
+              <th class="py-3.5 px-2.5 sm:px-3 text-center w-28 sm:w-36">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-amber-100 text-amber-800 font-bold text-[10px] sm:text-[11px] whitespace-nowrap">
+                  <i class="fa-solid fa-users text-[9px] sm:text-[10px]"></i>
+                  សិស្ស/អាណាព្យាបាល
                 </span>
               </th>
             </tr>
@@ -115,7 +116,7 @@
                 </div>
               </td>
               <!-- Admin: Always checked and disabled (Master Access) -->
-              <td class="py-3 px-3 text-center">
+              <td class="py-3 px-2.5 sm:px-3 text-center">
                 <input 
                   type="checkbox" 
                   checked 
@@ -125,7 +126,7 @@
                 />
               </td>
               <!-- Teacher -->
-              <td class="py-3 px-3 text-center">
+              <td class="py-3 px-2.5 sm:px-3 text-center">
                 <input 
                   type="checkbox" 
                   :checked="hasPermission('teacher', mod.key)" 
@@ -134,7 +135,7 @@
                 />
               </td>
               <!-- Accountant -->
-              <td class="py-3 px-3 text-center">
+              <td class="py-3 px-2.5 sm:px-3 text-center">
                 <input 
                   type="checkbox" 
                   :checked="hasPermission('accountant', mod.key)" 
@@ -143,7 +144,7 @@
                 />
               </td>
               <!-- Student / Parent -->
-              <td class="py-3 px-3 text-center">
+              <td class="py-3 px-2.5 sm:px-3 text-center">
                 <input 
                   type="checkbox" 
                   :checked="hasPermission('student_parent', mod.key)" 
@@ -156,16 +157,16 @@
         </table>
       </div>
 
-      <div class="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between text-xs text-slate-600">
+      <div class="p-3.5 sm:p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-slate-600">
         <div class="flex items-center gap-2">
-          <i class="fa-solid fa-circle-info text-blue-600"></i>
+          <i class="fa-solid fa-circle-info text-blue-600 shrink-0"></i>
           <span>រាល់ការកែប្រែសិទ្ធិនឹងមានប្រសិទ្ធភាពភ្លាមៗបន្ទាប់ពីចុច <strong>រក្សាទុកសិទ្ធិ</strong>។</span>
         </div>
         <button 
           @click="handleSave" 
           :disabled="isSaving" 
           type="button" 
-          class="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-bold shadow-xs transition"
+          class="w-full sm:w-auto px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-bold shadow-xs transition cursor-pointer text-center"
         >
           {{ isSaving ? 'កំពុងរក្សាទុក...' : 'រក្សាទុកសិទ្ធិ' }}
         </button>
@@ -173,22 +174,22 @@
     </div>
 
     <!-- TAB 2: System Security Controls -->
-    <div v-show="activeTab === 'controls'" class="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-2xs space-y-6">
+    <div v-show="activeTab === 'controls'" class="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-2xs space-y-4 sm:space-y-6">
       <div class="flex items-center gap-3 pb-4 border-b border-slate-100">
-        <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-base shadow-2xs">
+        <span class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-base shadow-2xs shrink-0">
           <i class="fa-solid fa-sliders"></i>
         </span>
-        <div>
-          <h2 class="text-sm font-bold text-slate-900">ការគ្រប់គ្រងសុវត្ថិភាព និងការអនុញ្ញាតប្រព័ន្ធ</h2>
-          <p class="text-[11px] text-slate-500">បើក ឬបិទមុខងារចុះឈ្មោះសាធារណៈ សិទ្ធិកែប្រែពិន្ទុ និងការស្នើសុំច្បាប់</p>
+        <div class="min-w-0">
+          <h2 class="text-sm font-bold text-slate-900 leading-snug">ការគ្រប់គ្រងសុវត្ថិភាព និងការអនុញ្ញាតប្រព័ន្ធ</h2>
+          <p class="text-[11px] text-slate-500 mt-0.5">បើក ឬបិទមុខងារចុះឈ្មោះសាធារណៈ សិទ្ធិកែប្រែពិន្ទុ និងការស្នើសុំច្បាប់</p>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
         <!-- 1. Public Student Registration -->
-        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-4">
-          <div>
-            <h4 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+        <div class="p-3.5 sm:p-5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-3 sm:gap-4">
+          <div class="min-w-0 flex-1">
+            <h4 class="text-xs font-bold text-slate-900 flex flex-wrap items-center gap-1.5">
               <span>ការចុះឈ្មោះសិស្សថ្មីតាម Link / QR Code</span>
               <span :class="controls.enable_public_registration === '1' ? 'text-emerald-600' : 'text-slate-400'">
                 ● {{ controls.enable_public_registration === '1' ? 'បើកដំណើរការ' : 'បានបិទ' }}
@@ -209,9 +210,9 @@
         </div>
 
         <!-- 2. Teacher Score Editing Permission -->
-        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-4">
-          <div>
-            <h4 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+        <div class="p-3.5 sm:p-5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-3 sm:gap-4">
+          <div class="min-w-0 flex-1">
+            <h4 class="text-xs font-bold text-slate-900 flex flex-wrap items-center gap-1.5">
               <span>អនុញ្ញាតឱ្យគ្រូបង្រៀនកែប្រែពិន្ទុប្រឡង</span>
               <span :class="controls.enable_teacher_score_edit === '1' ? 'text-blue-600' : 'text-slate-400'">
                 ● {{ controls.enable_teacher_score_edit === '1' ? 'អនុញ្ញាត' : 'ចាក់សោ' }}
@@ -232,9 +233,9 @@
         </div>
 
         <!-- 3. Public Teacher Registration -->
-        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-4">
-          <div>
-            <h4 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+        <div class="p-3.5 sm:p-5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-3 sm:gap-4">
+          <div class="min-w-0 flex-1">
+            <h4 class="text-xs font-bold text-slate-900 flex flex-wrap items-center gap-1.5">
               <span>ការចុះឈ្មោះគ្រូបង្រៀនជាសាធារណៈ</span>
               <span :class="controls.enable_public_teacher_registration === '1' ? 'text-emerald-600' : 'text-slate-400'">
                 ● {{ controls.enable_public_teacher_registration === '1' ? 'បើកដំណើរការ' : 'បានបិទ' }}
@@ -255,9 +256,9 @@
         </div>
 
         <!-- 4. Public Leave Request -->
-        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-4">
-          <div>
-            <h4 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+        <div class="p-3.5 sm:p-5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-3 sm:gap-4">
+          <div class="min-w-0 flex-1">
+            <h4 class="text-xs font-bold text-slate-900 flex flex-wrap items-center gap-1.5">
               <span>ការស្នើសុំច្បាប់សិស្សជាសាធារណៈ</span>
               <span :class="controls.enable_public_leave_request === '1' ? 'text-emerald-600' : 'text-slate-400'">
                 ● {{ controls.enable_public_leave_request === '1' ? 'បើកដំណើរការ' : 'បានបិទ' }}
@@ -283,7 +284,7 @@
           @click="handleSave" 
           :disabled="isSaving" 
           type="button" 
-          class="px-7 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 transition flex items-center gap-2 cursor-pointer"
+          class="w-full sm:w-auto px-7 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-2 cursor-pointer"
         >
           <i v-if="isSaving" class="fa-solid fa-spinner fa-spin"></i>
           <i v-else class="fa-solid fa-floppy-disk"></i>
@@ -301,7 +302,7 @@
         </template>
 
         <template #right>
-          <div class="relative w-64">
+          <div class="relative w-full sm:w-64">
             <input 
               type="text" 
               v-model="searchQuery" 

@@ -1,14 +1,14 @@
 <template>
-  <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-2xs flex items-center justify-between hover:border-slate-300 transition-colors">
-    <div>
-      <p class="text-xs font-medium text-slate-500">{{ title }}</p>
-      <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1 tracking-tight whitespace-nowrap">{{ value }}</h3>
-      <p v-if="subtitle" class="text-[11px] text-slate-400 mt-0.5 font-medium">{{ subtitle }}</p>
+  <div class="bg-white rounded-2xl p-3 sm:p-5 border border-slate-200/90 shadow-2xs flex items-center justify-between hover:border-slate-300 transition-colors min-w-0">
+    <div class="min-w-0 flex-1 pr-1.5 sm:pr-2">
+      <p class="text-xs font-medium text-slate-500 truncate">{{ title }}</p>
+      <h3 class="text-sm sm:text-xl lg:text-2xl font-bold text-slate-900 mt-0.5 sm:mt-1 tracking-tight truncate">{{ value }}</h3>
+      <p v-if="subtitle" class="text-[11px] text-slate-400 mt-0.5 font-medium truncate">{{ subtitle }}</p>
     </div>
     
     <div 
       :class="[
-        'w-11 h-11 rounded-2xl flex items-center justify-center border text-base shadow-xs transition-colors shrink-0',
+        'w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center border text-base shadow-xs transition-colors shrink-0',
         bgColor || 'bg-slate-50',
         borderColor || 'border-slate-100',
         iconColor || 'text-slate-700'

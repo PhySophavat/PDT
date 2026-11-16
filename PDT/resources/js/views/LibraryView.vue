@@ -1538,14 +1538,14 @@ const normalizeGrade = (g) => {
 
 const isLitBook = (b) => {
   if (!b) return false;
-  return b.grade === 'ទូទៅ' || b.level === 'អក្សរសិល្ប៍' || (b.subject_name && b.subject_name === 'អក្សរសិល្ប៍') || (b.subject_code && b.subject_code === 'LIT-01');
+  return b.grade === 'ទូទៅ' || b.level === 'អក្សរសិល្ប៍' || (b.subject_name && b.subject_name.includes('អក្សរសិល្ប៍')) || (b.subject_code && b.subject_code === 'LIT-01') || (b.name && b.name.includes('អក្សរសិល្ប៍')) || (b.code && b.code === 'LIT-01');
 };
 
 const CANONICAL_SUBJECT_ORDER = {
-  'KHM-01': 1,
-  'អក្សរសាស្ត្រខ្មែរ': 1,
-  'LIT-01': 2,
-  'អក្សរសិល្ប៍': 2,
+  'LIT-01': 1,
+  'អក្សរសិល្ប៍': 1,
+  'KHM-01': 2,
+  'អក្សរសាស្ត្រខ្មែរ': 2,
   'MTH-01': 3,
   'គណិតវិទ្យា': 3,
   'PHY-01': 4,
@@ -1572,13 +1572,13 @@ const CANONICAL_SUBJECT_ORDER = {
 
 const getSubjectSortPriority = (item) => {
   if (!item) return 99;
-  if (isLitBook(item)) return 2;
+  if (isLitBook(item)) return 1;
   const code = item.code || item.subject_code || '';
   const name = item.name || item.subject_name || '';
   if (CANONICAL_SUBJECT_ORDER[code]) return CANONICAL_SUBJECT_ORDER[code];
   if (CANONICAL_SUBJECT_ORDER[name]) return CANONICAL_SUBJECT_ORDER[name];
-  if (name.includes('ខ្មែរ')) return 1;
-  if (name.includes('អក្សរសិល្ប៍')) return 2;
+  if (name.includes('អក្សរសិល្ប៍') || name.includes('សិល្ប៍')) return 1;
+  if (name.includes('ខ្មែរ') || name.includes('អក្សរសាស្ត្រ')) return 2;
   if (name.includes('គណិត')) return 3;
   if (name.includes('រូប')) return 4;
   if (name.includes('គីមី')) return 5;
@@ -2029,6 +2029,9 @@ const readerIframeUrl = computed(() => {
     if (!url.includes('/preview')) return `${url.replace(/\/+$/, '')}/preview`;
     return url;
   }
+  if (url.startsWith('/') || url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1')) {
+    return url;
+  }
   // Direct PDF files: embed via Google Docs Viewer
   // Bypasses Vercel Serverless 4.5MB payload limit (FUNCTION_RESPONSE_PAYLOAD_TOO_LARGE)
   // and renders any size PDF smoothly on both mobile & desktop.
@@ -2059,6 +2062,9 @@ const currentPdfFileId = computed(() => {
 
 const currentPdfViewUrl = computed(() => {
   if (!currentPdfUrl.value) return '#';
+  if (currentPdfUrl.value.startsWith('/') || currentPdfUrl.value.startsWith('http://localhost') || currentPdfUrl.value.startsWith('http://127.0.0.1')) {
+    return currentPdfUrl.value;
+  }
   if (currentPdfFileId.value) {
     return `https://drive.google.com/file/d/${currentPdfFileId.value}/view`;
   }
@@ -2078,6 +2084,9 @@ const currentPdfDownloadUrl = computed(() => {
 
 const getPdfDownloadUrl = (url) => {
   if (!url) return '#';
+  if (url.startsWith('/') || url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1')) {
+    return url;
+  }
   const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]{20,})/i) || url.match(/id=([a-zA-Z0-9_-]{20,})/i);
   if (m) return `https://drive.google.com/uc?export=download&id=${m[1]}`;
   return url;
@@ -2085,6 +2094,9 @@ const getPdfDownloadUrl = (url) => {
 
 const getPdfViewUrl = (url) => {
   if (!url) return '#';
+  if (url.startsWith('/') || url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1')) {
+    return url;
+  }
   const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]{20,})/i) || url.match(/id=([a-zA-Z0-9_-]{20,})/i);
   if (m) return `https://drive.google.com/file/d/${m[1]}/view`;
   if (url.includes('scribd.com')) {

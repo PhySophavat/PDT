@@ -1,17 +1,18 @@
 <template>
-  <div class="space-y-6 font-khmer">
+  <div class="space-y-4 sm:space-y-6 font-khmer max-w-full min-w-0">
     <!-- Header with Extra Actions Slot for Link / QR Code -->
     <PageHeader 
       :title="t('students.title')" 
       :breadcrumb="t('nav.hostel')" 
       :actionLabel="t('students.addStudent')"
+      :stackOnMobile="true"
       @action="openCreateModal"
     >
       <template #extraActions>
         <button 
           @click="fetchStudents(true)" 
           type="button"
-          class="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-full border border-slate-200/90 shadow-xs transition-all active:scale-95 cursor-pointer"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-full border border-slate-200/90 shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
           title="ផ្ទុកទិន្នន័យឡើងវិញ"
         >
           <i class="fa-solid fa-arrows-rotate text-xs text-blue-600" :class="{ 'fa-spin': isFetchingStudents }"></i>
@@ -21,23 +22,23 @@
         <button 
           @click="openBulkScanModal" 
           type="button"
-          class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-4 py-2 text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all hover:shadow-lg hover:shadow-indigo-600/30 active:scale-95 cursor-pointer"
+          class="inline-flex items-center gap-1.5 sm:gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all hover:shadow-lg hover:shadow-indigo-600/30 active:scale-95 cursor-pointer shrink-0"
         >
-          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
           </svg>
-          <span>📄 ស្កេនបញ្ជីឈ្មោះសិស្ស</span>
+          <span>📄 ស្កេនបញ្ជី</span>
         </button>
 
         <button 
           @click="openQrModal" 
           type="button"
-          class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-full shadow-md shadow-emerald-600/20 transition-all hover:shadow-lg hover:shadow-emerald-600/30 active:scale-95"
+          class="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 sm:px-5 sm:py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-full shadow-md shadow-emerald-600/20 transition-all hover:shadow-lg hover:shadow-emerald-600/30 active:scale-95 shrink-0"
         >
-          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
           </svg>
-          <span>🔗 Link / QR ចុះឈ្មោះសិស្ស</span>
+          <span>🔗 Link / QR</span>
         </button>
       </template>
     </PageHeader>
@@ -56,7 +57,7 @@
     />
 
     <!-- 4 Statistics Summary Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       <StatCard :title="t('students.totalStudents')" :value="students.length" />
       <StatCard :title="t('students.activeStudents')" :value="activeCount" />
       <StatCard title="រង់ចាំអនុម័ត" :value="pendingCount" />
@@ -66,7 +67,7 @@
     <!-- Filter Bar -->
     <FilterBar>
       <template #left>
-        <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+        <div class="flex items-center gap-2 flex-wrap w-full">
           <input 
             v-model="searchQuery"
             type="text" 
@@ -81,40 +82,42 @@
             type="button"
             class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-xs animate-in fade-in"
           >
-            <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3.5 h-3.5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
             </svg>
-            <span>លុបសិស្សដែលបានជ្រើស ({{ selectedStudentIds.length }} នាក់)</span>
+            <span class="truncate">លុបសិស្សដែលបានជ្រើស ({{ selectedStudentIds.length }})</span>
           </button>
         </div>
       </template>
 
       <template #right>
-        <div class="inline-flex items-center gap-3 px-3.5 py-1.5 bg-slate-50 border border-slate-200/80 rounded-xl">
-          <label class="flex items-center gap-1.5 cursor-pointer text-slate-600">
-            <input type="radio" v-model="genderFilter" value="all" class="text-blue-600 focus:ring-0">
-            <span>{{ t('common.all') }}</span>
-          </label>
-          <label class="flex items-center gap-1.5 cursor-pointer text-slate-600">
-            <input type="radio" v-model="genderFilter" value="male" class="text-blue-600 focus:ring-0">
-            <span>{{ t('students.male') }}</span>
-          </label>
-          <label class="flex items-center gap-1.5 cursor-pointer text-slate-600">
-            <input type="radio" v-model="genderFilter" value="female" class="text-blue-600 focus:ring-0">
-            <span>{{ t('students.female') }}</span>
-          </label>
-        </div>
+        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap w-full justify-between sm:justify-end text-xs">
+          <div class="inline-flex items-center gap-2 sm:gap-3 px-3 py-1.5 bg-slate-50 border border-slate-200/80 rounded-xl">
+            <label class="flex items-center gap-1.5 cursor-pointer text-slate-600">
+              <input type="radio" v-model="genderFilter" value="all" class="text-blue-600 focus:ring-0">
+              <span>{{ t('common.all') }}</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-slate-600">
+              <input type="radio" v-model="genderFilter" value="male" class="text-blue-600 focus:ring-0">
+              <span>{{ t('students.male') }}</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-slate-600">
+              <input type="radio" v-model="genderFilter" value="female" class="text-blue-600 focus:ring-0">
+              <span>{{ t('students.female') }}</span>
+            </label>
+          </div>
 
-        <!-- Class Filter: Defaults to "" (All Classes) -->
-        <select 
-          v-model="gradeFilter" 
-          class="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-medium focus:outline-none shadow-2xs font-khmer"
-        >
-          <option value="">{{ t('common.all') }} {{ t('classes.className') }}</option>
-          <option v-for="cl in availableClasses" :key="cl" :value="cl">
-            ថ្នាក់ {{ cl }}
-          </option>
-        </select>
+          <!-- Class Filter: Defaults to "" (All Classes) -->
+          <select 
+            v-model="gradeFilter" 
+            class="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-medium focus:outline-none shadow-2xs font-khmer flex-1 sm:flex-none"
+          >
+            <option value="">{{ t('common.all') }} {{ t('classes.className') }}</option>
+            <option v-for="cl in availableClasses" :key="cl" :value="cl">
+              ថ្នាក់ {{ cl }}
+            </option>
+          </select>
+        </div>
       </template>
     </FilterBar>
 

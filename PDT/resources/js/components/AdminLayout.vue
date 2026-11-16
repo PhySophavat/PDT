@@ -657,7 +657,7 @@
         </header>
 
         <!-- View Body Content (Scrollable Full Height with bottom padding for mobile bar) -->
-        <div class="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 pb-24 md:pb-8 space-y-4 sm:space-y-6">
+        <div class="flex-1 overflow-y-auto overflow-x-hidden max-w-full min-w-0 p-3 sm:p-6 lg:p-8 pb-24 md:pb-8 space-y-4 sm:space-y-6">
           <slot />
         </div>
       </main>

@@ -5,8 +5,8 @@
       <div class="pdt-indeterminate-bar h-full bg-gradient-to-r from-blue-500 via-indigo-600 to-blue-500 rounded-full"></div>
     </div>
 
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse text-xs">
+    <div class="overflow-x-auto [scrollbar-width:thin]">
+      <table class="w-full min-w-[680px] text-left border-collapse text-xs">
         <thead class="bg-slate-50/70 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
           <slot name="header" />
         </thead>

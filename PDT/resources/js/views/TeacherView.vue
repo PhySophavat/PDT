@@ -1,19 +1,20 @@
 <template>
-  <div class="space-y-6 font-khmer">
+  <div class="space-y-4 sm:space-y-6 font-khmer max-w-full min-w-0">
     <!-- Header with Extra Actions Slot for Link / QR Code -->
     <PageHeader 
       :title="t('teachers.title')" 
       :breadcrumb="t('nav.teachers')" 
       :actionLabel="t('teachers.addTeacher')"
+      :stackOnMobile="true"
       @action="openCreateModal"
     >
       <template #extraActions>
         <button 
           @click="openQrModal" 
           type="button"
-          class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-full shadow-md shadow-emerald-600/20 transition-all hover:shadow-lg hover:shadow-emerald-600/30 active:scale-95"
+          class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-full shadow-md shadow-emerald-600/20 transition-all hover:shadow-lg hover:shadow-emerald-600/30 active:scale-95 shrink-0"
         >
-          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
           </svg>
           <span>🔗 Link / QR ចុះឈ្មោះគ្រូ</span>
@@ -33,7 +34,7 @@
     />
 
     <!-- 4 Statistics Summary Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       <StatCard :title="t('teachers.totalTeachers')" :value="teachers.length" />
       <StatCard :title="t('common.active')" :value="activeCount" />
       <StatCard title="រង់ចាំអនុម័ត" :value="pendingCount" />
