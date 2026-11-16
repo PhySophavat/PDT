@@ -128,10 +128,14 @@
                     />
                     <span class="truncate">{{ currentLocale === 'km' ? sub.nameKm : sub.nameEn }}</span>
                   </div>
-                  <!-- Right Chevron arrow (>) e.g. for Display settings item -->
+                  <!-- Right Chevron arrow (>) for all sub-items -->
                   <svg 
-                    v-if="sub.hasChevron" 
-                    class="w-3.5 h-3.5 text-slate-400 group-hover/sub:text-slate-600 dark:text-neutral-500 group-hover/sub:translate-x-0.5 transition-all shrink-0 ml-1.5" 
+                    class="w-3.5 h-3.5 shrink-0 ml-1.5 transition-all duration-150 group-hover/sub:translate-x-0.5" 
+                    :class="[
+                      isActive(sub.path)
+                        ? 'text-blue-600 dark:text-blue-400'
+                        : 'text-slate-400 dark:text-neutral-500 group-hover/sub:text-slate-600 dark:group-hover/sub:text-neutral-300'
+                    ]"
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
@@ -162,7 +166,7 @@
               ]"
               :title="!sidebarOpen ? getMenuLabel(item) : ''"
             >
-              <div class="flex items-center gap-3 truncate">
+              <div class="flex items-center gap-3 truncate min-w-0">
                 <component 
                   :is="item.icon" 
                   :class="[
@@ -172,13 +176,34 @@
                 />
                 <span v-if="sidebarOpen" class="truncate">{{ getMenuLabel(item) }}</span>
               </div>
-              <!-- Announcement Badge on 'ដំណឹង និងសេចក្តីជូនដំណឹង' -->
-              <span 
-                v-if="sidebarOpen && item.path === '/announcements' && unreadAnnouncementCount > 0" 
-                class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white shadow-2xs shrink-0"
-              >
-                {{ unreadAnnouncementCount }}
-              </span>
+
+              <!-- Right Actions: Badge (if any) + Right Chevron arrow (>) -->
+              <div v-if="sidebarOpen" class="flex items-center gap-2 shrink-0 ml-1.5">
+                <!-- Announcement Badge on 'ដំណឹង និងសេចក្តីជូនដំណឹង' -->
+                <span 
+                  v-if="item.path === '/announcements' && unreadAnnouncementCount > 0" 
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white shadow-2xs shrink-0"
+                >
+                  {{ unreadAnnouncementCount }}
+                </span>
+
+                <!-- Right Chevron arrow (>) -->
+                <svg 
+                  class="w-3.5 h-3.5 shrink-0 transition-all duration-150 group-hover:translate-x-0.5" 
+                  :class="[
+                    isActive(item.path)
+                      ? 'text-[#1e40af] dark:text-blue-400'
+                      : 'text-slate-400 dark:text-neutral-500 group-hover:text-slate-600 dark:group-hover:text-neutral-300'
+                  ]"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+
+              <!-- Collapsed state Announcement Badge Dot -->
               <span 
                 v-else-if="!sidebarOpen && item.path === '/announcements' && unreadAnnouncementCount > 0" 
                 class="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white"
