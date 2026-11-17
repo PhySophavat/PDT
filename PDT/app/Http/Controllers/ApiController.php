@@ -48,11 +48,12 @@ class ApiController extends Controller
             session()->save();
         }
 
-        if ($request->has('force') || $request->has('_t') || $request->input('refresh') === 'true') {
+        if ($request->has('force') || $request->input('refresh') === 'true') {
             Cache::forget('portal_dashboard_payload');
         }
 
-        $payload = Cache::remember('portal_dashboard_payload', 5, function () {
+        // High-Performance Cached Dashboard Payload (5 minutes with auto-invalidation on model updates)
+        $payload = Cache::remember('portal_dashboard_payload', 300, function () {
             // Optimized student counts: combine total and female in 1 single query
             $studentStats = Student::selectRaw('COUNT(*) as total, SUM(CASE WHEN gender IN ("ស្រី", "female") THEN 1 ELSE 0 END) as female, SUM(CASE WHEN status IN ("scholarship", "អាហារូបករណ៍") THEN 1 ELSE 0 END) as scholarship')->first();
             $totalStudents = (int) ($studentStats->total ?? 0);

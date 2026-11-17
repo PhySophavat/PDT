@@ -1689,25 +1689,19 @@ const getRankBadgeClass = (idx) => {
 let isFetchingDashboard = false;
 let lastDashboardFetchTime = 0;
 
-// Fetch Dashboard Data
+// Fetch Dashboard Data (SWR - Stale While Revalidate)
 const fetchDashboardData = async (force = false) => {
   const now = Date.now();
-  if (isFetchingDashboard || (!force && now - lastDashboardFetchTime < 1500 && (allClasses.value.length > 0 || stats.value.students > 0))) {
+  if (isFetchingDashboard || (!force && now - lastDashboardFetchTime < 3000 && (allClasses.value.length > 0 || stats.value.students > 0))) {
     return;
   }
   isFetchingDashboard = true;
   lastDashboardFetchTime = now;
 
   try {
-    const params = { demo_mode: '0', _t: now };
+    const params = { demo_mode: '0' };
     if (force) params.force = 1;
-    const res = await axios.get('/api/dashboard', { 
-      params,
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache'
-      }
-    });
+    const res = await axios.get('/api/dashboard', { params });
     if (res.data) {
       if (res.data.currentAcademicYear) {
         activeAcademicYear.value = res.data.currentAcademicYear;
@@ -1756,14 +1750,21 @@ const onDataUpdated = () => {
 
 const fetchTeachersForAssign = async () => {
   try {
+    const cachedTeachers = localStorage.getItem('pdt_cached_teachers');
+    if (cachedTeachers && (!teachersList.value || teachersList.value.length === 0)) {
+      teachersList.value = JSON.parse(cachedTeachers);
+    }
     const teacherRes = await axios.get('/api/teachers');
     const resData = teacherRes.data;
     if (resData && Array.isArray(resData.teachers)) {
       teachersList.value = [...resData.teachers].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
+      localStorage.setItem('pdt_cached_teachers', JSON.stringify(teachersList.value));
     } else if (resData && Array.isArray(resData.data)) {
       teachersList.value = [...resData.data].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
+      localStorage.setItem('pdt_cached_teachers', JSON.stringify(teachersList.value));
     } else if (Array.isArray(resData)) {
       teachersList.value = [...resData].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'km'));
+      localStorage.setItem('pdt_cached_teachers', JSON.stringify(teachersList.value));
     }
   } catch (e) {
     console.error('Failed to fetch teachers for assign modal:', e);
@@ -1775,36 +1776,37 @@ let syncTimer = null;
 
 const handleVisibilityOrFocus = () => {
   if (document.visibilityState === 'visible') {
-    fetchDashboardData(true);
+    fetchDashboardData(false);
   }
 };
 
-onMounted(async () => {
-  await fetchDashboardData(true);
+onMounted(() => {
+  // SWR: Instant render from cache, sync quietly in background
+  fetchDashboardData(false);
 
-  // Fetch teachers for quick assign modal
-  await fetchTeachersForAssign();
+  // Fetch teachers for quick assign modal in parallel
+  fetchTeachersForAssign();
 
   window.addEventListener('pdt-data-updated', onDataUpdated);
   document.addEventListener('click', handleShareDocClick);
 
-  // Auto-Sync: Refetch immediately when screen is unlocked or tab becomes visible/focused
+  // Auto-Sync: Refetch when screen is unlocked or tab becomes visible/focused
   document.addEventListener('visibilitychange', handleVisibilityOrFocus);
   window.addEventListener('focus', handleVisibilityOrFocus);
 
-  // Auto-Sync: Poll latest real-time stats every 10 seconds if tab is active
+  // Auto-Sync: Poll latest real-time stats every 60 seconds if tab is active (SWR)
   syncTimer = setInterval(() => {
     if (document.visibilityState === 'visible' && !isFetchingDashboard) {
-      fetchDashboardData(true);
+      fetchDashboardData(false);
     }
-  }, 10000);
+  }, 60000);
 });
 
-// Reactivate when navigating back through keep-alive
-onActivated(async () => {
-  await fetchDashboardData(true);
+// Reactivate when navigating back through keep-alive (Instant SWR)
+onActivated(() => {
+  fetchDashboardData(false);
   if (!teachersList.value || teachersList.value.length === 0) {
-    await fetchTeachersForAssign();
+    fetchTeachersForAssign();
   }
 });
 
