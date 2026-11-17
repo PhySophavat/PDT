@@ -139,7 +139,13 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const user = window.__INITIAL_USER__ || {};
   const isSuperAdmin = Boolean(user.is_super_admin);
-  const role = isSuperAdmin ? 'Super Admin' : (user.role || 'Admin');
+  const role = isSuperAdmin ? 'Super Admin' : (user.role || 'Guest');
+
+  // If unauthenticated guest and trying to access internal routes, redirect to login
+  if (!user.id && to.path !== '/library' && !to.path.startsWith('/examinations/ranking-sheet')) {
+    window.location.href = '/portal';
+    return;
+  }
 
   // 1. Super Admin only routes
   if (to.path.startsWith('/system-logs') && !isSuperAdmin) {

@@ -63,8 +63,8 @@
   
   @php
     $authUser = Auth::user();
-    $roleName = 'Student';
-    $roleKhmer = 'សិស្សានុសិស្ស';
+    $roleName = 'Guest';
+    $roleKhmer = 'ភ្ញៀវ';
     $isSuperAdmin = false;
     $studentGrade = null;
     $studentId = null;
@@ -171,8 +171,8 @@
   <div id="app" class="w-full h-full min-h-screen flex items-center justify-center">
     <!-- Instant Loading Indicator while JS Chunks Mount -->
     <div class="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-slate-500 font-khmer p-6">
-      <div class="w-16 h-16 rounded-2xl bg-white shadow-xl shadow-blue-500/10 border border-slate-200/80 flex items-center justify-center p-2 animate-pulse">
-        <img src="/images/logo.png" alt="MoEYS Logo" class="w-full h-full object-contain">
+      <div class="w-16 h-16 rounded-2xl bg-white shadow-xl shadow-blue-500/10 border border-slate-200/80 flex items-center justify-center p-2 animate-pulse" style="width: 64px; height: 64px;">
+        <img src="/images/logo.png" alt="MoEYS Logo" width="64" height="64" style="width: 100%; height: 100%; max-width: 64px; max-height: 64px; object-fit: contain;">
       </div>
       <div class="flex items-center gap-2 text-xs font-semibold text-slate-600 mt-1">
         <div class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></div>

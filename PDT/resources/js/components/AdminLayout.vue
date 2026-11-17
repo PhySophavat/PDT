@@ -1453,8 +1453,8 @@ const switchLanguage = (lang) => {
 };
 
 const user = ref({
-  name: window.__INITIAL_USER__?.name || 'Stevne Zone',
-  role: window.__INITIAL_USER__?.role || 'Student',
+  name: window.__INITIAL_USER__?.name || 'Guest',
+  role: window.__INITIAL_USER__?.role || 'Guest',
   role_khmer: window.__INITIAL_USER__?.role_khmer || '',
   is_super_admin: Boolean(window.__INITIAL_USER__?.is_super_admin),
   avatar: window.__INITIAL_USER__?.avatar || '',

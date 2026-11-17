@@ -527,7 +527,7 @@
 
         if (loginForm && loginSubmitBtn) {
             loginForm.addEventListener('submit', function (e) {
-                if (loginSubmitBtn.disabled) {
+                if (loginSubmitBtn.classList.contains('pointer-events-none')) {
                     e.preventDefault();
                     return;
                 }
@@ -535,8 +535,7 @@
                     return;
                 }
 
-                // Immediately show live loading state & feedback
-                loginSubmitBtn.disabled = true;
+                // Immediately show live loading state & feedback WITHOUT disabling button synchronously
                 loginSubmitBtn.classList.add('opacity-80', 'cursor-wait', 'pointer-events-none');
                 if (btnIcon) btnIcon.className = 'fa-solid fa-circle-notch fa-spin text-sm';
                 if (btnText) btnText.textContent = 'កំពុងចូលប្រើប្រព័ន្ធ...';
@@ -544,6 +543,11 @@
                 if (loadingIndicator) {
                     loadingIndicator.classList.remove('hidden');
                 }
+
+                // Delay disabled flag so browser networking engine dispatches the POST request
+                setTimeout(() => {
+                    loginSubmitBtn.disabled = true;
+                }, 100);
             });
         }
 
