@@ -1394,9 +1394,18 @@ const selectedGrade = ref(route?.query?.grade ? String(route.query.grade) : '');
 const selectedSubjectId = ref('');
 const selectedLevel = ref('');
 const subFilter = ref('all'); // all, bookmarks, recent
-const isLoading = ref(true);
 
-const stats = ref({
+// Instant SWR Cache Hydration: Render books and subjects immediately on page visit with 0.00s delay!
+let initialCachedLib = null;
+try {
+  const raw = localStorage.getItem('pdt_library_cache_v3');
+  if (raw) initialCachedLib = JSON.parse(raw);
+} catch (e) {}
+
+const hasInstantCache = Boolean(initialCachedLib?.books && initialCachedLib.books.length > 0);
+const isLoading = ref(!hasInstantCache);
+
+const stats = ref(initialCachedLib?.stats || {
   total: 0,
   available: 0,
   borrows: 0,
@@ -1407,10 +1416,10 @@ const stats = ref({
   books_by_grade: {},
 });
 
-const booksList = ref([]);
-const subjectsList = ref([]);
+const booksList = ref(hasInstantCache ? initialCachedLib.books : []);
+const subjectsList = ref(initialCachedLib?.subjects || []);
 const borrowsList = ref([]);
-const categoriesList = ref([]);
+const categoriesList = ref(initialCachedLib?.categories || []);
 const studentsList = ref([]);
 
 // LocalStorage Reading Memory
@@ -2130,7 +2139,7 @@ const fetchLibraryData = async () => {
     isLoading.value = true;
   }
   try {
-    const res = await axios.get('/api/library', { params: { _t: Date.now() } });
+    const res = await axios.get('/api/library');
     if (res.data) {
       if (res.data.user) {
         currentUser.value = { ...currentUser.value, ...res.data.user };

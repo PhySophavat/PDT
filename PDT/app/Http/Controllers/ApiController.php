@@ -2159,6 +2159,12 @@ class ApiController extends Controller
         ]);
     }
 
+    protected function clearLibraryCache(): void
+    {
+        Cache::forget('digital_library_catalog_v3');
+        $this->clearLibraryCache();
+    }
+
     public function library()
     {
         $authUser = Auth::user();
@@ -2172,13 +2178,12 @@ class ApiController extends Controller
         }
         $canManage = in_array($userRole, ['admin', 'teacher']);
 
-        if (request()->has('refresh') || request()->has('_t')) {
-            Cache::forget('digital_library_catalog_v3');
-            Cache::forget('digital_library_catalog_v2');
+        if (request()->has('refresh')) {
+            $this->clearLibraryCache();
         }
 
-        // High-Performance Cached Catalog (Books, Subjects, Categories & Base Stats)
-        $cachedLibrary = Cache::remember('digital_library_catalog_v3', 300, function () {
+        // High-Performance Cached Catalog (Books, Subjects, Categories & Base Stats) - 24hr Cache with Invalidation
+        $cachedLibrary = Cache::remember('digital_library_catalog_v3', 86400, function () {
             $khmerToArabic = ['៧' => '7', '៨' => '8', '៩' => '9', '១០' => '10', '១១' => '11', '១២' => '12'];
 
             // Fetch only required relations and columns (ordered descending so newly added books appear on top)
@@ -2392,7 +2397,7 @@ class ApiController extends Controller
             $book = Book::find($id);
             if ($book) {
                 $book->update($validated);
-                Cache::forget('digital_library_catalog_v2');
+                $this->clearLibraryCache();
                 return response()->json([
                     'success' => true,
                     'message' => "បានកែសម្រួលសៀវភៅ {$book->title} ដោយជោគជ័យ!",
@@ -2402,7 +2407,7 @@ class ApiController extends Controller
         }
 
         $book = Book::create($validated);
-        Cache::forget('digital_library_catalog_v2');
+        $this->clearLibraryCache();
 
         return response()->json([
             'success' => true,
@@ -2423,7 +2428,7 @@ class ApiController extends Controller
         $title = $book->title;
         $book->borrows()->delete();
         $book->delete();
-        Cache::forget('digital_library_catalog_v2');
+        $this->clearLibraryCache();
 
         return response()->json([
             'success' => true,
@@ -2448,7 +2453,7 @@ class ApiController extends Controller
         $book = Book::findOrFail($id);
         $isBroken = $request->has('is_broken') ? $request->boolean('is_broken') : true;
         $book->update(['is_broken_link' => $isBroken]);
-        Cache::forget('digital_library_catalog_v2');
+        $this->clearLibraryCache();
 
         $authUser = Auth::user();
 
@@ -2571,7 +2576,7 @@ class ApiController extends Controller
         ]);
 
         $subject = CourseSubject::create($validated);
-        Cache::forget('digital_library_catalog_v2');
+        $this->clearLibraryCache();
         return response()->json([
             'success' => true,
             'message' => "បានបន្ថែមមុខវិជ្ជា {$subject->name} ដោយជោគជ័យ!",
@@ -2596,7 +2601,7 @@ class ApiController extends Controller
         ]);
 
         $subject->update($validated);
-        Cache::forget('digital_library_catalog_v2');
+        $this->clearLibraryCache();
         return response()->json([
             'success' => true,
             'message' => "បានកែសម្រួលមុខវិជ្ជា {$subject->name} ដោយជោគជ័យ!",
@@ -2616,7 +2621,7 @@ class ApiController extends Controller
         $name = $subject->name;
         Book::where('course_subject_id', $id)->update(['course_subject_id' => null]);
         $subject->delete();
-        Cache::forget('digital_library_catalog_v2');
+        $this->clearLibraryCache();
 
         return response()->json([
             'success' => true,
@@ -2949,7 +2954,7 @@ class ApiController extends Controller
             'admin_feedback' => $feedback,
         ]);
 
-        Cache::forget('digital_library_catalog_v2');
+        $this->clearLibraryCache();
         Cache::forget('pending_notifications_payload');
 
         return response()->json([
