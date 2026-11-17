@@ -21,6 +21,7 @@ export default defineConfig({
             'vue-i18n': 'vue-i18n/dist/vue-i18n.esm-bundler.js',
             'vue-I18n': 'vue-i18n/dist/vue-i18n.esm-bundler.js',
             '@': '/resources/js',
+            momentkh: '@thyrith/momentkh',
         },
     },
     build: {

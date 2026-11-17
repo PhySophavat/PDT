@@ -363,6 +363,9 @@ Route::middleware(['auth'])->group(function () use ($spa) {
     Route::post('/timetables', [TimetableController::class, 'store'])->middleware('role:admin,super_admin,teacher')->name('timetables.store');
     Route::delete('/timetables/{timetable}', [TimetableController::class, 'destroy'])->middleware('role:admin,super_admin,teacher')->name('timetables.destroy');
 
+    // 7.1 Academic & Khmer Lunar Calendar
+    Route::get('/calendar', $spa)->name('calendar.index');
+
     // 8. Attendance Management (Master Template)
     Route::get('/attendance', $spa)->name('attendance.index');
     Route::get('/attendances', $spa);

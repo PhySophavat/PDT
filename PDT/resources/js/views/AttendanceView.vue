@@ -816,7 +816,7 @@
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs font-khmer transition-opacity"
       @click.self="showLeaveLinkModal = false"
     >
-      <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden transform transition-all">
+      <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden transform transition-all">
         
         <!-- Modal Header -->
         <div class="bg-gradient-to-r from-indigo-700 via-indigo-600 to-blue-600 p-6 text-white flex items-center justify-between">
@@ -843,12 +843,12 @@
         <div class="p-6 text-center space-y-5">
 
           <!-- Target Class Selector for Link -->
-          <div class="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-200/80 text-xs">
-            <span class="font-bold text-slate-700">តំណភ្ជាប់សម្រាប់ថ្នាក់:</span>
+          <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/60 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-700 text-xs">
+            <span class="font-bold text-slate-700 dark:text-slate-200">តំណភ្ជាប់សម្រាប់ថ្នាក់:</span>
             <select 
               v-model="modalSelectedClass" 
               @change="generateQrCode" 
-              class="px-3 py-1.5 bg-white border border-slate-300 rounded-xl font-bold text-indigo-700 focus:outline-none"
+              class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl font-bold text-indigo-700 dark:text-indigo-400 focus:outline-none"
             >
               <option value="">-- គ្រប់ថ្នាក់ --</option>
               <option v-for="c in classesList" :key="c" :value="c">ថ្នាក់ {{ c }}</option>
@@ -856,28 +856,28 @@
           </div>
           
           <!-- QR Code Display Box -->
-          <div class="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl inline-block mx-auto shadow-inner text-center">
-            <div class="text-xs font-bold text-slate-800 mb-2 uppercase tracking-wide">
+          <div class="p-5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 rounded-2xl inline-block mx-auto shadow-inner text-center">
+            <div class="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 uppercase tracking-wide">
               សាលារៀន ជំនាន់ថ្មី - ស្កេនដើម្បីសុំច្បាប់
             </div>
             <div class="w-48 h-48 mx-auto bg-white p-2 rounded-xl border border-slate-200 shadow-xs flex items-center justify-center">
               <img v-if="qrDataUrl" :src="qrDataUrl" alt="QR Code" class="w-full h-full object-contain" />
               <div v-else class="text-xs text-slate-400">កំពុងបង្កើត QR Code...</div>
             </div>
-            <div class="mt-2 text-[11px] text-slate-500">
+            <div class="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
               {{ modalSelectedClass ? `តម្រង់ទិសដោយស្វ័យប្រវត្តិចូលថ្នាក់ ${modalSelectedClass}` : 'សិស្សអាចជ្រើសរើសថ្នាក់ដោយខ្លួនឯង' }}
             </div>
           </div>
 
           <!-- Shareable URL Input with Copy Button -->
           <div class="space-y-1.5 text-left">
-            <label class="text-xs font-bold text-slate-700">តំណភ្ជាប់ URL សាធារណៈ:</label>
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-200">តំណភ្ជាប់ URL សាធារណៈ:</label>
             <div class="flex items-center gap-2">
               <input 
                 type="text" 
                 :value="publicLeaveUrl" 
                 readonly 
-                class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 focus:outline-none select-all"
+                class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-700 dark:text-slate-300 focus:outline-none select-all"
               />
               <button 
                 @click="copyShareLink" 
@@ -899,7 +899,7 @@
             <a 
               :href="publicLeaveUrl" 
               target="_blank" 
-              class="px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5"
+              class="px-4 py-2.5 bg-indigo-50 dark:bg-indigo-500/15 hover:bg-indigo-100 dark:hover:bg-indigo-500/25 text-indigo-700 dark:text-indigo-300 text-xs font-bold rounded-xl transition flex items-center gap-1.5"
             >
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
               <span>សាកល្បងបើកមើលទម្រង់</span>
@@ -924,22 +924,22 @@
       class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs font-khmer transition-opacity"
       @click.self="showStudentLeaveModal = false"
     >
-      <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
-        <!-- 4. Sticky Modal Header: Clean White Header with Soft Pastel Icon -->
-        <div class="bg-white border-b border-slate-100 p-4 sm:p-5 flex items-center justify-between flex-shrink-0 sticky top-0 z-20">
+      <div class="bg-white dark:bg-[#0f172a] w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-800 overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+        <!-- 4. Sticky Modal Header: Clean Header with Soft Pastel Icon -->
+        <div class="bg-white dark:bg-[#0f172a] border-b border-slate-100 dark:border-slate-800 p-5 sm:p-6 flex items-center justify-between flex-shrink-0 sticky top-0 z-20">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg flex-shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg flex-shrink-0">
               <i class="fa-solid fa-file-pen"></i>
             </div>
             <div>
-              <h3 class="font-bold text-base leading-tight text-slate-900">ទម្រង់ស្នើសុំច្បាប់ឈប់សម្រាក</h3>
-              <p class="text-xs text-slate-500 mt-0.5">បំពេញព័ត៌មានដើម្បីផ្ញើសំណើជូនលោកគ្រូ/អ្នកគ្រូ</p>
+              <h3 class="font-bold text-base leading-tight text-slate-900 dark:text-slate-100">ទម្រង់ស្នើសុំច្បាប់ឈប់សម្រាក</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">បំពេញព័ត៌មានដើម្បីផ្ញើសំណើជូនលោកគ្រូ/អ្នកគ្រូ</p>
             </div>
           </div>
           <button 
             @click="showStudentLeaveModal = false" 
             type="button"
-            class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-600 flex items-center justify-center transition cursor-pointer text-sm font-semibold"
+            class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center justify-center transition cursor-pointer text-sm font-semibold"
           >
             ✕
           </button>
@@ -947,43 +947,43 @@
 
         <!-- Scrollable Form Body -->
         <form @submit.prevent="submitStudentLeaveRequest" class="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <div class="p-4 sm:p-6 space-y-4 max-h-[75vh] overflow-y-auto text-xs flex-1">
+          <div class="p-5 sm:p-6 space-y-5 max-h-[75vh] overflow-y-auto pb-6 text-xs flex-1">
             
-            <!-- Student Pre-filled Compact Info Bar (Single compact, borderless light-gray pill/bar) -->
-            <div class="bg-slate-50 rounded-xl px-3.5 py-2.5 flex items-center justify-between text-xs">
+            <!-- Student Pre-filled Compact Info Bar (Single compact, borderless pill/bar) -->
+            <div class="bg-slate-50 dark:bg-slate-800/40 rounded-xl px-4 py-3 flex items-center justify-between text-xs border border-slate-200/70 dark:border-slate-800">
               <div class="flex items-center gap-2 overflow-hidden flex-wrap">
-                <span class="font-bold text-slate-900 text-sm">{{ studentLeaveForm.student_name }}</span>
-                <span v-if="studentLeaveForm.student_id_card" class="text-slate-300">•</span>
-                <span v-if="studentLeaveForm.student_id_card" class="font-mono text-slate-600">{{ studentLeaveForm.student_id_card }}</span>
-                <span v-if="studentLeaveForm.class_name" class="text-slate-300">•</span>
-                <span v-if="studentLeaveForm.class_name" class="font-medium text-slate-700">ថ្នាក់ {{ studentLeaveForm.class_name }}</span>
+                <span class="font-bold text-slate-900 dark:text-slate-100 text-sm">{{ studentLeaveForm.student_name }}</span>
+                <span v-if="studentLeaveForm.student_id_card" class="text-slate-300 dark:text-slate-600">•</span>
+                <span v-if="studentLeaveForm.student_id_card" class="font-mono text-slate-600 dark:text-slate-300">{{ studentLeaveForm.student_id_card }}</span>
+                <span v-if="studentLeaveForm.class_name" class="text-slate-300 dark:text-slate-600">•</span>
+                <span v-if="studentLeaveForm.class_name" class="font-medium text-slate-700 dark:text-slate-300">ថ្នាក់ {{ studentLeaveForm.class_name }}</span>
               </div>
-              <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md flex items-center gap-1 flex-shrink-0">
+              <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/15 px-2 py-0.5 rounded-md flex items-center gap-1 flex-shrink-0 border border-emerald-100 dark:border-emerald-500/20">
                 <i class="fa-solid fa-circle-check text-[9px]"></i>
                 ស្វ័យប្រវត្តិ
               </span>
             </div>
 
-            <!-- Session / Duration Selector (Full Day vs By Hours) -->
+            <!-- Session / Duration Selector: Modern Segmented Control -->
             <div>
-              <label class="block font-bold text-slate-700 mb-1.5 text-xs">
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-2 text-xs">
                 រយៈពេលសុំច្បាប់ <span class="text-rose-500">*</span>
               </label>
-              <div class="grid grid-cols-2 gap-2.5">
+              <div class="bg-slate-100 dark:bg-slate-950/60 p-1 rounded-xl border border-slate-200 dark:border-slate-800 grid grid-cols-2 gap-1">
                 <button
                   type="button"
                   @click="setLeaveSession('full_day')"
                   :class="[
-                    'py-2.5 px-3 rounded-2xl text-center border text-xs transition cursor-pointer active:scale-95 flex items-center justify-center gap-2.5',
+                    'py-2 px-3 rounded-lg text-center text-xs transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center gap-2',
                     studentLeaveForm.session === 'full_day'
-                      ? 'bg-blue-50/80 border-2 border-blue-500 text-blue-700 font-bold'
-                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 font-medium'
+                      ? 'bg-blue-600 text-white shadow-sm font-semibold'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 bg-transparent hover:bg-slate-200/50 dark:hover:bg-slate-800/40 font-medium'
                   ]"
                 >
-                  <i class="fa-solid fa-calendar-day text-base" :class="studentLeaveForm.session === 'full_day' ? 'text-blue-600' : 'text-slate-400'"></i>
+                  <i class="fa-solid fa-calendar-day text-sm" :class="studentLeaveForm.session === 'full_day' ? 'text-white' : 'text-slate-400 dark:text-slate-500'"></i>
                   <div class="text-left">
-                    <div class="leading-tight text-xs sm:text-sm">ពេញមួយថ្ងៃ</div>
-                    <div class="text-[10px] opacity-75">១ ថ្ងៃ ឬច្រើនថ្ងៃ</div>
+                    <div class="leading-tight text-xs font-semibold">ពេញមួយថ្ងៃ</div>
+                    <div class="text-[10px] opacity-80" :class="studentLeaveForm.session === 'full_day' ? 'text-blue-100' : 'text-slate-400 dark:text-slate-500'">១ ថ្ងៃ ឬច្រើនថ្ងៃ</div>
                   </div>
                 </button>
 
@@ -991,27 +991,27 @@
                   type="button"
                   @click="setLeaveSession('hourly')"
                   :class="[
-                    'py-2.5 px-3 rounded-2xl text-center border text-xs transition cursor-pointer active:scale-95 flex items-center justify-center gap-2.5',
+                    'py-2 px-3 rounded-lg text-center text-xs transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center gap-2',
                     studentLeaveForm.session === 'hourly'
-                      ? 'bg-blue-50/80 border-2 border-blue-500 text-blue-700 font-bold'
-                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 font-medium'
+                      ? 'bg-blue-600 text-white shadow-sm font-semibold'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 bg-transparent hover:bg-slate-200/50 dark:hover:bg-slate-800/40 font-medium'
                   ]"
                 >
-                  <i class="fa-solid fa-clock text-base" :class="studentLeaveForm.session === 'hourly' ? 'text-blue-600' : 'text-slate-400'"></i>
+                  <i class="fa-solid fa-clock text-sm" :class="studentLeaveForm.session === 'hourly' ? 'text-white' : 'text-slate-400 dark:text-slate-500'"></i>
                   <div class="text-left">
-                    <div class="leading-tight text-xs sm:text-sm">សុំជាម៉ោង</div>
-                    <div class="text-[10px] opacity-75">ជ្រើសរើសម៉ោងសិក្សា</div>
+                    <div class="leading-tight text-xs font-semibold">សុំជាម៉ោង</div>
+                    <div class="text-[10px] opacity-80" :class="studentLeaveForm.session === 'hourly' ? 'text-blue-100' : 'text-slate-400 dark:text-slate-500'">ជ្រើសរើសម៉ោងសិក្សា</div>
                   </div>
                 </button>
               </div>
             </div>
 
-            <!-- Date Selection Box (Khmer Format DD/MM/YYYY) -->
-            <div class="space-y-3 bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/80">
-              <!-- Full Day Date Range (From & To) -->
-              <div v-if="studentLeaveForm.session === 'full_day'" class="grid grid-cols-2 gap-3">
+            <!-- Date Selection Box: Clean Dark Surface (Khmer Format DD/MM/YYYY) -->
+            <div class="space-y-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/70 rounded-xl p-4 sm:p-5">
+              <!-- Full Day Date Range (From & To) - Mobile Vertical Stack -->
+              <div v-if="studentLeaveForm.session === 'full_day'" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label class="block font-bold text-slate-700 mb-1 text-xs">
+                  <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1.5 text-xs">
                     ពីថ្ងៃទី <span class="text-rose-500">*</span>
                   </label>
                   <div 
@@ -1027,21 +1027,21 @@
                       @click.stop="openDatePicker('start')"
                       class="custom-date-trigger opacity-0 absolute inset-0 w-full h-full cursor-pointer z-20"
                     />
-                    <div class="w-full px-3 py-2 bg-white border border-slate-200 group-hover:border-blue-500 group-hover:ring-2 group-hover:ring-blue-500/20 rounded-xl font-bold text-slate-800 text-xs flex items-center justify-between shadow-2xs transition pointer-events-none">
-                      <div class="flex items-center gap-1.5 overflow-hidden">
-                        <i class="fa-regular fa-calendar-days text-blue-600 text-xs flex-shrink-0"></i>
-                        <span class="tracking-wide text-xs truncate">{{ formatDateKmDisplay(studentLeaveForm.start_date) }}</span>
+                    <div class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 group-hover:border-blue-500 focus-within:border-blue-500 flex items-center justify-between shadow-2xs transition pointer-events-none">
+                      <div class="flex items-center gap-2 overflow-hidden">
+                        <i class="fa-regular fa-calendar-days text-blue-600 dark:text-blue-400 text-sm flex-shrink-0"></i>
+                        <span class="tracking-wide text-xs sm:text-sm font-semibold truncate">{{ formatDateKmDisplay(studentLeaveForm.start_date) }}</span>
                       </div>
-                      <span class="text-[9px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-semibold flex-shrink-0">ថ្ងៃ/ខែ/ឆ្នាំ</span>
+                      <span class="text-[9px] text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/15 px-1.5 py-0.5 rounded font-medium flex-shrink-0">ថ្ងៃ/ខែ/ឆ្នាំ</span>
                     </div>
                   </div>
-                  <span class="text-[10px] text-slate-500 mt-1 block font-medium truncate">
+                  <span class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 block font-medium">
                     {{ formatKhmerFullDate(studentLeaveForm.start_date) }}
                   </span>
                 </div>
 
                 <div>
-                  <label class="block font-bold text-slate-700 mb-1 text-xs">
+                  <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1.5 text-xs">
                     ដល់ថ្ងៃទី <span class="text-rose-500">*</span>
                   </label>
                   <div 
@@ -1057,15 +1057,15 @@
                       @click.stop="openDatePicker('end')"
                       class="custom-date-trigger opacity-0 absolute inset-0 w-full h-full cursor-pointer z-20"
                     />
-                    <div class="w-full px-3 py-2 bg-white border border-slate-200 group-hover:border-blue-500 group-hover:ring-2 group-hover:ring-blue-500/20 rounded-xl font-bold text-slate-800 text-xs flex items-center justify-between shadow-2xs transition pointer-events-none">
-                      <div class="flex items-center gap-1.5 overflow-hidden">
-                        <i class="fa-regular fa-calendar-days text-blue-600 text-xs flex-shrink-0"></i>
-                        <span class="tracking-wide text-xs truncate">{{ formatDateKmDisplay(studentLeaveForm.end_date) }}</span>
+                    <div class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 group-hover:border-blue-500 focus-within:border-blue-500 flex items-center justify-between shadow-2xs transition pointer-events-none">
+                      <div class="flex items-center gap-2 overflow-hidden">
+                        <i class="fa-regular fa-calendar-days text-blue-600 dark:text-blue-400 text-sm flex-shrink-0"></i>
+                        <span class="tracking-wide text-xs sm:text-sm font-semibold truncate">{{ formatDateKmDisplay(studentLeaveForm.end_date) }}</span>
                       </div>
-                      <span class="text-[9px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-semibold flex-shrink-0">ថ្ងៃ/ខែ/ឆ្នាំ</span>
+                      <span class="text-[9px] text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/15 px-1.5 py-0.5 rounded font-medium flex-shrink-0">ថ្ងៃ/ខែ/ឆ្នាំ</span>
                     </div>
                   </div>
-                  <span class="text-[10px] text-slate-500 mt-1 block font-medium truncate">
+                  <span class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 block font-medium">
                     {{ formatKhmerFullDate(studentLeaveForm.end_date) }}
                   </span>
                 </div>
@@ -1073,7 +1073,7 @@
 
               <!-- Hourly Single Date (Leave Date) -->
               <div v-else>
-                <label class="block font-bold text-slate-700 mb-1 text-xs">
+                <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1.5 text-xs">
                   កាលបរិច្ឆេទសុំច្បាប់ <span class="text-rose-500">*</span>
                 </label>
                 <div 
@@ -1089,27 +1089,27 @@
                     @click.stop="openDatePicker('hourly')"
                     class="custom-date-trigger opacity-0 absolute inset-0 w-full h-full cursor-pointer z-20"
                   />
-                  <div class="w-full px-3.5 py-2.5 bg-white border border-slate-200 group-hover:border-blue-500 group-hover:ring-2 group-hover:ring-blue-500/20 rounded-xl font-bold text-slate-800 text-xs flex items-center justify-between shadow-2xs transition pointer-events-none">
+                  <div class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3.5 py-2.5 group-hover:border-blue-500 flex items-center justify-between shadow-2xs transition pointer-events-none">
                     <div class="flex items-center gap-2">
-                      <i class="fa-regular fa-calendar-days text-blue-600 text-sm"></i>
-                      <span class="tracking-wide text-xs sm:text-sm text-slate-900">{{ formatDateKmDisplay(studentLeaveForm.start_date) }}</span>
+                      <i class="fa-regular fa-calendar-days text-blue-600 dark:text-blue-400 text-base"></i>
+                      <span class="tracking-wide text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">{{ formatDateKmDisplay(studentLeaveForm.start_date) }}</span>
                     </div>
-                    <span class="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-semibold">ថ្ងៃ/ខែ/ឆ្នាំ</span>
+                    <span class="text-[10px] text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/15 px-2 py-0.5 rounded font-semibold">ថ្ងៃ/ខែ/ឆ្នាំ</span>
                   </div>
                 </div>
-                <span class="text-[10px] text-slate-500 mt-1 block font-medium">
+                <span class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 block font-medium">
                   {{ formatKhmerFullDate(studentLeaveForm.start_date) }}
                 </span>
               </div>
 
               <!-- Hourly Period Selection Buttons (07:00 - 11:00) -->
-              <div v-if="studentLeaveForm.session === 'hourly'" class="p-3 bg-white rounded-2xl border border-slate-200/80 space-y-2.5">
+              <div v-if="studentLeaveForm.session === 'hourly'" class="p-3.5 bg-white dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-700/80 space-y-3">
                 <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <i class="fa-solid fa-graduation-cap text-blue-600"></i>
+                  <span class="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-graduation-cap text-blue-600 dark:text-blue-400"></i>
                     ជ្រើសរើសម៉ោងសិក្សាដែលត្រូវសុំច្បាប់ (០៧:០០ - ១១:០០)៖
                   </span>
-                  <span class="text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+                  <span class="text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/20 px-2.5 py-0.5 rounded-full border border-blue-100 dark:border-blue-500/30">
                     {{ studentLeaveForm.selected_periods.length }} ម៉ោង
                   </span>
                 </div>
@@ -1121,10 +1121,10 @@
                     type="button"
                     @click="togglePeriod(p.id)"
                     :class="[
-                      'p-2.5 rounded-xl border text-left transition cursor-pointer flex items-center justify-between active:scale-95',
+                      'p-2.5 rounded-lg border text-left transition cursor-pointer flex items-center justify-between active:scale-95',
                       isPeriodSelected(p.id)
-                        ? 'bg-blue-50/80 border-2 border-blue-500 text-blue-700 shadow-2xs'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                        ? 'bg-blue-50/90 dark:bg-blue-900/40 border-2 border-blue-500 text-blue-700 dark:text-blue-300 shadow-2xs font-semibold'
+                        : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750 font-medium'
                     ]"
                   >
                     <div>
@@ -1133,7 +1133,7 @@
                     </div>
                     <div 
                       class="w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0" 
-                      :class="isPeriodSelected(p.id) ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'"
+                      :class="isPeriodSelected(p.id) ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-400'"
                     >
                       <i class="fa-solid fa-check text-[10px]" v-if="isPeriodSelected(p.id)"></i>
                     </div>
@@ -1141,33 +1141,33 @@
                 </div>
               </div>
 
-              <!-- Confirmation & Calculated Badge -->
-              <div class="bg-white border border-slate-200/80 px-3.5 py-2.5 rounded-xl flex items-center justify-between text-slate-800">
+              <!-- Duration Summary Banner: Sleek Tinted Callout -->
+              <div class="bg-blue-50 dark:bg-blue-500/10 border border-blue-200/80 dark:border-blue-500/20 text-blue-800 dark:text-blue-300 rounded-lg px-3.5 py-2.5 flex items-center justify-between">
                 <div class="flex items-center gap-2.5 overflow-hidden">
-                  <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm flex-shrink-0">
+                  <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 flex items-center justify-center text-sm flex-shrink-0">
                     <i :class="studentLeaveForm.session === 'hourly' ? 'fa-regular fa-clock' : 'fa-regular fa-calendar-days'"></i>
                   </div>
                   <div class="overflow-hidden">
-                    <div class="text-xs font-bold leading-tight truncate text-slate-800">
+                    <div class="text-xs font-semibold leading-tight truncate">
                       សុំច្បាប់៖ {{ formatDateKmDisplay(studentLeaveForm.start_date) }}
                       <span v-if="studentLeaveForm.session === 'full_day' && studentLeaveForm.start_date !== studentLeaveForm.end_date">
                         ដល់ {{ formatDateKmDisplay(studentLeaveForm.end_date) }}
                       </span>
                     </div>
-                    <div class="text-[10px] text-slate-500 mt-0.5 truncate font-medium">
+                    <div class="text-[10px] opacity-80 mt-0.5 truncate">
                       {{ studentLeaveForm.session === 'hourly' ? `សុំជាម៉ោង៖ ${selectedPeriodsLabel}` : 'ពេញមួយថ្ងៃ' }}
                     </div>
                   </div>
                 </div>
-                <span class="font-semibold text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full flex-shrink-0 ml-2">
+                <span class="font-bold text-xs bg-blue-600 text-white px-2.5 py-1 rounded-full flex-shrink-0 ml-2 shadow-xs">
                   {{ studentLeaveForm.session === 'hourly' ? `${studentLeaveForm.selected_periods.length} ម៉ោង` : `${computedDaysCount} ថ្ងៃ` }}
                 </span>
               </div>
             </div>
 
-            <!-- Phone Number -->
-            <div class="space-y-1">
-              <label class="block font-bold text-slate-700 text-xs">
+            <!-- Phone Number: Unified Dark Input -->
+            <div class="space-y-1.5">
+              <label class="block font-medium text-slate-700 dark:text-slate-300 text-xs">
                 លេខទូរស័ព្ទអាណាព្យាបាល / សិស្ស <span class="text-rose-500">*</span>
               </label>
               <input 
@@ -1175,13 +1175,13 @@
                 v-model="studentLeaveForm.phone" 
                 placeholder="ឧទាហរណ៍៖ 012 345 678" 
                 required
-                class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition"
+                class="w-full bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3.5 py-2.5 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition text-xs font-medium focus:outline-none"
               />
             </div>
 
-            <!-- Reason / Details -->
-            <div class="space-y-1">
-              <label class="block font-bold text-slate-700 text-xs">
+            <!-- Reason / Details: Unified Dark Textarea -->
+            <div class="space-y-1.5">
+              <label class="block font-medium text-slate-700 dark:text-slate-300 text-xs">
                 មូលហេតុនៃការសុំច្បាប់ <span class="text-rose-500">*</span>
               </label>
               <textarea 
@@ -1189,13 +1189,13 @@
                 rows="3" 
                 required
                 placeholder="សូមបញ្ជាក់មូលហេតុលម្អិត..."
-                class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-normal text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition resize-none"
+                class="w-full bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3.5 py-2.5 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition resize-none text-xs focus:outline-none leading-relaxed"
               ></textarea>
             </div>
 
-            <!-- 3. Attachment: Custom Khmer Dropzone -->
-            <div class="space-y-1">
-              <label class="block font-bold text-slate-700 text-xs">
+            <!-- 3. Attachment: Modern File Upload Dropzone -->
+            <div class="space-y-1.5">
+              <label class="block font-medium text-slate-700 dark:text-slate-300 text-xs">
                 ឯកសារភ្ជាប់ (បើមាន៖ លិខិតវេជ្ជបញ្ជា ឬលិខិតសុំច្បាប់)
               </label>
 
@@ -1208,32 +1208,30 @@
                 class="hidden"
               />
 
-              <!-- Empty State: Modern Soft Dashed Upload Dropzone -->
+              <!-- Empty State: Dark Dashed Dropzone with Center Soft Blue Badge -->
               <div 
                 v-if="!studentLeaveFile"
                 @click="triggerFileInput"
-                class="border-2 border-dashed border-slate-200 hover:border-blue-400 rounded-2xl p-4 sm:p-5 bg-slate-50/60 hover:bg-blue-50/30 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 group"
+                class="bg-slate-50/60 dark:bg-slate-800/30 hover:bg-slate-100/60 dark:hover:bg-slate-800/50 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500/60 rounded-xl p-6 transition cursor-pointer flex flex-col items-center justify-center text-center group"
               >
-                <div class="w-10 h-10 rounded-xl bg-blue-50 group-hover:bg-blue-100 text-blue-600 flex items-center justify-center text-lg transition">
+                <div class="w-11 h-11 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 p-3 rounded-full mb-3 flex items-center justify-center text-lg transition-transform group-hover:scale-110 flex-shrink-0">
                   <i class="fa-solid fa-cloud-arrow-up"></i>
                 </div>
-                <div>
-                  <div class="text-xs font-semibold text-slate-700 group-hover:text-blue-700">
-                    ចុចទីនេះដើម្បីជ្រើសរើសរូបភាព ឬថតរូបលិខិតសុំច្បាប់
-                  </div>
-                  <div class="text-[10px] text-slate-400 mt-0.5">
-                    គាំទ្រឯកសារ JPG, PNG ឬ PDF (អតិបរមា 5MB)
-                  </div>
+                <div class="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  ចុចទីនេះដើម្បីជ្រើសរើសរូបភាព ឬថតរូបលិខិតសុំច្បាប់
+                </div>
+                <div class="text-xs text-slate-400 dark:text-slate-400 mt-1">
+                  គាំទ្រឯកសារ JPG, PNG ឬ PDF (អតិបរមា 5MB)
                 </div>
               </div>
 
               <!-- File Selected Preview Card with Remove Button -->
               <div 
                 v-else
-                class="border border-slate-200 rounded-2xl p-3 bg-white shadow-2xs flex items-center justify-between gap-3"
+                class="border border-slate-200 dark:border-slate-700/80 rounded-xl p-3 bg-white dark:bg-slate-800/60 shadow-2xs flex items-center justify-between gap-3"
               >
                 <div class="flex items-center gap-3 overflow-hidden">
-                  <div class="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  <div class="w-12 h-12 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                     <img 
                       v-if="filePreviewUrl" 
                       :src="filePreviewUrl" 
@@ -1243,7 +1241,7 @@
                     <i v-else class="fa-solid fa-file-pdf text-red-500 text-2xl"></i>
                   </div>
                   <div class="min-w-0">
-                    <div class="text-xs font-bold text-slate-800 truncate" :title="studentLeaveFile.name">
+                    <div class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate" :title="studentLeaveFile.name">
                       {{ studentLeaveFile.name }}
                     </div>
                     <div class="text-[10px] text-slate-400 font-mono mt-0.5">
@@ -1255,7 +1253,7 @@
                 <button 
                   type="button" 
                   @click="removeSelectedFile" 
-                  class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-semibold flex items-center gap-1 transition flex-shrink-0 cursor-pointer active:scale-95"
+                  class="px-2.5 py-1.5 bg-rose-50 dark:bg-rose-500/15 hover:bg-rose-100 dark:hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 rounded-lg text-xs font-semibold flex items-center gap-1 transition flex-shrink-0 cursor-pointer active:scale-95"
                 >
                   <i class="fa-solid fa-trash-can text-[11px]"></i>
                   <span>លុបចេញ</span>
@@ -1265,25 +1263,23 @@
 
           </div>
 
-          <!-- Sticky Full-Width Footer Action Buttons -->
-          <div class="p-4 bg-white border-t border-slate-100 flex-shrink-0 sticky bottom-0 z-20">
-            <div class="grid grid-cols-3 gap-3 w-full">
-              <button 
-                type="button" 
-                @click="showStudentLeaveModal = false"
-                class="col-span-1 px-3 py-3 rounded-2xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold transition text-xs sm:text-sm text-center cursor-pointer active:scale-95"
-              >
-                បោះបង់
-              </button>
-              <button 
-                type="submit" 
-                :disabled="isSubmittingLeave"
-                class="col-span-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-md shadow-blue-600/25 transition text-xs sm:text-sm flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer active:scale-95"
-              >
-                <div v-if="isSubmittingLeave" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>{{ isSubmittingLeave ? 'កំពុងបញ្ជូន...' : '✓ បញ្ជូនសំណើសុំច្បាប់' }}</span>
-              </button>
-            </div>
+          <!-- Sticky Action Footer: Polished Buttons -->
+          <div class="p-4 sm:p-5 bg-white dark:bg-[#0f172a] border-t border-slate-100 dark:border-slate-800 flex-shrink-0 sticky bottom-0 z-20 flex items-center justify-end gap-3">
+            <button 
+              type="button" 
+              @click="showStudentLeaveModal = false"
+              class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl py-2.5 px-5 font-medium transition text-xs sm:text-sm text-center cursor-pointer active:scale-95"
+            >
+              បោះបង់
+            </button>
+            <button 
+              type="submit" 
+              :disabled="isSubmittingLeave"
+              class="bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl py-2.5 px-6 shadow-lg shadow-blue-600/20 transition text-xs sm:text-sm flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer active:scale-95"
+            >
+              <div v-if="isSubmittingLeave" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>{{ isSubmittingLeave ? 'កំពុងបញ្ជូន...' : '✓ បញ្ជូនសំណើសុំច្បាប់' }}</span>
+            </button>
           </div>
         </form>
       </div>

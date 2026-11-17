@@ -10,6 +10,7 @@ import ClassView from '../views/ClassView.vue';
 import AcademicYearView from '../views/AcademicYearView.vue';
 import CourseSubjectView from '../views/CourseSubjectView.vue';
 import TimetableView from '../views/TimetableView.vue';
+import CalendarView from '../views/CalendarView.vue';
 import ExaminationView from '../views/ExaminationView.vue';
 import ParentView from '../views/ParentView.vue';
 import FinanceView from '../views/FinanceView.vue';
@@ -75,6 +76,9 @@ const routes = [
   // Timetable routes
   { path: '/timetables', name: 'Timetables', component: TimetableView },
   { path: '/timetables/create', redirect: '/timetables' },
+
+  // Academic Calendar routes
+  { path: '/calendar', name: 'Calendar', component: CalendarView },
 
   // Examination routes
   { path: '/examinations', name: 'Examinations', component: ExaminationView },

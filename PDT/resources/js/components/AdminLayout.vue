@@ -161,8 +161,8 @@
                 'flex items-center rounded-xl text-[13px] font-medium transition-all group',
                 sidebarOpen ? 'justify-between px-3.5 py-2.5' : 'justify-center p-2.5 relative',
                 isActive(item.path) 
-                  ? 'bg-[#e5ecfc] text-[#1e40af] dark:bg-blue-900/40 dark:text-blue-300 font-semibold shadow-xs' 
-                  : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100 hover:bg-slate-50 dark:hover:bg-neutral-800/60'
+                  ? 'bg-[#e5ecfc] text-[#1e40af] dark:bg-blue-600/20 dark:text-blue-400 dark:border dark:border-blue-500/30 font-semibold shadow-xs' 
+                  : 'text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100 hover:bg-slate-50 dark:hover:bg-neutral-800/60 border border-transparent'
               ]"
               :title="!sidebarOpen ? getMenuLabel(item) : ''"
             >
@@ -928,6 +928,7 @@ import {
   SlidersHorizontal,
   GraduationCap, 
   CalendarCheck, 
+  CalendarDays,
   FileText, 
   Bell, 
   BookOpen, 
@@ -1501,6 +1502,7 @@ const menuItems = [
   { i18nKey: 'nav.academicYears', path: '/academic-years', icon: CalendarCheck, roles: ['Super Admin', 'Admin'] },
   { i18nKey: 'nav.inventory', path: '/course-subjects', icon: Package, roles: ['Super Admin', 'Admin'] },
   { i18nKey: 'nav.homework', path: '/timetables', icon: BookMarked, roles: ['Super Admin', 'Admin', 'Teacher', 'Student'] },
+  { nameKm: 'ប្រតិទិន', nameEn: 'Calendar', path: '/calendar', icon: CalendarDays, roles: ['Super Admin', 'Admin', 'Teacher', 'Student'] },
   { i18nKey: 'nav.exam', path: '/examinations', icon: FileText, roles: ['Super Admin', 'Admin', 'Teacher', 'Student'] },
   { i18nKey: 'nav.messaging', path: '/parents', icon: MessageSquare, roles: ['Super Admin', 'Admin'] },
   { i18nKey: 'nav.feesCollection', path: '/finance', icon: BadgePercent, roles: ['Super Admin', 'Admin'] },

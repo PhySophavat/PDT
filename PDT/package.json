@@ -20,8 +20,10 @@
         "vite": "^7.0.7"
     },
     "dependencies": {
+        "@thyrith/momentkh": "^3.0.3",
         "@vitejs/plugin-vue": "^6.0.10",
         "lucide-vue-next": "^1.0.0",
+        "moment": "^2.31.0",
         "pinia": "^4.1.0",
         "qrcode": "^1.5.4",
         "tesseract.js": "^7.0.0",
