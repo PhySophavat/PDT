@@ -2162,8 +2162,9 @@ class ApiController extends Controller
 
     protected function clearLibraryCache(): void
     {
+        Cache::forget('digital_library_catalog_v4');
         Cache::forget('digital_library_catalog_v3');
-        $this->clearLibraryCache();
+        Cache::forget('digital_library_catalog_v2');
     }
 
     public function library()
@@ -2184,7 +2185,7 @@ class ApiController extends Controller
         }
 
         // High-Performance Cached Catalog (Books, Subjects, Categories & Base Stats) - 24hr Cache with Invalidation
-        $cachedLibrary = Cache::remember('digital_library_catalog_v3', 86400, function () {
+        $cachedLibrary = Cache::remember('digital_library_catalog_v4', 86400, function () {
             $khmerToArabic = ['៧' => '7', '៨' => '8', '៩' => '9', '១០' => '10', '១១' => '11', '១២' => '12'];
 
             // Fetch only required relations and columns (ordered descending so newly added books appear on top)

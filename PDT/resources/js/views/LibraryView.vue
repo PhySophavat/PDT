@@ -1398,7 +1398,7 @@ const subFilter = ref('all'); // all, bookmarks, recent
 // Instant SWR Cache Hydration: Render books and subjects immediately on page visit with 0.00s delay!
 let initialCachedLib = null;
 try {
-  const raw = localStorage.getItem('pdt_library_cache_v3');
+  const raw = localStorage.getItem('pdt_library_cache_v4');
   if (raw) initialCachedLib = JSON.parse(raw);
 } catch (e) {}
 
@@ -1440,7 +1440,7 @@ const loadLocalStorageData = () => {
     if (savedPages) readingPagesMap.value = JSON.parse(savedPages);
 
     // Instant SWR Cache: Render books and subjects in 0.001s without any waiting!
-    const cachedLib = localStorage.getItem('pdt_library_cache_v3');
+    const cachedLib = localStorage.getItem('pdt_library_cache_v4');
     if (cachedLib) {
       const parsed = JSON.parse(cachedLib);
       if (parsed.books && parsed.books.length > 0) {
@@ -2153,7 +2153,8 @@ const fetchLibraryData = async () => {
 
       // Save to localStorage SWR cache so future page visits render instantly
       try {
-        localStorage.setItem('pdt_library_cache_v3', JSON.stringify({
+        localStorage.removeItem('pdt_library_cache_v3');
+        localStorage.setItem('pdt_library_cache_v4', JSON.stringify({
           books: booksList.value,
           subjects: subjectsList.value,
           categories: categoriesList.value,
