@@ -1,41 +1,25 @@
 <template>
-  <div class="space-y-4 font-khmer pb-10 select-none">
-    <!-- Top Card: Compact Header, Slim Banner & Filter Pills -->
-    <div class="bg-white dark:bg-[#0f172a] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-3.5 sm:p-5 shadow-xs space-y-3">
-      <!-- 1. Compact Single-Row Calendar Header -->
+  <div class="space-y-4 sm:space-y-6 font-khmer pb-10 select-none">
+    <!-- Clean Minimal Header Card -->
+    <div class="bg-white dark:bg-[#0f172a] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs">
       <div class="flex items-center justify-between gap-3">
         <!-- Left: Month/Year & Lunar Subtitle -->
         <div class="min-w-0">
-          <h1 class="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight truncate">
+          <h1 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight truncate">
             {{ currentSolarMonthKhmer }} {{ currentYear }}
           </h1>
-          <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
+          <p class="text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
             {{ currentLunarSpan.headerText }} • ព.ស. {{ currentLunarSpan.beYear }}
           </p>
         </div>
 
-        <!-- Right: Compact Action Group (🔍, ថ្ងៃនេះ, <, >) -->
+        <!-- Right: Action Group (ថ្ងៃនេះ, <, >) -->
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          <!-- Collapsible Search Button -->
-          <button
-            type="button"
-            @click="toggleSearch"
-            :class="[
-              'w-8 h-8 sm:w-9 sm:h-9 rounded-xl border flex items-center justify-center transition cursor-pointer active:scale-95',
-              showSearchInput 
-                ? 'bg-blue-600 text-white border-blue-500 shadow-xs' 
-                : 'bg-slate-100 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-            ]"
-            title="ស្វែងរកព្រឹត្តិការណ៍"
-          >
-            <i class="fa-solid fa-magnifying-glass text-xs"></i>
-          </button>
-
           <!-- Today Jump Button -->
           <button
             type="button"
             @click="jumpToToday"
-            class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-xs transition cursor-pointer active:scale-95 flex items-center gap-1"
+            class="px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-xs transition cursor-pointer active:scale-95 flex items-center gap-1.5"
           >
             <i class="fa-solid fa-rotate-right text-[10px]"></i>
             <span>ថ្ងៃនេះ</span>
@@ -62,143 +46,14 @@
           </button>
         </div>
       </div>
-
-      <!-- 2. Slim 1-Line "Today" Banner -->
-      <div class="py-1.5 px-3 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 text-xs flex items-center justify-between text-slate-800 dark:text-slate-200">
-        <div class="flex items-center gap-1.5 truncate font-medium">
-          <span class="text-amber-500 text-xs shrink-0">🪷</span>
-          <span class="truncate">
-            ថ្ងៃ{{ todayLunarInfo.dayOfWeekName }} {{ todayLunarInfo.dayKm }}{{ todayLunarInfo.moonPhaseName }} ខែ{{ todayLunarInfo.monthName }} ព.ស. {{ todayLunarInfo.beYearKm }}
-          </span>
-          <span v-if="todayLunarInfo.isHolyDay" class="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/20 px-1.5 py-0.5 rounded-md shrink-0">
-            (ថ្ងៃសីល)
-          </span>
-          <span v-else-if="todayLunarInfo.isShavingDay" class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-500/20 px-1.5 py-0.5 rounded-md shrink-0">
-            (ថ្ងៃកោរ)
-          </span>
-        </div>
-
-        <button
-          type="button"
-          @click="copyFormalDate"
-          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition ml-2 shrink-0 p-1 cursor-pointer"
-          :title="copied ? 'បានចម្លងរួចរាល់' : 'ចម្លងកាលបរិច្ឆេទ'"
-        >
-          <i :class="copied ? 'fa-solid fa-check text-emerald-500 text-xs' : 'fa-regular fa-copy text-xs'"></i>
-        </button>
-      </div>
-
-      <!-- 3. Collapsible Search Input Bar -->
-      <transition
-        enter-active-class="transition duration-150 ease-out"
-        enter-from-class="opacity-0 -translate-y-1"
-        leave-active-class="transition duration-100 ease-in"
-        leave-to-class="opacity-0 -translate-y-1"
-      >
-        <div v-if="showSearchInput" class="relative">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-          <input
-            ref="searchInputRef"
-            v-model="searchQuery"
-            type="text"
-            placeholder="ស្វែងរកព្រឹត្តិការណ៍ ឬកាលបរិច្ឆេទ..."
-            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-8 py-1.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition"
-          />
-          <button
-            v-if="searchQuery"
-            @click="searchQuery = ''"
-            type="button"
-            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs cursor-pointer"
-          >
-            ✕
-          </button>
-        </div>
-      </transition>
-
-      <!-- 4. Minimal Category Filter Pills (Concise: ទាំងអស់, ថ្ងៃសីល, ថ្ងៃឈប់សម្រាក, ការប្រឡង, សាលា) -->
-      <div class="flex items-center gap-1.5 overflow-x-auto pt-0.5 max-w-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <!-- ទាំងអស់ -->
-        <button
-          type="button"
-          @click="selectedCategory = 'all'"
-          :class="[
-            'text-xs px-3 py-1 rounded-full font-semibold transition cursor-pointer active:scale-95 shrink-0 border',
-            selectedCategory === 'all'
-              ? 'bg-blue-600 text-white border-blue-500 shadow-2xs'
-              : 'bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-transparent hover:bg-slate-200 dark:hover:bg-slate-700'
-          ]"
-        >
-          ទាំងអស់
-        </button>
-
-        <!-- ថ្ងៃសីល -->
-        <button
-          type="button"
-          @click="selectedCategory = 'holy_day'"
-          :class="[
-            'text-xs px-3 py-1 rounded-full font-semibold transition cursor-pointer active:scale-95 shrink-0 border flex items-center gap-1',
-            selectedCategory === 'holy_day'
-              ? 'bg-amber-500 text-white border-amber-400 shadow-2xs'
-              : 'bg-amber-500/10 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20 hover:bg-amber-500/20'
-          ]"
-        >
-          <span>🪷</span>
-          <span>ថ្ងៃសីល</span>
-        </button>
-
-        <!-- ថ្ងៃឈប់សម្រាក -->
-        <button
-          type="button"
-          @click="selectedCategory = 'holiday'"
-          :class="[
-            'text-xs px-3 py-1 rounded-full font-semibold transition cursor-pointer active:scale-95 shrink-0 border flex items-center gap-1.5',
-            selectedCategory === 'holiday'
-              ? 'bg-rose-600 text-white border-rose-500 shadow-2xs'
-              : 'bg-rose-500/10 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/20 hover:bg-rose-500/20'
-          ]"
-        >
-          <span class="w-1.5 h-1.5 rounded-full" :class="selectedCategory === 'holiday' ? 'bg-white' : 'bg-rose-500'"></span>
-          <span>ថ្ងៃឈប់សម្រាក</span>
-        </button>
-
-        <!-- ការប្រឡង -->
-        <button
-          type="button"
-          @click="selectedCategory = 'exam'"
-          :class="[
-            'text-xs px-3 py-1 rounded-full font-semibold transition cursor-pointer active:scale-95 shrink-0 border flex items-center gap-1.5',
-            selectedCategory === 'exam'
-              ? 'bg-indigo-600 text-white border-indigo-500 shadow-2xs'
-              : 'bg-indigo-500/10 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 hover:bg-indigo-500/20'
-          ]"
-        >
-          <span class="w-1.5 h-1.5 rounded-full" :class="selectedCategory === 'exam' ? 'bg-white' : 'bg-indigo-500'"></span>
-          <span>ការប្រឡង</span>
-        </button>
-
-        <!-- សាលា -->
-        <button
-          type="button"
-          @click="selectedCategory = 'event'"
-          :class="[
-            'text-xs px-3 py-1 rounded-full font-semibold transition cursor-pointer active:scale-95 shrink-0 border flex items-center gap-1.5',
-            selectedCategory === 'event'
-              ? 'bg-blue-600 text-white border-blue-500 shadow-2xs'
-              : 'bg-blue-500/10 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/20 hover:bg-blue-500/20'
-          ]"
-        >
-          <span class="w-1.5 h-1.5 rounded-full" :class="selectedCategory === 'event' ? 'bg-white' : 'bg-blue-500'"></span>
-          <span>សាលា</span>
-        </button>
-      </div>
     </div>
 
-    <!-- 5. Split View: Minimal 7-Column Calendar Grid & Events Sidebar -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-start">
+    <!-- Main Split View: Minimal 7-Column Calendar Grid & Events Sidebar -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
       <!-- LEFT: Clean, Classic Khmer Calendar Grid Cells -->
-      <div class="lg:col-span-2 bg-white dark:bg-[#0f172a] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-2.5 sm:p-5 shadow-xs flex flex-col">
+      <div class="lg:col-span-2 bg-white dark:bg-[#0f172a] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm flex flex-col">
         <!-- Weekday Headers (អាទិ to សៅរ៍) -->
-        <div class="grid grid-cols-7 gap-1 sm:gap-1.5 mb-2 text-center border-b border-slate-100 dark:border-slate-800/80 pb-1.5">
+        <div class="grid grid-cols-7 gap-1.5 sm:gap-2 mb-3 text-center border-b border-slate-100 dark:border-slate-800/80 pb-2.5">
           <div 
             v-for="(dayShort, idx) in ['អាទិ', 'ចន្ទ', 'អង្គ', 'ពុធ', 'ព្រហ', 'សុក្រ', 'សៅរ៍']" 
             :key="dayShort"
@@ -213,13 +68,13 @@
         </div>
 
         <!-- 7-Column Calendar Grid Cells -->
-        <div class="grid grid-cols-7 gap-1 sm:gap-1.5 select-none">
+        <div class="grid grid-cols-7 gap-1.5 sm:gap-2.5 select-none">
           <div
             v-for="(cell, index) in calendarCells"
             :key="index"
             @click="handleDateClick(cell)"
             :class="[
-              'min-h-[58px] sm:min-h-[92px] p-1 sm:p-2 rounded-xl border transition-all duration-150 flex flex-col justify-between cursor-pointer relative group',
+              'min-h-[64px] sm:min-h-[96px] p-1.5 sm:p-2.5 rounded-xl border transition-all duration-150 flex flex-col justify-between cursor-pointer relative group',
               cell.isCurrentMonth 
                 ? 'bg-slate-50/60 dark:bg-slate-900/60 border-slate-200/70 dark:border-slate-800/80 hover:border-blue-500/50 hover:bg-blue-50/20 dark:hover:bg-blue-500/5' 
                 : 'bg-transparent border-transparent opacity-25 hover:opacity-50',
@@ -309,35 +164,10 @@
             </div>
           </div>
         </div>
-
-        <!-- Legend (Compact) -->
-        <div class="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between flex-wrap gap-2 text-[11px]">
-          <div class="flex items-center gap-3 flex-wrap">
-            <div class="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
-              <span>🪷</span>
-              <span>ថ្ងៃសីល</span>
-            </div>
-            <div class="flex items-center gap-1 text-rose-600 dark:text-rose-400 font-medium">
-              <span class="w-2 h-2 rounded-full bg-rose-500"></span>
-              <span>ថ្ងៃឈប់សម្រាក</span>
-            </div>
-            <div class="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-medium">
-              <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
-              <span>ការប្រឡង</span>
-            </div>
-            <div class="flex items-center gap-1 text-blue-600 dark:text-blue-400 font-medium">
-              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-              <span>សាលា</span>
-            </div>
-          </div>
-          <span class="text-slate-400 text-[10px]">
-            ចុចលើក្រឡាដើម្បីមើលលម្អិត
-          </span>
-        </div>
       </div>
 
       <!-- RIGHT: Chronological Events List -->
-      <div class="lg:col-span-1 bg-white dark:bg-[#0f172a] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-3.5 sm:p-5 shadow-xs flex flex-col">
+      <div class="lg:col-span-1 bg-white dark:bg-[#0f172a] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col">
         <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100 dark:border-slate-800">
           <div class="flex items-center gap-2">
             <div class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center text-xs">

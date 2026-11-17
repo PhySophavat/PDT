@@ -99,6 +99,69 @@
         .animate-float-delayed {
             animation: float-slow 5s ease-in-out 2s infinite;
         }
+
+        /* Ambient Floating Blobs Animation */
+        @keyframes blob {
+            0%, 100% {
+                transform: translate(0px, 0px) scale(1);
+            }
+            33% {
+                transform: translate(24px, -32px) scale(1.08);
+            }
+            66% {
+                transform: translate(-20px, 20px) scale(0.94);
+            }
+        }
+        .animate-blob {
+            animation: blob 8s ease-in-out infinite;
+        }
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+            animation-delay: 4s;
+        }
+
+        /* Subtle Shimmer Sweep on Button */
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(200%);
+            }
+        }
+        .animate-shimmer {
+            animation: shimmer 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        /* Staggered Entrance Animations */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-up {
+            opacity: 0;
+            animation: fadeUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animation-delay-100 {
+            animation-delay: 100ms;
+        }
+        .animation-delay-200 {
+            animation-delay: 200ms;
+        }
+        .animation-delay-300 {
+            animation-delay: 300ms;
+        }
+        .animation-delay-400 {
+            animation-delay: 400ms;
+        }
     </style>
 </head>
 <body class="bg-slate-900 font-khmer text-slate-800 antialiased selection:bg-blue-600 selection:text-white min-h-screen">
@@ -204,53 +267,62 @@
         </div>
 
         <!-- ======================================================== -->
-        <!-- RIGHT PANEL: Login Form & Card                           -->
+        <!-- RIGHT PANEL: Login Form & Card (Ultra-Modern Glassmorphic)-->
         <!-- ======================================================== -->
-        <div class="w-full lg:w-1/2 xl:w-5/12 flex-1 flex flex-col justify-between bg-slate-50 min-h-screen relative overflow-y-auto">
+        <div class="relative w-full lg:w-1/2 xl:w-5/12 flex-1 flex flex-col justify-between bg-gradient-to-br from-[#070f1e] via-[#09152b] to-[#0d1f3d] text-white min-h-screen overflow-hidden overflow-y-auto selection:bg-blue-600 selection:text-white">
             
+            <!-- Dynamic Ambient Animated Background Blobs -->
+            <div class="absolute inset-0 overflow-hidden pointer-events-none select-none z-0">
+                <!-- Subtle Radial Dot Mesh -->
+                <div class="absolute inset-0 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:24px_24px] opacity-15"></div>
+                <!-- Blob 1: Top Right Vibrant Blue Glow -->
+                <div class="absolute -top-24 -right-24 w-80 h-80 sm:w-96 sm:h-96 bg-blue-600/25 rounded-full blur-[90px] animate-blob"></div>
+                <!-- Blob 2: Bottom Left Indigo Glow -->
+                <div class="absolute -bottom-28 -left-20 w-80 h-80 sm:w-96 sm:h-96 bg-indigo-600/25 rounded-full blur-[90px] animate-blob animation-delay-2000"></div>
+                <!-- Blob 3: Center Sky Subtle Accent Glow -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 sm:w-80 sm:h-80 bg-cyan-500/15 rounded-full blur-[100px] animate-blob animation-delay-4000"></div>
+            </div>
+
             <!-- Mobile Top Bar Branding (Visible only on mobile/tablet) -->
-            <div class="lg:hidden w-full px-6 py-5 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-white">
+            <div class="lg:hidden relative z-20 w-full px-6 py-4 bg-slate-950/70 border-b border-white/10 backdrop-blur-md flex items-center justify-between text-white">
                 <a href="{{ url('/') }}" class="flex items-center gap-3">
                     @if(!empty($logoUrl))
-                        <img src="{{ $logoUrl }}" alt="Logo" class="w-9 h-9 object-contain rounded-xl" onerror="this.onerror=null; this.src='/images/logo.png';">
+                        <img src="{{ $logoUrl }}" alt="Logo" class="w-9 h-9 object-contain rounded-xl p-0.5 bg-white/10 border border-white/15" onerror="this.onerror=null; this.src='/images/logo.png';">
                     @else
-                        <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white">
+                        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md">
                             <i class="fa-solid fa-graduation-cap"></i>
                         </div>
                     @endif
                     <div>
-                        <span class="text-lg font-black font-sans tracking-tight">portal sala</span>
+                        <span class="text-base font-black font-sans tracking-tight">portal sala</span>
                         <span class="block text-[10px] text-slate-400 leading-tight">{{ $schoolName }}</span>
                     </div>
                 </a>
-                <a href="{{ url('/register-student') }}" class="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                <a href="{{ url('/register-student') }}" class="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 transition">
                     <span>ចុះឈ្មោះ</span>
                     <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </a>
             </div>
 
             <!-- Login Container -->
-            <div class="flex-1 flex items-center justify-center p-6 sm:p-10 lg:p-12">
+            <div class="relative z-10 flex-1 flex items-center justify-center p-6 sm:p-10 lg:p-12">
                 <div class="w-full max-w-md space-y-6">
 
-                    <!-- Form Header -->
-                    <div class="space-y-2 text-center sm:text-left">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100 text-xs font-bold">
-                            <i class="fa-solid fa-shield-cat text-blue-600"></i>
+                    <!-- Form Header (Clean & Minimal: Redundant Subtitle Removed) -->
+                    <div class="space-y-3 text-center sm:text-left animate-fade-up animation-delay-100">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-bold backdrop-blur-md shadow-xs">
+                            <i class="fa-solid fa-shield-halved text-blue-400"></i>
                             <span>ច្រកចូលសុវត្ថិភាព • SECURE LOGIN</span>
                         </div>
-                        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                             ចូលប្រើប្រព័ន្ធ
                         </h2>
-                        <p class="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed">
-                            សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែល និងពាក្យសម្ងាត់របស់អ្នក ដើម្បីចូលទៅកាន់ផ្ទាំងគ្រប់គ្រង។
-                        </p>
                     </div>
 
                     <!-- Alert Notifications -->
                     @if (session('success'))
-                        <div class="flex items-start gap-3 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-medium animate-in fade-in duration-200 shadow-xs">
-                            <i class="fa-solid fa-circle-check text-emerald-600 text-base mt-0.5 shrink-0"></i>
+                        <div class="flex items-start gap-3 p-4 bg-emerald-950/60 border border-emerald-500/30 text-emerald-200 rounded-2xl text-xs font-medium backdrop-blur-md shadow-lg animate-in fade-in duration-200">
+                            <i class="fa-solid fa-circle-check text-emerald-400 text-base mt-0.5 shrink-0"></i>
                             <div class="leading-relaxed">{{ session('success') }}</div>
                         </div>
                     @elseif (session('lockout_seconds') || session('error') || $errors->any())
@@ -258,15 +330,15 @@
                             $lockoutSecs = (int) session('lockout_seconds', 0);
                             $errorMessage = session('error') ?: $errors->first();
                         @endphp
-                        <div id="lockout-alert" class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-medium space-y-2.5 animate-in fade-in duration-200 shadow-xs">
+                        <div id="lockout-alert" class="p-4 bg-rose-950/60 border border-rose-500/30 text-rose-200 rounded-2xl text-xs font-medium space-y-2.5 backdrop-blur-md shadow-lg animate-in fade-in duration-200">
                             <div class="flex items-start gap-3">
-                                <i class="fa-solid fa-circle-exclamation text-rose-600 text-base mt-0.5 shrink-0"></i>
+                                <i class="fa-solid fa-circle-exclamation text-rose-400 text-base mt-0.5 shrink-0"></i>
                                 <div class="flex-1">
                                     <span id="lockout-text" class="leading-relaxed">{{ $errorMessage }}</span>
                                     @if ($lockoutSecs > 0)
-                                        <div class="mt-2.5 flex items-center gap-2 pt-2.5 border-t border-rose-200 text-rose-700">
+                                        <div class="mt-2.5 flex items-center gap-2 pt-2.5 border-t border-rose-500/20 text-rose-300">
                                             <i class="fa-solid fa-clock-rotate-left text-xs animate-spin" style="animation-duration: 3s;"></i>
-                                            <span>អាចសាកល្បងម្តងទៀតក្នុងរយៈពេល៖ <strong id="countdown-timer" class="font-mono text-sm font-bold text-rose-900 bg-white px-2 py-0.5 rounded-lg border border-rose-200 shadow-2xs">{{ $lockoutSecs }}</strong> វិនាទី</span>
+                                            <span>អាចសាកល្បងម្តងទៀតក្នុងរយៈពេល៖ <strong id="countdown-timer" class="font-mono text-sm font-bold text-white bg-rose-900/70 px-2 py-0.5 rounded-lg border border-rose-500/30 shadow-xs">{{ $lockoutSecs }}</strong> វិនាទី</span>
                                         </div>
                                     @endif
                                 </div>
@@ -274,20 +346,20 @@
                         </div>
                     @endif
 
-                    <!-- Login Form Card -->
-                    <div class="bg-white rounded-3xl border border-slate-200/90 shadow-card p-6 sm:p-8 space-y-5">
+                    <!-- Login Form Card (Glassmorphic Container with Subtle White Border & Layered Shadows) -->
+                    <div class="relative z-10 backdrop-blur-2xl bg-white/[0.05] border border-white/[0.14] hover:border-white/25 rounded-3xl p-6 sm:p-8 space-y-5 shadow-[0_20px_50px_rgba(0,0,0,0.45)] transition-all duration-300 before:absolute before:inset-0 before:rounded-3xl before:bg-gradient-to-b before:from-white/[0.08] before:to-transparent before:pointer-events-none animate-fade-up animation-delay-200">
                         
                         <form id="login-form" action="{{ url('/portal') }}" method="POST" class="space-y-4">
                             @csrf
 
-                            <!-- Email Field (Only Email) -->
+                            <!-- Email Field (Interactive Focus Transitions) -->
                             <div class="space-y-1.5">
-                                <label for="email" class="block text-xs font-bold text-slate-700">
+                                <label for="email" class="block text-xs font-bold text-slate-200 tracking-wide">
                                     <span>អាសយដ្ឋានអ៊ីមែល (Email)</span>
-                                    <span class="text-rose-500">*</span>
+                                    <span class="text-rose-400">*</span>
                                 </label>
-                                <div class="relative group">
-                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-600 transition-colors">
+                                <div class="relative group transition-all duration-300 focus-within:scale-[1.015]">
+                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-400 group-focus-within:scale-110 transition-all duration-200">
                                         <i class="fa-solid fa-envelope text-sm"></i>
                                     </span>
                                     <input 
@@ -299,21 +371,21 @@
                                         required
                                         autofocus
                                         autocomplete="email"
-                                        class="w-full pl-10 pr-4 py-3 bg-slate-50/80 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 transition-all duration-200"
+                                        class="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/10 rounded-2xl text-xs sm:text-sm font-semibold text-white placeholder-slate-400 hover:border-white/20 focus:bg-slate-900/80 focus:outline-none focus:ring-4 focus:ring-blue-500/25 focus:border-blue-400 transition-all duration-300 shadow-inner"
                                     >
                                 </div>
                             </div>
 
-                            <!-- Password Field with Show/Hide Toggle -->
+                            <!-- Password Field with Show/Hide Toggle (Interactive Focus Transitions) -->
                             <div class="space-y-1.5">
                                 <div class="flex items-center justify-between">
-                                    <label for="password" class="block text-xs font-bold text-slate-700">
+                                    <label for="password" class="block text-xs font-bold text-slate-200 tracking-wide">
                                         <span>ពាក្យសម្ងាត់</span>
-                                        <span class="text-rose-500">*</span>
+                                        <span class="text-rose-400">*</span>
                                     </label>
                                 </div>
-                                <div class="relative group">
-                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-600 transition-colors">
+                                <div class="relative group transition-all duration-300 focus-within:scale-[1.015]">
+                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-400 group-focus-within:scale-110 transition-all duration-200">
                                         <i class="fa-solid fa-lock text-sm"></i>
                                     </span>
                                     <input 
@@ -323,12 +395,12 @@
                                         placeholder="បញ្ចូលពាក្យសម្ងាត់យ៉ាងតិច ៨ ខ្ទង់" 
                                         required
                                         autocomplete="current-password"
-                                        class="w-full pl-10 pr-11 py-3 bg-slate-50/80 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 transition-all duration-200"
+                                        class="w-full pl-10 pr-11 py-3 bg-white/[0.04] border border-white/10 rounded-2xl text-xs sm:text-sm font-semibold text-white placeholder-slate-400 hover:border-white/20 focus:bg-slate-900/80 focus:outline-none focus:ring-4 focus:ring-blue-500/25 focus:border-blue-400 transition-all duration-300 shadow-inner"
                                     >
                                     <button 
                                         type="button" 
                                         id="toggle-password" 
-                                        class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none transition cursor-pointer"
+                                        class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-white focus:outline-none transition cursor-pointer"
                                         title="បង្ហាញ/លាក់ពាក្យសម្ងាត់"
                                     >
                                         <i class="fa-regular fa-eye text-sm" id="toggle-icon"></i>
@@ -338,41 +410,45 @@
 
                             <!-- Remember Me & Forgot Password Row -->
                             <div class="flex items-center justify-between pt-1">
-                                <label class="inline-flex items-center gap-2 cursor-pointer select-none text-xs text-slate-600 hover:text-slate-900 transition">
+                                <label class="group inline-flex items-center gap-2 cursor-pointer select-none text-xs text-slate-300 hover:text-white transition">
                                     <input 
                                         type="checkbox" 
                                         name="remember" 
                                         checked 
-                                        class="w-4 h-4 rounded-lg text-blue-600 border-slate-300 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                                        class="w-4 h-4 rounded-lg bg-white/10 text-blue-500 border-white/20 focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
                                     >
-                                    <span class="font-medium">ចងចាំគណនីខ្ញុំ</span>
+                                    <span class="font-medium group-hover:text-white transition">ចងចាំគណនីខ្ញុំ</span>
                                 </label>
 
                                 <a 
                                     href="{{ route('password.request') }}" 
-                                    class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline transition"
+                                    onclick="event.preventDefault(); showForgotPasswordNotice();"
+                                    class="text-xs font-bold text-blue-400 hover:text-blue-300 hover:underline transition"
                                 >
                                     ភ្លេចពាក្យសម្ងាត់?
                                 </a>
                             </div>
 
-                            <!-- Submit Button -->
+                            <!-- Dynamic Primary Button (Vibrant Blue Gradient, Shimmer Sweep & Active Press Scale) -->
                             <button 
                                 type="submit" 
                                 id="login-submit-btn"
-                                class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 active:scale-[0.99] transition-all flex items-center justify-center gap-2.5 cursor-pointer mt-2"
+                                class="relative overflow-hidden w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:via-indigo-500 hover:to-blue-600 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-600/30 hover:shadow-[0_0_30px_rgba(59,130,246,0.45)] hover:-translate-y-0.5 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer mt-2 group"
                             >
-                                <i class="fa-solid fa-arrow-right-to-bracket text-sm" id="btn-icon"></i>
-                                <span id="btn-text">ចូលប្រើប្រព័ន្ធ</span>
+                                <!-- Gentle Shimmer Sweep Effect -->
+                                <span class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer pointer-events-none"></span>
+                                
+                                <i class="fa-solid fa-arrow-right-to-bracket text-sm transition-transform duration-200 group-hover:translate-x-0.5" id="btn-icon"></i>
+                                <span id="btn-text" class="tracking-wide">ចូលប្រើប្រព័ន្ធ</span>
                             </button>
 
                             <!-- Live Login Progress Indicator -->
-                            <div id="login-loading-indicator" class="hidden p-3.5 bg-blue-50 border border-blue-200 rounded-2xl text-center space-y-1 animate-in fade-in duration-200">
-                                <div class="flex items-center justify-center gap-2 text-xs font-bold text-blue-700">
-                                    <i class="fa-solid fa-circle-notch fa-spin text-sm text-blue-600"></i>
+                            <div id="login-loading-indicator" class="hidden p-3.5 bg-blue-500/10 border border-blue-500/20 backdrop-blur-md rounded-2xl text-center space-y-1 animate-in fade-in duration-200">
+                                <div class="flex items-center justify-center gap-2 text-xs font-bold text-blue-300">
+                                    <i class="fa-solid fa-circle-notch fa-spin text-sm text-blue-400"></i>
                                     <span>កំពុងផ្ទៀងផ្ទាត់ និងចូលប្រើប្រព័ន្ធ...</span>
                                 </div>
-                                <p class="text-[11px] text-slate-500">
+                                <p class="text-[11px] text-slate-300">
                                     សូមរង់ចាំបន្តិច ប្រព័ន្ធកំពុងផ្ទៀងផ្ទាត់ និងរៀបចំផ្ទាំងគ្រប់គ្រង (Dashboard)...
                                 </p>
                             </div>
@@ -380,12 +456,12 @@
                         </form>
 
                         <!-- Student Registration Link Divider -->
-                        <div class="pt-4 border-t border-slate-100 text-center">
-                            <p class="text-xs text-slate-500">
+                        <div class="pt-4 border-t border-white/10 text-center">
+                            <p class="text-xs text-slate-300">
                                 មិនទាន់មានគណនីសិស្ស? 
                                 <a 
                                     href="{{ route('public.register-student') }}" 
-                                    class="font-bold text-blue-600 hover:text-blue-800 hover:underline ml-1 inline-flex items-center gap-1 transition"
+                                    class="font-bold text-blue-400 hover:text-blue-300 hover:underline ml-1 inline-flex items-center gap-1 transition"
                                 >
                                     <span>ស្នើសុំចុះឈ្មោះចូលរៀន</span>
                                     <i class="fa-solid fa-arrow-right text-[10px]"></i>
@@ -395,19 +471,16 @@
 
                     </div>
 
-                    <!-- Security & Privacy Assurance Notice -->
-                   
-
                 </div>
             </div>
 
-            <!-- Footer & Branding -->
-            <footer class="w-full py-5 px-6 border-t border-slate-200/80 bg-white/70 backdrop-blur-md text-center text-xs text-slate-500 space-y-1 shrink-0">
-                <p class="font-medium text-slate-600">
-                    © 2026 portal sala • សាលារៀន ជំនាន់ថ្មី.
+            <!-- Footer & Branding (Entrance Animation: Staggered Fade Up) -->
+            <footer class="relative z-10 w-full py-5 px-6 border-t border-white/10 bg-slate-950/40 backdrop-blur-md text-center text-xs text-slate-400 space-y-1 shrink-0 animate-fade-up animation-delay-300">
+                <p class="font-medium text-slate-300">
+                    © 2026 portal sala • {{ $schoolName }}.
                 </p>
-                <p class="text-[11px] text-slate-400">
-                    Developed by <span class="font-bold text-slate-700">Phy Sophavat</span>
+                <p class="text-[11px] text-slate-500">
+                    Developed by <span class="font-bold text-slate-400">Phy Sophavat</span>
                 </p>
             </footer>
 
@@ -415,32 +488,32 @@
 
     </div>
 
-    <!-- Forgot Password Modal Notification -->
-    <div id="forgot-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-6 sm:p-7 max-w-sm w-full space-y-4 shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-150">
-            <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl mx-auto border border-amber-100">
+    <!-- Forgot Password Modal Notification (Ultra-Modern Glassmorphic Dark) -->
+    <div id="forgot-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-slate-900/95 border border-white/15 rounded-3xl p-6 sm:p-7 max-w-sm w-full space-y-4 shadow-2xl backdrop-blur-xl animate-in zoom-in-95 duration-150 text-white">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-xl mx-auto border border-amber-500/30 shadow-inner">
                 <i class="fa-solid fa-key"></i>
             </div>
             <div class="text-center space-y-1.5">
-                <h3 class="text-base font-bold text-slate-800">ភ្លេចពាក្យសម្ងាត់?</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">
+                <h3 class="text-base font-bold text-white">ភ្លេចពាក្យសម្ងាត់?</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">
                     ដើម្បីការពារសុវត្ថិភាពគណនី សូមទំនាក់ទំនងមកកាន់ការិយាល័យរដ្ឋបាលសាលា ឬ Admin ប្រព័ន្ធផ្ទាល់ ដើម្បីកំណត់ពាក្យសម្ងាត់ថ្មីជូនអ្នកឡើងវិញ។
                 </p>
             </div>
-            <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-600 space-y-1">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-phone text-blue-600 text-xs"></i>
+            <div class="p-3.5 bg-white/[0.04] rounded-2xl border border-white/10 text-xs text-slate-300 space-y-2">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-phone text-blue-400 text-xs"></i>
                     <span class="font-semibold">ផ្នែកជំនួយបច្ចេកទេស៖ 012 345 678</span>
                 </div>
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-envelope text-blue-600 text-xs"></i>
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-envelope text-blue-400 text-xs"></i>
                     <span class="font-semibold">អ៊ីមែល៖ support@portalsala.edu.kh</span>
                 </div>
             </div>
             <button 
                 type="button" 
                 onclick="closeForgotPasswordNotice()" 
-                class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition cursor-pointer"
+                class="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-md active:scale-95"
             >
                 យល់ព្រម
             </button>
