@@ -555,13 +555,35 @@
                                   </div>
                                 </div>
                               </div>
-                              <div class="flex items-center justify-end pt-1">
+                              <div class="flex items-center justify-between pt-2 border-t border-slate-100 mt-2 gap-2">
+                                <template v-if="!isStudentUser && item.leave_id">
+                                  <div class="flex items-center gap-1.5">
+                                    <button
+                                      type="button"
+                                      @click.stop="quickApproveLeave(item)"
+                                      :disabled="isProcessingLeave === item.id"
+                                      class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-[10.5px] font-bold shadow-xs inline-flex items-center gap-1 cursor-pointer transition"
+                                    >
+                                      <i class="fa-solid fa-check text-[9px]"></i>
+                                      <span>អនុម័ត</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      @click.stop="quickRejectLeave(item)"
+                                      :disabled="isProcessingLeave === item.id"
+                                      class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 disabled:opacity-50 text-rose-700 border border-rose-200 rounded-lg text-[10.5px] font-bold inline-flex items-center gap-1 cursor-pointer transition"
+                                    >
+                                      <i class="fa-solid fa-xmark text-[9px]"></i>
+                                      <span>បដិសេធ</span>
+                                    </button>
+                                  </div>
+                                </template>
                                 <button 
                                   type="button" 
                                   @click.stop="goToNotificationLink(item.link, item.id)"
-                                  class="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                                  class="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1 cursor-pointer ml-auto"
                                 >
-                                  <span>{{ isStudentUser ? 'មើលប្រវត្តិវត្តមាន និងច្បាប់' : 'ពិនិត្យ និងអនុម័តសំណើ' }}</span>
+                                  <span>{{ isStudentUser ? 'មើលប្រវត្តិវត្តមាន និងច្បាប់' : 'ពិនិត្យលើទំព័រវត្តមាន' }}</span>
                                   <i class="fa-solid fa-arrow-right text-[9px]"></i>
                                 </button>
                               </div>
@@ -1053,6 +1075,47 @@ const toggleNotificationDropdown = async () => {
   if (showNotificationDropdown.value) {
     await fetchPendingNotifications(true);
     markAllAsRead();
+  }
+};
+
+const isProcessingLeave = ref(null);
+
+const quickApproveLeave = async (item) => {
+  if (!item.leave_id) return;
+  if (!confirm(`តើអ្នកពិតជាចង់អនុម័តសំណើសុំច្បាប់របស់សិស្ស ${item.name || ''} មែនទេ?`)) return;
+
+  isProcessingLeave.value = item.id;
+  try {
+    const res = await axios.post(`/api/leave-requests/${item.leave_id}/approve`);
+    alert(res.data?.message || 'បានអនុម័តសំណើសុំច្បាប់ជោគជ័យ!');
+    markItemAsRead(item.id);
+    removeNotificationOptimistically(item.id);
+    window.dispatchEvent(new CustomEvent('pdt-data-updated'));
+    await fetchPendingNotifications(true);
+  } catch (err) {
+    alert(err.response?.data?.message || 'មានបញ្ហាក្នុងការអនុម័ត!');
+  } finally {
+    isProcessingLeave.value = null;
+  }
+};
+
+const quickRejectLeave = async (item) => {
+  if (!item.leave_id) return;
+  const reason = prompt('សូមបញ្ចូលមូលហេតុនៃការបដិសេធសំណើសុំច្បាប់នេះ៖', 'ពុំមានមូលហេតុគ្រប់គ្រាន់');
+  if (reason === null) return;
+
+  isProcessingLeave.value = item.id;
+  try {
+    const res = await axios.post(`/api/leave-requests/${item.leave_id}/reject`, { reason });
+    alert(res.data?.message || 'បានបដិសេធសំណើសុំច្បាប់!');
+    markItemAsRead(item.id);
+    removeNotificationOptimistically(item.id);
+    window.dispatchEvent(new CustomEvent('pdt-data-updated'));
+    await fetchPendingNotifications(true);
+  } catch (err) {
+    alert(err.response?.data?.message || 'មានបញ្ហាក្នុងការបដិសេធ!');
+  } finally {
+    isProcessingLeave.value = null;
   }
 };
 

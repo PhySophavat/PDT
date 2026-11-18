@@ -666,19 +666,31 @@ class ApiController extends Controller
 
                 foreach ($pendingLeaves as $lv) {
                     $name = $lv->student_name ?: ($lv->student?->name_khmer ?: 'សិស្ស');
+                    $datesFormatted = $lv->start_date ? Carbon::parse($lv->start_date)->format('d/m/Y') : '';
+                    if ($lv->end_date && $lv->end_date != $lv->start_date) {
+                        $datesFormatted .= ' - ' . Carbon::parse($lv->end_date)->format('d/m/Y');
+                    }
+                    $daysText = ($lv->days_count ?: 1) . ' ថ្ងៃ';
+
                     $notifications->push([
                         'id' => 'leave-' . $lv->id,
+                        'leave_id' => $lv->id,
                         'type' => 'leave',
                         'type_label' => 'សុំច្បាប់សិស្ស',
                         'name' => $name,
                         'title' => "សិស្ស {$name} សុំច្បាប់ឈប់សម្រាក",
-                        'subtitle' => 'ថ្នាក់ ' . ($lv->class_name ?: 'N/A') . ' • រយៈពេល ' . ($lv->days_count ?: 1) . ' ថ្ងៃ (' . ($lv->reason ?: 'មានធុរៈផ្ទាល់ខ្លួន') . ')',
+                        'subtitle' => 'ថ្នាក់ ' . ($lv->class_name ?: 'N/A') . ' • រយៈពេល ' . $daysText . ' (' . ($lv->reason ?: 'មានធុរៈផ្ទាល់ខ្លួន') . ')',
                         'time' => $lv->created_at ? $lv->created_at->diffForHumans() : 'ថ្មីៗនេះ',
                         'timestamp' => $lv->created_at ? $lv->created_at->timestamp : 0,
                         'link' => '/attendance?tab=leaves',
                         'icon' => 'fa-solid fa-calendar-minus',
                         'badge_color' => 'bg-amber-500',
                         'bg_color' => 'bg-amber-50 text-amber-700 border-amber-100',
+                        'class_name' => $lv->class_name,
+                        'dates_formatted' => $datesFormatted,
+                        'days_text' => $daysText,
+                        'reason' => $lv->reason,
+                        'leave_type' => $lv->leave_type ?? 'ច្បាប់',
                     ]);
                 }
 
@@ -808,19 +820,31 @@ class ApiController extends Controller
 
                 foreach ($pendingLeaves as $lv) {
                     $name = $lv->student_name ?: ($lv->student?->name_khmer ?: 'សិស្ស');
+                    $datesFormatted = $lv->start_date ? Carbon::parse($lv->start_date)->format('d/m/Y') : '';
+                    if ($lv->end_date && $lv->end_date != $lv->start_date) {
+                        $datesFormatted .= ' - ' . Carbon::parse($lv->end_date)->format('d/m/Y');
+                    }
+                    $daysText = ($lv->days_count ?: 1) . ' ថ្ងៃ';
+
                     $notifications->push([
                         'id' => 'leave-' . $lv->id,
+                        'leave_id' => $lv->id,
                         'type' => 'leave',
                         'type_label' => 'សុំច្បាប់សិស្ស',
                         'name' => $name,
                         'title' => "សិស្ស {$name} សុំច្បាប់ឈប់សម្រាក",
-                        'subtitle' => 'ថ្នាក់ ' . ($lv->class_name ?: 'N/A') . ' • រយៈពេល ' . ($lv->days_count ?: 1) . ' ថ្ងៃ (' . ($lv->reason ?: 'មានធុរៈផ្ទាល់ខ្លួន') . ')',
+                        'subtitle' => 'ថ្នាក់ ' . ($lv->class_name ?: 'N/A') . ' • រយៈពេល ' . $daysText . ' (' . ($lv->reason ?: 'មានធុរៈផ្ទាល់ខ្លួន') . ')',
                         'time' => $lv->created_at ? $lv->created_at->diffForHumans() : 'ថ្មីៗនេះ',
                         'timestamp' => $lv->created_at ? $lv->created_at->timestamp : 0,
                         'link' => '/attendance?tab=leaves',
                         'icon' => 'fa-solid fa-calendar-minus',
                         'badge_color' => 'bg-amber-500',
                         'bg_color' => 'bg-amber-50 text-amber-700 border-amber-100',
+                        'class_name' => $lv->class_name,
+                        'dates_formatted' => $datesFormatted,
+                        'days_text' => $daysText,
+                        'reason' => $lv->reason,
+                        'leave_type' => $lv->leave_type ?? 'ច្បាប់',
                     ]);
                 }
 

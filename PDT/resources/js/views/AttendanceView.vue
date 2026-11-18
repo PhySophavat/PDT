@@ -1356,8 +1356,22 @@ const availableTabs = computed(() => {
 
 // Tab state: 'matrix', 'daily', or 'leaves'
 const activeTab = ref(route.query?.tab || 'matrix');
+
 watch(() => route.query?.tab, (tab) => {
-  if (tab) activeTab.value = tab;
+  if (tab) {
+    activeTab.value = tab;
+    if (tab === 'leaves') {
+      leaveFilterClass.value = 'all';
+      leaveFilterStatus.value = 'all';
+      fetchLeaveRequests();
+    }
+  }
+}, { immediate: true });
+
+watch(activeTab, (tab) => {
+  if (tab === 'leaves') {
+    fetchLeaveRequests();
+  }
 });
 const filterStatus = ref('all');
 const isLoading = ref(true);
@@ -2129,6 +2143,12 @@ const formatDateKm = (dStr) => {
 onMounted(() => {
   fetchAttendanceData();
   fetchLeaveRequests();
+
+  window.addEventListener('pdt-data-updated', () => {
+    if (activeTab.value === 'leaves') {
+      fetchLeaveRequests();
+    }
+  });
 });
 
 const openMarkAttendanceModal = () => {
