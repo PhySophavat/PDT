@@ -109,7 +109,7 @@
         </p>
 
         <!-- Summary Receipt Card -->
-        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 sm:p-5 max-w-xl mx-auto text-left mb-6 space-y-3">
+        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 sm:p-5 max-w-xl mx-auto text-left mb-4 space-y-3">
           <div class="flex items-center justify-between pb-2.5 border-b border-slate-200 text-xs">
             <span class="text-slate-500 font-medium">លេខកូដពាក្យស្នើសុំ៖</span>
             <span class="font-bold text-blue-700 font-mono text-sm">#REG-{{ session('registered_id') ?? date('Ymd') . '-01' }}</span>
@@ -133,6 +133,41 @@
             </div>
           </div>
         </div>
+
+        @if (session('telegram_deep_link'))
+        <!-- Telegram 1-Click Auto Connect Banner -->
+        <div class="max-w-xl mx-auto mb-6 p-4 sm:p-5 bg-gradient-to-r from-sky-500/10 via-blue-500/10 to-indigo-500/10 border-2 border-sky-400/40 rounded-2xl text-left shadow-sm">
+          <div class="flex items-start gap-3 sm:gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-sky-500 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+              <i class="fa-brands fa-telegram"></i>
+            </div>
+            <div class="flex-1">
+              <h4 class="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
+                <span>ភ្ជាប់ Telegram ទទួលដំណឹងវត្តមាន & ច្បាប់</span>
+                <span class="px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[10px] font-bold">1-Click Auto</span>
+              </h4>
+              <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                ចុចប៊ូតុងខាងក្រោមដើម្បីបើក Telegram និងភ្ជាប់គណនីអាណាព្យាបាល (<strong>{{ session('registered_parent_phone') }}</strong>) ស្វ័យប្រវត្តិដោយមិនបាច់វាយអក្សរឡើយ!
+              </p>
+              <div class="mt-3 flex flex-wrap items-center gap-2">
+                <a 
+                  id="autoTelegramBtn"
+                  href="{{ session('telegram_deep_link') }}" 
+                  target="_blank"
+                  class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-sky-500/30 transition transform hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  <i class="fa-brands fa-telegram text-base"></i>
+                  <span>បើក Telegram & ភ្ជាប់ស្វ័យប្រវត្តិ</span>
+                  <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                </a>
+                <span class="text-[11px] text-slate-500 font-khmer">
+                  (គ្រាន់តែចុច <strong>START</strong> ក្នុង Telegram ជាការស្រេច)
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        @endif
 
         <!-- Action Buttons -->
         <div class="flex flex-wrap items-center justify-center gap-3">
@@ -570,14 +605,41 @@
                     id="parent_phone"
                     name="parent_phone" 
                     value="{{ old('parent_phone') }}" 
-                    placeholder="ឧ. 012 888 999 (លេខ 0-9 មាន 9 ទៅ 10 ខ្ទង់)"
+                    placeholder="ឧ. 012 888 999"
                     class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition font-mono"
                   />
                 </div>
-                <p class="text-[11px] text-slate-500 mt-1 flex items-center gap-1 font-khmer">
-                  <i class="fa-solid fa-circle-info text-blue-500 text-[10px]"></i>
-                  <span>សូមបញ្ចូលលេខជាភាសាអង់គ្លេស (0-9) ឧ. 012888999 (កុំប្រើលេខខ្មែរ ០-៩)</span>
+                <p class="text-[11px] text-slate-500 mt-1 flex items-start gap-1.5 font-khmer leading-relaxed">
+                  <i class="fa-solid fa-circle-info text-blue-500 text-[10px] mt-0.5 shrink-0"></i>
+                  <span>លេខ 0-9 ចាប់ដោយ 0 ​(ឧ. 012888999)</span>
                 </p>
+                {{-- Telegram Alert Banner (Auto 1-Click Link) --}}
+                <div class="mt-2.5 p-3 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200/90 rounded-2xl flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-xl bg-sky-500 text-white flex items-center justify-center text-lg shadow-sm shrink-0 mt-0.5">
+                    <i class="fa-brands fa-telegram"></i>
+                  </div>
+                  <div class="flex-1 text-xs text-slate-700 leading-relaxed font-khmer">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="font-bold text-sky-900">📲 ភ្ជាប់ Telegram ទទួលដំណឹងវត្តមាន & ច្បាប់</span>
+                      <span class="px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 text-[10px] font-bold">ស្វ័យប្រវត្តិ</span>
+                    </div>
+                    <p class="text-[11px] text-slate-600 mt-0.5">
+                      ក្រោយបញ្ចូលលេខទូរស័ព្ទរួច អ្នកអាចចុចប៊ូតុងខាងក្រោមដើម្បីបើក Telegram និងភ្ជាប់ស្វ័យប្រវត្តិ (Auto-Start)៖
+                    </p>
+                    <div class="mt-2 flex items-center gap-2">
+                      <a 
+                        id="step2TelegramBtn"
+                        href="https://t.me/SalaParentAlertBot" 
+                        target="_blank"
+                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-sky-600 hover:bg-sky-700 active:scale-95 text-white text-[11px] font-bold rounded-lg shadow-xs transition"
+                      >
+                        <i class="fa-brands fa-telegram"></i>
+                        <span id="step2TelegramText">បើក Telegram @SalaParentAlertBot</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
                 <p id="error-parent_phone" class="hidden text-xs text-red-500 mt-1 flex items-center gap-1 font-medium">
                   <i class="fa-solid fa-circle-exclamation text-[11px]"></i>
                   <span>លេខទូរស័ព្ទមិនត្រឹមត្រូវ (សូមប្រើលេខជាភាសាអង់គ្លេស 0-9 ចាប់ផ្ដើមដោយលេខ 0 មាន 9 ទៅ 10 ខ្ទង់)</span>
@@ -587,7 +649,7 @@
               <!-- Guardian Occupation -->
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-                  មុខរបរអាណាព្យាបាល <span class="text-slate-400 font-normal">(មិនទាមទារជាចាំបាច់)</span>
+                  មុខរបរអាណាព្យាបាល <span class="text-slate-400 font-normal"></span>
                 </label>
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
@@ -865,6 +927,37 @@
         });
       }
     });
+
+    // Real-Time Telegram Deep Link for Step 2
+    const parentPhoneInput = document.getElementById('parent_phone');
+    const step2TelegramBtn = document.getElementById('step2TelegramBtn');
+    const step2TelegramText = document.getElementById('step2TelegramText');
+
+    function updateTelegramDeepLink() {
+      if (!parentPhoneInput || !step2TelegramBtn) return;
+      const clean = parentPhoneInput.value.replace(/[^0-9]/g, '');
+      if (clean && clean.length >= 8) {
+        step2TelegramBtn.href = `https://t.me/SalaParentAlertBot?start=reg_${clean}`;
+        if (step2TelegramText) {
+          step2TelegramText.textContent = `🚀 បើក Telegram & ភ្ជាប់ (${clean})`;
+        }
+        step2TelegramBtn.classList.remove('bg-sky-600', 'hover:bg-sky-700');
+        step2TelegramBtn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'ring-2', 'ring-blue-400/40');
+      } else {
+        step2TelegramBtn.href = 'https://t.me/SalaParentAlertBot';
+        if (step2TelegramText) {
+          step2TelegramText.textContent = 'បើក Telegram @SalaParentAlertBot';
+        }
+        step2TelegramBtn.classList.add('bg-sky-600', 'hover:bg-sky-700');
+        step2TelegramBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'ring-2', 'ring-blue-400/40');
+      }
+    }
+
+    if (parentPhoneInput) {
+      parentPhoneInput.addEventListener('input', updateTelegramDeepLink);
+      parentPhoneInput.addEventListener('change', updateTelegramDeepLink);
+      updateTelegramDeepLink();
+    }
 
     // Attach real-time input listeners
     Object.keys(validators).forEach(fieldId => {

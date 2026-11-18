@@ -186,7 +186,7 @@
                     <!-- Top Line: 'ជាសិស្ស' (black) followed by School Name in green Moul font (#008000) -->
                     <div class="text-center mb-1 w-full flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap">
                         <span class="font-bold text-black text-[11px] sm:text-[12.5px] shrink-0 whitespace-nowrap">ជាសិស្ស</span>
-                        <span class="font-moul text-[#008000] text-[10.5px] sm:text-[12.5px] tracking-tight shrink-0 whitespace-nowrap">សាលារៀន ជំនាន់ថ្មី PDT</span>
+                        <span class="font-moul text-[#008000] text-[10.5px] sm:text-[12.5px] tracking-tight shrink-0 whitespace-nowrap">សាលារៀន ជំនាន់ថ្មី</span>
                     </div>
 
                     <!-- Lunar Date & Gregorian Date in clear text -->
@@ -212,7 +212,7 @@
                             <path id="curve-bottom-blade" d="M 84,50 A 34,34 0 0,1 16,50" fill="none" />
                             <text font-size="5.8" font-family="'Battambang', sans-serif" font-weight="bold" fill="currentColor">
                                 <textPath href="#curve-top-blade" startOffset="50%" text-anchor="middle">
-                                    ★ សាលារៀន ជំនាន់ថ្មី PDT ★
+                                    ★ សាលារៀន ជំនាន់ថ្មី ★
                                 </textPath>
                             </text>
                             <text font-size="5.2" font-family="'Battambang', sans-serif" font-weight="bold" fill="currentColor">

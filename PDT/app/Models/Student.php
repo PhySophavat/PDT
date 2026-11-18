@@ -41,11 +41,14 @@ class Student extends Model
         'parent_relationship',
         'parent_occupation',
         'parent_phone',
+        'telegram_chat_id',
+        'telegram_verified_at',
     ];
 
     protected $casts = [
-        'date_of_birth' => 'date',
-        'enrollment_date' => 'date',
+        'date_of_birth'        => 'date',
+        'enrollment_date'      => 'date',
+        'telegram_verified_at' => 'datetime',
     ];
 
     public function getDisplayNameAttribute()

@@ -276,8 +276,11 @@
               </select>
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1.5">
-                លេខទូរស័ព្ទអាណាព្យាបាល / សិស្ស
+              <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                <span>លេខទូរស័ព្ទអាណាព្យាបាល / សិស្ស</span>
+                <span class="text-[10px] text-sky-600 font-normal flex items-center gap-1 font-khmer">
+                  <i class="fa-brands fa-telegram"></i> ជូនដំណឹងតាម Telegram
+                </span>
               </label>
               <input 
                 type="text" 
@@ -287,6 +290,9 @@
                 placeholder="012 345 678" 
                 class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 focus:bg-white rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
               />
+              <p class="text-[10px] text-slate-400 mt-1 font-khmer">
+                ពេលគ្រូអនុម័ត ប្រព័ន្ធនឹងផ្ញើសារជូនដំណឹងទៅ Telegram អាណាព្យាបាល
+              </p>
             </div>
           </div>
 

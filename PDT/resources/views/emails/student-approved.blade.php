@@ -45,7 +45,7 @@
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                       <tr>
                         <td align="center" style="background-color: #ffffff; border-radius: 18px; padding: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
-                          <img src="{{ asset('images/logo.png') }}" alt="PDT Logo" width="56" height="56" style="display: block; margin: 0 auto; object-fit: contain;">
+                          <img src="{{ asset('images/logo.png') }}" alt="Logo" width="56" height="56" style="display: block; margin: 0 auto; object-fit: contain;">
                         </td>
                       </tr>
                     </table>
@@ -54,7 +54,7 @@
                       portal sala • សាលារៀន ជំនាន់ថ្មី
                     </h1>
                     <p style="margin: 0; color: #bfdbfe; font-size: 13px; font-weight: 500;">
-                      PDT New Generation School Management System
+                      New Generation School Management System
                     </p>
                   </td>
                 </tr>

@@ -169,6 +169,12 @@ Route::get('/api/public/students-by-class', [AttendanceController::class, 'getPu
 Route::get('/teacher-leave-request', [TeacherController::class, 'showPublicLeaveForm'])->name('public.teacher-leave-request');
 Route::post('/teacher-leave-request', [TeacherController::class, 'submitPublicLeaveForm'])->name('public.teacher-leave-request.post');
 
+// Telegram Bot Webhook & Admin Routes
+use App\Http\Controllers\TelegramBotController;
+Route::post('/api/telegram/webhook', [TelegramBotController::class, 'webhook'])->name('telegram.webhook');
+Route::get('/api/telegram/set-webhook', [TelegramBotController::class, 'setWebhook'])->middleware('auth');
+Route::get('/api/telegram/me', [TelegramBotController::class, 'getMe'])->middleware('auth');
+
 // Shared closure to render Vue 3 Single Page Application
 $spa = fn() => view('spa');
 

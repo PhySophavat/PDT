@@ -246,6 +246,9 @@ class PublicRegistrationController extends Controller
             ]);
         }
 
+        $botUsername = config('services.telegram.bot_username', 'SalaParentAlertBot');
+        $telegramDeepLink = $cleanParentPhone ? "https://t.me/{$botUsername}?start=reg_{$cleanParentPhone}" : null;
+
         return redirect()->route('public.register-student')->with([
             'registration_success' => true,
             'registered_id_card' => $student->student_id_card,
@@ -253,6 +256,8 @@ class PublicRegistrationController extends Controller
             'registered_name_latin' => $student->name_latin,
             'registered_email' => $student->email,
             'registered_phone' => $student->phone,
+            'registered_parent_phone' => $cleanParentPhone,
+            'telegram_deep_link' => $telegramDeepLink,
             'registered_grade' => $student->grade,
             'registered_gender' => $student->gender === 'female' ? 'ស្រី' : 'ប្រុស',
             'registered_dob' => Carbon::parse($student->date_of_birth)->format('d/m/Y'),

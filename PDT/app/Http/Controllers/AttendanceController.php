@@ -9,8 +9,10 @@ use App\Models\Teacher;
 use App\Models\SchoolClass;
 use App\Models\AcademicYear;
 use App\Models\StudentLeaveRequest;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
 
@@ -408,9 +410,14 @@ class AttendanceController extends Controller
             Cache::forget('pending_notifications_payload');
         } catch (\Throwable $e) {}
 
+        // Send Telegram notification to parent if chat_id is registered
+        $sent = $this->notifyParentTelegram($leave, 'approved');
+        $telegramMsg = $sent ? ' 📲 (បានផ្ញើដំណឹងទៅ Telegram អាណាព្យាបាលរួចរាល់)' : '';
+
         return response()->json([
             'success' => true,
-            'message' => "បានអនុម័តសំណើសុំច្បាប់របស់សិស្ស {$leave->student_name} និងកត់ត្រាវត្តមានជា «មានច្បាប់» ដោយជោគជ័យ!",
+            'telegram_sent' => $sent,
+            'message' => "បានអនុម័តសំណើសុំច្បាប់របស់សិស្ស {$leave->student_name} និងកត់ត្រាវត្តមានជា «មានច្បាប់» ដោយជោគជ័យ!{$telegramMsg}",
         ]);
     }
 
@@ -430,9 +437,14 @@ class AttendanceController extends Controller
             Cache::forget('pending_notifications_payload');
         } catch (\Throwable $e) {}
 
+        // Send Telegram notification to parent if rejected
+        $sent = $this->notifyParentTelegram($leave, 'rejected');
+        $telegramMsg = $sent ? ' 📲 (បានផ្ញើដំណឹងទៅ Telegram អាណាព្យាបាលរួចរាល់)' : '';
+
         return response()->json([
             'success' => true,
-            'message' => "បានបដិសេធសំណើសុំច្បាប់របស់សិស្ស {$leave->student_name}!",
+            'telegram_sent' => $sent,
+            'message' => "បានបដិសេធសំណើសុំច្បាប់របស់សិស្ស {$leave->student_name}!{$telegramMsg}",
         ]);
     }
 
@@ -457,5 +469,67 @@ class AttendanceController extends Controller
             'message' => "បានស្ដារសំណើសុំច្បាប់របស់សិស្ស {$leave->student_name} មកជា «រង់ចាំពិនិត្យ» វិញដោយជោគជ័យ!",
             'leave' => $leave,
         ]);
+    }
+
+    /**
+     * Helper: Notify parent via Telegram when leave request status changes.
+     */
+    protected function notifyParentTelegram(StudentLeaveRequest $leave, string $action): bool
+    {
+        try {
+            $student = null;
+            if ($leave->student_id) {
+                $student = Student::find($leave->student_id);
+            }
+            if (!$student && !empty($leave->phone)) {
+                $student = Student::where('parent_phone', $leave->phone)
+                    ->orWhere('phone', $leave->phone)
+                    ->first();
+            }
+            if (!$student && !empty($leave->student_name)) {
+                $student = Student::where('name_khmer', $leave->student_name)
+                    ->orWhere('name_latin', $leave->student_name)
+                    ->first();
+            }
+
+            if (!$student || empty($student->telegram_chat_id)) {
+                return false;
+            }
+
+            $telegram = app(TelegramService::class);
+            $approverName = auth()->user()?->name ?? 'លោកគ្រូ/អ្នកគ្រូ';
+            $startFmt = Carbon::parse($leave->start_date)->format('d/m/Y');
+            $endFmt   = Carbon::parse($leave->end_date)->format('d/m/Y');
+            $daysText = $leave->days_count > 1 ? "{$leave->days_count} ថ្ងៃ" : '1 ថ្ងៃ';
+
+            if ($action === 'approved') {
+                $message =
+                    "✅ <b>ការសុំច្បាប់ត្រូវបានអនុម័ត</b>\n\n" .
+                    "🎓 <b>សិស្ស:</b> {$leave->student_name}\n" .
+                    "🏫 <b>ថ្នាក់:</b> {$leave->class_name}\n" .
+                    "📅 <b>កាលបរិច្ឆេទ:</b> {$startFmt}" .
+                    ($startFmt !== $endFmt ? " → {$endFmt} ({$daysText})" : " ({$daysText})") . "\n" .
+                    "📋 <b>ប្រភេទ:</b> {$leave->leave_type}\n" .
+                    "📝 <b>មូលហេតុ:</b> {$leave->reason}\n" .
+                    "👨‍🏫 <b>អនុម័តដោយ:</b> {$approverName}\n\n" .
+                    "— <i>Portal Sala • ប្រព័ន្ធគ្រប់គ្រងសាលា</i>";
+            } else {
+                $message =
+                    "❌ <b>ការសុំច្បាប់ត្រូវបានបដិសេធ</b>\n\n" .
+                    "🎓 <b>សិស្ស:</b> {$leave->student_name}\n" .
+                    "🏫 <b>ថ្នាក់:</b> {$leave->class_name}\n" .
+                    "📅 <b>កាលបរិច្ឆេទ:</b> {$startFmt}" .
+                    ($startFmt !== $endFmt ? " → {$endFmt} ({$daysText})" : " ({$daysText})") . "\n" .
+                    "📋 <b>ប្រភេទ:</b> {$leave->leave_type}\n" .
+                    "⚠️ <b>មូលហេតុបដិសេធ:</b> " . ($leave->rejection_reason ?: 'ពុំមានមូលហេតុគ្រប់គ្រាន់') . "\n" .
+                    "👨‍🏫 <b>ពិនិត្យដោយ:</b> {$approverName}\n\n" .
+                    "— <i>Portal Sala • ប្រព័ន្ធគ្រប់គ្រងសាលា</i>";
+            }
+
+            return $telegram->sendMessage($student->telegram_chat_id, $message);
+        } catch (\Throwable $e) {
+            Log::error('Telegram notification error: ' . $e->getMessage());
+            return false;
+        }
     }
 }

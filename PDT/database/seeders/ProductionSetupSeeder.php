@@ -24,7 +24,7 @@ class ProductionSetupSeeder extends Seeder
         $admin = User::firstOrCreate(
             ['email' => 'admin@pdt-school.edu.kh'],
             [
-                'name' => 'PDT Admin',
+                'name' => 'Admin',
                 'password' => Hash::make('admin1234'),
             ]
         );
@@ -58,11 +58,11 @@ class ProductionSetupSeeder extends Seeder
         // 3. School Settings
         $settings = [
             'school_name' => 'សាលារៀន ជំនាន់ថ្មី',
-            'school_name_en' => 'PDT New Generation School',
+            'school_name_en' => 'New Generation School',
             'school_address' => 'មហាវិថីសហព័ន្ធរុស្ស៊ី សង្កាត់ទឹកល្អក់១ ខណ្ឌទួលគោក រាជធានីភ្នំពេញ',
             'school_phone' => '023 880 880 / 012 345 678',
-            'school_email' => 'contact@pdt-school.edu.kh',
-            'school_website' => 'https://pdt-school.edu.kh',
+            'school_email' => 'contact@portalsala.edu.kh',
+            'school_website' => 'https://portalsala.edu.kh',
             'school_logo' => '/images/logo.png',
             'current_academic_year' => '2026-2027',
             'current_semester' => '1',
@@ -98,7 +98,7 @@ class ProductionSetupSeeder extends Seeder
                     'max_score' => $s['max_score'],
                     'credit_hours' => $s['credit_hours'],
                     'grade_level' => '7-12',
-                    'description' => 'កម្មវិធីសិក្សាជំនាន់ថ្មី PDT',
+                    'description' => 'កម្មវិធីសិក្សាជំនាន់ថ្មី',
                 ]
             );
         }
@@ -120,7 +120,7 @@ class ProductionSetupSeeder extends Seeder
                         'capacity' => 45,
                         'teacher_id' => null,
                         'academic_year_id' => $ayCurrent->id,
-                        'description' => "ថ្នាក់រៀនទី {$g} បន្ទប់ {$s} (ជំនាន់ថ្មី PDT)",
+                        'description' => "ថ្នាក់រៀនទី {$g} បន្ទប់ {$s} (ជំនាន់ថ្មី)",
                     ]
                 );
             }
