@@ -159,6 +159,7 @@ Route::post('/register-teacher', [TeacherController::class, 'submitPublicRegistr
 // Public Parent Registration via Link & QR Code
 Route::get('/register-parent', [ParentController::class, 'showPublicRegistration'])->name('public.register-parent');
 Route::post('/register-parent', [ParentController::class, 'submitPublicRegistration'])->name('public.register-parent.post');
+Route::get('/api/public/student-by-id-card', [ParentController::class, 'lookupStudentByIdCard'])->name('public.student-by-id-card');
 
 // Public Student Leave Request via Link & QR Code
 Route::get('/leave-request', [AttendanceController::class, 'showPublicLeaveForm'])->name('public.leave-request');
