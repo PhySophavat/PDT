@@ -338,6 +338,32 @@
                 </div>
               </div>
 
+              <!-- Telegram Notification Status -->
+              <div class="flex items-center justify-between py-2 sm:py-2.5">
+                <span class="text-slate-400 font-medium shrink-0 flex items-center gap-1.5">
+                  <i class="fa-brands fa-telegram text-sky-500"></i>
+                  <span>ដំណឹង Telegram</span>
+                </span>
+                <div class="flex items-center gap-2 pl-3">
+                  <span 
+                    v-if="profile.student.telegram_chat_id" 
+                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>បានភ្ជាប់រួចរាល់</span>
+                  </span>
+                  <a 
+                    v-else
+                    :href="profile.student.telegram_deep_link || 'https://t.me/SalaParentAlertBot'" 
+                    target="_blank"
+                    class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-white bg-sky-500 hover:bg-sky-600 rounded-lg shadow-xs transition"
+                  >
+                    <i class="fa-brands fa-telegram"></i>
+                    <span>ភ្ជាប់ Telegram</span>
+                  </a>
+                </div>
+              </div>
+
               <div v-if="profile.student.father_name" class="flex items-center justify-between py-2 sm:py-2.5">
                 <span class="text-slate-400 font-medium shrink-0">ឈ្មោះឪពុក</span>
                 <div class="text-right pl-3">

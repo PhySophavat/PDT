@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use App\Models\StudentLeaveRequest;
 use App\Services\TelegramService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -70,6 +72,24 @@ class TelegramBotController extends Controller
             return;
         }
 
+        // Handle /status or /leaves command
+        if (str_starts_with($text, '/status') || str_starts_with($text, '/leaves') || str_starts_with($text, '/check')) {
+            $this->handleStatus($chatId);
+            return;
+        }
+
+        // Handle /leave command (apply for leave)
+        if (str_starts_with($text, '/leave') || str_starts_with($text, '/apply')) {
+            $this->handleLeaveLink($chatId);
+            return;
+        }
+
+        // Handle /help command
+        if (str_starts_with($text, '/help')) {
+            $this->handleHelp($chatId);
+            return;
+        }
+
         // Handle shared contact (Telegram contact share button)
         if ($contact) {
             $phone = $contact['phone_number'] ?? '';
@@ -95,10 +115,10 @@ class TelegramBotController extends Controller
         // Default response
         $this->telegram->sendMessage($chatId,
             "🤖 <b>Portal Sala Bot (@SalaParentAlertBot)</b>\n\n" .
-            "ដើម្បីចុះឈ្មោះទទួលការជូនដំណឹង សូមផ្ញើ:\n\n" .
-            "📱 លេខទូរស័ព្ទអាណាព្យាបាល (ឧ. <code>012888999</code>)\n" .
-            "<i>ឬ</i> ប្រើពាក្យបញ្ជា: <code>/register 012888999</code>\n\n" .
-            "សូមប្រើលេខដូចគ្នាទៅនឹងលេខដែលបានបញ្ចូលពេលចុះឈ្មោះកូនចូលរៀន។"
+            "🔹 <code>/status</code> — ពិនិត្យព័ត៌មានកូនសិស្ស & ស្ថានភាពច្បាប់\n" .
+            "🔹 <code>/leave</code> — បំពេញពាក្យសុំច្បាប់តាមអនឡាញ\n" .
+            "🔹 <code>/register 012888999</code> — ភ្ជាប់លេខទូរស័ព្ទអាណាព្យាបាល\n" .
+            "🔹 <code>/help</code> — មើលជំនួយ និងការណែនាំ"
         );
     }
 
@@ -107,19 +127,118 @@ class TelegramBotController extends Controller
      */
     protected function handleStart(int|string $chatId): void
     {
-        $botName = config('services.telegram.bot_username', 'PortalSalaBot');
+        // Check if already registered
+        $students = Student::where('telegram_chat_id', (string) $chatId)->get();
+
+        if ($students->isNotEmpty()) {
+            $names = $students->pluck('display_name')->implode(', ');
+            $this->telegram->sendMessage($chatId,
+                "👋 <b>សួស្តី! អ្នកបានភ្ជាប់គណនីរួចរាល់ហើយ</b>\n\n" .
+                "👨‍👧 អាណាព្យាបាលរបស់: <b>{$names}</b>\n\n" .
+                "💡 ពាក្យបញ្ជាដែលមាន:\n" .
+                "🔹 <code>/status</code> — ពិនិត្យស្ថានភាពកូនសិស្ស & ច្បាប់\n" .
+                "🔹 <code>/leave</code> — ស្នើសុំច្បាប់ឈប់សម្រាក\n" .
+                "🔹 <code>/help</code> — មើលបញ្ជីពាក្យបញ្ជាទាំងអស់\n\n" .
+                "<i>រាល់ពេលលោកគ្រូ/អ្នកគ្រូអនុម័តច្បាប់ Bot នឹងជូនដំណឹងអ្នកភ្លាមៗ! ✅</i>"
+            );
+            return;
+        }
 
         $this->telegram->sendMessage($chatId,
-            "👋 <b>សូមស្វាគមន៍មក Portal Sala Bot!</b>\n\n" .
+            "👋 <b>សូមស្វាគមន៍មកកាន់ Portal Sala Bot!</b>\n\n" .
             "Bot នេះនឹងផ្ញើការជូនដំណឹងទៅអាណាព្យាបាល នៅពេល:\n" .
             "✅ ការសុំច្បាប់សិស្សត្រូវបាន <b>អនុម័ត</b>\n" .
             "❌ ការសុំច្បាប់សិស្សត្រូវបាន <b>បដិសេធ</b>\n\n" .
             "━━━━━━━━━━━━━━━━━━\n" .
             "📋 <b>របៀបចុះឈ្មោះ:</b>\n\n" .
-            "1️⃣ ផ្ញើលេខទូរស័ព្ទអាណាព្យាបាល (ដូចគ្នាបេះបិទនឹងពេលចុះឈ្មោះ):\n" .
-            "   <code>/register 012888999</code>\n\n" .
-            "   <i>ឬ</i> ចុចប៊ូតុង «ចែករំលែកលេខទូរស័ព្ទ» ខាងក្រោម\n\n" .
-            "2️⃣ ពេល Link ទទួលជោគជ័យ Bot នឹងជូនដំណឹងអ្នក ✅"
+            "👉 គ្រាន់តែផ្ញើ <b>លេខទូរស័ព្ទអាណាព្យាបាល</b> របស់អ្នកមកកាន់ទីនេះ:\n" .
+            "   (ឧ. <code>012888999</code> ឬ <code>/register 012888999</code>)\n\n" .
+            "Bot នឹងភ្ជាប់គណនីរបស់អ្នកជាមួយកូនសិស្សដោយស្វ័យប្រវត្តិ! ✅"
+        );
+    }
+
+    /**
+     * Handle /help command.
+     */
+    protected function handleHelp(int|string $chatId): void
+    {
+        $this->telegram->sendMessage($chatId,
+            "💡 <b>បញ្ជីពាក្យបញ្ជា (Commands):</b>\n\n" .
+            "🔹 <code>/status</code> — ពិនិត្យព័ត៌មានកូនសិស្ស និងស្ថានភាពសុំច្បាប់\n" .
+            "🔹 <code>/leave</code> — បំពេញពាក្យសុំច្បាប់តាមអនឡាញ\n" .
+            "🔹 <code>/register 012888999</code> — ភ្ជាប់លេខទូរស័ព្ទអាណាព្យាបាល\n" .
+            "🔹 <code>/help</code> — មើលជំនួយ និងការណែនាំ\n\n" .
+            "— <i>Portal Sala • ប្រព័ន្ធគ្រប់គ្រងសាលារៀន</i>"
+        );
+    }
+
+    /**
+     * Handle /status or /leaves command.
+     */
+    protected function handleStatus(int|string $chatId): void
+    {
+        $students = Student::where('telegram_chat_id', (string) $chatId)->get();
+
+        if ($students->isEmpty()) {
+            $this->telegram->sendMessage($chatId,
+                "⚠️ <b>គណនីរបស់អ្នកមិនទាន់បានភ្ជាប់ជាមួយសិស្សណាម្នាក់ឡើយ!</b>\n\n" .
+                "សូមផ្ញើលេខទូរស័ព្ទរបស់អ្នកមកកាន់ Bot:\n" .
+                "📱 ឧ. <code>012888999</code> ឬ <code>/register 012888999</code>"
+            );
+            return;
+        }
+
+        $msg = "📋 <b>ព័ត៌មានកូនសិស្ស & ស្ថានភាពច្បាប់:</b>\n\n";
+
+        foreach ($students as $st) {
+            $msg .= "🎓 <b>សិស្ស:</b> {$st->display_name}\n";
+            $msg .= "🏫 <b>ថ្នាក់:</b> " . ($st->grade ? "ថ្នាក់ {$st->grade}" : 'មិនទាន់កំណត់') . "\n";
+            $msg .= "🆔 <b>អត្តលេខ:</b> " . ($st->student_id_card ?: 'N/A') . "\n";
+
+            // Recent 3 leave requests
+            $leaves = StudentLeaveRequest::where('student_id', $st->id)
+                ->orWhere('student_name', $st->name_khmer)
+                ->latest()
+                ->take(3)
+                ->get();
+
+            if ($leaves->isNotEmpty()) {
+                $msg .= "📝 <b>សំណើសុំច្បាប់ចុងក្រោយ:</b>\n";
+                foreach ($leaves as $l) {
+                    $stBadge = match($l->status) {
+                        'approved' => '✅ បានអនុម័ត',
+                        'rejected' => '❌ បានបដិសេធ',
+                        default    => '⏳ កំពុងរង់ចាំពិនិត្យ',
+                    };
+                    $dateFmt = Carbon::parse($l->start_date)->format('d/m/Y');
+                    $daysTxt = $l->days_count > 1 ? "{$l->days_count} ថ្ងៃ" : "1 ថ្ងៃ";
+                    $msg .= "  • {$dateFmt} ({$daysTxt}) — <b>{$stBadge}</b>\n";
+                    if ($l->reason) {
+                        $msg .= "    <i>មូលហេតុ: {$l->reason}</i>\n";
+                    }
+                }
+            } else {
+                $msg .= "📝 ពុំទាន់មានសំណើសុំច្បាប់ណាមួយឡើយ\n";
+            }
+            $msg .= "━━━━━━━━━━━━━━━━━━\n";
+        }
+
+        $msg .= "\n🔗 ស្នើសុំច្បាប់ថ្មី: <code>/leave</code>";
+
+        $this->telegram->sendMessage($chatId, $msg);
+    }
+
+    /**
+     * Handle /leave command.
+     */
+    protected function handleLeaveLink(int|string $chatId): void
+    {
+        $leaveUrl = url('/leave-request');
+        $this->telegram->sendMessage($chatId,
+            "📝 <b>ពាក្យសុំច្បាប់ឈប់សម្រាកតាមអនឡាញ</b>\n\n" .
+            "លោកអ្នកអាចចុចលើលីងខាងក្រោមដើម្បីបំពេញពាក្យសុំច្បាប់ឱ្យកូនសិស្ស:\n\n" .
+            "👉 <a href=\"{$leaveUrl}\">ចុចទីនេះដើម្បីស្នើសុំច្បាប់ ({$leaveUrl})</a>\n\n" .
+            "នៅពេលលោកគ្រូ/អ្នកគ្រូអនុម័ត Bot នឹងផ្ញើសារជូនដំណឹងភ្លាមៗ! ✅"
         );
     }
 

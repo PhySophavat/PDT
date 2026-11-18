@@ -5761,6 +5761,11 @@ class ApiController extends Controller
                     'photo' => $student->photo,
                     'homeroom_teacher' => $homeroomTeacher,
                     'enrollment_date' => $student->enrollment_date,
+                    'telegram_chat_id' => $student->telegram_chat_id,
+                    'telegram_verified_at' => $student->telegram_verified_at ? $student->telegram_verified_at->toDateTimeString() : null,
+                    'telegram_deep_link' => ($student->parent_phone || $student->phone)
+                        ? 'https://t.me/' . config('services.telegram.bot_username', 'SalaParentAlertBot') . '?start=reg_' . preg_replace('/[^\d]/', '', $student->parent_phone ?: $student->phone)
+                        : 'https://t.me/' . config('services.telegram.bot_username', 'SalaParentAlertBot'),
                 ];
             }
         } elseif ($roleName === 'Teacher' || !empty($user->teacher)) {

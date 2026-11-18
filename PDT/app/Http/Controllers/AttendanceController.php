@@ -345,7 +345,16 @@ class AttendanceController extends Controller
             });
         }
 
-        $requests = $query->get()->map(function ($l) {
+        $requests = $query->with('student')->get()->map(function ($l) {
+            $hasTelegram = false;
+            if ($l->student && !empty($l->student->telegram_chat_id)) {
+                $hasTelegram = true;
+            } elseif (!empty($l->phone)) {
+                $hasTelegram = Student::where(function($q) use ($l) {
+                    $q->where('parent_phone', $l->phone)->orWhere('phone', $l->phone);
+                })->whereNotNull('telegram_chat_id')->exists();
+            }
+
             return [
                 'id' => $l->id,
                 'student_id' => $l->student_id,
@@ -358,8 +367,10 @@ class AttendanceController extends Controller
                 'leave_type' => $l->leave_type,
                 'reason' => $l->reason,
                 'phone' => $l->phone,
+                'has_telegram' => $hasTelegram,
                 'attachment_url' => $l->attachment_path ? asset('storage/' . $l->attachment_path) : null,
                 'status' => $l->status,
+                'rejection_reason' => $l->rejection_reason,
                 'created_at' => $l->created_at ? $l->created_at->format('Y-m-d H:i') : '',
             ];
         });

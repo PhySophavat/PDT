@@ -735,7 +735,27 @@
                 <div class="font-bold text-slate-700">{{ req.leave_type }}</div>
                 <div class="text-[11px] text-slate-500 truncate max-w-xs" :title="req.reason">{{ req.reason }}</div>
               </td>
-              <td class="py-3 px-3 font-mono text-slate-600">{{ req.phone || '-' }}</td>
+              <td class="py-3 px-3">
+                <div class="font-mono text-slate-700 font-semibold">{{ req.phone || '-' }}</div>
+                <div class="mt-0.5">
+                  <span 
+                    v-if="req.has_telegram" 
+                    class="inline-flex items-center gap-1 text-[10px] text-sky-600 font-bold bg-sky-50 px-1.5 py-0.5 rounded border border-sky-100"
+                    title="អាណាព្យាបាលបានភ្ជាប់ Telegram រួចរាល់ នឹងទទួលដំណឹងស្វ័យប្រវត្តិ"
+                  >
+                    <i class="fa-brands fa-telegram text-sky-500"></i>
+                    <span>Telegram ✓</span>
+                  </span>
+                  <span 
+                    v-else 
+                    class="inline-flex items-center gap-1 text-[10px] text-slate-400"
+                    title="អាណាព្យាបាលមិនទាន់ភ្ជាប់ Telegram"
+                  >
+                    <i class="fa-brands fa-telegram"></i>
+                    <span>មិនទាន់ភ្ជាប់</span>
+                  </span>
+                </div>
+              </td>
               <td class="py-3 px-3 text-center">
                 <a 
                   v-if="req.attachment_url" 
