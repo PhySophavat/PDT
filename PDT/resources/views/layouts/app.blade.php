@@ -95,6 +95,7 @@
             $studentName = $studentProfile?->name_khmer ?: ($studentProfile?->name_latin ?: $authUser->name);
             $studentIdCard = $studentProfile?->student_id_card ?? '';
             $studentPhone = $studentProfile?->phone ?? '';
+            $parentPhone = $studentProfile?->parent_phone ?: ($studentProfile?->father_phone ?: ($studentProfile?->mother_phone ?: ''));
         }
     }
     $initialUserJson = json_encode([
@@ -110,6 +111,7 @@
         'student_name' => $studentName ?? $authUser?->name,
         'student_id_card' => $studentIdCard ?? '',
         'student_phone' => $studentPhone ?? '',
+        'parent_phone' => $parentPhone ?? '',
     ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
     $initialSettingsJson = json_encode([
         'school_logo_url' => $cachedSettings['logoUrl'],

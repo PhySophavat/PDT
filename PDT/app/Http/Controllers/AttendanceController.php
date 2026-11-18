@@ -503,7 +503,39 @@ class AttendanceController extends Controller
                     ->first();
             }
 
+            if ($student && empty($student->telegram_chat_id)) {
+                $linked = Student::whereNotNull('telegram_chat_id')
+                    ->where('telegram_chat_id', '!=', '')
+                    ->where(function ($q) use ($student, $leave) {
+                        if (!empty($student->parent_phone)) $q->where('parent_phone', $student->parent_phone);
+                        if (!empty($student->phone)) $q->orWhere('parent_phone', $student->phone)->orWhere('phone', $student->phone);
+                        if (!empty($leave->phone)) $q->orWhere('parent_phone', $leave->phone)->orWhere('phone', $leave->phone);
+                        if (!empty($student->name_khmer)) $q->orWhere('name_khmer', $student->name_khmer);
+                    })
+                    ->first();
+                if ($linked) {
+                    $student = $linked;
+                }
+            }
+
             if (!$student || empty($student->telegram_chat_id)) {
+                if (!empty($leave->phone)) {
+                    $cleanPhone = preg_replace('/[^\d]/', '', $leave->phone);
+                    $linked = Student::whereNotNull('telegram_chat_id')
+                        ->where('telegram_chat_id', '!=', '')
+                        ->where(function ($q) use ($cleanPhone) {
+                            $q->where('parent_phone', 'LIKE', "%{$cleanPhone}%")
+                              ->orWhere('phone', 'LIKE', "%{$cleanPhone}%");
+                        })
+                        ->first();
+                    if ($linked) {
+                        $student = $linked;
+                    }
+                }
+            }
+
+            if (!$student || empty($student->telegram_chat_id)) {
+                Log::warning('Telegram notification: No telegram_chat_id found for leave #' . $leave->id);
                 return false;
             }
 

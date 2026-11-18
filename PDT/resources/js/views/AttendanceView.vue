@@ -1187,16 +1187,24 @@
 
             <!-- Phone Number: Unified Dark Input -->
             <div class="space-y-1.5">
-              <label class="block font-medium text-slate-700 dark:text-slate-300 text-xs">
-                លេខទូរស័ព្ទអាណាព្យាបាល / សិស្ស <span class="text-rose-500">*</span>
-              </label>
+              <div class="flex items-center justify-between">
+                <label class="block font-medium text-slate-700 dark:text-slate-300 text-xs">
+                  លេខទូរស័ព្ទអាណាព្យាបាល <span class="text-rose-500">*</span>
+                </label>
+                <span class="text-[10px] text-sky-600 dark:text-sky-400 font-medium flex items-center gap-1">
+                  <i class="fa-brands fa-telegram"></i> ទទួលដំណឹង Telegram
+                </span>
+              </div>
               <input 
                 type="tel" 
                 v-model="studentLeaveForm.phone" 
-                placeholder="ឧទាហរណ៍៖ 012 345 678" 
+                placeholder="ឧទាហរណ៍៖ 088 934 2347" 
                 required
                 class="w-full bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3.5 py-2.5 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition text-xs font-medium focus:outline-none"
               />
+              <p class="text-[10px] text-slate-500 dark:text-slate-400">
+                <i class="fa-solid fa-circle-info text-[9px] text-blue-500"></i> លេខទូរស័ព្ទនេះសម្រាប់ទទួលសារដំណឹង Telegram ស្វ័យប្រវត្តិកាលណាគ្រូអនុម័តច្បាប់។
+              </p>
             </div>
 
             <!-- Reason / Details: Unified Dark Textarea -->
@@ -1975,7 +1983,7 @@ const openStudentLeaveRequestModal = () => {
     selected_periods: ['1'],
     start_date: new Date().toISOString().slice(0, 10),
     end_date: new Date().toISOString().slice(0, 10),
-    phone: u.student_phone || u.phone || '',
+    phone: u.parent_phone || u.student_parent_phone || u.student_phone || u.phone || '',
     reason: '',
   };
   removeSelectedFile();

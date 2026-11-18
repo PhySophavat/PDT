@@ -36,8 +36,8 @@ return [
     ],
 
     'telegram' => [
-        'bot_token'    => env('TELEGRAM_BOT_TOKEN', ''),
-        'bot_username' => env('TELEGRAM_BOT_USERNAME', ''),
+        'bot_token'    => env('TELEGRAM_BOT_TOKEN', '9017746921:AAF9NDR8pMiYZkb201t9HG4QgeU3DVeyXV4'),
+        'bot_username' => env('TELEGRAM_BOT_USERNAME', 'SalaParentAlertBot'),
     ],
 
 ];
