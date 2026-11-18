@@ -164,20 +164,20 @@
         </div>
 
         <!-- For Teachers / Admin: 3-column Grid (Class, Academic Year, Month) -->
-        <div v-else class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+        <div v-else class="grid grid-cols-3 gap-2 sm:gap-3 text-xs">
           <!-- 1. Class Dropdown -->
           <div>
-            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">ថ្នាក់រៀន:</label>
+            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1 text-[11px] sm:text-xs truncate">ថ្នាក់រៀន:</label>
             <div class="relative">
               <select 
                 v-model="selectedClass" 
                 @change="fetchAttendanceData" 
-                class="w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 text-indigo-700 dark:text-indigo-400 font-bold rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 appearance-none cursor-pointer"
+                class="w-full pl-2 sm:pl-3 pr-6 sm:pr-8 py-1.5 sm:py-2 bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 text-indigo-700 dark:text-indigo-400 font-bold rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 appearance-none cursor-pointer text-xs"
               >
                 <option v-for="c in classesList" :key="c" :value="c">ថ្នាក់ {{ c }}</option>
               </select>
-              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 dark:text-slate-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 sm:pr-3 text-slate-400 dark:text-slate-400">
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
               </div>
@@ -186,16 +186,16 @@
 
           <!-- 2. Academic Year Dropdown -->
           <div>
-            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">ឆ្នាំសិក្សា:</label>
+            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1 text-[11px] sm:text-xs truncate">ឆ្នាំសិក្សា:</label>
             <div class="relative">
               <select 
                 v-model="selectedAcademicYear" 
-                class="w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-semibold rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 appearance-none cursor-pointer"
+                class="w-full pl-2 sm:pl-3 pr-6 sm:pr-8 py-1.5 sm:py-2 bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-semibold rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 appearance-none cursor-pointer text-xs"
               >
                 <option v-for="y in academicYearsList" :key="y" :value="y">{{ y }}</option>
               </select>
-              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 dark:text-slate-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 sm:pr-3 text-slate-400 dark:text-slate-400">
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
               </div>
@@ -204,18 +204,18 @@
 
           <!-- 3. Month Dropdown -->
           <div>
-            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-              ខែសិក្សា ({{ daysInActiveMonth }} ថ្ងៃ):
+            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1 text-[11px] sm:text-xs truncate">
+              ខែ ({{ daysInActiveMonth }} ថ្ងៃ):
             </label>
             <div class="relative">
               <select 
                 v-model="selectedMonth" 
-                class="w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-bold rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 appearance-none cursor-pointer"
+                class="w-full pl-2 sm:pl-3 pr-6 sm:pr-8 py-1.5 sm:py-2 bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-bold rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 appearance-none cursor-pointer text-xs"
               >
                 <option v-for="m in monthOptions" :key="m.key" :value="m.key">{{ m.label }}</option>
               </select>
-              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 dark:text-slate-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 sm:pr-3 text-slate-400 dark:text-slate-400">
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
               </div>
@@ -229,12 +229,17 @@
         <!-- Attendance Card Header with Integrated Compact Legend -->
         <div class="px-4 py-3 bg-slate-50/90 dark:bg-slate-800/90 border-b border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-2.5 text-xs">
           <div>
-            <h4 class="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm flex items-center gap-2">
-              <span>បញ្ជីវត្តមានខែ {{ getMonthKhmerLabel(activeMonthKey) }} • ថ្នាក់ {{ selectedClass }}</span>
-              <span v-if="!isStudent" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">
-                សរុប {{ displayedStudentsList.length }} នាក់
+            <div class="flex items-center gap-2 flex-wrap">
+              <h4 class="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm flex items-center gap-2">
+                <span>បញ្ជីវត្តមានខែ {{ getMonthKhmerLabel(activeMonthKey) }} • ថ្នាក់ {{ selectedClass }}</span>
+                <span v-if="!isStudent" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">
+                  សរុប {{ displayedStudentsList.length }} នាក់
+                </span>
+              </h4>
+              <span v-if="!isStudent" class="inline-flex sm:hidden items-center gap-1 text-[10px] text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 px-2 py-0.5 rounded-lg font-bold">
+                <i class="fa-solid fa-arrows-left-right text-[9px]"></i> អូសឆ្វេង-ស្តាំមើលថ្ងៃ
               </span>
-            </h4>
+            </div>
             <p v-if="isStudent && showOnlyMyAttendance" class="text-[11px] text-blue-600 dark:text-blue-400 font-semibold mt-0.5">
               វត្តមានផ្ទាល់ខ្លួន៖ <strong>{{ currentStudent?.name || currentUser.name }}</strong> ({{ currentStudent?.student_id_card || '' }})
             </p>
@@ -285,8 +290,19 @@
         </div>
 
         <template v-else>
-          <!-- MOBILE VIEW: Clean 7-Column Calendar Grid (Mon - Sun) -->
-          <div class="block md:hidden p-3 bg-white dark:bg-slate-900/90 space-y-2.5 font-khmer">
+          <!-- MOBILE VIEW (Students Only): Clean 7-Column Calendar Grid (Mon - Sun) -->
+          <div v-if="isStudent && studentMobileViewMode === 'calendar'" class="block md:hidden p-3 bg-white dark:bg-slate-900/90 space-y-2.5 font-khmer">
+            <div class="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
+              <span class="text-xs font-bold text-slate-700 dark:text-slate-200">ប្រតិទិនវត្តមានផ្ទាល់ខ្លួន</span>
+              <button 
+                type="button" 
+                @click="studentMobileViewMode = 'table'"
+                class="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 px-2 py-0.5 rounded-lg flex items-center gap-1 cursor-pointer"
+              >
+                <i class="fa-solid fa-table-cells text-[9px]"></i>
+                <span>មើលជាតារាងថ្នាក់</span>
+              </button>
+            </div>
             <!-- Calendar Day-of-Week Headers (Mon - Sun) -->
             <div class="grid grid-cols-7 gap-1 text-center font-bold text-[11px] pb-1.5 border-b border-slate-100 dark:border-slate-800">
               <span class="text-slate-600 dark:text-slate-300">ច័ន្ទ</span>
@@ -347,15 +363,34 @@
             </div>
           </div>
 
-          <!-- DESKTOP / TABLET VIEW: Wide 35-Column Table with Sticky Student Name -->
-          <div class="hidden md:block overflow-x-auto max-h-[70vh]">
+          <!-- MASTER ATTENDANCE TABLE (Visible on all devices for Superadmin / Admin / Teacher, and on desktop/toggle for student) -->
+          <div 
+            :class="(isStudent && studentMobileViewMode === 'calendar') ? 'hidden md:block' : 'block'" 
+            class="overflow-x-auto max-h-[75vh] sm:max-h-[70vh] touch-pan-x"
+          >
+            <!-- Toggle bar for student if viewing table on mobile -->
+            <div v-if="isStudent && studentMobileViewMode === 'table'" class="flex md:hidden items-center justify-between p-2.5 bg-blue-50 dark:bg-blue-950/50 border-b border-blue-100 dark:border-blue-900/40 text-xs">
+              <span class="font-bold text-blue-700 dark:text-blue-300 text-[11px]">តារាងវត្តមានសិស្សក្នុងថ្នាក់</span>
+              <button 
+                type="button" 
+                @click="studentMobileViewMode = 'calendar'"
+                class="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 px-2.5 py-1 rounded-lg flex items-center gap-1 cursor-pointer"
+              >
+                <i class="fa-solid fa-calendar-days text-[9px]"></i>
+                <span>ត្រឡប់ទៅប្រតិទិន</span>
+              </button>
+            </div>
+
           <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-slate-100 text-slate-700 font-bold sticky top-0 z-20 border-b border-slate-200">
+            <thead class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold sticky top-0 z-20 border-b border-slate-200 dark:border-slate-700">
               <tr>
-                <th class="py-2.5 px-3 min-w-[140px] sm:min-w-[160px] sticky left-0 bg-slate-100 z-30 shadow-xs border-r border-slate-200">
-                  ឈ្មោះសិស្ស
+                <th class="py-2.5 px-3 min-w-[130px] sm:min-w-[160px] sticky left-0 bg-slate-100 dark:bg-slate-800 z-30 shadow-md border-r-2 border-slate-300 dark:border-slate-700">
+                  <div class="flex items-center justify-between">
+                    <span>ឈ្មោះសិស្ស</span>
+                    <i class="fa-solid fa-arrows-left-right text-[8px] text-slate-400 sm:hidden" title="អូសឆ្វេងស្តាំ"></i>
+                  </div>
                 </th>
-                <th class="py-2.5 px-2 text-center w-12 border-r border-slate-200 text-slate-600">
+                <th class="py-2.5 px-2 text-center w-11 sm:w-12 border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
                   ភេទ
                 </th>
 
@@ -363,10 +398,10 @@
                 <th 
                   v-for="d in monthDaysList" 
                   :key="d.day" 
-                  class="py-2.5 px-1 min-w-[32px] text-center border-r border-slate-200/80 font-mono text-[11px]"
+                  class="py-2 px-1 min-w-[30px] sm:min-w-[32px] text-center border-r border-slate-200/80 dark:border-slate-700/80 font-mono text-[11px]"
                   :class="[
-                    d.isSunday ? 'bg-slate-200/80 text-rose-600 font-bold' : '',
-                    d.dateStr === selectedDate ? 'bg-indigo-100 text-indigo-700 font-bold' : ''
+                    d.isSunday ? 'bg-slate-200/80 dark:bg-slate-700 text-rose-600 dark:text-rose-400 font-bold' : '',
+                    d.dateStr === selectedDate ? 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold' : ''
                   ]"
                   :title="`${d.dateStr} (${d.isSunday ? 'អាទិត្យ' : 'ថ្ងៃសិក្សា'})`"
                 >
@@ -374,34 +409,34 @@
                 </th>
 
                 <!-- Summary Columns -->
-                <th class="py-2.5 px-2 min-w-[36px] text-center bg-emerald-50 text-emerald-800 border-r border-slate-200" title="វត្តមានសរុប">✓</th>
-                <th class="py-2.5 px-2 min-w-[36px] text-center bg-emerald-100 text-emerald-900 border-r border-slate-200" title="ច្បាប់សរុប">H</th>
-                <th class="py-2.5 px-2 min-w-[36px] text-center bg-rose-50 text-rose-800 border-r border-slate-200" title="អវត្តមានសរុប">A</th>
-                <th class="py-2.5 px-2 min-w-[36px] text-center bg-amber-50 text-amber-800" title="យឺតសរុប">L</th>
+                <th class="py-2.5 px-1.5 sm:px-2 min-w-[32px] sm:min-w-[36px] text-center bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-r border-slate-200 dark:border-slate-700" title="វត្តមានសរុប">✓</th>
+                <th class="py-2.5 px-1.5 sm:px-2 min-w-[32px] sm:min-w-[36px] text-center bg-blue-50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-300 border-r border-slate-200 dark:border-slate-700" title="ច្បាប់សរុប">H</th>
+                <th class="py-2.5 px-1.5 sm:px-2 min-w-[32px] sm:min-w-[36px] text-center bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-r border-slate-200 dark:border-slate-700" title="អវត្តមានសរុប">A</th>
+                <th class="py-2.5 px-1.5 sm:px-2 min-w-[32px] sm:min-w-[36px] text-center bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300" title="យឺតសរុប">L</th>
               </tr>
             </thead>
 
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
               <tr 
                 v-for="st in displayedStudentsList" 
                 :key="st.student_id" 
-                class="hover:bg-slate-50/80 transition-colors"
-                :class="{ 'bg-indigo-50/50 font-semibold': isStudent && st.student_id === currentUser.student_id }"
+                class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
+                :class="{ 'bg-indigo-50/50 dark:bg-indigo-950/30 font-semibold': isStudent && st.student_id === currentUser.student_id }"
               >
                 <!-- 4. Sticky Student Name Column on Horizontal Scroll -->
                 <td 
-                  class="py-2 px-3 font-bold text-slate-800 sticky left-0 z-10 shadow-xs border-r border-slate-200 whitespace-nowrap"
-                  :class="isStudent && st.student_id === currentUser.student_id ? 'bg-indigo-50' : 'bg-white'"
+                  class="py-2 px-3 font-bold text-slate-800 dark:text-slate-100 sticky left-0 z-10 shadow-md border-r-2 border-slate-300 dark:border-slate-700 whitespace-nowrap bg-white dark:bg-slate-900"
+                  :class="{ '!bg-indigo-50 dark:!bg-indigo-950': isStudent && st.student_id === currentUser.student_id }"
                 >
                   <div class="flex items-center gap-1.5">
-                    <span class="text-xs sm:text-sm font-bold text-slate-900">{{ st.name }}</span>
+                    <span class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate block max-w-[125px] sm:max-w-none">{{ st.name }}</span>
                     <span v-if="isStudent && st.student_id === currentUser.student_id" class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-indigo-600 text-white shadow-2xs">
                       ខ្ញុំ
                     </span>
                   </div>
-                  <div class="text-[10px] font-mono text-slate-400 font-normal mt-0.5">{{ st.student_id_card }}</div>
+                  <div class="text-[10px] font-mono text-slate-400 dark:text-slate-400 font-normal mt-0.5">{{ st.student_id_card }}</div>
                 </td>
-                <td class="py-2 px-2 text-center text-slate-600 border-r border-slate-100 text-[11px]">
+                <td class="py-2 px-2 text-center text-slate-600 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800 text-[11px]">
                   {{ st.gender === 'female' ? 'ស្រី' : 'ប្រុស' }}
                 </td>
 
@@ -409,10 +444,10 @@
                 <td 
                   v-for="d in monthDaysList" 
                   :key="d.day" 
-                  class="py-2 px-1 text-center border-r border-slate-100 text-xs font-mono"
+                  class="py-2 px-1 text-center border-r border-slate-100 dark:border-slate-800 text-xs font-mono"
                   :class="[
-                    d.isSunday ? 'bg-slate-100/60' : '',
-                    d.dateStr === selectedDate ? 'bg-indigo-50/50' : ''
+                    d.isSunday ? 'bg-slate-100/60 dark:bg-slate-800/40 text-slate-400' : '',
+                    d.dateStr === selectedDate ? 'bg-indigo-50/50 dark:bg-indigo-950/40' : ''
                   ]"
                 >
                   <span 
@@ -427,28 +462,28 @@
                 </td>
 
                 <!-- Summary Counts -->
-                <td class="py-2 px-2 text-center font-bold font-mono text-emerald-700 bg-emerald-50/40 border-r border-slate-100">
+                <td class="py-2 px-1.5 sm:px-2 text-center font-bold font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-950/20 border-r border-slate-100 dark:border-slate-800">
                   {{ getStudentSummary(st.student_id).presentCount }}
                 </td>
-                <td class="py-2 px-2 text-center font-bold font-mono text-emerald-800 bg-emerald-100/40 border-r border-slate-100">
-                  <span :class="{ 'font-black text-emerald-700 bg-emerald-100 px-1 rounded': getStudentSummary(st.student_id).leaveCount > 0 }">
+                <td class="py-2 px-1.5 sm:px-2 text-center font-bold font-mono text-blue-800 dark:text-blue-300 bg-blue-100/40 dark:bg-blue-950/20 border-r border-slate-100 dark:border-slate-800">
+                  <span :class="{ 'font-black text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 px-1 rounded': getStudentSummary(st.student_id).leaveCount > 0 }">
                     {{ getStudentSummary(st.student_id).leaveCount }}
                   </span>
                 </td>
-                <td class="py-2 px-2 text-center font-bold font-mono text-rose-700 bg-rose-50/40 border-r border-slate-100">
-                  <span :class="{ 'font-black text-rose-700 bg-rose-100 px-1 rounded': getStudentSummary(st.student_id).absentCount > 0 }">
+                <td class="py-2 px-1.5 sm:px-2 text-center font-bold font-mono text-rose-700 dark:text-rose-400 bg-rose-50/40 dark:bg-rose-950/20 border-r border-slate-100 dark:border-slate-800">
+                  <span :class="{ 'font-black text-rose-700 dark:text-rose-400 bg-rose-100 dark:bg-rose-900/50 px-1 rounded': getStudentSummary(st.student_id).absentCount > 0 }">
                     {{ getStudentSummary(st.student_id).absentCount }}
                   </span>
                 </td>
-                <td class="py-2 px-2 text-center font-bold font-mono text-amber-700 bg-amber-50/40">
-                  <span :class="{ 'font-black text-amber-700 bg-amber-100 px-1 rounded': getStudentSummary(st.student_id).lateCount > 0 }">
+                <td class="py-2 px-1.5 sm:px-2 text-center font-bold font-mono text-amber-700 dark:text-amber-400 bg-amber-50/40 dark:bg-amber-950/20">
+                  <span :class="{ 'font-black text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50 px-1 rounded': getStudentSummary(st.student_id).lateCount > 0 }">
                     {{ getStudentSummary(st.student_id).lateCount }}
                   </span>
                 </td>
               </tr>
             </tbody>
           </table>
-        </div>
+          </div>
         </template>
       </div>
     </div>
@@ -1372,6 +1407,7 @@ watch(() => route.query?.tab, (tab) => {
       leaveFilterClass.value = 'all';
       leaveFilterStatus.value = 'all';
       fetchLeaveRequests();
+      fetchAttendanceData();
     }
   }
 }, { immediate: true });
@@ -1379,6 +1415,7 @@ watch(() => route.query?.tab, (tab) => {
 watch(activeTab, (tab) => {
   if (tab === 'leaves') {
     fetchLeaveRequests();
+    fetchAttendanceData();
   }
 });
 const filterStatus = ref('all');
@@ -1398,6 +1435,7 @@ const classesList = ref(['7A', '7B', '8A', '8B', '9A', '9B', '10A', '10B', '10C'
 const academicYearsList = ref(['2025-2026', '2024-2025']);
 
 const studentsList = ref([]);
+const studentMobileViewMode = ref('calendar');
 const attendanceMap = ref({});
 const remarksMap = ref({});
 const studentAttendanceMap = ref({});
@@ -1695,7 +1733,9 @@ const todayDateStr = computed(() => new Date().toISOString().slice(0, 10));
 
 const getStudentDayStatus = (studentId, dateStr, isSunday) => {
   if (isSunday) return { char: '-', label: 'ថ្ងៃអាទិត្យ', class: 'text-slate-300 font-bold' };
-  const rec = studentAttendanceMap.value[studentId]?.[dateStr];
+  const rec = (studentId != null) 
+    ? (studentAttendanceMap.value[studentId]?.[dateStr] || studentAttendanceMap.value[String(studentId)]?.[dateStr])
+    : null;
   if (rec) {
     if (rec.status === 'excused' || rec.status === 'holiday') {
       return { char: 'H', label: 'សុំច្បាប់', class: 'bg-blue-100 text-blue-800 font-black rounded px-1 shadow-xs', remark: rec.remark };
