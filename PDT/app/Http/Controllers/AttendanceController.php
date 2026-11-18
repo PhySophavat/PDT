@@ -104,6 +104,32 @@ class AttendanceController extends Controller
             );
         }
 
+        // Send Telegram alert to parents of absent students
+        try {
+            $telegram = app(TelegramService::class);
+            $dateFmt = Carbon::parse($date)->format('d/m/Y');
+            foreach ($validated['attendance'] as $studentId => $status) {
+                if ($status === 'absent' || $status === 'unexcused') {
+                    $st = Student::find($studentId);
+                    if ($st) {
+                        $chatId = $st->telegram_chat_id;
+                        if (empty($chatId) && !empty($st->parent_phone)) {
+                            $chatId = Student::where('parent_phone', $st->parent_phone)
+                                ->whereNotNull('telegram_chat_id')
+                                ->where('telegram_chat_id', '!=', '')
+                                ->value('telegram_chat_id');
+                        }
+                        if (!empty($chatId)) {
+                            $stName = $st->name_khmer ?: ($st->name_latin ?: 'សិស្ស');
+                            $telegram->sendAbsenceAlert($chatId, $stName, $className, $dateFmt);
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('Telegram absence alert error: ' . $e->getMessage());
+        }
+
         return back()->with('success', "បានរក្សាទុកវត្តមានសិស្សថ្នាក់ {$className} សម្រាប់ថ្ងៃទី {$date} ដោយជោគជ័យ!");
     }
 
@@ -540,36 +566,25 @@ class AttendanceController extends Controller
             }
 
             $telegram = app(TelegramService::class);
-            $approverName = auth()->user()?->name ?? 'លោកគ្រូ/អ្នកគ្រូ';
             $startFmt = Carbon::parse($leave->start_date)->format('d/m/Y');
             $endFmt   = Carbon::parse($leave->end_date)->format('d/m/Y');
-            $daysText = $leave->days_count > 1 ? "{$leave->days_count} ថ្ងៃ" : '1 ថ្ងៃ';
+            $dateText = ($startFmt !== $endFmt) ? "{$startFmt} ដល់ {$endFmt}" : $startFmt;
+            $daysText = $leave->days_count > 1 ? "{$leave->days_count} ថ្ងៃ" : '១ ថ្ងៃ';
 
-            if ($action === 'approved') {
-                $message =
-                    "✅ <b>ការសុំច្បាប់ត្រូវបានអនុម័ត</b>\n\n" .
-                    "🎓 <b>សិស្ស:</b> {$leave->student_name}\n" .
-                    "🏫 <b>ថ្នាក់:</b> {$leave->class_name}\n" .
-                    "📅 <b>កាលបរិច្ឆេទ:</b> {$startFmt}" .
-                    ($startFmt !== $endFmt ? " → {$endFmt} ({$daysText})" : " ({$daysText})") . "\n" .
-                    "📋 <b>ប្រភេទ:</b> {$leave->leave_type}\n" .
-                    "📝 <b>មូលហេតុ:</b> {$leave->reason}\n" .
-                    "👨‍🏫 <b>អនុម័តដោយ:</b> {$approverName}\n\n" .
-                    "— <i>Portal Sala • ប្រព័ន្ធគ្រប់គ្រងសាលា</i>";
-            } else {
-                $message =
-                    "❌ <b>ការសុំច្បាប់ត្រូវបានបដិសេធ</b>\n\n" .
-                    "🎓 <b>សិស្ស:</b> {$leave->student_name}\n" .
-                    "🏫 <b>ថ្នាក់:</b> {$leave->class_name}\n" .
-                    "📅 <b>កាលបរិច្ឆេទ:</b> {$startFmt}" .
-                    ($startFmt !== $endFmt ? " → {$endFmt} ({$daysText})" : " ({$daysText})") . "\n" .
-                    "📋 <b>ប្រភេទ:</b> {$leave->leave_type}\n" .
-                    "⚠️ <b>មូលហេតុបដិសេធ:</b> " . ($leave->rejection_reason ?: 'ពុំមានមូលហេតុគ្រប់គ្រាន់') . "\n" .
-                    "👨‍🏫 <b>ពិនិត្យដោយ:</b> {$approverName}\n\n" .
-                    "— <i>Portal Sala • ប្រព័ន្ធគ្រប់គ្រងសាលា</i>";
+            $timeText = "ពេញមួយថ្ងៃ ({$daysText})";
+            if (!empty($leave->reason) && preg_match('/\[សុំច្បាប់ជាម៉ោង៖\s*([^\]]+)\]/', $leave->reason, $m)) {
+                $timeText = trim($m[1]);
             }
 
-            return $telegram->sendMessage($student->telegram_chat_id, $message);
+            return $telegram->sendLeaveStatusAlert(
+                $student->telegram_chat_id,
+                $leave->student_name,
+                $leave->class_name,
+                $dateText,
+                $timeText,
+                $action,
+                $leave->rejection_reason ?? ''
+            );
         } catch (\Throwable $e) {
             Log::error('Telegram notification error: ' . $e->getMessage());
             return false;

@@ -3484,6 +3484,32 @@ class ApiController extends Controller
             );
         }
 
+        // Send Telegram alert to parents of absent students
+        try {
+            $telegram = app(\App\Services\TelegramService::class);
+            $dateFmt = \Carbon\Carbon::parse($date)->format('d/m/Y');
+            foreach ($validated['attendance'] as $studentId => $status) {
+                if ($status === 'absent' || $status === 'unexcused') {
+                    $st = \App\Models\Student::find($studentId);
+                    if ($st) {
+                        $chatId = $st->telegram_chat_id;
+                        if (empty($chatId) && !empty($st->parent_phone)) {
+                            $chatId = \App\Models\Student::where('parent_phone', $st->parent_phone)
+                                ->whereNotNull('telegram_chat_id')
+                                ->where('telegram_chat_id', '!=', '')
+                                ->value('telegram_chat_id');
+                        }
+                        if (!empty($chatId)) {
+                            $stName = $st->name_khmer ?: ($st->name_latin ?: 'សិស្ស');
+                            $telegram->sendAbsenceAlert($chatId, $stName, $className, $dateFmt);
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            \Log::error('Telegram absence alert error: ' . $e->getMessage());
+        }
+
         Cache::forget('portal_dashboard_payload');
 
         return response()->json([
