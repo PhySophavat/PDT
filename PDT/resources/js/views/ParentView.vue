@@ -73,86 +73,82 @@
     </FilterBar>
 
     <!-- Data Table -->
-    <DataTable :loading="isLoading" :empty="filteredParents.length === 0" :colSpan="5" loadingText="កំពុងទាញយកទិន្នន័យមាតាបិតា...">
+    <DataTable :loading="isLoading" :empty="filteredParents.length === 0" :colSpan="7" loadingText="កំពុងទាញយកទិន្នន័យមាតាបិតា...">
       <template #header>
         <tr class="text-xs uppercase bg-slate-50/80 border-b border-slate-200/80">
-          <th class="py-3.5 px-4 font-semibold text-slate-600 text-left whitespace-nowrap">ឪពុក / ម្តាយ / អាណាព្យាបាល</th>
+          <th class="py-3.5 px-4 font-semibold text-slate-600 text-left whitespace-nowrap">ឪពុក</th>
+          <th class="py-3.5 px-4 font-semibold text-slate-600 text-left whitespace-nowrap">ម្តាយ</th>
+          <th class="py-3.5 px-4 font-semibold text-slate-600 text-left whitespace-nowrap">អាណាព្យាបាល</th>
           <th class="py-3.5 px-4 font-semibold text-slate-600 text-left whitespace-nowrap">កូនសិស្ស</th>
-          <th class="py-3.5 px-3 font-semibold text-slate-600 text-left whitespace-nowrap w-[90px]">ថ្នាក់</th>
-          <th class="py-3.5 px-4 font-semibold text-slate-600 text-left whitespace-nowrap max-w-[220px]">ទំនាក់ទំនង & ទីលំនៅ</th>
-          <th class="py-3.5 px-4 font-semibold text-slate-600 text-right whitespace-nowrap w-[110px]">សកម្មភាព</th>
+          <th class="py-3.5 px-3 font-semibold text-slate-600 text-left whitespace-nowrap w-[75px]">ថ្នាក់</th>
+          <th class="py-3.5 px-4 font-semibold text-slate-600 text-left whitespace-nowrap max-w-[210px]">ទំនាក់ទំនង & ទីលំនៅ</th>
+          <th class="py-3.5 px-4 font-semibold text-slate-600 text-right whitespace-nowrap w-[100px]">សកម្មភាព</th>
         </tr>
       </template>
 
       <template #body>
         <tr v-if="filteredParents.length === 0">
-          <td colspan="5" class="py-10 text-center text-slate-400 font-khmer">{{ t('common.noData') }}</td>
+          <td colspan="7" class="py-10 text-center text-slate-400 font-khmer">{{ t('common.noData') }}</td>
         </tr>
         <tr v-for="p in filteredParents" :key="p.id" class="hover:bg-slate-50/80 transition-colors border-b border-slate-100 last:border-b-0">
-          <!-- 1. Father / Mother / Guardian -->
+          <!-- 1. Father -->
           <td class="py-3.5 px-4 align-top">
-            <div class="space-y-1">
-              <div class="flex items-start gap-2">
+            <div class="space-y-0.5">
+              <div class="flex items-center gap-1.5 whitespace-nowrap">
                 <!-- Status dot -->
                 <span 
-                  class="inline-block w-2 h-2 rounded-full mt-1.5 shrink-0"
+                  class="inline-block w-2 h-2 rounded-full shrink-0"
                   :class="p.status === 'pending' ? 'bg-amber-400 ring-4 ring-amber-100 animate-pulse' : 'bg-emerald-500'"
                   :title="p.status === 'pending' ? 'រង់ចាំអនុម័ត' : 'សកម្ម'"
                 ></span>
-
-                <div class="space-y-0.5">
-                  <!-- Father (if present) -->
-                  <div v-if="p.father_name" class="whitespace-nowrap flex items-center gap-1.5">
-                    <span class="text-[11px] text-blue-600 bg-blue-50 px-1.5 py-0.2 rounded font-medium">ឪពុក៖</span>
-                    <span class="font-semibold text-slate-800 text-sm whitespace-nowrap">{{ p.father_name }}</span>
-                  </div>
-
-                  <!-- Mother (if present) -->
-                  <div v-if="p.mother_name" class="whitespace-nowrap flex items-center gap-1.5">
-                    <span class="text-[11px] text-pink-600 bg-pink-50 px-1.5 py-0.2 rounded font-medium">ម្តាយ៖</span>
-                    <span class="font-medium text-slate-700 text-sm whitespace-nowrap">{{ p.mother_name }}</span>
-                  </div>
-
-                  <!-- Fallback: Primary Guardian name if neither father_name nor mother_name are set -->
-                  <div v-if="!p.father_name && !p.mother_name" class="whitespace-nowrap flex items-center gap-1.5">
-                    <span class="text-[11px] text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded font-medium">{{ p.relationship || 'អាណាព្យាបាល' }}៖</span>
-                    <span class="font-semibold text-slate-800 text-sm whitespace-nowrap">{{ p.name }}</span>
-                  </div>
-
-                  <!-- Distinct Guardian if primary is not father or mother and different -->
-                  <div 
-                    v-if="p.relationship !== 'ឪពុក' && p.relationship !== 'ម្តាយ' && (p.father_name || p.mother_name) && p.name !== p.father_name && p.name !== p.mother_name" 
-                    class="whitespace-nowrap flex items-center gap-1.5 text-xs text-slate-600"
-                  >
-                    <span class="text-[11px] text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded font-medium">អាណាព្យាបាល៖</span>
-                    <span class="font-medium text-slate-700 whitespace-nowrap">{{ p.name }}</span>
-                  </div>
-
-                  <!-- ID on bottom line -->
-                  <div class="text-[11px] font-mono text-slate-400 pt-0.5">
-                    {{ p.idCard }}
-                  </div>
-                </div>
+                <span v-if="getFatherName(p)" class="font-semibold text-slate-800 text-sm whitespace-nowrap">
+                  {{ getFatherName(p) }}
+                </span>
+                <span v-else class="text-slate-300 text-sm font-normal">-</span>
+              </div>
+              <!-- Guardian ID -->
+              <div class="text-[11px] font-mono text-slate-400 pl-3.5">
+                {{ p.idCard }}
               </div>
             </div>
           </td>
 
-          <!-- 2. Students (Khmer-Only) -->
+          <!-- 2. Mother -->
+          <td class="py-3.5 px-4 align-top whitespace-nowrap">
+            <div class="h-7 flex items-center">
+              <span v-if="getMotherName(p)" class="font-medium text-slate-700 text-sm whitespace-nowrap">
+                {{ getMotherName(p) }}
+              </span>
+              <span v-else class="text-slate-300 text-sm font-normal">-</span>
+            </div>
+          </td>
+
+          <!-- 3. Other Guardian -->
+          <td class="py-3.5 px-4 align-top whitespace-nowrap">
+            <div class="h-7 flex items-center">
+              <span v-if="getOtherGuardianName(p)" class="font-medium text-slate-700 text-sm whitespace-nowrap">
+                {{ getOtherGuardianName(p) }}
+              </span>
+              <span v-else class="text-slate-300 text-sm font-normal">-</span>
+            </div>
+          </td>
+
+          <!-- 4. Students (Strict Khmer-Only) -->
           <td class="py-3.5 px-4 align-top">
             <div v-if="p.children_list && p.children_list.length > 0" class="space-y-1.5">
               <div 
                 v-for="c in p.children_list" 
                 :key="c.id" 
-                class="font-medium text-slate-800 text-xs whitespace-nowrap py-0.5"
+                class="h-7 flex items-center font-medium text-slate-800 text-xs whitespace-nowrap"
                 :title="c.id_card ? `អត្តលេខសិស្ស: #${c.id_card}` : ''"
               >
-                {{ c.name_khmer || c.name }}
+                {{ getStudentKhmerName(c) }}
               </div>
             </div>
-            <div v-else-if="p.child_name" class="font-medium text-slate-800 text-xs whitespace-nowrap py-0.5">
-              {{ p.child_name }}
+            <div v-else-if="getChildFallback(p)" class="h-7 flex items-center font-medium text-slate-800 text-xs whitespace-nowrap">
+              {{ getChildFallback(p) }}
             </div>
-            <div v-else class="flex items-center gap-1.5 py-0.5 whitespace-nowrap">
+            <div v-else class="h-7 flex items-center gap-1.5 whitespace-nowrap">
               <span class="text-xs text-slate-400 italic">មិនទាន់ភ្ជាប់សិស្ស</span>
               <button 
                 @click="openEditModal(p)" 
@@ -163,36 +159,37 @@
             </div>
           </td>
 
-          <!-- 3. Class (Dedicated narrow column) -->
-          <td class="py-3.5 px-3 align-top w-[90px]">
+          <!-- 5. Class (Matched 1-to-1 height h-7) -->
+          <td class="py-3.5 px-3 align-top w-[75px]">
             <div v-if="p.children_list && p.children_list.length > 0" class="space-y-1.5">
               <div 
                 v-for="c in p.children_list" 
                 :key="c.id" 
-                class="py-0.5"
+                class="h-7 flex items-center"
               >
                 <span 
                   v-if="c.grade" 
-                  class="inline-block whitespace-nowrap bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-md text-xs font-medium border border-indigo-100/60"
+                  class="inline-block whitespace-nowrap bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-md text-xs font-medium border border-indigo-100/60 leading-none"
                 >
                   {{ c.grade }}
                 </span>
                 <span v-else class="text-xs text-slate-300">-</span>
               </div>
             </div>
-            <div v-else-if="p.child_grade" class="py-0.5">
-              <span class="inline-block whitespace-nowrap bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-md text-xs font-medium border border-indigo-100/60">
+            <div v-else-if="getChildFallback(p)" class="h-7 flex items-center">
+              <span v-if="p.child_grade" class="inline-block whitespace-nowrap bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-md text-xs font-medium border border-indigo-100/60 leading-none">
                 {{ p.child_grade }}
               </span>
+              <span v-else class="text-xs text-slate-300">-</span>
             </div>
-            <div v-else class="py-0.5 text-xs text-slate-300">
+            <div v-else class="h-7 flex items-center text-xs text-slate-300">
               -
             </div>
           </td>
 
-          <!-- 4. Contact & Address (Constrained max-w-[220px]) -->
-          <td class="py-3.5 px-4 align-top max-w-[220px]">
-            <div class="space-y-0.5 max-w-[220px]">
+          <!-- 6. Contact & Address (max-w-[210px]) -->
+          <td class="py-3.5 px-4 align-top max-w-[210px]">
+            <div class="space-y-0.5 max-w-[210px]">
               <!-- Phone + inline Telegram -->
               <div class="flex items-center gap-1.5 whitespace-nowrap">
                 <a 
@@ -248,15 +245,15 @@
             </div>
           </td>
 
-          <!-- 5. Actions (Compact w-[110px]) -->
-          <td class="py-3.5 px-4 align-top text-right w-[110px] whitespace-nowrap">
+          <!-- 7. Actions (w-[100px]) -->
+          <td class="py-3.5 px-4 align-top text-right w-[100px] whitespace-nowrap">
             <div class="inline-flex items-center gap-0.5 justify-end">
               <!-- Quick Review & Approve button if pending -->
               <button 
                 v-if="p.status === 'pending'" 
                 @click="openApproveModal(p)"
                 type="button"
-                class="w-7 h-7 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center justify-center transition shadow-2xs mr-1"
+                class="w-7 h-7 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center justify-center transition shadow-2xs mr-0.5"
                 title="អនុម័តសំណើ"
               >
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -865,39 +862,45 @@ const getRoleBadgeClass = (rel) => {
   return 'bg-slate-100 text-slate-600 border-slate-200/60';
 };
 
-const getSecondaryParent = (p) => {
-  if (!p) return null;
-  const pName = (p.name || '').trim();
-  const fName = (p.father_name || '').trim();
-  const mName = (p.mother_name || '').trim();
+const getFatherName = (p) => {
+  if (p.father_name && p.father_name !== '-') return p.father_name;
+  if (p.relationship === 'ឪពុក' && p.name && p.name !== '-') return p.name;
+  return null;
+};
 
-  // If primary role is Father
-  if (p.relationship === 'ឪពុក' || (fName && pName === fName)) {
-    if (mName && mName !== pName && mName !== '-') {
-      return { label: 'ម្តាយ', name: mName };
+const getMotherName = (p) => {
+  if (p.mother_name && p.mother_name !== '-') return p.mother_name;
+  if (p.relationship === 'ម្តាយ' && p.name && p.name !== '-') return p.name;
+  return null;
+};
+
+const getOtherGuardianName = (p) => {
+  const fName = getFatherName(p);
+  const mName = getMotherName(p);
+  if (p.relationship !== 'ឪពុក' && p.relationship !== 'ម្តាយ') {
+    if (p.name && p.name !== fName && p.name !== mName && p.name !== '-') {
+      return p.name;
     }
-    return null;
   }
+  return null;
+};
 
-  // If primary role is Mother
-  if (p.relationship === 'ម្តាយ' || (mName && pName === mName)) {
-    if (fName && fName !== pName && fName !== '-') {
-      return { label: 'ឪពុក', name: fName };
-    }
-    return null;
+const getStudentKhmerName = (c) => {
+  if (!c) return 'មិនមានឈ្មោះខ្មែរ';
+  const name = (c.name_khmer || c.khmer_name || c.name_km || '').trim();
+  if (/[\u1780-\u17FF]/.test(name)) {
+    return name;
   }
+  if (c.name && /[\u1780-\u17FF]/.test(c.name)) {
+    return c.name.trim();
+  }
+  return 'មិនមានឈ្មោះខ្មែរ';
+};
 
-  // If generic guardian
-  if (fName && fName !== pName && mName && mName !== pName && fName !== '-' && mName !== '-') {
-    return { label: 'ឪពុក & ម្តាយ', name: `${fName} / ${mName}` };
+const getChildFallback = (p) => {
+  if (p.child_name && /[\u1780-\u17FF]/.test(p.child_name)) {
+    return p.child_name.trim();
   }
-  if (fName && fName !== pName && fName !== '-') {
-    return { label: 'ឪពុក', name: fName };
-  }
-  if (mName && mName !== pName && mName !== '-') {
-    return { label: 'ម្តាយ', name: mName };
-  }
-
   return null;
 };
 

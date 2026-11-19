@@ -4737,10 +4737,11 @@ class ApiController extends Controller
                 }
             }
 
-            $childrenList = $linkedStudents->map(function ($st) {
+            $childrenList = $linkedStudents->unique('id')->map(function ($st) {
                 return [
                     'id' => $st->id,
                     'name' => $st->name_khmer ?: ($st->name_latin ?: ($st->user?->name ?? 'សិស្ស')),
+                    'name_khmer' => $st->name_khmer,
                     'name_latin' => $st->name_latin,
                     'grade' => $st->grade,
                     'id_card' => $st->student_id_card,
@@ -4750,8 +4751,8 @@ class ApiController extends Controller
                 ];
             })->values()->toArray();
 
-            $childrenNames = array_map(fn($c) => $c['name'] . ($c['grade'] ? " ({$c['grade']})" : ''), $childrenList);
-            if ($p->child_name && !in_array($p->child_name, array_column($childrenList, 'name'))) {
+            $childrenNames = array_map(fn($c) => ($c['name_khmer'] ?: $c['name']) . ($c['grade'] ? " ({$c['grade']})" : ''), $childrenList);
+            if (empty($childrenList) && $p->child_name) {
                 $childrenNames[] = $p->child_name . ($p->child_grade ? " ({$p->child_grade})" : '');
             }
             $childrenStr = count($childrenNames) > 0 ? implode(', ', $childrenNames) : 'មិនទាន់ភ្ជាប់កូន';
