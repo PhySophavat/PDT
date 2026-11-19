@@ -546,10 +546,10 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <!-- Guardian Name -->
+              <!-- Father Name -->
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-                  ឈ្មោះឪពុក/ម្តាយ/អាណាព្យាបាល <span class="text-red-500">*</span>
+                  ឈ្មោះឪពុក <span class="text-red-500">*</span>
                 </label>
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
@@ -557,44 +557,47 @@
                   </span>
                   <input 
                     type="text" 
-                    id="parent_name"
-                    name="parent_name" 
-                    value="{{ old('parent_name') }}" 
-                    placeholder="ឈ្មោះពេញរបស់អាណាព្យាបាល"
+                    id="father_name"
+                    name="father_name" 
+                    value="{{ old('father_name') }}" 
+                    placeholder="ឈ្មោះពេញរបស់ឪពុក"
                     class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
                   />
                 </div>
-                <p id="error-parent_name" class="hidden text-xs text-red-500 mt-1 flex items-center gap-1 font-medium">
+                <p id="error-father_name" class="hidden text-xs text-red-500 mt-1 flex items-center gap-1 font-medium">
                   <i class="fa-solid fa-circle-exclamation text-[11px]"></i>
-                  <span>សូមបញ្ចូលឈ្មោះអាណាព្យាបាល</span>
+                  <span>សូមបញ្ចូលឈ្មោះឪពុក</span>
                 </p>
               </div>
 
-              <!-- Relationship -->
+              <!-- Mother Name -->
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-                  ត្រូវជាអ្វីនឹងសិស្ស <span class="text-red-500">*</span>
+                  ឈ្មោះម្តាយ <span class="text-red-500">*</span>
                 </label>
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-                    <i class="fa-solid fa-people-roof text-xs"></i>
+                    <i class="fa-solid fa-person-dress text-xs"></i>
                   </span>
-                  <select 
-                    id="parent_relationship"
-                    name="parent_relationship" 
-                    class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
-                  >
-                    <option value="ឪពុក" {{ old('parent_relationship', 'ឪពុក') === 'ឪពុក' ? 'selected' : '' }}>ឪពុក</option>
-                    <option value="ម្តាយ" {{ old('parent_relationship') === 'ម្តាយ' ? 'selected' : '' }}>ម្តាយ</option>
-                    <option value="អាណាព្យាបាល" {{ old('parent_relationship') === 'អាណាព្យាបាល' ? 'selected' : '' }}>អាណាព្យាបាល</option>
-                  </select>
+                  <input 
+                    type="text" 
+                    id="mother_name"
+                    name="mother_name" 
+                    value="{{ old('mother_name') }}" 
+                    placeholder="ឈ្មោះពេញរបស់ម្តាយ"
+                    class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                  />
                 </div>
+                <p id="error-mother_name" class="hidden text-xs text-red-500 mt-1 flex items-center gap-1 font-medium">
+                  <i class="fa-solid fa-circle-exclamation text-[11px]"></i>
+                  <span>សូមបញ្ចូលឈ្មោះម្តាយ</span>
+                </p>
               </div>
 
               <!-- Guardian Phone -->
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-                  លេខទូរស័ព្ទអាណាព្យាបាល <span class="text-red-500">*</span>
+                  លេខទូរស័ព្ទអាណាព្យាបាល (ឪពុក ឬម្តាយ) <span class="text-red-500">*</span>
                 </label>
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
@@ -611,7 +614,7 @@
                 </div>
                 <p class="text-[11px] text-slate-500 mt-1 flex items-start gap-1.5 font-khmer leading-relaxed">
                   <i class="fa-solid fa-circle-info text-blue-500 text-[10px] mt-0.5 shrink-0"></i>
-                  <span>លេខ 0-9 ចាប់ដោយ 0 ​(ឧ. 012888999)</span>
+                  <span>លេខទូរស័ព្ទទំនាក់ទំនងអាណាព្យាបាលណាមួយ (0-9) ចាប់ដោយ 0</span>
                 </p>
                 {{-- Telegram Alert Banner (Auto 1-Click Link) --}}
                 <div class="mt-2.5 p-3 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200/90 rounded-2xl flex items-start gap-3">
@@ -649,7 +652,7 @@
               <!-- Guardian Occupation -->
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-                  មុខរបរអាណាព្យាបាល <span class="text-slate-400 font-normal"></span>
+                  មុខរបរឪពុកម្តាយ ឬអាណាព្យាបាល <span class="text-slate-400 font-normal">(មិនទាមទារជាចាំបាច់)</span>
                 </label>
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
@@ -759,16 +762,20 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div>
-                    <span class="text-slate-400 text-[11px] block">ឈ្មោះអាណាព្យាបាល៖</span>
-                    <span id="review-parent-name" class="font-bold text-slate-800 block text-sm">---</span>
+                    <span class="text-slate-400 text-[11px] block">ឈ្មោះឪពុក ៖</span>
+                    <span id="review-father-name" class="font-bold text-slate-800 block text-sm">---</span>
                   </div>
                   <div>
-                    <span class="text-slate-400 text-[11px] block">ត្រូវជា / មុខរបរ៖</span>
-                    <span id="review-parent-rel" class="font-bold text-slate-800 block">---</span>
+                    <span class="text-slate-400 text-[11px] block">ឈ្មោះម្តាយ ៖</span>
+                    <span id="review-mother-name" class="font-bold text-slate-800 block text-sm">---</span>
                   </div>
                   <div>
-                    <span class="text-slate-400 text-[11px] block">លេខទូរស័ព្ទទំនាក់ទំនង៖</span>
+                    <span class="text-slate-400 text-[11px] block">លេខទូរស័ព្ទអាណាព្យាបាល ៖</span>
                     <span id="review-parent-phone" class="font-bold text-slate-800 block font-mono">---</span>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 text-[11px] block">មុខរបរ ៖</span>
+                    <span id="review-parent-occ" class="font-bold text-slate-800 block">---</span>
                   </div>
                 </div>
               </div>
@@ -854,7 +861,8 @@
       email: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim()),
       grade: (val) => val.trim() !== '',
       address: (val) => val.trim().length >= 3,
-      parent_name: (val) => val.trim().length >= 2,
+      father_name: (val) => val.trim().length >= 2,
+      mother_name: (val) => val.trim().length >= 2,
       parent_phone: (val) => /^0[0-9]{8,9}$/.test(val.replace(/[\s-]/g, ''))
     };
 
@@ -990,7 +998,7 @@
 
     // Step 2 Validation
     function validateStep2() {
-      const fields = ['parent_name', 'parent_phone'];
+      const fields = ['father_name', 'mother_name', 'parent_phone'];
       let allValid = true;
       let firstInvalid = null;
 
@@ -1092,14 +1100,17 @@
       const revAddress = document.getElementById('review-address');
       if (revAddress) revAddress.textContent = getVal('address');
 
-      const revParentName = document.getElementById('review-parent-name');
-      if (revParentName) revParentName.textContent = getVal('parent_name');
+      const revFatherName = document.getElementById('review-father-name');
+      if (revFatherName) revFatherName.textContent = getVal('father_name');
 
-      const revParentRel = document.getElementById('review-parent-rel');
-      if (revParentRel) revParentRel.textContent = `${getVal('parent_relationship')} • ${getVal('parent_occupation') || 'ទូទៅ'}`;
+      const revMotherName = document.getElementById('review-mother-name');
+      if (revMotherName) revMotherName.textContent = getVal('mother_name');
 
       const revParentPhone = document.getElementById('review-parent-phone');
       if (revParentPhone) revParentPhone.textContent = getVal('parent_phone');
+
+      const revParentOcc = document.getElementById('review-parent-occ');
+      if (revParentOcc) revParentOcc.textContent = getVal('parent_occupation') || 'ទូទៅ';
     }
 
     // Photo Preview

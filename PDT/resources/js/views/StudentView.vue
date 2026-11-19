@@ -454,11 +454,15 @@
               <input type="email" v-model="createForm.email" placeholder="student@example.com" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
-              <label class="block font-semibold mb-1">ឈ្មោះអាណាព្យាបាល</label>
-              <input type="text" v-model="createForm.parent_name" placeholder="ឧ. សុខ វិបុល" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+              <label class="block font-semibold mb-1">ឈ្មោះឪពុក</label>
+              <input type="text" v-model="createForm.father_name" placeholder="ឧ. សុខ វិបុល" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
-              <label class="block font-semibold mb-1">លេខទូរស័ព្ទអាណាព្យាបាល</label>
+              <label class="block font-semibold mb-1">ឈ្មោះម្តាយ</label>
+              <input type="text" v-model="createForm.mother_name" placeholder="ឧ. គឹម សុផល" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block font-semibold mb-1">លេខទូរស័ព្ទអាណាព្យាបាល (ឪពុក ឬម្តាយ)</label>
               <input type="tel" v-model="createForm.parent_phone" placeholder="012 345 678" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div class="sm:col-span-2">
@@ -646,12 +650,12 @@
               <span class="font-semibold text-slate-800">{{ selectedStudent.address || '-' }}</span>
             </div>
             <div>
-              <span class="text-slate-400 block text-[11px]">អាណាព្យាបាល:</span>
-              <span class="font-semibold text-slate-800">{{ selectedStudent.parent_name || '-' }} ({{ selectedStudent.parent_relationship || 'អាណាព្យាបាល' }})</span>
+              <span class="text-slate-400 block text-[11px]">ឪពុក / ម្តាយ:</span>
+              <span class="font-semibold text-slate-800">{{ selectedStudent.father_name || selectedStudent.parent_name || '-' }} / {{ selectedStudent.mother_name || '-' }}</span>
             </div>
             <div>
               <span class="text-slate-400 block text-[11px]">ទូរស័ព្ទអាណាព្យាបាល:</span>
-              <span class="font-semibold text-slate-800 font-mono">{{ selectedStudent.parent_phone || '-' }}</span>
+              <span class="font-semibold text-slate-800 font-mono">{{ selectedStudent.parent_phone || selectedStudent.father_phone || selectedStudent.mother_phone || '-' }}</span>
             </div>
           </div>
 
@@ -751,8 +755,16 @@
               </select>
             </div>
             <div>
-              <label class="block font-semibold mb-1">ឈ្មោះអាណាព្យាបាល</label>
-              <input type="text" v-model="editForm.parent_name" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
+              <label class="block font-semibold mb-1">ឈ្មោះឪពុក</label>
+              <input type="text" v-model="editForm.father_name" placeholder="ឈ្មោះឪពុក" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">ឈ្មោះម្តាយ</label>
+              <input type="text" v-model="editForm.mother_name" placeholder="ឈ្មោះម្តាយ" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">លេខទូរស័ព្ទអាណាព្យាបាល</label>
+              <input type="tel" v-model="editForm.parent_phone" placeholder="012 345 678" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
             </div>
             <div class="sm:col-span-2">
               <label class="block font-semibold mb-1">អាសយដ្ឋានបច្ចុប្បន្ន</label>
@@ -1422,6 +1434,8 @@ const createForm = ref({
   date_of_birth: '',
   phone: '',
   address: '',
+  father_name: '',
+  mother_name: '',
   parent_name: '',
   parent_phone: '',
   parent_relationship: 'ឪពុក',
@@ -1448,6 +1462,8 @@ const editForm = ref({
   date_of_birth: '',
   phone: '',
   address: '',
+  father_name: '',
+  mother_name: '',
   parent_name: '',
   parent_phone: '',
   parent_relationship: 'ឪពុក',
@@ -1928,8 +1944,10 @@ const openEditModal = (st) => {
     date_of_birth: st.date_of_birth || '',
     phone: st.phone !== '-' ? st.phone : '',
     address: st.address !== '-' ? st.address : '',
-    parent_name: st.parent_name || '',
-    parent_phone: st.parent_phone || '',
+    father_name: st.father_name || '',
+    mother_name: st.mother_name || '',
+    parent_name: st.parent_name || st.father_name || st.mother_name || '',
+    parent_phone: st.parent_phone || st.father_phone || st.mother_phone || '',
     parent_relationship: st.parent_relationship || 'ឪពុក',
     status: st.status || 'enrolled',
   };

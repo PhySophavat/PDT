@@ -13,7 +13,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-BIi91K3X.js",
+    "file": "assets/app-qgflV7EN.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -21,7 +21,7 @@
       "_vendor-xlsx-BojT3SgY.js"
     ],
     "css": [
-      "assets/app-7a0PWicg.css"
+      "assets/app-DsANYlKK.css"
     ]
   }
 }

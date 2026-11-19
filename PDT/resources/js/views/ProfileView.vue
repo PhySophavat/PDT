@@ -907,8 +907,8 @@ const saveCard = async () => {
     const sGender = formatGender(profile.value?.student?.gender);
     const sDob = toKhmerDate(profile.value?.student?.date_of_birth);
     const sPob = studentPlaceOfBirth.value;
-    const sFather = profile.value?.student?.father_name || 'ភិន សុខ';
-    const sMother = profile.value?.student?.mother_name || 'ដួង ស្រេង';
+    const sFather = profile.value?.student?.father_name || 'គ្មានទិន្នន័យ';
+    const sMother = profile.value?.student?.mother_name || 'គ្មានទិន្នន័យ';
     const sId = profile.value?.student?.student_id_card || '0011001';
 
     // Line 1: Name & Gender

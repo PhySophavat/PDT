@@ -106,8 +106,10 @@ class PublicRegistrationController extends Controller
             'grade' => 'required|string|max:50',
             'address' => 'required|string|min:3|max:500',
             'photo' => 'nullable|file|image|mimes:jpeg,png,jpg,webp|mimetypes:image/jpeg,image/png,image/webp|max:3072',
-            'parent_name' => 'required|string|min:2|max:100',
-            'parent_relationship' => 'required|string|max:100',
+            'father_name' => 'required|string|min:2|max:100',
+            'mother_name' => 'required|string|min:2|max:100',
+            'parent_name' => 'nullable|string|min:2|max:100',
+            'parent_relationship' => 'nullable|string|max:100',
             'parent_occupation' => 'nullable|string|max:150',
             'parent_phone' => ['required', 'string', 'regex:/^0[0-9]{8,9}$/'],
         ], [
@@ -140,10 +142,12 @@ class PublicRegistrationController extends Controller
             'photo.mimes' => 'រូបថតទទួលស្គាល់តែប្រភេទ JPG, JPEG, PNG ឬ WebP ប៉ុណ្ណោះ',
             'photo.mimetypes' => 'ប្រភេទ Content (MIME) របស់ឯកសារត្រូវតែជារូបភាពពិតប្រាកដ',
             'photo.max' => 'ទំហំរូបថតមិនត្រូវលើសពី 3MB ឡើយ ដើម្បីការពារសុវត្ថិភាពម៉ាស៊ីនបម្រើ',
-            'parent_name.required' => 'សូមបញ្ចូលឈ្មោះឪពុក/ម្តាយ/អាណាព្យាបាល',
-            'parent_name.min' => 'ឈ្មោះអាណាព្យាបាលត្រូវមានយ៉ាងតិច ២ តួអក្សរ',
-            'parent_name.max' => 'ឈ្មោះអាណាព្យាបាលមិនត្រូវលើសពី ១០០ តួអក្សរឡើយ',
-            'parent_relationship.required' => 'សូមបញ្ជាក់ត្រូវជាអ្វីនឹងសិស្ស',
+            'father_name.required' => 'សូមបញ្ចូលឈ្មោះឪពុក',
+            'father_name.min' => 'ឈ្មោះឪពុកត្រូវមានយ៉ាងតិច ២ តួអក្សរ',
+            'father_name.max' => 'ឈ្មោះឪពុកមិនត្រូវលើសពី ១០០ តួអក្សរឡើយ',
+            'mother_name.required' => 'សូមបញ្ចូលឈ្មោះម្តាយ',
+            'mother_name.min' => 'ឈ្មោះម្តាយត្រូវមានយ៉ាងតិច ២ តួអក្សរ',
+            'mother_name.max' => 'ឈ្មោះម្តាយមិនត្រូវលើសពី ១០០ តួអក្សរឡើយ',
             'parent_occupation.max' => 'មុខរបរមិនត្រូវលើសពី ១៥០ តួអក្សរឡើយ',
             'parent_phone.required' => 'សូមបញ្ចូលលេខទូរស័ព្ទអាណាព្យាបាល',
             'parent_phone.regex' => 'លេខទូរស័ព្ទអាណាព្យាបាលត្រូវតែជាលេខជាភាសាអង់គ្លេស (0-9) ចាប់ផ្ដើមដោយលេខ 0 មាន 9 ទៅ 10 ខ្ទង់ (ឧ. 012345678 មិនប្រើលេខខ្មែរ ០-៩ ឡើយ)',
@@ -188,8 +192,8 @@ class PublicRegistrationController extends Controller
         $cleanKhmerName = strip_tags(trim($validated['name_khmer']));
         $cleanLatinName = strip_tags(trim($validated['name_latin']));
         $cleanAddress = strip_tags(trim($validated['address']));
-        $cleanParentName = strip_tags(trim($validated['parent_name']));
-        $cleanRelationship = strip_tags(trim($validated['parent_relationship']));
+        $cleanFatherName = strip_tags(trim($validated['father_name']));
+        $cleanMotherName = strip_tags(trim($validated['mother_name']));
         $cleanOccupation = !empty($validated['parent_occupation']) ? strip_tags(trim($validated['parent_occupation'])) : null;
         $cleanPhone = preg_replace('/[^\d]/', '', trim($validated['phone']));
         $cleanParentPhone = preg_replace('/[^\d]/', '', trim($validated['parent_phone']));
@@ -206,8 +210,12 @@ class PublicRegistrationController extends Controller
             'address' => $cleanAddress,
             'province' => $cleanAddress,
             'photo' => $photoPath,
-            'parent_name' => $cleanParentName,
-            'parent_relationship' => $cleanRelationship,
+            'father_name' => $cleanFatherName,
+            'father_phone' => $cleanParentPhone,
+            'mother_name' => $cleanMotherName,
+            'mother_phone' => $cleanParentPhone,
+            'parent_name' => $cleanFatherName ?: $cleanMotherName,
+            'parent_relationship' => 'ឪពុក/ម្តាយ',
             'parent_occupation' => $cleanOccupation,
             'parent_phone' => $cleanParentPhone,
             'status' => 'pending',
@@ -215,17 +223,6 @@ class PublicRegistrationController extends Controller
             'enrollment_date' => Carbon::today(),
             'emergency_contact' => $cleanParentPhone,
         ];
-
-        if ($cleanRelationship === 'ឪពុក') {
-            $studentData['father_name'] = $cleanParentName;
-            $studentData['father_phone'] = $cleanParentPhone;
-        } elseif ($cleanRelationship === 'ម្តាយ') {
-            $studentData['mother_name'] = $cleanParentName;
-            $studentData['mother_phone'] = $cleanParentPhone;
-        } else {
-            $studentData['father_name'] = $cleanParentName;
-            $studentData['father_phone'] = $cleanParentPhone;
-        }
 
         $student = Student::create($studentData);
 
