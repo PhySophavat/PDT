@@ -73,210 +73,194 @@
     </FilterBar>
 
     <!-- Data Table -->
-    <DataTable :loading="isLoading" :empty="filteredParents.length === 0" :colSpan="7" loadingText="កំពុងទាញយកទិន្នន័យមាតាបិតា...">
+    <DataTable :loading="isLoading" :empty="filteredParents.length === 0" :colSpan="4" loadingText="កំពុងទាញយកទិន្នន័យមាតាបិតា...">
       <template #header>
-        <tr class="text-xs uppercase bg-slate-50/80 border-b border-slate-200">
-          <th class="py-3 px-4 font-bold text-slate-700 whitespace-nowrap">អត្តលេខ</th>
-          <th class="py-3 px-4 font-bold text-slate-700 whitespace-nowrap">ឪពុកម្តាយ / អាណាព្យាបាល</th>
-          <th class="py-3 px-4 font-bold text-slate-700 whitespace-nowrap">កូនសិស្ស & ថ្នាក់រៀន</th>
-          <th class="py-3 px-4 font-bold text-slate-700 whitespace-nowrap">លេខទូរស័ព្ទ & Telegram</th>
-          <th class="py-3 px-4 font-bold text-slate-700 whitespace-nowrap">មុខរបរ & ទីលំនៅ</th>
-          <th class="py-3 px-4 font-bold text-slate-700 text-center whitespace-nowrap">{{ t('common.status') }}</th>
-          <th class="py-3 px-4 font-bold text-slate-700 text-right whitespace-nowrap">{{ t('common.actions') }}</th>
+        <tr class="text-xs uppercase bg-slate-50/80 border-b border-slate-200/80">
+          <th class="py-3.5 px-4 font-semibold text-slate-600 text-left whitespace-nowrap">ឪពុកម្តាយ / អាណាព្យាបាល</th>
+          <th class="py-3.5 px-4 font-semibold text-slate-600 text-left whitespace-nowrap">កូនសិស្ស & ថ្នាក់រៀន</th>
+          <th class="py-3.5 px-4 font-semibold text-slate-600 text-left whitespace-nowrap">ទំនាក់ទំនង & ទីលំនៅ</th>
+          <th class="py-3.5 px-4 font-semibold text-slate-600 text-right whitespace-nowrap">សកម្មភាព</th>
         </tr>
       </template>
 
       <template #body>
         <tr v-if="filteredParents.length === 0">
-          <td colspan="7" class="py-10 text-center text-slate-400 font-khmer">{{ t('common.noData') }}</td>
+          <td colspan="4" class="py-10 text-center text-slate-400 font-khmer">{{ t('common.noData') }}</td>
         </tr>
-        <tr v-for="p in filteredParents" :key="p.id" class="hover:bg-slate-50/70 transition-colors border-b border-slate-100 last:border-b-0">
-          <!-- 1. Parent ID -->
+        <tr v-for="p in filteredParents" :key="p.id" class="hover:bg-slate-50/80 transition-colors border-b border-slate-100 last:border-b-0">
+          <!-- 1. Guardian & Parents Info -->
           <td class="py-3.5 px-4 align-top">
-            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs">
-              {{ p.idCard }}
-            </span>
-          </td>
-
-          <!-- 2. Parents / Guardian Info -->
-          <td class="py-3.5 px-4 align-top">
-            <div class="space-y-1">
-              <!-- Primary name and relationship badge -->
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="font-bold text-slate-900 text-sm">{{ p.name }}</span>
+            <div class="space-y-0.5">
+              <!-- Line 1: Status Dot, Primary Name, Role Badge -->
+              <div class="flex items-center gap-2 flex-wrap">
                 <span 
-                  class="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                  :class="{
-                    'bg-blue-50 text-blue-700 border border-blue-200': p.relationship === 'ឪពុក',
-                    'bg-pink-50 text-pink-700 border border-pink-200': p.relationship === 'ម្តាយ',
-                    'bg-slate-100 text-slate-700 border border-slate-200': p.relationship !== 'ឪពុក' && p.relationship !== 'ម្តាយ'
-                  }"
+                  class="inline-block w-2 h-2 rounded-full shrink-0"
+                  :class="p.status === 'pending' ? 'bg-amber-400 ring-4 ring-amber-100 animate-pulse' : 'bg-emerald-500'"
+                  :title="p.status === 'pending' ? 'រង់ចាំអនុម័ត' : 'សកម្ម'"
+                ></span>
+                <span class="font-semibold text-slate-800 text-sm">{{ p.name }}</span>
+                <span 
+                  class="px-2 py-0.5 rounded-full text-[10px] font-semibold border"
+                  :class="getRoleBadgeClass(p.relationship)"
                 >
                   {{ p.relationship || 'អាណាព្យាបាល' }}
                 </span>
               </div>
-              <div v-if="p.name_latin" class="text-[11px] text-slate-400 font-mono uppercase tracking-wide">
-                {{ p.name_latin }}
+
+              <!-- Line 2: Secondary Parent (if applicable and different) -->
+              <div v-if="getSecondaryParent(p)" class="text-xs text-slate-500 pl-4">
+                <span class="text-slate-400">{{ getSecondaryParent(p).label }}៖</span>
+                <span class="font-medium text-slate-700 ml-1">{{ getSecondaryParent(p).name }}</span>
               </div>
-              
-              <!-- Father & Mother detail pills if available -->
-              <div v-if="p.father_name || p.mother_name" class="pt-1 flex flex-col gap-0.5 text-[11px] text-slate-600">
-                <div v-if="p.father_name" class="flex items-center gap-1 text-slate-700">
-                  <span class="text-xs">👨</span>
-                  <span class="text-slate-400">ឪពុក៖</span>
-                  <span class="font-semibold text-slate-800">{{ p.father_name }}</span>
-                </div>
-                <div v-if="p.mother_name" class="flex items-center gap-1 text-slate-700">
-                  <span class="text-xs">👩</span>
-                  <span class="text-slate-400">ម្តាយ៖</span>
-                  <span class="font-semibold text-slate-800">{{ p.mother_name }}</span>
-                </div>
+
+              <!-- Line 3: ID badge (subtle monospace text) -->
+              <div class="text-[11px] font-mono text-slate-400 pl-4 flex items-center gap-1.5">
+                <span>{{ p.idCard }}</span>
+                <span v-if="p.name_latin" class="text-slate-300">•</span>
+                <span v-if="p.name_latin" class="uppercase tracking-wide font-sans text-[10px] text-slate-400">
+                  {{ p.name_latin }}
+                </span>
               </div>
             </div>
           </td>
 
-          <!-- 3. Children / Students & Class -->
+          <!-- 2. Students & Class -->
           <td class="py-3.5 px-4 align-top">
-            <div v-if="p.children_list && p.children_list.length > 0" class="flex flex-col gap-1.5">
+            <div v-if="p.children_list && p.children_list.length > 0" class="flex flex-wrap items-center gap-1.5">
               <div 
-                v-for="c in p.children_list" 
+                v-for="c in p.children_list.slice(0, 2)" 
                 :key="c.id" 
-                class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-emerald-50/80 border border-emerald-200/60 text-xs text-slate-800 shadow-2xs w-fit"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/80 text-xs text-slate-800 hover:bg-slate-100/80 transition"
+                :title="c.id_card ? `អត្តលេខសិស្ស: #${c.id_card}` : c.name"
               >
-                <i class="fa-solid fa-graduation-cap text-emerald-600 text-[11px]"></i>
-                <span class="font-bold text-slate-900">{{ c.name }}</span>
-                <span v-if="c.grade" class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-100 text-blue-800">
+                <span class="font-medium text-slate-800">{{ c.name }}</span>
+                <span v-if="c.grade" class="text-slate-300">•</span>
+                <span v-if="c.grade" class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-100/80">
                   ថ្នាក់ {{ c.grade }}
                 </span>
-                <span v-if="c.id_card" class="font-mono text-[10px] text-slate-400">
-                  #{{ c.id_card }}
-                </span>
               </div>
+
+              <!-- More students pill -->
+              <button 
+                v-if="p.children_list.length > 2" 
+                @click="openProfileModal(p)" 
+                class="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition"
+                :title="`មើលសិស្សទាំងអស់ (${p.children_list.length} នាក់)`"
+              >
+                +{{ p.children_list.length - 2 }} នាក់ទៀត
+              </button>
             </div>
-            <div v-else-if="p.child_name" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50/60 border border-emerald-200/60 text-xs text-slate-800">
-              <i class="fa-solid fa-graduation-cap text-emerald-600 text-[11px]"></i>
-              <span class="font-bold text-slate-900">{{ p.child_name }}</span>
-              <span v-if="p.child_grade" class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-100 text-blue-800">
+
+            <div v-else-if="p.child_name" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/80 text-xs text-slate-800">
+              <span class="font-medium text-slate-800">{{ p.child_name }}</span>
+              <span v-if="p.child_grade" class="text-slate-300">•</span>
+              <span v-if="p.child_grade" class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-100/80">
                 ថ្នាក់ {{ p.child_grade }}
               </span>
             </div>
-            <div v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] text-amber-700 bg-amber-50 border border-amber-200">
-              <i class="fa-solid fa-triangle-exclamation text-[10px]"></i>
-              <span>មិនទាន់ភ្ជាប់កូន</span>
+
+            <div v-else class="inline-flex items-center gap-2">
+              <span class="text-xs text-slate-400 italic">មិនទាន់ភ្ជាប់សិស្ស</span>
+              <button 
+                @click="openEditModal(p)" 
+                class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline inline-flex items-center gap-0.5 transition"
+              >
+                + ភ្ជាប់
+              </button>
             </div>
           </td>
 
-          <!-- 4. Phone & Telegram -->
+          <!-- 3. Contact & Address -->
           <td class="py-3.5 px-4 align-top">
-            <div class="space-y-1">
-              <div>
+            <div class="space-y-0.5">
+              <!-- Line 1: Phone + inline Telegram -->
+              <div class="flex items-center gap-2">
                 <a 
                   v-if="p.phone && p.phone !== '-'" 
                   :href="'tel:' + p.phone" 
-                  class="font-mono text-xs font-bold text-slate-800 hover:text-emerald-600 transition inline-flex items-center gap-1.5"
+                  class="font-mono text-xs font-medium text-slate-800 hover:text-emerald-600 transition inline-flex items-center gap-1.5"
                   title="ចុចដើម្បីហៅចេញ"
                 >
-                  <i class="fa-solid fa-phone text-[10px] text-emerald-600"></i>
-                  <span>{{ p.phone }}</span>
+                  <span>{{ formatPhone(p.phone) }}</span>
                 </a>
                 <span v-else class="text-xs text-slate-400 font-mono">-</span>
-              </div>
 
-              <!-- Telegram Status Badge / Link -->
-              <div>
+                <!-- Inline Telegram Indicator -->
                 <span 
                   v-if="p.has_telegram" 
-                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200"
+                  class="inline-flex items-center text-sky-500 cursor-pointer" 
+                  title="បានភ្ជាប់ Telegram (រួចរាល់)"
                 >
-                  <i class="fa-brands fa-telegram text-sky-500"></i>
-                  <span>Telegram ✓</span>
+                  <i class="fa-brands fa-telegram text-[13px]"></i>
+                  <svg class="w-3 h-3 text-sky-500 -ml-0.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                  </svg>
                 </span>
                 <a 
                   v-else-if="p.telegram_link" 
                   :href="p.telegram_link" 
                   target="_blank" 
-                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 hover:bg-sky-50 text-slate-600 hover:text-sky-700 border border-slate-200 hover:border-sky-300 transition"
-                  title="ផ្ញើតំណភ្ជាប់ Telegram ទៅអាណាព្យាបាល"
+                  class="text-[10px] text-slate-400 hover:text-sky-600 inline-flex items-center gap-1 transition"
+                  title="ផ្ញើតំណភ្ជាប់ Telegram ទៅកាន់អាណាព្យាបាល"
                 >
-                  <i class="fa-brands fa-telegram text-slate-400"></i>
+                  <i class="fa-brands fa-telegram text-[11px]"></i>
                   <span>ភ្ជាប់ Telegram</span>
                 </a>
               </div>
 
-              <!-- Email -->
-              <div v-if="p.email && p.email !== '-'" class="text-[11px] text-slate-400 truncate max-w-[160px]" :title="p.email">
-                {{ p.email }}
+              <!-- Line 2: Truncated Address & Occupation -->
+              <div v-if="(p.address && p.address !== '-') || (p.occupation && p.occupation !== '-')" class="text-[11px] text-slate-500 flex items-center gap-1.5 pt-0.5">
+                <span v-if="p.address && p.address !== '-'" class="truncate max-w-[200px]" :title="p.address">
+                  <i class="fa-solid fa-location-dot text-[9px] text-slate-400 mr-1"></i>{{ p.address }}
+                </span>
+                <span v-if="p.address && p.address !== '-' && p.occupation && p.occupation !== '-'" class="text-slate-300">•</span>
+                <span v-if="p.occupation && p.occupation !== '-'" class="text-slate-400 truncate max-w-[140px]" :title="p.occupation">
+                  {{ p.occupation }}
+                </span>
               </div>
             </div>
           </td>
 
-          <!-- 5. Occupation & Address -->
-          <td class="py-3.5 px-4 align-top">
-            <div class="space-y-1">
-              <div class="text-xs text-slate-700 font-medium">
-                {{ p.occupation || '-' }}
-              </div>
-              <div v-if="p.address && p.address !== '-'" class="text-[11px] text-slate-500 flex items-start gap-1 max-w-[180px]" :title="p.address">
-                <i class="fa-solid fa-location-dot text-[9px] text-slate-400 mt-0.5 shrink-0"></i>
-                <span class="truncate">{{ p.address }}</span>
-              </div>
+          <!-- 4. Actions -->
+          <td class="py-3.5 px-4 align-top text-right whitespace-nowrap">
+            <div class="inline-flex items-center gap-1 justify-end">
+              <!-- Quick Review & Approve button if pending -->
+              <button 
+                v-if="p.status === 'pending'" 
+                @click="openApproveModal(p)"
+                type="button"
+                class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-2xs transition inline-flex items-center gap-1 mr-1"
+                title="អនុម័តសំណើ"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span>អនុម័ត</span>
+              </button>
+
+              <!-- Sleek icon buttons with tooltips -->
+              <button 
+                @click="openProfileModal(p)" 
+                class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition"
+                title="មើលប្រវត្តិរូប"
+              >
+                <i class="fa-regular fa-id-card text-xs"></i>
+              </button>
+              <button 
+                @click="openEditModal(p)" 
+                class="w-8 h-8 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition"
+                title="កែប្រែ"
+              >
+                <i class="fa-regular fa-pen-to-square text-xs"></i>
+              </button>
+              <button 
+                @click="confirmDeleteParent(p)" 
+                class="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition" 
+                title="លុប"
+              >
+                <i class="fa-regular fa-trash-can text-xs"></i>
+              </button>
             </div>
-          </td>
-
-          <!-- 6. Status Badge -->
-          <td class="py-3.5 px-4 align-top text-center">
-            <span 
-              v-if="p.status === 'pending'" 
-              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 animate-pulse border border-amber-300 shadow-2xs"
-            >
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-              <span>រង់ចាំអនុម័ត</span>
-            </span>
-            <span 
-              v-else 
-              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200"
-            >
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              <span>សកម្ម</span>
-            </span>
-          </td>
-
-          <!-- 7. Actions -->
-          <td class="py-3.5 px-4 align-top text-right space-x-1.5 whitespace-nowrap">
-            <!-- Review & Approve button for pending status -->
-            <button 
-              v-if="p.status === 'pending'" 
-              @click="openApproveModal(p)"
-              type="button"
-              class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-xs transition inline-flex items-center gap-1"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-              </svg>
-              <span>អនុម័ត</span>
-            </button>
-
-            <button 
-              @click="openProfileModal(p)" 
-              class="px-2.5 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-medium hover:bg-slate-200 transition"
-              title="មើលប្រវត្តិរូប"
-            >
-              {{ t('attendance.tabs.profile') }}
-            </button>
-            <button 
-              @click="openEditModal(p)" 
-              class="px-2.5 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition"
-              title="កែប្រែ"
-            >
-              {{ t('common.edit') }}
-            </button>
-            <button 
-              @click="confirmDeleteParent(p)" 
-              class="px-2.5 py-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg text-xs transition" 
-              title="លុប"
-            >
-              <i class="fa-solid fa-trash-can"></i>
-            </button>
           </td>
         </tr>
       </template>
@@ -828,6 +812,68 @@ try {
     }
   }
 } catch (e) {}
+
+// Formatting & Display Helpers
+const formatPhone = (phone) => {
+  if (!phone || phone === '-') return '-';
+  const clean = String(phone).replace(/[^\d+]/g, '');
+  if (clean.length === 9) {
+    return `${clean.slice(0, 3)} ${clean.slice(3, 6)} ${clean.slice(6)}`;
+  } else if (clean.length === 10) {
+    return `${clean.slice(0, 3)} ${clean.slice(3, 6)} ${clean.slice(6)}`;
+  }
+  return phone;
+};
+
+const getRoleBadgeClass = (rel) => {
+  if (!rel) return 'bg-slate-100 text-slate-600 border-slate-200/60';
+  if (rel.includes('ឪពុក/ម្តាយ') || rel.includes('មាតាបិតា')) {
+    return 'bg-indigo-50 text-indigo-600 border-indigo-100/80';
+  }
+  if (rel.includes('ឪពុក')) {
+    return 'bg-blue-50 text-blue-600 border-blue-100/80';
+  }
+  if (rel.includes('ម្តាយ')) {
+    return 'bg-pink-50 text-pink-600 border-pink-100/80';
+  }
+  return 'bg-slate-100 text-slate-600 border-slate-200/60';
+};
+
+const getSecondaryParent = (p) => {
+  if (!p) return null;
+  const pName = (p.name || '').trim();
+  const fName = (p.father_name || '').trim();
+  const mName = (p.mother_name || '').trim();
+
+  // If primary role is Father
+  if (p.relationship === 'ឪពុក' || (fName && pName === fName)) {
+    if (mName && mName !== pName && mName !== '-') {
+      return { label: 'ម្តាយ', name: mName };
+    }
+    return null;
+  }
+
+  // If primary role is Mother
+  if (p.relationship === 'ម្តាយ' || (mName && pName === mName)) {
+    if (fName && fName !== pName && fName !== '-') {
+      return { label: 'ឪពុក', name: fName };
+    }
+    return null;
+  }
+
+  // If generic guardian
+  if (fName && fName !== pName && mName && mName !== pName && fName !== '-' && mName !== '-') {
+    return { label: 'ឪពុក & ម្តាយ', name: `${fName} / ${mName}` };
+  }
+  if (fName && fName !== pName && fName !== '-') {
+    return { label: 'ឪពុក', name: fName };
+  }
+  if (mName && mName !== pName && mName !== '-') {
+    return { label: 'ម្តាយ', name: mName };
+  }
+
+  return null;
+};
 
 // QR Code Modal State
 const showQrModal = ref(false);
