@@ -713,7 +713,7 @@
               សមាមាត្រសិស្សប្រុស-ស្រី
             </h2>
             <p class="text-xs text-slate-400 mt-0.5">
-              {{ isStudent ? ('ការបែងចែកយេនឌ័រក្នុងថ្នាក់ទី ' + (studentInfo.class_name || '7A')) : 'ការបែងចែកយេនឌ័រក្នុងចំណោមសិស្សសរុប' }}
+              {{ (isStudent || isTeacher) ? ('ការបែងចែកយេនឌ័រក្នុងថ្នាក់ទី ' + (studentInfo.class_name || '12A')) : 'ការបែងចែកយេនឌ័រក្នុងចំណោមសិស្សសរុប' }}
             </p>
           </div>
 
@@ -759,9 +759,9 @@
 
             <!-- Center Text -->
             <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-              <span class="text-2xl font-black text-slate-800 tracking-tight">{{ stats.students }}</span>
+              <span class="text-2xl font-black text-slate-800 tracking-tight">{{ displayedStudentCount }}</span>
               <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-khmer">
-                {{ isStudent ? 'សិស្សក្នុងថ្នាក់' : 'សិស្សសរុប' }}
+                {{ (isStudent || isTeacher) ? 'សិស្សក្នុងថ្នាក់' : 'សិស្សសរុប' }}
               </span>
             </div>
           </div>
@@ -776,9 +776,9 @@
       <span class="font-bold text-slate-700">សិស្សស្រី</span>
     </div>
     <span class="font-bold text-pink-700">
-      {{ stats.femaleCount ?? 0 }} នាក់
-      ({{ stats.students > 0
-        ? Math.round(((stats.femaleCount ?? 0) / stats.students) * 100)
+      {{ displayedFemaleCount }} នាក់
+      ({{ displayedStudentCount > 0
+        ? Math.round((displayedFemaleCount / displayedStudentCount) * 100)
         : 0 }}%)
     </span>
   </div>
@@ -790,9 +790,9 @@
       <span class="font-bold text-slate-700">សិស្សប្រុស</span>
     </div>
     <span class="font-bold text-blue-700">
-      {{ stats.maleCount ?? 0 }} នាក់
-      ({{ stats.students > 0
-        ? Math.round(((stats.maleCount ?? 0) / stats.students) * 100)
+      {{ displayedMaleCount }} នាក់
+      ({{ displayedStudentCount > 0
+        ? Math.round((displayedMaleCount / displayedStudentCount) * 100)
         : 0 }}%)
     </span>
   </div>
@@ -1517,6 +1517,12 @@ try {
   const cachedDashboard = localStorage.getItem('pdt_cached_dashboard');
   if (cachedDashboard) {
     const d = JSON.parse(cachedDashboard);
+    if (d.genderDistribution) {
+      genderDistribution.value = { ...genderDistribution.value, ...d.genderDistribution };
+    }
+    if (d.studentData) {
+      studentInfo.value = { ...studentInfo.value, ...d.studentData };
+    }
     // Ignore stale cache if it contains old 53 dummy students
     if (d.stats && Number(d.stats.students) !== 53) {
       if (!isStudent.value || d.isStudent || d.studentData) {
@@ -1639,30 +1645,84 @@ const hasAnyAbsent = computed(() => {
   return chartDays.value.some(d => Number(d.absent || 0) > 0);
 });
 
+const genderDistribution = ref({
+  female: 0,
+  male: 0,
+  femaleRatio: 0,
+  maleRatio: 0,
+  total: 0,
+});
+
+// Displayed Student Counts (Strictly Class-Level for Students & Homeroom Teachers, School-Level for Admins)
+const displayedStudentCount = computed(() => {
+  if (isStudent.value || isTeacher.value) {
+    if (genderDistribution.value && Number(genderDistribution.value.total) > 0) {
+      return Number(genderDistribution.value.total);
+    }
+    if (studentInfo.value && Number(studentInfo.value.classmates_count) > 0) {
+      return Number(studentInfo.value.classmates_count);
+    }
+    if (studentInfo.value && (studentInfo.value.male_count != null || studentInfo.value.female_count != null)) {
+      return Number(studentInfo.value.male_count || 0) + Number(studentInfo.value.female_count || 0);
+    }
+  }
+  return Number(stats.value.students || 0);
+});
+
+const displayedFemaleCount = computed(() => {
+  if (isStudent.value || isTeacher.value) {
+    if (genderDistribution.value && genderDistribution.value.female != null && Number(genderDistribution.value.total) > 0) {
+      return Number(genderDistribution.value.female);
+    }
+    if (studentInfo.value && studentInfo.value.female_count != null) {
+      return Number(studentInfo.value.female_count);
+    }
+  }
+  return Number(stats.value.femaleCount || 0);
+});
+
+const displayedMaleCount = computed(() => {
+  if (isStudent.value || isTeacher.value) {
+    if (genderDistribution.value && genderDistribution.value.male != null && Number(genderDistribution.value.total) > 0) {
+      return Number(genderDistribution.value.male);
+    }
+    if (studentInfo.value && studentInfo.value.male_count != null) {
+      return Number(studentInfo.value.male_count);
+    }
+    return Math.max(0, displayedStudentCount.value - displayedFemaleCount.value);
+  }
+  return Number(stats.value.maleCount || 0);
+});
+
+const displayedFemaleRatio = computed(() => {
+  const tot = displayedStudentCount.value;
+  return tot > 0 ? Math.round((displayedFemaleCount.value / tot) * 100) : 0;
+});
+
 // Donut Chart Calculations (Circumference = 2 * PI * 62 = 389.55)
 const CIRCUMFERENCE = 389.55;
 
 const donutFemaleDash = computed(() => {
-  if (!stats.value.students || stats.value.students === 0) {
+  if (!displayedStudentCount.value || displayedStudentCount.value === 0) {
     return `0 ${CIRCUMFERENCE}`;
   }
-  const femaleRatio = (stats.value.femaleRatio ?? 0) / 100;
+  const femaleRatio = displayedFemaleRatio.value / 100;
   const dash = femaleRatio * CIRCUMFERENCE;
   return `${dash} ${CIRCUMFERENCE}`;
 });
 
 const donutMaleDash = computed(() => {
-  if (!stats.value.students || stats.value.students === 0) {
+  if (!displayedStudentCount.value || displayedStudentCount.value === 0) {
     return `0 ${CIRCUMFERENCE}`;
   }
   return `${CIRCUMFERENCE} ${CIRCUMFERENCE}`;
 });
 
 const donutFemaleOffset = computed(() => {
-  if (!stats.value.students || stats.value.students === 0) {
+  if (!displayedStudentCount.value || displayedStudentCount.value === 0) {
     return 0;
   }
-  const maleRatio = (100 - (stats.value.femaleRatio ?? 0)) / 100;
+  const maleRatio = (100 - displayedFemaleRatio.value) / 100;
   return - (maleRatio * CIRCUMFERENCE);
 });
 
@@ -1713,6 +1773,9 @@ const fetchDashboardData = async (force = false) => {
       if (res.data.stats) {
         stats.value = { ...stats.value, ...res.data.stats };
       }
+      if (res.data.genderDistribution) {
+        genderDistribution.value = { ...genderDistribution.value, ...res.data.genderDistribution };
+      }
       if (res.data.allClasses && res.data.allClasses.length) {
         allClasses.value = sortClassesNaturally(res.data.allClasses);
       }
@@ -1732,6 +1795,14 @@ const fetchDashboardData = async (force = false) => {
       }
       if (res.data.studentData) {
         studentInfo.value = { ...studentInfo.value, ...res.data.studentData };
+        if (isStudent.value && res.data.studentData.classmates_count != null) {
+          stats.value.students = res.data.studentData.classmates_count;
+          if (res.data.genderDistribution) {
+            stats.value.femaleCount = res.data.genderDistribution.female;
+            stats.value.maleCount = res.data.genderDistribution.male;
+            stats.value.femaleRatio = res.data.genderDistribution.femaleRatio;
+          }
+        }
       }
       try {
         localStorage.setItem('pdt_cached_dashboard', JSON.stringify(res.data));

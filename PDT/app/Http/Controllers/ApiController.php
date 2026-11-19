@@ -280,8 +280,8 @@ class ApiController extends Controller
                     $myGrade = $student?->grade ?: '7A';
                     $myClass = SchoolClass::with('teacher.user')->where('name', $myGrade)->first();
                     $classStudents = Student::where('grade', $myGrade)->get();
-                    $classTotalStudents = $classStudents->count() ?: 51;
-                    $classFemaleStudents = $classStudents->whereIn('gender', ['ស្រី', 'female'])->count();
+                    $classTotalStudents = $classStudents->count();
+                    $classFemaleStudents = $classStudents->whereIn('gender', ['ស្រី', 'female', 'Female', 'F'])->count();
                     $classMaleStudents = max(0, $classTotalStudents - $classFemaleStudents);
                     $classFemaleRatio = $classTotalStudents > 0 ? round(($classFemaleStudents / $classTotalStudents) * 100) : 0;
                     $classMaleRatio = 100 - $classFemaleRatio;
@@ -441,6 +441,10 @@ class ApiController extends Controller
                         'teacher_phone' => $myClass?->teacher?->phone,
                         'teacher_photo' => $myClass?->teacher?->photo ? (str_starts_with($myClass->teacher->photo, 'http') ? $myClass->teacher->photo : asset('storage/' . $myClass->teacher->photo)) : null,
                         'classmates_count' => $classTotalStudents,
+                        'female_count' => $classFemaleStudents,
+                        'male_count' => $classMaleStudents,
+                        'female_ratio' => $classFemaleRatio,
+                        'male_ratio' => $classMaleRatio,
                         'attendance' => [
                             'present' => $presentDays,
                             'excused' => $excusedDays,
@@ -453,6 +457,59 @@ class ApiController extends Controller
                         'total_books' => Book::count(),
                         'student_visible_books' => Book::where('title', 'not like', '%សៀវភៅគ្រូ%')->where('title', 'not like', '%មគ្គុទ្ទេសក៍គ្រូ%')->count(),
                     ];
+
+                    $payload['isStudent'] = true;
+                    $payload['class_name'] = $myGrade;
+                    $payload['stats']['students'] = $classTotalStudents;
+                    $payload['stats']['femaleCount'] = $classFemaleStudents;
+                    $payload['stats']['maleCount'] = $classMaleStudents;
+                    $payload['stats']['femaleRatio'] = $classFemaleRatio;
+                    $payload['genderDistribution'] = [
+                        'female' => $classFemaleStudents,
+                        'male' => $classMaleStudents,
+                        'femaleRatio' => $classFemaleRatio,
+                        'maleRatio' => $classMaleRatio,
+                        'total' => $classTotalStudents,
+                    ];
+                } elseif (!$isStudentUser) {
+                    $teacher = $authUser->teacher ?? Teacher::where('user_id', $authUser->id)->first();
+                    $isTeacherUser = !empty($teacher)
+                        || $authUser->hasRole('teacher')
+                        || str_contains(strtolower($authUser->role ?? ''), 'teacher');
+
+                    if ($isTeacherUser && $teacher) {
+                        $homeroomClass = SchoolClass::with('teacher.user')
+                            ->where('teacher_id', $teacher->id)
+                            ->first();
+
+                        if (!$homeroomClass && $teacher->class_assigned) {
+                            $firstAssigned = trim(explode(',', $teacher->class_assigned)[0]);
+                            $homeroomClass = SchoolClass::where('name', $firstAssigned)->first();
+                        }
+
+                        if ($homeroomClass) {
+                            $myGrade = $homeroomClass->name;
+                            $classStudents = Student::where('grade', $myGrade)->get();
+                            $classTotalStudents = $classStudents->count();
+                            $classFemaleStudents = $classStudents->whereIn('gender', ['ស្រី', 'female', 'Female', 'F'])->count();
+                            $classMaleStudents = max(0, $classTotalStudents - $classFemaleStudents);
+                            $classFemaleRatio = $classTotalStudents > 0 ? round(($classFemaleStudents / $classTotalStudents) * 100) : 0;
+
+                            $payload['isTeacher'] = true;
+                            $payload['class_name'] = $myGrade;
+                            $payload['stats']['students'] = $classTotalStudents;
+                            $payload['stats']['femaleCount'] = $classFemaleStudents;
+                            $payload['stats']['maleCount'] = $classMaleStudents;
+                            $payload['stats']['femaleRatio'] = $classFemaleRatio;
+                            $payload['genderDistribution'] = [
+                                'female' => $classFemaleStudents,
+                                'male' => $classMaleStudents,
+                                'femaleRatio' => $classFemaleRatio,
+                                'maleRatio' => 100 - $classFemaleRatio,
+                                'total' => $classTotalStudents,
+                            ];
+                        }
+                    }
                 }
             } catch (\Throwable $studentErr) {
                 \Illuminate\Support\Facades\Log::error('Student dashboard payload error: ' . $studentErr->getMessage());

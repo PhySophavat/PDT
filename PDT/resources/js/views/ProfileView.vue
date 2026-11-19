@@ -495,11 +495,11 @@
                 <div class="flex items-center justify-between gap-2 sm:gap-4">
                   <div class="flex items-center gap-1 sm:gap-1.5 min-w-0">
                     <span class="font-bold text-black shrink-0 whitespace-nowrap">ឪពុកឈ្មោះ :</span>
-                    <span class="font-bold text-[#154689] text-[12.5px] sm:text-[14px] truncate">{{ profile.student.father_name || 'ភិន សុខ' }}</span>
+                    <span class="font-bold text-[#154689] text-[12.5px] sm:text-[14px] truncate">{{ profile.student.father_name || 'គ្មានទិន្នន័យ' }}</span>
                   </div>
                   <div class="flex items-center gap-1 sm:gap-1.5 shrink-0 pr-0.5">
                     <span class="font-bold text-black shrink-0 whitespace-nowrap">ម្ដាយឈ្មោះ :</span>
-                    <span class="font-bold text-[#154689] text-[12.5px] sm:text-[14px] truncate">{{ profile.student.mother_name || 'ដួង ស្រេង' }}</span>
+                    <span class="font-bold text-[#154689] text-[12.5px] sm:text-[14px] truncate">{{ profile.student.mother_name || 'គ្មានទិន្នន័យ' }}</span>
                   </div>
                 </div>
               </div>
