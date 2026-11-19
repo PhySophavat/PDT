@@ -73,82 +73,176 @@
     </FilterBar>
 
     <!-- Data Table -->
-    <DataTable :loading="isLoading" :empty="filteredParents.length === 0" :colSpan="8" loadingText="កំពុងទាញយកទិន្នន័យមាតាបិតា...">
+    <DataTable :loading="isLoading" :empty="filteredParents.length === 0" :colSpan="7" loadingText="កំពុងទាញយកទិន្នន័យមាតាបិតា...">
       <template #header>
-        <tr>
-          <th class="py-3 px-4 font-bold text-slate-700">អត្តលេខ</th>
-          <th class="py-3 px-4 font-bold text-slate-700">{{ t('parents.parentName') }}</th>
-          <th class="py-3 px-4 font-bold text-slate-700">ទំនាក់ទំនង</th>
-          <th class="py-3 px-4 font-bold text-slate-700">{{ t('students.phone') }}</th>
-          <th class="py-3 px-4 font-bold text-slate-700">{{ t('parents.occupation') }}</th>
-          <th class="py-3 px-4 font-bold text-slate-700">ព័ត៌មានកូនៗ</th>
-          <th class="py-3 px-4 font-bold text-slate-700 text-center">{{ t('common.status') }}</th>
-          <th class="py-3 px-4 font-bold text-slate-700 text-right">{{ t('common.actions') }}</th>
+        <tr class="text-xs uppercase bg-slate-50/80 border-b border-slate-200">
+          <th class="py-3 px-4 font-bold text-slate-700 whitespace-nowrap">អត្តលេខ</th>
+          <th class="py-3 px-4 font-bold text-slate-700 whitespace-nowrap">ឪពុកម្តាយ / អាណាព្យាបាល</th>
+          <th class="py-3 px-4 font-bold text-slate-700 whitespace-nowrap">កូនសិស្ស & ថ្នាក់រៀន</th>
+          <th class="py-3 px-4 font-bold text-slate-700 whitespace-nowrap">លេខទូរស័ព្ទ & Telegram</th>
+          <th class="py-3 px-4 font-bold text-slate-700 whitespace-nowrap">មុខរបរ & ទីលំនៅ</th>
+          <th class="py-3 px-4 font-bold text-slate-700 text-center whitespace-nowrap">{{ t('common.status') }}</th>
+          <th class="py-3 px-4 font-bold text-slate-700 text-right whitespace-nowrap">{{ t('common.actions') }}</th>
         </tr>
       </template>
 
       <template #body>
         <tr v-if="filteredParents.length === 0">
-          <td colspan="8" class="py-10 text-center text-slate-400 font-khmer">{{ t('common.noData') }}</td>
+          <td colspan="7" class="py-10 text-center text-slate-400 font-khmer">{{ t('common.noData') }}</td>
         </tr>
-        <tr v-for="p in filteredParents" :key="p.id" class="hover:bg-slate-50/70 transition-colors">
-          <!-- Parent ID -->
-          <td class="py-3 px-4 font-mono font-bold text-emerald-600 text-xs">
-            {{ p.idCard }}
-          </td>
-
-          <!-- Parent Name -->
-          <td class="py-3 px-4">
-            <div class="font-bold text-slate-900">{{ p.name }}</div>
-            <div v-if="p.name_latin" class="text-[11px] text-slate-400 font-mono uppercase">{{ p.name_latin }}</div>
-          </td>
-
-          <!-- Relationship -->
-          <td class="py-3 px-4">
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-              {{ p.relationship || 'អាណាព្យាបាល' }}
+        <tr v-for="p in filteredParents" :key="p.id" class="hover:bg-slate-50/70 transition-colors border-b border-slate-100 last:border-b-0">
+          <!-- 1. Parent ID -->
+          <td class="py-3.5 px-4 align-top">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs">
+              {{ p.idCard }}
             </span>
           </td>
 
-          <!-- Phone & Email -->
-          <td class="py-3 px-4">
-            <div class="text-slate-700 font-mono text-xs font-semibold">{{ p.phone }}</div>
-            <div v-if="p.email && p.email !== '-'" class="text-[11px] text-slate-400">{{ p.email }}</div>
+          <!-- 2. Parents / Guardian Info -->
+          <td class="py-3.5 px-4 align-top">
+            <div class="space-y-1">
+              <!-- Primary name and relationship badge -->
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="font-bold text-slate-900 text-sm">{{ p.name }}</span>
+                <span 
+                  class="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                  :class="{
+                    'bg-blue-50 text-blue-700 border border-blue-200': p.relationship === 'ឪពុក',
+                    'bg-pink-50 text-pink-700 border border-pink-200': p.relationship === 'ម្តាយ',
+                    'bg-slate-100 text-slate-700 border border-slate-200': p.relationship !== 'ឪពុក' && p.relationship !== 'ម្តាយ'
+                  }"
+                >
+                  {{ p.relationship || 'អាណាព្យាបាល' }}
+                </span>
+              </div>
+              <div v-if="p.name_latin" class="text-[11px] text-slate-400 font-mono uppercase tracking-wide">
+                {{ p.name_latin }}
+              </div>
+              
+              <!-- Father & Mother detail pills if available -->
+              <div v-if="p.father_name || p.mother_name" class="pt-1 flex flex-col gap-0.5 text-[11px] text-slate-600">
+                <div v-if="p.father_name" class="flex items-center gap-1 text-slate-700">
+                  <span class="text-xs">👨</span>
+                  <span class="text-slate-400">ឪពុក៖</span>
+                  <span class="font-semibold text-slate-800">{{ p.father_name }}</span>
+                </div>
+                <div v-if="p.mother_name" class="flex items-center gap-1 text-slate-700">
+                  <span class="text-xs">👩</span>
+                  <span class="text-slate-400">ម្តាយ៖</span>
+                  <span class="font-semibold text-slate-800">{{ p.mother_name }}</span>
+                </div>
+              </div>
+            </div>
           </td>
 
-          <!-- Occupation -->
-          <td class="py-3 px-4 text-slate-600 text-xs">
-            {{ p.occupation }}
+          <!-- 3. Children / Students & Class -->
+          <td class="py-3.5 px-4 align-top">
+            <div v-if="p.children_list && p.children_list.length > 0" class="flex flex-col gap-1.5">
+              <div 
+                v-for="c in p.children_list" 
+                :key="c.id" 
+                class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-emerald-50/80 border border-emerald-200/60 text-xs text-slate-800 shadow-2xs w-fit"
+              >
+                <i class="fa-solid fa-graduation-cap text-emerald-600 text-[11px]"></i>
+                <span class="font-bold text-slate-900">{{ c.name }}</span>
+                <span v-if="c.grade" class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-100 text-blue-800">
+                  ថ្នាក់ {{ c.grade }}
+                </span>
+                <span v-if="c.id_card" class="font-mono text-[10px] text-slate-400">
+                  #{{ c.id_card }}
+                </span>
+              </div>
+            </div>
+            <div v-else-if="p.child_name" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50/60 border border-emerald-200/60 text-xs text-slate-800">
+              <i class="fa-solid fa-graduation-cap text-emerald-600 text-[11px]"></i>
+              <span class="font-bold text-slate-900">{{ p.child_name }}</span>
+              <span v-if="p.child_grade" class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-100 text-blue-800">
+                ថ្នាក់ {{ p.child_grade }}
+              </span>
+            </div>
+            <div v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] text-amber-700 bg-amber-50 border border-amber-200">
+              <i class="fa-solid fa-triangle-exclamation text-[10px]"></i>
+              <span>មិនទាន់ភ្ជាប់កូន</span>
+            </div>
           </td>
 
-          <!-- Children -->
-          <td class="py-3 px-4">
-            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-              <i class="fa-solid fa-graduation-cap text-[10px]"></i>
-              {{ p.children }}
-            </span>
+          <!-- 4. Phone & Telegram -->
+          <td class="py-3.5 px-4 align-top">
+            <div class="space-y-1">
+              <div>
+                <a 
+                  v-if="p.phone && p.phone !== '-'" 
+                  :href="'tel:' + p.phone" 
+                  class="font-mono text-xs font-bold text-slate-800 hover:text-emerald-600 transition inline-flex items-center gap-1.5"
+                  title="ចុចដើម្បីហៅចេញ"
+                >
+                  <i class="fa-solid fa-phone text-[10px] text-emerald-600"></i>
+                  <span>{{ p.phone }}</span>
+                </a>
+                <span v-else class="text-xs text-slate-400 font-mono">-</span>
+              </div>
+
+              <!-- Telegram Status Badge / Link -->
+              <div>
+                <span 
+                  v-if="p.has_telegram" 
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200"
+                >
+                  <i class="fa-brands fa-telegram text-sky-500"></i>
+                  <span>Telegram ✓</span>
+                </span>
+                <a 
+                  v-else-if="p.telegram_link" 
+                  :href="p.telegram_link" 
+                  target="_blank" 
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 hover:bg-sky-50 text-slate-600 hover:text-sky-700 border border-slate-200 hover:border-sky-300 transition"
+                  title="ផ្ញើតំណភ្ជាប់ Telegram ទៅអាណាព្យាបាល"
+                >
+                  <i class="fa-brands fa-telegram text-slate-400"></i>
+                  <span>ភ្ជាប់ Telegram</span>
+                </a>
+              </div>
+
+              <!-- Email -->
+              <div v-if="p.email && p.email !== '-'" class="text-[11px] text-slate-400 truncate max-w-[160px]" :title="p.email">
+                {{ p.email }}
+              </div>
+            </div>
           </td>
 
-          <!-- Status Badge -->
-          <td class="py-3 px-4 text-center">
+          <!-- 5. Occupation & Address -->
+          <td class="py-3.5 px-4 align-top">
+            <div class="space-y-1">
+              <div class="text-xs text-slate-700 font-medium">
+                {{ p.occupation || '-' }}
+              </div>
+              <div v-if="p.address && p.address !== '-'" class="text-[11px] text-slate-500 flex items-start gap-1 max-w-[180px]" :title="p.address">
+                <i class="fa-solid fa-location-dot text-[9px] text-slate-400 mt-0.5 shrink-0"></i>
+                <span class="truncate">{{ p.address }}</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- 6. Status Badge -->
+          <td class="py-3.5 px-4 align-top text-center">
             <span 
               v-if="p.status === 'pending'" 
-              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 animate-pulse border border-amber-300"
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 animate-pulse border border-amber-300 shadow-2xs"
             >
               <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
               <span>រង់ចាំអនុម័ត</span>
             </span>
             <span 
               v-else 
-              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800"
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200"
             >
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
               <span>សកម្ម</span>
             </span>
           </td>
 
-          <!-- Actions -->
-          <td class="py-3 px-4 text-right space-x-1.5">
+          <!-- 7. Actions -->
+          <td class="py-3.5 px-4 align-top text-right space-x-1.5 whitespace-nowrap">
             <!-- Review & Approve button for pending status -->
             <button 
               v-if="p.status === 'pending'" 
@@ -164,19 +258,21 @@
 
             <button 
               @click="openProfileModal(p)" 
-              class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs hover:bg-slate-200 transition"
+              class="px-2.5 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-medium hover:bg-slate-200 transition"
+              title="មើលប្រវត្តិរូប"
             >
               {{ t('attendance.tabs.profile') }}
             </button>
             <button 
               @click="openEditModal(p)" 
-              class="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition"
+              class="px-2.5 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition"
+              title="កែប្រែ"
             >
               {{ t('common.edit') }}
             </button>
             <button 
               @click="confirmDeleteParent(p)" 
-              class="px-2 py-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg text-xs transition" 
+              class="px-2.5 py-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg text-xs transition" 
               title="លុប"
             >
               <i class="fa-solid fa-trash-can"></i>
@@ -530,16 +626,48 @@
               <span class="font-semibold text-slate-800 font-mono">{{ selectedParent.phone || '-' }}</span>
             </div>
             <div>
-              <span class="text-slate-400 block text-[11px]">អ៊ីមែល:</span>
-              <span class="font-semibold text-slate-800">{{ selectedParent.email || '-' }}</span>
+              <span class="text-slate-400 block text-[11px]">ឪពុក៖</span>
+              <span class="font-semibold text-blue-800">{{ selectedParent.father_name || '-' }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[11px]">ម្តាយ៖</span>
+              <span class="font-semibold text-pink-800">{{ selectedParent.mother_name || '-' }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[11px]">ស្ថានភាព Telegram:</span>
+              <span v-if="selectedParent.has_telegram" class="inline-flex items-center gap-1 text-sky-700 font-bold text-xs">
+                <i class="fa-brands fa-telegram text-sky-500"></i> បានភ្ជាប់ Telegram ✓
+              </span>
+              <a v-else-if="selectedParent.telegram_link" :href="selectedParent.telegram_link" target="_blank" class="inline-flex items-center gap-1 text-slate-600 hover:text-sky-600 text-xs">
+                <i class="fa-brands fa-telegram text-slate-400"></i> មិនទាន់ភ្ជាប់ (ផ្ញើតំណភ្ជាប់)
+              </a>
+              <span v-else class="text-slate-400 text-xs">-</span>
             </div>
             <div>
               <span class="text-slate-400 block text-[11px]">មុខរបរ:</span>
               <span class="font-semibold text-slate-800">{{ selectedParent.occupation || '-' }}</span>
             </div>
             <div class="col-span-2">
-              <span class="text-slate-400 block text-[11px]">កូន/សិស្សក្នុងបន្ទុក:</span>
-              <span class="font-bold text-emerald-700 text-sm">{{ selectedParent.children || '-' }}</span>
+              <span class="text-slate-400 block text-[11px] mb-1">កូន/សិស្សក្នុងបន្ទុក:</span>
+              <div v-if="selectedParent.children_list && selectedParent.children_list.length > 0" class="space-y-1.5">
+                <div v-for="c in selectedParent.children_list" :key="c.id" class="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-200 text-xs">
+                  <div class="flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">🎓</span>
+                    <div>
+                      <div class="font-bold text-slate-800">{{ c.name }}</div>
+                      <div v-if="c.name_latin" class="text-[10px] text-slate-400">{{ c.name_latin }}</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span v-if="c.grade" class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-bold text-[10px]">ថ្នាក់ {{ c.grade }}</span>
+                    <span v-if="c.id_card" class="font-mono text-[10px] text-slate-500">ID: {{ c.id_card }}</span>
+                    <span v-if="c.has_telegram" class="text-sky-600 text-xs" title="Telegram Active"><i class="fa-brands fa-telegram"></i></span>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="font-semibold text-slate-700 text-xs">
+                {{ selectedParent.children || '-' }}
+              </div>
             </div>
             <div class="col-span-2">
               <span class="text-slate-400 block text-[11px]">អាសយដ្ឋានបច្ចុប្បន្ន:</span>
@@ -789,18 +917,26 @@ const filteredParents = computed(() => {
     const matchesSearch = !q || 
       (p.name && p.name.toLowerCase().includes(q)) ||
       (p.name_latin && p.name_latin.toLowerCase().includes(q)) ||
+      (p.father_name && p.father_name.toLowerCase().includes(q)) ||
+      (p.mother_name && p.mother_name.toLowerCase().includes(q)) ||
       (p.idCard && p.idCard.toLowerCase().includes(q)) ||
       (p.phone && p.phone.includes(q)) ||
       (p.email && p.email.toLowerCase().includes(q)) ||
       (p.occupation && p.occupation.toLowerCase().includes(q)) ||
       (p.children && p.children.toLowerCase().includes(q)) ||
-      (p.child_name && p.child_name.toLowerCase().includes(q));
+      (p.child_name && p.child_name.toLowerCase().includes(q)) ||
+      (p.children_list && p.children_list.some(c => 
+        (c.name && c.name.toLowerCase().includes(q)) ||
+        (c.name_latin && c.name_latin.toLowerCase().includes(q)) ||
+        (c.id_card && String(c.id_card).toLowerCase().includes(q)) ||
+        (c.grade && String(c.grade).toLowerCase().includes(q))
+      ));
 
     let matchesRelation = true;
     if (relationFilter.value === 'father') {
-      matchesRelation = p.relationship && p.relationship.includes('ឪពុក');
+      matchesRelation = (p.relationship && p.relationship.includes('ឪពុក')) || !!p.father_name;
     } else if (relationFilter.value === 'mother') {
-      matchesRelation = p.relationship && p.relationship.includes('ម្តាយ');
+      matchesRelation = (p.relationship && p.relationship.includes('ម្តាយ')) || !!p.mother_name;
     } else if (relationFilter.value === 'guardian') {
       matchesRelation = p.relationship && (p.relationship.includes('អាណាព្យាបាល') || p.relationship.includes('បងប្អូន'));
     }

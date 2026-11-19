@@ -4721,18 +4721,63 @@ class ApiController extends Controller
         }
 
         $parents = $query->latest()->get()->map(function ($p) {
-            $childrenNames = $p->students->map(fn($st) => $st->name_khmer ?: ($st->user?->name ?? 'សិស្ស'))->toArray();
-            if ($p->child_name && !in_array($p->child_name, $childrenNames)) {
+            $linkedStudents = $p->students;
+            if ($linkedStudents->isEmpty() && !empty($p->phone)) {
+                $cleanPhone = preg_replace('/[^\d]/', '', $p->phone);
+                if (!empty($cleanPhone)) {
+                    $linkedStudents = Student::where('parent_phone', $cleanPhone)
+                        ->orWhere('father_phone', $cleanPhone)
+                        ->orWhere('mother_phone', $cleanPhone)
+                        ->get();
+                    if ($linkedStudents->isNotEmpty()) {
+                        foreach ($linkedStudents as $st) {
+                            $p->students()->syncWithoutDetaching([$st->id => ['relationship' => $p->relationship ?: 'អាណាព្យាបាល']]);
+                        }
+                    }
+                }
+            }
+
+            $childrenList = $linkedStudents->map(function ($st) {
+                return [
+                    'id' => $st->id,
+                    'name' => $st->name_khmer ?: ($st->name_latin ?: ($st->user?->name ?? 'សិស្ស')),
+                    'name_latin' => $st->name_latin,
+                    'grade' => $st->grade,
+                    'id_card' => $st->student_id_card,
+                    'father_name' => $st->father_name,
+                    'mother_name' => $st->mother_name,
+                    'has_telegram' => !empty($st->telegram_chat_id),
+                ];
+            })->values()->toArray();
+
+            $childrenNames = array_map(fn($c) => $c['name'] . ($c['grade'] ? " ({$c['grade']})" : ''), $childrenList);
+            if ($p->child_name && !in_array($p->child_name, array_column($childrenList, 'name'))) {
                 $childrenNames[] = $p->child_name . ($p->child_grade ? " ({$p->child_grade})" : '');
             }
             $childrenStr = count($childrenNames) > 0 ? implode(', ', $childrenNames) : 'មិនទាន់ភ្ជាប់កូន';
 
+            $cleanPhone = preg_replace('/[^\d]/', '', $p->phone ?: '');
+            $botUser = config('services.telegram.bot_username', 'SalaParentAlertBot');
+            $telegramLink = $cleanPhone ? "https://t.me/{$botUser}?start=reg_{$cleanPhone}" : "https://t.me/{$botUser}";
+            $hasTelegram = collect($childrenList)->contains('has_telegram', true);
+
+            // Extract father & mother name
+            $fatherName = $p->father_name ?: (collect($childrenList)->first(fn($c) => !empty($c['father_name']))['father_name'] ?? ($p->relationship === 'ឪពុក' ? $p->display_name : null));
+            $motherName = $p->mother_name ?: (collect($childrenList)->first(fn($c) => !empty($c['mother_name']))['mother_name'] ?? ($p->relationship === 'ម្តាយ' ? $p->display_name : null));
+
+            $formattedCard = $p->parent_id_card;
+            if (empty($formattedCard) || str_contains($formattedCard, 'រង់ចាំ')) {
+                $formattedCard = sprintf('PAR-%s-%03d', $p->created_at ? $p->created_at->format('Y') : date('Y'), $p->id > 999 ? ($p->id % 900) + 1 : $p->id);
+            }
+
             return [
                 'id' => $p->id,
-                'idCard' => $p->parent_id_card ?: 'PAR-រង់ចាំ',
+                'idCard' => $formattedCard,
                 'name' => $p->display_name,
                 'name_khmer' => $p->name_khmer,
                 'name_latin' => $p->name_latin,
+                'father_name' => $fatherName,
+                'mother_name' => $motherName,
                 'gender' => $p->gender ?: 'other',
                 'phone' => $p->phone ?: '-',
                 'email' => $p->email ?: '-',
@@ -4741,9 +4786,12 @@ class ApiController extends Controller
                 'address' => $p->address ?: '-',
                 'photo' => $p->photo ? asset('storage/' . $p->photo) : null,
                 'children' => $childrenStr,
+                'children_list' => $childrenList,
                 'children_count' => count($childrenNames),
                 'child_name' => $p->child_name,
                 'child_grade' => $p->child_grade,
+                'has_telegram' => $hasTelegram,
+                'telegram_link' => $telegramLink,
                 'status' => $p->status ?? 'active',
                 'created_at' => $p->created_at ? $p->created_at->format('Y-m-d H:i') : null,
             ];
